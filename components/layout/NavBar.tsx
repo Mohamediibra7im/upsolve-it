@@ -19,7 +19,7 @@ import {
   HelpCircle, 
   ShieldAlert,
   Home as HomeIcon
-} from "lucide-react";
+, ExternalLink } from "lucide-react";
 import ClientOnly from "@/app/_Components/ClientOnly";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import useUser from "@/hooks/useUser";
@@ -39,7 +39,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ExternalLink } from "lucide-react";
 
 const guestLinks = [
   { href: "/", label: "Home", icon: HomeIcon },
@@ -86,7 +85,7 @@ const NavBar = () => {
         <div className="flex-1 flex items-center h-full">
           <Link href="/" className="group relative flex flex-col items-start py-2 overflow-visible">
             <div className="flex items-center gap-1.5 leading-none overflow-visible">
-              <span className="text-primary/30 font-light text-2xl md:text-3xl tracking-tighter select-none">[</span>
+              <span className="text-primary/30 font-light text-2xl md:text-3xl tracking-tighter select-none inline-block -translate-y-[2px]">[</span>
               <div className="flex items-baseline">
                 <span className="font-black text-2xl md:text-3xl tracking-tighter uppercase text-foreground group-hover:text-primary transition-colors duration-500">
                   UPSOLVE
@@ -105,7 +104,7 @@ const NavBar = () => {
                   className="inline-block w-3 h-6 md:w-4 md:h-8 bg-primary/40 ml-1 translate-y-1"
                 />
               </div>
-              <span className="text-primary/30 font-light text-2xl md:text-3xl tracking-tighter select-none">]</span>
+              <span className="text-primary/30 font-light text-2xl md:text-3xl tracking-tighter select-none inline-block -translate-y-[2px]">]</span>
             </div>
           </Link>
         </div>

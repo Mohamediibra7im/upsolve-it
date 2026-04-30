@@ -25,7 +25,7 @@ export default function Icon() {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <span style={{ color: '#007F5F40', fontSize: 80, fontWeight: 200 }}>[</span>
+          <span style={{ color: '#007F5F40', fontSize: 80, fontWeight: 200, transform: 'translateY(-6px)' }}>[</span>
           <span
             style={{
               fontSize: 90,
@@ -37,7 +37,7 @@ export default function Icon() {
           >
             U
           </span>
-          <span style={{ color: '#007F5F40', fontSize: 80, fontWeight: 200 }}>]</span>
+          <span style={{ color: '#007F5F40', fontSize: 80, fontWeight: 200, transform: 'translateY(-6px)' }}>]</span>
         </div>
       </div>
     ),

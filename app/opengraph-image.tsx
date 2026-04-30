@@ -45,7 +45,7 @@ export default async function Image() {
             gap: '30px',
           }}
         >
-          <span style={{ fontSize: '100px', color: '#007F5F30', fontWeight: 200 }}>[</span>
+          <span style={{ fontSize: '100px', color: '#007F5F30', fontWeight: 200, transform: 'translateY(-10px)' }}>[</span>
           
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'baseline' }}>
@@ -91,7 +91,7 @@ export default async function Image() {
             </div>
           </div>
 
-          <span style={{ fontSize: '100px', color: '#007F5F30', fontWeight: 200 }}>]</span>
+          <span style={{ fontSize: '100px', color: '#007F5F30', fontWeight: 200, transform: 'translateY(-10px)' }}>]</span>
         </div>
 
         {/* Footer Metadata */}
