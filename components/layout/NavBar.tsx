@@ -51,6 +51,7 @@ const userLinks = [
   { href: "/training", label: "Training", icon: Target },
   { href: "/statistics", label: "Statistics", icon: LineChart },
   { href: "/upsolve", label: "Upsolve", icon: Layers },
+  { href: "/levels", label: "Levels", icon: Target },
   { href: "/help", label: "Help", icon: HelpCircle },
 ];
 

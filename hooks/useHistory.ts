@@ -81,6 +81,7 @@ const useHistory = () => {
     addTraining,
     deleteTraining,
     isDeleting,
+    refresh: mutate,
   };
 };
 

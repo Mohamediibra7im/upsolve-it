@@ -90,7 +90,7 @@ const StatCard = ({
 
 export default function StatisticsPage() {
   const { user, isLoading: isUserLoading } = useUser();
-  const { history, isLoading, deleteTraining, isDeleting, error } = useHistory();
+  const { history, isLoading, deleteTraining, isDeleting, error, refresh } = useHistory();
   const { upsolvedProblems } = useUpsolvedProblems();
   const [tab, setTab] = useState<"overview" | "history">("overview");
 
@@ -145,6 +145,8 @@ export default function StatisticsPage() {
   if (!user) return <Loader />;
 
   if (error) {
+    const errorMessage = error instanceof Error ? error.message : "We couldn't load your progress. Please try refreshing or re-logging.";
+    
     return (
       <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-6">
         <div className="absolute inset-0 -z-10 bg-grid-pattern opacity-[0.03]" />
@@ -155,14 +157,19 @@ export default function StatisticsPage() {
             </div>
             <div className="space-y-2">
               <h2 className="text-2xl font-black text-foreground">Sync Error</h2>
-              <p className="text-muted-foreground">We couldn&apos;t load your progress. Please try refreshing or re-logging.</p>
+              <p className="text-muted-foreground">{errorMessage}</p>
             </div>
-            <div className="flex gap-3 pt-2">
-              <Button asChild variant="outline" className="flex-1 rounded-xl">
-                <Link href="/training">To Training</Link>
-              </Button>
-              <Button asChild className="flex-1 rounded-xl">
-                <Link href="/">Re-login</Link>
+            <div className="flex flex-col gap-3 pt-2">
+              <div className="flex gap-3">
+                <Button onClick={() => refresh()} variant="outline" className="flex-1 rounded-xl">
+                  Try Again
+                </Button>
+                <Button asChild className="flex-1 rounded-xl">
+                  <Link href="/">Re-login</Link>
+                </Button>
+              </div>
+              <Button asChild variant="ghost" className="w-full rounded-xl text-xs opacity-70">
+                <Link href="/training">Continue to Training</Link>
               </Button>
             </div>
           </CardContent>

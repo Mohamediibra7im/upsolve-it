@@ -115,7 +115,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" suppressHydrationWarning className={cn(inter.variable, hostGrotesk.variable, jetbrainsMono.variable)}>
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={cn(inter.variable, hostGrotesk.variable, jetbrainsMono.variable)}>
       <head>
         <script
           id="structured-data"

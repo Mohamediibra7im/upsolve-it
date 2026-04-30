@@ -52,29 +52,31 @@ export function clearRefreshCallback() {
  * and performs delayed redirect to '/' only when pathname !== '/'
  */
 async function handleLogoutRedirect() {
-  // Call server-side logout to revoke refresh token
-  try {
-    await fetch(resolveApiUrl('/api/auth/logout'), {
-      method: 'POST',
-      credentials: 'include', // Include cookies to revoke refresh token
-    });
-  } catch (error) {
-    console.error('Logout API call failed:', error);
-    // Continue with client-side cleanup even if API call fails
-  }
-
+  // 1. Clear client-side state immediately
   localStorage.removeItem('token');
   localStorage.removeItem('user');
 
   if (logoutCallback) {
-    logoutCallback();
+    try {
+      logoutCallback();
+    } catch (e) {
+      console.error('Logout callback error:', e);
+    }
   }
 
-  setTimeout(() => {
-    if (globalThis.location.pathname !== '/') {
-      globalThis.location.href = '/';
-    }
-  }, 100);
+  // 2. Perform redirect as soon as possible
+  if (globalThis.window && globalThis.location.pathname !== '/') {
+    globalThis.location.href = '/';
+  }
+
+  // 3. Call server-side logout in the background (fire and forget)
+  // This revokes the refresh token on the server
+  fetch(resolveApiUrl('/api/auth/logout'), {
+    method: 'POST',
+    credentials: 'include',
+  }).catch(error => {
+    console.error('Background logout API call failed:', error);
+  });
 }
 
 /**
