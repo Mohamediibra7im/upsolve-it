@@ -17,21 +17,31 @@ export default function Icon() {
       // ImageResponse inheritance allows for basic CSS styles
       <div
         style={{
-          fontSize: 20,
-          background: '#007F5F',
+          background: '#09090b',
           width: '100%',
           height: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: 'white',
           borderRadius: '8px',
-          fontWeight: 900,
-          fontFamily: 'sans-serif',
-          letterSpacing: '-0.05em',
+          border: '2px solid #007F5F',
+          boxShadow: 'inset 0 0 10px rgba(0, 127, 95, 0.2)',
         }}
       >
-        U
+        <div
+          style={{
+            fontSize: 20,
+            fontWeight: 900,
+            color: '#007F5F',
+            fontFamily: 'sans-serif',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textShadow: '0 0 5px rgba(0, 127, 95, 0.5)',
+          }}
+        >
+          U
+        </div>
       </div>
     ),
     // ImageResponse options
