@@ -12,8 +12,21 @@ let refreshPromise: Promise<boolean> | null = null;
 export function resolveApiUrl(url: string) {
   const base = process.env.NEXT_PUBLIC_API_BASE_URL;
   if (!base) return url;
-  if (!url.startsWith('/api/')) return url;
-  return `${base.replace(/\/$/, '')}${url}`;
+  
+  // Clean up the base URL (remove trailing slash)
+  const cleanBase = base.replace(/\/$/, '');
+  
+  // If the incoming URL is already absolute, return it
+  if (url.startsWith('http')) return url;
+
+  // Handle /api prefix smartly to avoid duplication
+  // If base already contains /api, and url starts with /api
+  if (cleanBase.endsWith('/api') && url.startsWith('/api/')) {
+    return `${cleanBase}${url.substring(4)}`;
+  }
+
+  // Standard case: append relative path to base
+  return `${cleanBase}${url.startsWith('/') ? url : `/${url}`}`;
 }
 
 export function setLogoutCallback(callback: () => void) {
