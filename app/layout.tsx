@@ -30,27 +30,33 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Upsolve.it - ",
+  title: "Upsolve.it - CP Training Tracker",
   description:
-    "Practice Codeforces problems with virtual contests, track progress, and improve your competitive programming skills. Create focused training sessions with ratings and tags.",
-  icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/favicon.ico",
+    "Master competitive programming with intelligent practice sessions, track your progress, and climb the Codeforces ladder with Upsolve.it.",
+  metadataBase: new URL("https://upsolve-it.hnuicpc.tech"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Upsolve.it - Tactical CP Training Tracker",
+    description: "Intelligence-driven training for competitive programmers. Optimize your upsolve flow and track tactical metrics.",
+    url: "https://upsolve-it.hnuicpc.tech",
+    siteName: "Upsolve.it",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Upsolve.it - Tactical CP Training Tracker",
+    description: "Intelligence-driven training for competitive programmers.",
   },
   keywords: [
     "Upsolve.it",
     "Codeforces",
     "competitive programming",
-    "virtual contest",
     "cp training",
     "upsolve",
-    "practice problems",
-    "algorithm practice",
-    "programming contest",
-    "performance tracking",
-    "training sessions",
-    "statistics dashboard",
+    "HNU ICPC",
   ],
   authors: [{ name: "Mohammed Ibrahim" }],
   creator: "Upsolve.it",
@@ -59,34 +65,6 @@ export const metadata: Metadata = {
     email: false,
     address: false,
     telephone: false,
-  },
-  metadataBase: new URL("https://upsolve.it"),
-  alternates: {
-    canonical: "/",
-  },
-  openGraph: {
-    title: "Upsolve.it - ",
-    description:
-      "Practice Codeforces problems with virtual contests, track progress, and improve your competitive programming skills. Create focused training sessions with ratings and tags.",
-    url: "https://upsolve.it",
-    siteName: "Upsolve.it",
-    images: [
-      {
-        url: "https://d3moma7wl9.ufs.sh/f/xRZhVxWEJbFMus29DenxT5WwkRzQNM4V8v2dhSnslabDi1c0",
-        width: 1200,
-        height: 630,
-        alt: "Upsolve.it - Codeforces Practice Platform",
-      },
-    ],
-    locale: "en_US",
-    type: "website",
-    },
-  twitter: {
-    card: "summary_large_image",
-    title: "Upsolve.it - Codeforces Virtual Contest Practice Platform",
-    description:
-      "Practice Codeforces problems with virtual contests, track your progress, and improve your competitive programming skills.",
-    images: ["https://d3moma7wl9.ufs.sh/f/xRZhVxWEJbFMus29DenxT5WwkRzQNM4V8v2dhSnslabDi1c0"],
   },
   robots: {
     index: true,
@@ -112,7 +90,7 @@ export default function RootLayout({
     name: "Upsolve.it",
     description:
       "A Codeforces virtual contest practice platform for competitive programming",
-    url: "https://upsolve.it",
+    url: "https://upsolve-it.hnuicpc.tech",
     applicationCategory: "EducationalApplication",
     operatingSystem: "Web Browser",
     offers: {

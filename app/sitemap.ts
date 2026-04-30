@@ -1,8 +1,8 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://upsolve.it';
-  
+  const baseUrl = 'https://upsolve-it.hnuicpc.tech';
+
   // Public routes that should be indexed
   const routes = [
     '',

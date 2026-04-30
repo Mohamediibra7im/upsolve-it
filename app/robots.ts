@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/admin/', '/api/', '/_next/'],
     },
-    sitemap: 'https://upsolve.it/sitemap.xml',
+    sitemap: 'https://upsolve-it.hnuicpc.tech/sitemap.xml',
   };
 }
