@@ -12,7 +12,7 @@ export interface AuditLog {
     avatar?: string;
   };
   performedByHandle: string;
-  details: Record<string, any>;
+  details?: Record<string, any>;
   createdAt: string;
 }
 

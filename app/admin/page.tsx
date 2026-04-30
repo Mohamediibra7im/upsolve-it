@@ -74,7 +74,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-background/50 relative overflow-hidden">
+    <div className="flex h-screen bg-background/50 relative overflow-hidden">
       {/* Dynamic Background Glows */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px]" />

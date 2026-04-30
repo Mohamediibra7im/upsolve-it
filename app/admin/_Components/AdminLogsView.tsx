@@ -120,6 +120,17 @@ export default function AdminLogsView() {
             <Loader2 className="h-10 w-10 animate-spin text-primary opacity-50" />
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Accessing Encrypted Records...</p>
           </div>
+        ) : isError ? (
+          <Card className="border-destructive/20 bg-destructive/5 backdrop-blur-xl rounded-[2rem] p-20 text-center">
+            <div className="h-16 w-16 bg-destructive/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Shield className="text-destructive opacity-50" size={32} />
+            </div>
+            <h3 className="text-xl font-bold text-destructive">Secure Connection Failed</h3>
+            <p className="text-sm text-muted-foreground mb-6">We couldn't retrieve the audit logs. You may not have sufficient permissions or the session expired.</p>
+            <Button onClick={() => window.location.reload()} variant="outline" className="rounded-xl">
+              Retry Authorization
+            </Button>
+          </Card>
         ) : logs.length === 0 ? (
           <Card className="border-border/40 bg-card/20 backdrop-blur-xl rounded-[2rem] p-20 text-center">
             <div className="h-16 w-16 bg-muted/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -180,7 +191,7 @@ export default function AdminLogsView() {
                         {/* Details */}
                         <div className="flex-1 overflow-hidden">
                           <div className="text-[11px] text-muted-foreground/80 font-medium truncate">
-                            {Object.entries(log.details).map(([k, v]) => (
+                            {Object.entries(log.details || {}).map(([k, v]) => (
                               <span key={k} className="mr-4">
                                 <span className="opacity-50 lowercase italic mr-1">{k}:</span>
                                 <span className="text-foreground/90">{typeof v === 'object' ? JSON.stringify(v) : String(v)}</span>
