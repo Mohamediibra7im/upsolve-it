@@ -1,0 +1,217 @@
+import { useEffect, useState, useCallback } from "react";
+import useSWR from "swr";
+import { User } from "@/types/User";
+import { SuccessResponse, ErrorResponse, Response } from "@/types/Response";
+import { setRefreshCallback, clearRefreshCallback, setLogoutCallback, clearLogoutCallback, resolveApiUrl } from "@/lib/apiClient";
+
+const USER_CACHE_KEY = "codeforces-user";
+
+const useUser = () => {
+  const [isClient, setIsClient] = useState(false);
+  const {
+    data: user,
+    isLoading,
+    mutate,
+    error,
+  } = useSWR<User | null>(
+    USER_CACHE_KEY,
+    null, // We will manage fetching manually or from localStorage
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    // Only attempt to load user from localStorage after client hydration
+    if (!isClient) return;
+
+    const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+    if (token && storedUser) {
+      mutate(JSON.parse(storedUser), false);
+    } else {
+      // If no stored user, mark loading as complete
+      mutate(null, false);
+    }
+  }, [mutate, isClient]);
+
+  // Register refresh callback to update SWR cache when token is refreshed
+  useEffect(() => {
+    if (!isClient) return;
+
+    // Callback to update user data when token is refreshed
+    const handleRefresh = (updatedUser: User) => {
+      // Update localStorage
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      // Update SWR cache
+      mutate(updatedUser, false);
+    };
+
+    // Callback to clear user data on logout
+    const handleLogout = () => {
+      mutate(null, false);
+    };
+
+    // Register callbacks
+    setRefreshCallback(handleRefresh);
+    setLogoutCallback(handleLogout);
+
+    // Cleanup on unmount
+    return () => {
+      clearRefreshCallback();
+      clearLogoutCallback();
+    };
+  }, [isClient, mutate]);
+
+  const login = useCallback(
+    async (codeforcesHandle: string, password: string): Promise<Response<User>> => {
+      try {
+        const res = await fetch(resolveApiUrl("/api/auth/login"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ codeforcesHandle, password }),
+          credentials: "include", // Include cookies to receive refresh token
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          return ErrorResponse(data.message);
+        }
+
+        // Save token and user to localStorage for persistent sessions
+        if (isClient) {
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("user", JSON.stringify(data.user));
+        }
+
+        await mutate(data.user, false);
+        return SuccessResponse(data.user);
+      } catch (error) {
+        console.error("Login failed:", error);
+        return ErrorResponse("Failed to connect to the server.");
+      }
+    },
+    [isClient, mutate],
+  );
+
+  const register = useCallback(
+    async (codeforcesHandle: string, password: string, confirmPassword: string): Promise<Response<User>> => {
+      try {
+        const res = await fetch(resolveApiUrl("/api/auth/register"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ codeforcesHandle, password, confirmPassword }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          return ErrorResponse(data.message);
+        }
+        // After successful registration, automatically log the user in
+        return await login(codeforcesHandle, password);
+      } catch (error) {
+        console.error("Registration failed:", error);
+        return ErrorResponse("Failed to connect to the server.");
+      }
+    },
+    [login],
+  );
+
+  const logout = useCallback(async () => {
+    // Call server-side logout to revoke refresh token
+    try {
+      await fetch(resolveApiUrl("/api/auth/logout"), {
+        method: "POST",
+        credentials: "include", // Include cookies to revoke refresh token
+      });
+    } catch (error) {
+      console.error("Logout API call failed:", error);
+      // Continue with client-side cleanup even if API call fails
+    }
+
+    if (isClient) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    }
+    mutate(null, false);
+  }, [isClient, mutate]);
+
+  const resetPassword = async (
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<Response<null>> => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(resolveApiUrl("/api/auth/reset-pin"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ oldPassword, newPassword }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return ErrorResponse(data.message);
+      }
+
+      return SuccessResponse(null);
+    } catch (error) {
+      console.error("Password reset failed:", error);
+      return ErrorResponse("Failed to connect to the server.");
+    }
+  };
+
+  const syncProfile = useCallback(async (): Promise<Response<User>> => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        return ErrorResponse("Not authenticated");
+      }
+
+      const res = await fetch(resolveApiUrl("/api/auth/sync-profile"), {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return ErrorResponse(data.message);
+      }
+
+      // Update localStorage with new user data
+      if (isClient && data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+        await mutate(data.user, false);
+      }
+
+      return SuccessResponse(data.user);
+    } catch (error) {
+      console.error("Profile sync failed:", error);
+      return ErrorResponse("Failed to sync profile");
+    }
+  }, [isClient, mutate]);
+
+  return {
+    user,
+    isLoading: isLoading || !isClient,
+    error,
+    register,
+    login,
+    logout,
+    resetPassword,
+    syncProfile,
+  };
+};
+
+export default useUser;
+
+
+
+
