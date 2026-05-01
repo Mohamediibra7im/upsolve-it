@@ -22,6 +22,7 @@ import { UserTable } from './UserTable';
 import { UserMobileCards } from './UserMobileCards';
 import { RoleConfirmationDialog } from './RoleConfirmationDialog';
 import { UserStatsDialog } from './UserStatsDialog';
+import { Card } from '@/components/ui/card';
 
 const getRankColor = (rating: number): string => {
   if (rating === 0) return 'text-gray-500';
@@ -224,83 +225,100 @@ export default function AdminUserManagement() {
   }
 
   return (
-    <div className="space-y-10">
-      {/* Header Stats */}
-      <div className="bg-card/20 backdrop-blur-xl p-8 rounded-[2.5rem] border border-border/40">
-        <div className="flex flex-wrap items-center gap-4">
-          <Badge variant="outline" className="bg-blue-500/10 border-blue-500/20 text-blue-500 font-black uppercase tracking-widest px-4 py-2 rounded-xl text-[10px]">
-            <UserIcon className="h-4 w-4 mr-2" />
-            <span className="text-sm">{users.length}</span>
-            <span className="ml-2">Active Entities</span>
-          </Badge>
-          <Badge variant="outline" className="bg-purple-500/10 border-purple-500/20 text-purple-500 font-black uppercase tracking-widest px-4 py-2 rounded-xl text-[10px]">
-            <Crown className="h-4 w-4 mr-2" />
-            <span className="text-sm">{users.filter((u: User) => u.role === 'admin').length}</span>
-            <span className="ml-2">Command Staff</span>
-          </Badge>
-        </div>
+    <div className="space-y-12">
+      {/* Integrated Command Center */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Metric Cards - 1/4 width each */}
+        <Card className="border-white/5 bg-card/20 backdrop-blur-2xl rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 opacity-[0.03] group-hover:scale-110 transition-transform duration-500">
+            <UserIcon size={120} />
+          </div>
+          <div className="flex flex-col h-full justify-between">
+            <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 w-fit">
+              <UserIcon className="h-5 w-5 text-blue-500" />
+            </div>
+            <div className="mt-6">
+              <div className="text-4xl font-black tracking-tighter text-foreground leading-none">{users.length}</div>
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mt-1">Total Personnel</div>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="border-white/5 bg-card/20 backdrop-blur-2xl rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 opacity-[0.03] group-hover:scale-110 transition-transform duration-500">
+            <Crown size={120} />
+          </div>
+          <div className="flex flex-col h-full justify-between">
+            <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 w-fit">
+              <Crown className="h-5 w-5 text-purple-500" />
+            </div>
+            <div className="mt-6">
+              <div className="text-4xl font-black tracking-tighter text-foreground leading-none">
+                {users.filter((u: User) => u.role === 'admin').length}
+              </div>
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mt-1">Command Staff</div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Unified Search & Control - 2/4 width */}
+        <Card className="lg:col-span-2 border-primary/10 bg-primary/5 backdrop-blur-2xl rounded-[2.5rem] p-6 shadow-2xl relative overflow-hidden border-dashed">
+          <div className="flex flex-col h-full gap-6">
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-primary/60 group-focus-within:text-primary transition-colors" />
+              </div>
+              <Input
+                type="text"
+                placeholder="Query Registry..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-14 h-14 bg-white/5 border-white/10 focus:border-primary/50 rounded-2xl font-bold tracking-tight text-lg shadow-inner"
+              />
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-3">
+              <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortField)}>
+                <SelectTrigger className="flex-1 min-w-[140px] h-12 bg-white/5 border-white/10 rounded-xl font-black uppercase tracking-widest text-[9px]">
+                  <ArrowUpDown className="h-3 w-3 mr-2" />
+                  <SelectValue placeholder="Sort" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="codeforcesHandle">Handle</SelectItem>
+                  <SelectItem value="role">Clearance</SelectItem>
+                  <SelectItem value="createdAt">Arrival</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                className="h-12 w-12 bg-white/5 border-white/10 rounded-xl hover:bg-primary hover:text-primary-foreground transition-all shrink-0"
+              >
+                <ArrowUpDown className={`h-4 w-4 transition-transform ${sortOrder === 'desc' ? 'rotate-180' : ''}`} />
+              </Button>
+
+              <Badge className="h-12 px-4 bg-primary/20 text-primary border border-primary/30 font-black uppercase tracking-tighter text-[9px] rounded-xl flex items-center shrink-0">
+                {filteredAndSortedUsers.length} TARGETS
+              </Badge>
+            </div>
+          </div>
+        </Card>
       </div>
 
-      {/* Search & Filter Section */}
-      <div className="space-y-6">
-        <div className="flex flex-col xl:flex-row gap-6">
-          <div className="relative flex-1 group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-muted-foreground/60 group-focus-within:text-primary transition-colors duration-500" />
-            </div>
-            <Input
-              type="text"
-              placeholder="Query Personnel by Codeforces Handle..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 h-14 bg-card/20 backdrop-blur-xl border-border/40 focus:border-primary/50 rounded-2xl font-medium tracking-tight text-lg shadow-2xl shadow-black/5"
-            />
-            {searchTerm && (
-              <Badge className="absolute right-4 top-4 bg-primary text-primary-foreground font-black uppercase tracking-tighter text-[10px] rounded-lg">
-                {filteredAndSortedUsers.length} Matches Found
-              </Badge>
-            )}
-          </div>
-          <div className="flex gap-4">
-            <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortField)}>
-              <SelectTrigger className="w-[200px] h-14 bg-card/20 backdrop-blur-xl border-border/40 rounded-2xl font-black uppercase tracking-widest text-[10px]">
-                <ArrowUpDown className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Sort Parameters" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="codeforcesHandle">Handle</SelectItem>
-                <SelectItem value="role">Clearance Level</SelectItem>
-                <SelectItem value="createdAt">Arrival Date</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              className="h-14 w-14 bg-card/20 backdrop-blur-xl border-border/40 rounded-2xl hover:bg-primary hover:text-primary-foreground transition-all duration-500"
-            >
-              <ArrowUpDown className={`h-5 w-5 transition-transform duration-500 ${sortOrder === 'desc' ? 'rotate-180' : ''}`} />
-            </Button>
-          </div>
-        </div>
-      </div>
-      {/* Users List */}
-      <div className="w-full space-y-4">
-        <div className="flex items-center justify-between">
+      {/* Users List Interface */}
+      <div className="w-full space-y-6">
+        <div className="flex items-center justify-between px-4">
           <div className="flex items-center gap-4">
-            <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-              <Shield size={20} />
+            <div className="h-12 w-12 rounded-[1.25rem] bg-accent/10 flex items-center justify-center text-accent border border-accent/20 shadow-lg">
+              <Shield size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-black tracking-tight uppercase">Personnel Registry</h2>
-              <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">Authorized Access Control</p>
+              <h2 className="text-2xl font-black tracking-tight uppercase text-foreground leading-none">Personnel Registry</h2>
+              <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] mt-2 opacity-60">Authorized Access Matrix</p>
             </div>
           </div>
-          {searchTerm && (
-            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black text-[10px] uppercase px-3 py-1">
-              Active Search Filter
-            </Badge>
-          )}
         </div>
 
         <div className="w-full">

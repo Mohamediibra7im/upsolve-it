@@ -25,6 +25,7 @@ export function AdminDashboardView({ stats, statsLoading }: Readonly<AdminDashbo
   const statCards = [
     { label: 'Verified Recruits', value: stats.totalUsers, icon: Users, color: 'emerald' },
     { label: 'Auth Officers', value: stats.adminUsers, icon: Lock, color: 'orange' },
+    { label: 'Network Integrity', value: 'Active', icon: Activity, color: 'sky' },
   ];
 
   return (
@@ -35,31 +36,32 @@ export function AdminDashboardView({ stats, statsLoading }: Readonly<AdminDashbo
       className="space-y-12"
     >
       {/* Hero Feature */}
-      <Card className="border-border/40 bg-card/20 backdrop-blur-2xl rounded-[3rem] overflow-hidden p-8 sm:p-12 relative">
+      <Card className="border-white/5 bg-card/10 backdrop-blur-3xl rounded-[3.5rem] overflow-hidden p-8 sm:p-14 relative shadow-2xl">
         <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none">
-          <LayoutDashboard size={280} />
+          <LayoutDashboard size={400} />
         </div>
-        <div className="relative flex flex-col md:flex-row items-center gap-10">
-          <div className="flex-1 space-y-6 text-center md:text-left">
-            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-primary/10 border border-primary/20">
-              <ShieldCheck className="h-4 w-4 text-primary" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Admin Verification</span>
+        <div className="relative flex flex-col md:flex-row items-center gap-12">
+          <div className="flex-1 space-y-8 text-center md:text-left">
+            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-primary/10 border border-primary/20 backdrop-blur-md shadow-inner">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+              <span className="text-[11px] font-black uppercase tracking-[0.3em] text-primary">System Command Verified</span>
             </div>
-            <h2 className="text-4xl sm:text-6xl font-black tracking-tighter text-foreground leading-tight">
-              Platform <span className="text-primary italic">Status</span>
+            <h2 className="text-5xl sm:text-7xl font-black tracking-tighter text-foreground leading-none">
+              Strategic <span className="text-primary italic">Intelligence</span>
             </h2>
-            <p className="text-muted-foreground font-medium max-w-xl mx-auto md:mx-0">
-              Monitoring system-wide metrics and user engagement. All protocols are currently within optimal operating parameters.
+            <p className="text-xl text-muted-foreground font-medium max-w-2xl mx-auto md:mx-0 opacity-80 leading-relaxed">
+              Synthesizing user engagement and performance metrics. All core systems are performing at peak efficiency under current load.
             </p>
           </div>
-          <Card className="border-border/40 bg-white/5 backdrop-blur-xl rounded-[2.5rem] p-10 min-w-[280px] border-dashed">
-            <div className="text-center space-y-6">
-              <div className="h-16 w-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 mx-auto">
-                <Activity size={32} />
+          <Card className="border-primary/20 bg-primary/5 backdrop-blur-3xl rounded-[3rem] p-12 min-w-[320px] border-dashed shadow-2xl relative group overflow-hidden">
+            <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            <div className="text-center space-y-8 relative z-10">
+              <div className="h-20 w-20 rounded-[2rem] bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 mx-auto shadow-xl shadow-emerald-500/10">
+                <Activity size={40} className="animate-pulse" />
               </div>
               <div>
-                <div className="text-3xl font-black text-foreground tracking-tighter">99.9%</div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Uptime Stability</div>
+                <div className="text-5xl font-black text-foreground tracking-tighter">99.98%</div>
+                <div className="text-[12px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mt-2">Operational Uptime</div>
               </div>
             </div>
           </Card>
@@ -67,21 +69,21 @@ export function AdminDashboardView({ stats, statsLoading }: Readonly<AdminDashbo
       </Card>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {statCards.map((stat) => (
-          <Card key={stat.label} className="border-border/40 bg-card/30 backdrop-blur-xl rounded-[2.5rem] overflow-hidden group hover:border-primary/40 hover:shadow-2xl transition-all duration-500">
-            <CardContent className="p-8 space-y-6">
+          <Card key={stat.label} className="border-white/5 bg-card/20 backdrop-blur-2xl rounded-[3rem] overflow-hidden group hover:border-primary/30 hover:shadow-3xl transition-all duration-500">
+            <CardContent className="p-10 space-y-8">
               <div className={cn(
-                "h-14 w-14 rounded-2xl flex items-center justify-center border transition-all duration-500 group-hover:scale-110",
-                stat.color === "sky" && "bg-sky-500/10 border-sky-500/20 text-sky-500",
-                stat.color === "emerald" && "bg-emerald-500/10 border-emerald-500/20 text-emerald-500",
-                stat.color === "orange" && "bg-orange-500/10 border-orange-500/20 text-orange-500"
+                "h-16 w-16 rounded-2xl flex items-center justify-center border transition-all duration-500 group-hover:scale-110 shadow-lg",
+                stat.color === "sky" && "bg-sky-500/10 border-sky-500/20 text-sky-500 shadow-sky-500/10",
+                stat.color === "emerald" && "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 shadow-emerald-500/10",
+                stat.color === "orange" && "bg-orange-500/10 border-orange-500/20 text-orange-500 shadow-orange-500/10"
               )}>
-                <stat.icon size={28} />
+                <stat.icon size={32} />
               </div>
-              <div className="space-y-1">
-                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">{stat.label}</div>
-                <div className="text-4xl font-black text-foreground tracking-tighter">
+              <div className="space-y-2">
+                <div className="text-[11px] font-black uppercase tracking-[0.25em] text-muted-foreground/60">{stat.label}</div>
+                <div className="text-5xl font-black text-foreground tracking-tighter">
                   {statsLoading ? "..." : stat.value}
                 </div>
               </div>

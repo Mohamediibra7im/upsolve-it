@@ -12,7 +12,16 @@ const useHistory = () => {
     data: history,
     error,
     mutate,
-  } = useSWR<Training[]>(isClient ? "/api/trainings" : null, swrFetcher);
+  } = useSWR<Training[]>(
+    isClient && user ? "/api/trainings" : null,
+    swrFetcher,
+    {
+      revalidateOnFocus: false,
+      errorRetryCount: 3,
+      errorRetryInterval: 2000,
+      dedupingInterval: 5000,
+    }
+  );
 
   useEffect(() => {
     setIsClient(true);
@@ -76,7 +85,7 @@ const useHistory = () => {
 
   return {
     history: history || [],
-    isLoading: (!error && !history) || !isClient,
+    isLoading: !isClient || (!!user && !error && !history),
     error,
     addTraining,
     deleteTraining,

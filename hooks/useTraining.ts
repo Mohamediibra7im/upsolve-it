@@ -177,11 +177,10 @@ const useTraining = () => {
       });
     }
 
-    addTraining({ ...currentTraining, problems: finalProblems });
-
+    await addTraining({ ...currentTraining, problems: finalProblems });
     const unsolvedProblems = finalProblems.filter((p) => !p.solvedTime);
     // Keep the original order as they were selected for training (1st, 2nd, 3rd, 4th)
-    addUpsolvedProblems(unsolvedProblems);
+    await addUpsolvedProblems(unsolvedProblems);
 
     router.push("/statistics");
   }, [training, addTraining, router, addUpsolvedProblems, isClient, user]);

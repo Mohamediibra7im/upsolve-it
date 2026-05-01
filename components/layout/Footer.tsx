@@ -7,7 +7,24 @@ import {
   Github,
   Linkedin,
   Facebook,
-  Globe} from "lucide-react";
+  Globe,
+  ShieldAlert
+} from "lucide-react";
+import useUser from "@/hooks/useUser";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+  TooltipPortal,
+} from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 const footerLinks = {
   platform: [
@@ -35,6 +52,7 @@ const footerLinks = {
 };
 
 const Footer = () => {
+  const { user } = useUser();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -87,13 +105,64 @@ const Footer = () => {
           <div className="space-y-6">
             <h4 className="text-xs font-black uppercase tracking-[0.2em] text-foreground">Platform</h4>
             <ul className="space-y-3">
-              {footerLinks.platform.map((link) => (
-                <li key={link.label}>
-                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
+              {footerLinks.platform.map((link) => {
+                const isProtected = ["Dashboard", "Training", "Statistics", "Upsolve List"].includes(link.label);
+                const isDisabled = isProtected && !user;
+
+                return (
+                  <li key={link.label}>
+                    {isDisabled ? (
+                      <Dialog>
+                        <TooltipProvider delayDuration={0}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <DialogTrigger asChild>
+                                <button className="text-sm text-muted-foreground/30 hover:text-primary/50 transition-colors font-medium cursor-help">
+                                  {link.label}
+                                </button>
+                              </DialogTrigger>
+                            </TooltipTrigger>
+                            <TooltipPortal>
+                              <TooltipContent side="right" className="bg-card/95 backdrop-blur-2xl border-white/10 p-2 rounded-lg z-[9999]">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-primary">Identity Required</p>
+                              </TooltipContent>
+                            </TooltipPortal>
+                          </Tooltip>
+                        </TooltipProvider>
+
+                        <DialogContent className="bg-card/90 backdrop-blur-3xl border-border/40 max-w-md rounded-[2.5rem] p-10">
+                          <DialogTitle className="sr-only">Secure Sector Access Required</DialogTitle>
+                          <div className="space-y-8 text-center">
+                            <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-[0_0_30px_rgba(var(--primary),0.2)]">
+                              <ShieldAlert size={32} />
+                            </div>
+                            
+                            <div className="space-y-3">
+                              <h3 className="text-3xl font-[1000] tracking-tighter uppercase">Secure Sector</h3>
+                              <p className="text-muted-foreground font-medium leading-relaxed">
+                                Access to the <span className="text-foreground font-bold">{link.label}</span> protocol requires a validated neural link. Please initialize your session or register a new identity.
+                              </p>
+                            </div>
+
+                            <div className="flex flex-col gap-3 pt-4">
+                              <Button asChild className="h-14 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20 transition-all hover:scale-[1.02]">
+                                <Link href="/login">Initialize Protocol [ LOGIN ]</Link>
+                              </Button>
+                              <Button asChild variant="outline" className="h-14 rounded-2xl border-2 border-primary/20 font-black uppercase tracking-widest text-xs text-primary hover:bg-primary hover:text-white hover:border-primary transition-all duration-300">
+                                <Link href="/signup">Create Identity [ REGISTER ]</Link>
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    ) : (
+                      <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">
+                        {link.label}
+                      </Link>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </div>
 

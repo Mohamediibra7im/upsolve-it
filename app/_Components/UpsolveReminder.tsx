@@ -92,7 +92,7 @@ const UpsolveReminder = () => {
     <motion.div
       initial={{ opacity: 0, y: -30 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative w-full group mb-12"
+      className="relative w-full group mb-6"
     >
       {/* Immersive Background Glow */}
       <div className="absolute -inset-2 bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 rounded-[3rem] blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-700" />

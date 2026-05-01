@@ -26,7 +26,8 @@ export function resolveApiUrl(url: string) {
   }
 
   // Standard case: append relative path to base
-  return `${cleanBase}${url.startsWith('/') ? url : `/${url}`}`;
+  const path = url.startsWith('/') ? url : `/${url}`;
+  return `${cleanBase}${path}`;
 }
 
 export function setLogoutCallback(callback: () => void) {
@@ -126,8 +127,8 @@ async function refreshToken(): Promise<boolean> {
       return false;
     } catch (error) {
       console.error('Token refresh error:', error);
-      // Refresh failed
-      handleLogoutRedirect();
+      // Don't logout on network errors — the server may just be temporarily unreachable.
+      // Only return false so the caller can handle it gracefully (e.g. SWR retry).
       return false;
     } finally {
       // Clear refresh promise so future requests can trigger refresh again

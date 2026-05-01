@@ -1,21 +1,22 @@
 import { useEffect, useState, useCallback } from "react";
 import useSWR from "swr";
 import { User } from "@/types/User";
-import { SuccessResponse, ErrorResponse, Response } from "@/types/Response";
+import { Response, SuccessResponse, ErrorResponse } from "@/types/Response";
 import { setRefreshCallback, clearRefreshCallback, setLogoutCallback, clearLogoutCallback, resolveApiUrl } from "@/lib/apiClient";
 
 const USER_CACHE_KEY = "codeforces-user";
 
 const useUser = () => {
   const [isClient, setIsClient] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
+  
   const {
     data: user,
-    isLoading,
     mutate,
     error,
   } = useSWR<User | null>(
     USER_CACHE_KEY,
-    null, // We will manage fetching manually or from localStorage
+    null,
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
@@ -26,42 +27,53 @@ const useUser = () => {
     setIsClient(true);
   }, []);
 
-  useEffect(() => {
-    // Only attempt to load user from localStorage after client hydration
-    if (!isClient) return;
-
-    const token = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-    if (token && storedUser) {
-      mutate(JSON.parse(storedUser), false);
-    } else {
-      // If no stored user, mark loading as complete
-      mutate(null, false);
-    }
-  }, [mutate, isClient]);
-
-  // Register refresh callback to update SWR cache when token is refreshed
+  // Initialize user from localStorage
   useEffect(() => {
     if (!isClient) return;
 
-    // Callback to update user data when token is refreshed
+    const initializeSession = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const storedUser = localStorage.getItem("user");
+
+        if (token && storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            await mutate(parsedUser, false);
+          } catch (e) {
+            console.error("Failed to parse stored user:", e);
+            localStorage.removeItem("user");
+            localStorage.removeItem("token");
+            await mutate(null, false);
+          }
+        } else {
+          await mutate(null, false);
+        }
+      } finally {
+        // Ensure we mark initialization as complete regardless of outcome
+        setIsInitializing(false);
+      }
+    };
+
+    initializeSession();
+  }, [isClient, mutate]);
+
+  // Register refresh and logout callbacks
+  useEffect(() => {
+    if (!isClient) return;
+
     const handleRefresh = (updatedUser: User) => {
-      // Update localStorage
       localStorage.setItem("user", JSON.stringify(updatedUser));
-      // Update SWR cache
       mutate(updatedUser, false);
     };
 
-    // Callback to clear user data on logout
     const handleLogout = () => {
       mutate(null, false);
     };
 
-    // Register callbacks
     setRefreshCallback(handleRefresh);
     setLogoutCallback(handleLogout);
 
-    // Cleanup on unmount
     return () => {
       clearRefreshCallback();
       clearLogoutCallback();
@@ -75,14 +87,13 @@ const useUser = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ codeforcesHandle, password }),
-          credentials: "include", // Include cookies to receive refresh token
+          credentials: "include",
         });
         const data = await res.json();
         if (!res.ok) {
           return ErrorResponse(data.message);
         }
 
-        // Save token and user to localStorage for persistent sessions
         if (isClient) {
           localStorage.setItem("token", data.token);
           localStorage.setItem("user", JSON.stringify(data.user));
@@ -110,7 +121,6 @@ const useUser = () => {
         if (!res.ok) {
           return ErrorResponse(data.message);
         }
-        // After successful registration, automatically log the user in
         return await login(codeforcesHandle, password);
       } catch (error) {
         console.error("Registration failed:", error);
@@ -121,15 +131,13 @@ const useUser = () => {
   );
 
   const logout = useCallback(async () => {
-    // Call server-side logout to revoke refresh token
     try {
       await fetch(resolveApiUrl("/api/auth/logout"), {
         method: "POST",
-        credentials: "include", // Include cookies to revoke refresh token
+        credentials: "include",
       });
     } catch (error) {
       console.error("Logout API call failed:", error);
-      // Continue with client-side cleanup even if API call fails
     }
 
     if (isClient) {
@@ -185,7 +193,6 @@ const useUser = () => {
         return ErrorResponse(data.message);
       }
 
-      // Update localStorage with new user data
       if (isClient && data.user) {
         localStorage.setItem("user", JSON.stringify(data.user));
         await mutate(data.user, false);
@@ -200,7 +207,7 @@ const useUser = () => {
 
   return {
     user,
-    isLoading: isLoading || !isClient,
+    isLoading: isInitializing || !isClient,
     error,
     register,
     login,
@@ -211,7 +218,3 @@ const useUser = () => {
 };
 
 export default useUser;
-
-
-
-

@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState , useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
-  ArrowRight,
   CheckCircle2,
   RefreshCw,
   LogOut,
@@ -14,7 +13,8 @@ import {
   Sparkles,
   Trophy,
   Flame,
-  LayoutGrid
+  LayoutGrid,
+  Info
 } from "lucide-react";
 import useUser from "@/hooks/useUser";
 import Loader from "@/app/_Components/Loader";
@@ -24,8 +24,14 @@ import useUpsolvedProblems from "@/hooks/useUpsolvedProblems";
 import ActivityHeatmap from "@/app/_Components/ActivityHeatmap";
 import { useHeatmapData } from "@/hooks/useHeatmapData";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+  TooltipPortal,
+} from "@/components/ui/tooltip";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 export default function HomePage() {
   const { user, isLoading: isUserLoading, logout, syncProfile } = useUser();
@@ -134,13 +140,124 @@ export default function HomePage() {
 
         {/* Quick Actions & Settings */}
         <div className="space-y-6">
-          <Card className="border-border/40 bg-primary text-primary-foreground rounded-[2.5rem] p-8 relative overflow-hidden group">
-            <Target size={120} className="absolute bottom-[-20px] right-[-20px] opacity-10 group-hover:scale-110 transition-transform" />
-            <h3 className="text-2xl font-black uppercase tracking-tight mb-2">Next Objective</h3>
-            <p className="text-primary-foreground/80 font-medium mb-6">Your current trajectory suggests a Focus Session in the {user.rating + 100} - {user.rating + 300} range.</p>
-            <Button asChild variant="secondary" className="w-full h-12 rounded-xl font-black uppercase tracking-widest text-[10px]">
-              <Link href="/training">Initiate Objective</Link>
-            </Button>
+          {/* Gamified Neuro-Sync Card */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Card className="border-border/40 bg-card/20 backdrop-blur-xl rounded-[2.5rem] p-8 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-50" />
+              
+              {/* Pulsing Neural Core Animation */}
+              <div className="absolute -right-4 -top-4 w-32 h-32 opacity-20 group-hover:opacity-40 transition-opacity">
+                <svg viewBox="0 0 100 100" className="w-full h-full animate-[spin_10s_linear_infinite]">
+                  <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="10 5" className="text-primary" />
+                  <circle cx="50" cy="50" r="35" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="5 10" className="text-primary/60" />
+                  <circle cx="50" cy="50" r="25" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="1 4" className="text-primary" />
+                </svg>
+              </div>
+
+              <div className="relative z-10 space-y-6">
+                <div className="space-y-1">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60">Personnel Status</h3>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-[1000] tracking-tighter text-foreground uppercase">Sync Lvl</span>
+                    <span className="text-5xl font-[1000] tracking-tighter text-primary italic">
+                      {Math.floor(Math.sqrt(totalSolved / 2)) + 1}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Intelligence Protocol (XP Guide) */}
+                <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Info size={12} className="text-primary" />
+                    <span className="text-[9px] font-black uppercase tracking-widest text-primary/80">Intelligence Protocol</span>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[8px] font-black uppercase text-muted-foreground/60">Training Session</span>
+                      <span className="text-[9px] font-black text-emerald-500">+5 XP</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[8px] font-black uppercase text-muted-foreground/60">Upsolve Problem</span>
+                      <span className="text-[9px] font-black text-emerald-500">+2 XP</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">
+                    <span>Neural Progression</span>
+                    <span>{Math.floor(((totalSolved % 10) / 10) * 100)}% to Next Sync</span>
+                  </div>
+                  <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5 p-0.5">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(totalSolved % 10) * 10}%` }}
+                      className="h-full bg-gradient-to-r from-primary/50 to-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Background Glow */}
+              <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-primary/5 to-transparent pointer-events-none" />
+            </Card>
+          </motion.div>
+
+          <Card className="border-border/40 bg-card/20 backdrop-blur-xl rounded-[2.5rem] p-8 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-emerald-500/5 group-hover:bg-emerald-500/10 transition-colors duration-500" />
+            <Target size={120} className="absolute bottom-[-20px] right-[-20px] opacity-10 text-emerald-500 group-hover:scale-110 transition-transform" />
+            
+            <div className="relative z-10 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                    <Target size={16} className="text-emerald-500" />
+                  </div>
+                  <h3 className="text-sm font-black uppercase tracking-[0.2em] text-emerald-500">Next Objective</h3>
+                </div>
+
+                <TooltipProvider delayDuration={0}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button className="h-8 w-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all">
+                        <Info size={14} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipPortal>
+                      <TooltipContent 
+                        side="left" 
+                        className="bg-card/95 backdrop-blur-2xl border-white/10 p-4 rounded-xl shadow-2xl max-w-[240px] z-[9999]"
+                      >
+                        <div className="space-y-2">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-primary">Tactical Logic</p>
+                          <p className="text-[11px] font-medium leading-relaxed text-muted-foreground">
+                            The system analyzes your baseline rating and identifies the <span className="text-foreground font-bold">+100 to +300</span> range as your optimal growth zone. These problems are hard enough to evolve your skills but achievable enough to maintain momentum.
+                          </p>
+                        </div>
+                      </TooltipContent>
+                    </TooltipPortal>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+
+              <p className="text-foreground/80 font-medium leading-relaxed">
+                Your current trajectory suggests a Focus Session in the{" "}
+                <span className="text-emerald-500 font-black px-2 tabular-nums">
+                  {user.rating + 100} - {user.rating + 300}
+                </span>{" "}
+                range.
+              </p>
+              <Button asChild className="w-full h-12 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black uppercase tracking-widest text-[10px] shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-1 active:translate-y-0">
+                <Link href="/training">Initiate Objective</Link>
+              </Button>
+            </div>
+            
+            {/* Corner Accent */}
+            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 blur-[40px] rounded-full -mr-10 -mt-10" />
           </Card>
 
           <Card className="border-border/40 bg-card/20 backdrop-blur-xl rounded-[2.5rem] p-8 space-y-4">

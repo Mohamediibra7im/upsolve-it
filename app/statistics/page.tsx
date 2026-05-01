@@ -7,24 +7,19 @@ import Loader from "@/app/_Components/Loader";
 import History from "./_Components/History";
 import ProgressChart from "./_Components/ProgressChart";
 import UpsolveReminder from "@/app/_Components/UpsolveReminder";
-import ActivityHeatmap from "@/app/_Components/ActivityHeatmap";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   TrendingUp,
-  Target,
-  Award,
   Calendar,
   BarChart3,
   Trophy,
   Clock,
   CheckCircle2,
-  ArrowRight,
-  Zap,
-  Flame,
-  LayoutDashboard
-} from "lucide-react";
+  LayoutDashboard,
+  AlertTriangle,
+  RefreshCw} from "lucide-react";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, Variants, AnimatePresence } from "framer-motion";
@@ -93,6 +88,8 @@ export default function StatisticsPage() {
   const { history, isLoading, deleteTraining, isDeleting, error, refresh } = useHistory();
   const { upsolvedProblems } = useUpsolvedProblems();
   const [tab, setTab] = useState<"overview" | "history">("overview");
+  const [isRetrying, setIsRetrying] = useState(false);
+  const hasError = !!error && history.length === 0;
 
   const stats = useMemo(() => {
     if (!history || history.length === 0) return null;
@@ -144,39 +141,14 @@ export default function StatisticsPage() {
   if (isLoading || isUserLoading) return <Loader />;
   if (!user) return <Loader />;
 
-  if (error) {
-    const errorMessage = error instanceof Error ? error.message : "We couldn't load your progress. Please try refreshing or re-logging.";
-    
-    return (
-      <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-6">
-        <div className="absolute inset-0 -z-10 bg-grid-pattern opacity-[0.03]" />
-        <Card className="max-w-md w-full border-destructive/20 bg-card/40 backdrop-blur-xl shadow-2xl">
-          <CardContent className="p-10 text-center space-y-6">
-            <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center text-destructive mx-auto border border-destructive/20">
-              <BarChart3 className="h-8 w-8" />
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-2xl font-black text-foreground">Sync Error</h2>
-              <p className="text-muted-foreground">{errorMessage}</p>
-            </div>
-            <div className="flex flex-col gap-3 pt-2">
-              <div className="flex gap-3">
-                <Button onClick={() => refresh()} variant="outline" className="flex-1 rounded-xl">
-                  Try Again
-                </Button>
-                <Button asChild className="flex-1 rounded-xl">
-                  <Link href="/">Re-login</Link>
-                </Button>
-              </div>
-              <Button asChild variant="ghost" className="w-full rounded-xl text-xs opacity-70">
-                <Link href="/training">Continue to Training</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const handleRetry = async () => {
+    setIsRetrying(true);
+    try {
+      await refresh();
+    } finally {
+      setIsRetrying(false);
+    }
+  };
 
   return (
     <div className="min-h-screen relative pb-20">
@@ -188,8 +160,39 @@ export default function StatisticsPage() {
         <div className="absolute top-1/2 right-1/4 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[100px] animate-pulse" />
       </div>
 
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16 max-w-7xl space-y-12">
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-12 max-w-7xl space-y-4">
         <UpsolveReminder />
+
+        {/* Inline Error Banner */}
+        {hasError && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative overflow-hidden rounded-2xl border border-amber-500/30 bg-amber-500/5 backdrop-blur-xl p-5"
+          >
+            <div className="flex items-center gap-4">
+              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 shrink-0">
+                <AlertTriangle className="h-5 w-5 text-amber-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-foreground">Unable to load training data</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {error instanceof Error ? error.message : "Network error — the server may be offline. Your page will load with available data."}
+                </p>
+              </div>
+              <Button
+                onClick={handleRetry}
+                disabled={isRetrying}
+                variant="outline"
+                size="sm"
+                className="rounded-xl border-amber-500/30 hover:bg-amber-500/10 shrink-0"
+              >
+                <RefreshCw className={cn("h-4 w-4 mr-2", isRetrying && "animate-spin")} />
+                {isRetrying ? "Retrying…" : "Retry"}
+              </Button>
+            </div>
+          </motion.div>
+        )}
 
         {/* Hero Dashboard Header */}
         <motion.div
@@ -199,7 +202,7 @@ export default function StatisticsPage() {
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
           <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-accent/10 to-primary/20 rounded-[2.5rem] blur-2xl opacity-50 group-hover:opacity-100 transition duration-1000" />
-          <div className="relative bg-card/60 backdrop-blur-2xl border border-border/40 rounded-[2rem] p-8 lg:p-12 overflow-hidden">
+          <div className="relative bg-card/60 backdrop-blur-2xl border border-border/40 rounded-[2rem] p-6 lg:p-10 overflow-hidden">
             {/* Background Accent */}
             <div className="absolute top-0 right-0 -mr-20 -mt-20 p-20 opacity-5">
               <LayoutDashboard size={400} />
@@ -252,7 +255,7 @@ export default function StatisticsPage() {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex justify-start mt-12">
+            <div className="flex justify-start mt-4">
               <div className="inline-flex p-1.5 rounded-2xl bg-background/40 border border-border/40 backdrop-blur-md">
                 <button
                   onClick={() => setTab("overview")}
@@ -283,16 +286,16 @@ export default function StatisticsPage() {
 
         {/* Content Section */}
         {history && history.length > 0 && stats ? (
-          <div className="space-y-12">
+          <div>
             <AnimatePresence mode="wait">
               {tab === "overview" ? (
                 <motion.div
                   key="overview"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.5 }}
-                  className="space-y-12"
+                  variants={listStagger}
+                  initial="hidden"
+                  animate="show"
+                  exit="hidden"
+                  className="space-y-4"
                 >
                   {/* KPI Cards Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -328,66 +331,7 @@ export default function StatisticsPage() {
                   </div>
 
                   {/* Secondary Insights Grid */}
-                  <div className="grid lg:grid-cols-3 gap-6">
-                    <Card className="lg:col-span-1 border-border/40 bg-card/30 backdrop-blur-xl">
-                      <CardContent className="p-8 space-y-8">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
-                            <Zap className="h-5 w-5" />
-                          </div>
-                          <h3 className="text-xl font-black text-foreground">Core Metrics</h3>
-                        </div>
-                        
-                        <div className="space-y-6">
-                          <div className="flex items-center justify-between group">
-                            <div className="flex items-center gap-3">
-                              <Award className="h-5 w-5 text-accent opacity-60 group-hover:opacity-100 transition-opacity" />
-                              <span className="text-sm font-bold text-muted-foreground">Target Rating</span>
-                            </div>
-                            <span className="text-lg font-black tabular-nums">{formatMetric(stats.averageRating)}</span>
-                          </div>
-                          <div className="h-px bg-border/40" />
-                          <div className="flex items-center justify-between group">
-                            <div className="flex items-center gap-3">
-                              <Flame className="h-5 w-5 text-orange-500 opacity-60 group-hover:opacity-100 transition-opacity" />
-                              <span className="text-sm font-bold text-muted-foreground">Total Solved</span>
-                            </div>
-                            <span className="text-lg font-black tabular-nums">{formatMetric(stats.solvedProblems)}</span>
-                          </div>
-                          <div className="h-px bg-border/40" />
-                          <div className="flex items-center justify-between group">
-                            <div className="flex items-center gap-3">
-                              <Clock className="h-5 w-5 text-sky-500 opacity-60 group-hover:opacity-100 transition-opacity" />
-                              <span className="text-sm font-bold text-muted-foreground">Upsolve Queue</span>
-                            </div>
-                            <span className="text-lg font-black tabular-nums">{formatMetric(stats.upsolvedCount)}</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
 
-                    <Card className="lg:col-span-2 border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden">
-                      <CardContent className="p-0">
-                        <div className="p-8 border-b border-border/40 flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                              <Calendar className="h-5 w-5" />
-                            </div>
-                            <div>
-                              <h3 className="text-xl font-black text-foreground">Activity Heatmap</h3>
-                              <p className="text-xs font-medium text-muted-foreground">Historical session consistency</p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="p-8">
-                          <ActivityHeatmap
-                            history={history}
-                            upsolvedProblems={upsolvedProblems}
-                          />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
 
                   {/* Trends Section */}
                   <Card className="border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden w-full">

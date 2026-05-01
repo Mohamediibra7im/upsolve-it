@@ -1,9 +1,10 @@
 import {useState, useEffect, useCallback, useMemo} from "react";
 import useSWR from "swr";
-import {TrainingProblem} from "@/types/TrainingProblem";
+import { TrainingProblem } from "@/types/TrainingProblem";
+import { Training } from "@/types/Training";
 import useUser from "./useUser";
 import useProblems from "./useProblems";
-import {useToast} from "@/app/_Components/Toast";
+import { useToast } from "@/app/_Components/Toast";
 import { apiFetcher, swrFetcher } from "@/lib/apiClient";
 
 const useUpsolvedProblems = () => {
@@ -19,7 +20,13 @@ const useUpsolvedProblems = () => {
   const swrKey = isClient && user ? "/api/upsolve" : null;
   const {data, isLoading, error, mutate} = useSWR<TrainingProblem[]>(
     swrKey,
-    swrFetcher
+    swrFetcher,
+    {
+      revalidateOnFocus: false,
+      errorRetryCount: 2,
+      errorRetryInterval: 3000,
+      dedupingInterval: 5000,
+    }
   );
 
   useEffect(() => {
@@ -97,7 +104,6 @@ const useUpsolvedProblems = () => {
         return [...currentData, ...problems];
       }, false);
 
-      const token = localStorage.getItem("token");
       try {
         await apiFetcher("/api/upsolve", {
           method: "POST",
@@ -150,9 +156,32 @@ const useUpsolvedProblems = () => {
     [isClient, mutate]
   );
 
-  const onRefreshUpsolvedProblems = useCallback(() => {
+  const syncWithHistory = useCallback(async (history: Training[]) => {
+    if (!isClient || !history || history.length === 0) return;
+
+    const allUnsolved = history.reduce((acc: TrainingProblem[], session) => {
+      const unsolvedInSession = session.problems.filter((p) => !p.solvedTime);
+      return [...acc, ...unsolvedInSession];
+    }, []);
+
+    if (allUnsolved.length === 0) return;
+
+    // Filter out problems already in the upsolve queue to avoid unnecessary requests
+    const existingIds = new Set(upsolvedProblems.map(p => `${p.contestId}_${p.index}`));
+    const missingProblems = allUnsolved.filter(p => !existingIds.has(`${p.contestId}_${p.index}`));
+
+    if (missingProblems.length > 0) {
+      console.log(`[UpsolveSync] Found ${missingProblems.length} missing problems in history. Syncing...`);
+      await addUpsolvedProblems(missingProblems);
+    }
+  }, [isClient, upsolvedProblems, addUpsolvedProblems]);
+
+  const onRefreshUpsolvedProblems = useCallback(async (history?: Training[]) => {
     refreshSolvedProblems();
-  }, [refreshSolvedProblems]);
+    if (history) {
+      await syncWithHistory(history);
+    }
+  }, [refreshSolvedProblems, syncWithHistory]);
 
   return {
     upsolvedProblems,
@@ -161,6 +190,7 @@ const useUpsolvedProblems = () => {
     deleteUpsolvedProblem,
     addUpsolvedProblems,
     onRefreshUpsolvedProblems,
+    syncWithHistory,
   };
 };
 

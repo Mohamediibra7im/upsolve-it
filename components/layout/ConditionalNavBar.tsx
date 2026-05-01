@@ -18,7 +18,7 @@ const ConditionalNavBar = ({ children }: ConditionalNavBarProps) => {
 
   return (
     <>
-      {showNavbar && <NavBar />}
+      {showNavbar && !isAdminPage && <NavBar />}
       <main className="flex-1 min-h-screen">
         {isAdminPage ? (
           <div className="w-full">

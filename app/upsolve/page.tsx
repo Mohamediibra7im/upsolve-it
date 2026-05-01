@@ -3,6 +3,7 @@
 import { TrainingProblem } from "@/types/TrainingProblem";
 import useUpsolvedProblems from "@/hooks/useUpsolvedProblems";
 import useUser from "@/hooks/useUser";
+import useHistory from "@/hooks/useHistory";
 import Loader from "@/app/_Components/Loader";
 import UpsolvedProblemsList from "./_Components/UpsolvedProblemsList";
 import ConfirmDialog from "@/app/_Components/ConfirmDialog";
@@ -20,7 +21,7 @@ import {
   ArrowRight,
   Lock
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -69,13 +70,25 @@ const StatCard = ({ title, value, icon: Icon, color, subtitle }: any) => (
 
 export default function UpsolvePage() {
   const { user, isLoading: isUserLoading } = useUser();
+  const { history, isLoading: isHistoryLoading } = useHistory();
   const {
     upsolvedProblems,
     isLoading,
     error,
     deleteUpsolvedProblem,
     onRefreshUpsolvedProblems,
+    syncWithHistory,
   } = useUpsolvedProblems();
+
+  const [hasAutoSynced, setHasAutoSynced] = useState(false);
+
+  // Auto-sync missing problems from history on first load
+  useEffect(() => {
+    if (!hasAutoSynced && history && history.length > 0 && upsolvedProblems) {
+      syncWithHistory(history);
+      setHasAutoSynced(true);
+    }
+  }, [history, upsolvedProblems, syncWithHistory, hasAutoSynced]);
 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [problemToDelete, setProblemToDelete] = useState<TrainingProblem | null>(null);
@@ -95,7 +108,7 @@ export default function UpsolvePage() {
     };
   }, [upsolvedProblems]);
 
-  if (isLoading || isUserLoading) return <Loader />;
+  if (isLoading || isUserLoading || isHistoryLoading) return <Loader />;
 
   if (!user) {
     return (
@@ -157,7 +170,7 @@ export default function UpsolvePage() {
             </div>
 
             <Button
-              onClick={onRefreshUpsolvedProblems}
+              onClick={() => onRefreshUpsolvedProblems(history)}
               className="h-14 px-8 rounded-2xl bg-background border border-border/40 hover:border-primary/40 hover:bg-primary/5 text-foreground transition-all shadow-xl font-black uppercase tracking-widest text-xs group"
             >
               <RefreshCw className="h-4 w-4 mr-3 group-hover:rotate-180 transition-transform duration-500" />

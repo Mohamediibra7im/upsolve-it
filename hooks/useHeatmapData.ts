@@ -18,53 +18,67 @@ export const useHeatmapData = (
 ): HeatmapData => {
   return useMemo(() => {
     const dailyCounts: { [key: string]: number } = {};
+    const solvedProblemKeys = new Set<string>(); // For deduplication
     let totalSolved = 0;
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    oneYearAgo.setHours(0, 0, 0, 0);
 
-    // Process training history problems
-    if (history && history.length > 0) {
-      history.forEach((training) => {
-        training.problems.forEach((problem) => {
-          if (problem.solvedTime) {
-            totalSolved++;
+    const processSolvedTime = (solvedTime: number | string | null | undefined) => {
+      if (!solvedTime) return null;
+      const numTime = typeof solvedTime === 'string' ? Number.parseInt(solvedTime, 10) : solvedTime;
+      if (Number.isNaN(numTime)) return null;
+      const ms = numTime < 10000000000 ? numTime * 1000 : numTime;
+      const d = new Date(ms);
+      return Number.isNaN(d.getTime()) ? null : d;
+    };
 
-            // Only add to heatmap if solved in the last year
-            if (new Date(problem.solvedTime) >= oneYearAgo) {
-              const date = new Date(problem.solvedTime)
-                .toISOString()
-                .split("T")[0];
-              if (dailyCounts[date]) {
-                dailyCounts[date]++;
-              } else {
-                dailyCounts[date] = 1;
-              }
-            }
-          }
-        });
-      });
-    }
+    const addToHeatmap = (d: Date, problemKey: string) => {
+      if (!d || Number.isNaN(d.getTime())) return;
+      
+      const year = d.getFullYear();
+      const month = (d.getMonth() + 1).toString().padStart(2, '0');
+      const day = d.getDate().toString().padStart(2, '0');
+      const dateKey = `${year}/${month}/${day}`;
+      const uniqueKey = `${dateKey}-${problemKey}`;
 
-    // Process upsolve problems
-    if (upsolvedProblems && upsolvedProblems.length > 0) {
-      upsolvedProblems.forEach((problem) => {
-        if (problem.solvedTime) {
-          totalSolved++;
+      if (!solvedProblemKeys.has(uniqueKey)) {
+        solvedProblemKeys.add(uniqueKey);
+        totalSolved++;
+        if (d >= oneYearAgo) {
+          dailyCounts[dateKey] = (dailyCounts[dateKey] || 0) + 1;
+        }
+      }
+    };
 
-          // Only add to heatmap if solved in the last year
-          if (new Date(problem.solvedTime) >= oneYearAgo) {
-            const date = new Date(problem.solvedTime)
-              .toISOString()
-              .split("T")[0];
-            if (dailyCounts[date]) {
-              dailyCounts[date]++;
-            } else {
-              dailyCounts[date] = 1;
-            }
-          }
+    // 1. Process Native Training History
+    history?.forEach((training) => {
+      let sessionHasSolvedProblem = false;
+      training.problems?.forEach((problem) => {
+        const d = processSolvedTime(problem.solvedTime);
+        if (d) {
+          addToHeatmap(d, `${problem.contestId}-${problem.index}`);
+          sessionHasSolvedProblem = true;
         }
       });
-    }
+
+      // Fallback: If session has solves but problems missing solvedTime
+      if (!sessionHasSolvedProblem && training.endTime) {
+        const hasAC = training.problems?.some(p => p.solvedTime !== null);
+        if (hasAC) {
+          const d = processSolvedTime(training.endTime);
+          if (d) addToHeatmap(d, `session-${training._id}`);
+        }
+      }
+    });
+
+    // 2. Process Upsolve Problems
+    upsolvedProblems?.forEach((problem) => {
+      const d = processSolvedTime(problem.solvedTime);
+      if (d) {
+        addToHeatmap(d, `${problem.contestId}-${problem.index}`);
+      }
+    });
 
     const values = Object.keys(dailyCounts).map((date) => ({
       date,
@@ -74,7 +88,3 @@ export const useHeatmapData = (
     return { values, totalSolved };
   }, [history, upsolvedProblems]);
 };
-
-
-
-
