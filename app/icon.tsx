@@ -14,40 +14,62 @@ export const contentType = 'image/png';
 export default function Icon() {
   return new ImageResponse(
     (
-      // ImageResponse inheritance allows for basic CSS styles
       <div
         style={{
-          background: '#09090b',
+          background: '#050505',
           width: '100%',
           height: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          borderRadius: '8px',
-          border: '2px solid #007F5F',
-          boxShadow: 'inset 0 0 10px rgba(0, 127, 95, 0.2)',
+          position: 'relative',
         }}
       >
+        {/* Corner Reticles */}
+        <div style={{ position: 'absolute', top: 2, left: 2, width: 8, height: 2, background: '#007F5F', display: 'flex' }} />
+        <div style={{ position: 'absolute', top: 2, left: 2, width: 2, height: 8, background: '#007F5F', display: 'flex' }} />
+        
+        <div style={{ position: 'absolute', top: 2, right: 2, width: 8, height: 2, background: '#007F5F', display: 'flex' }} />
+        <div style={{ position: 'absolute', top: 2, right: 2, width: 2, height: 8, background: '#007F5F', display: 'flex' }} />
+
+        <div style={{ position: 'absolute', bottom: 2, left: 2, width: 8, height: 2, background: '#007F5F', display: 'flex' }} />
+        <div style={{ position: 'absolute', bottom: 2, left: 2, width: 2, height: 8, background: '#007F5F', display: 'flex' }} />
+
+        <div style={{ position: 'absolute', bottom: 2, right: 2, width: 8, height: 2, background: '#007F5F', display: 'flex' }} />
+        <div style={{ position: 'absolute', bottom: 2, right: 2, width: 2, height: 8, background: '#007F5F', display: 'flex' }} />
+
+        {/* Central Core U */}
         <div
           style={{
-            fontSize: 20,
+            fontSize: 18,
             fontWeight: 900,
-            color: '#007F5F',
+            color: 'white',
             fontFamily: 'sans-serif',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            textShadow: '0 0 5px rgba(0, 127, 95, 0.5)',
+            transform: 'translateY(-1px)',
           }}
         >
           U
         </div>
+
+        {/* Status Pulse Dot */}
+        <div 
+          style={{ 
+            position: 'absolute', 
+            bottom: 8, 
+            right: 8, 
+            width: 4, 
+            height: 4, 
+            borderRadius: '50%', 
+            background: '#007F5F',
+            display: 'flex'
+          }} 
+        />
       </div>
     ),
-    // ImageResponse options
     {
-      // For convenience, we can re-use the exported icons size metadata
-      // config to also set the ImageResponse's width and height.
       ...size,
     }
   );
