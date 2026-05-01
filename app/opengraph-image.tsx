@@ -42,10 +42,10 @@ export default async function Image() {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '30px',
+            gap: '20px',
           }}
         >
-          <span style={{ fontSize: '100px', color: '#007F5F30', fontWeight: 200, transform: 'translateY(-10px)' }}>[</span>
+          <span style={{ fontSize: '120px', color: '#007F5F', fontWeight: 200, transform: 'translateY(-10px)' }}>[</span>
           
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'baseline' }}>
@@ -75,7 +75,7 @@ export default async function Image() {
             
             <div 
               style={{ 
-                marginTop: '20px',
+                marginTop: '10px',
                 display: 'flex', 
                 alignItems: 'center',
                 gap: '12px',
@@ -86,33 +86,42 @@ export default async function Image() {
               }}
             >
               <span style={{ fontSize: '16px', fontWeight: 900, color: '#007F5F', textTransform: 'uppercase', letterSpacing: '0.4em' }}>
-                CP Training Tracker
+                Practice Redefined
               </span>
             </div>
           </div>
 
-          <span style={{ fontSize: '100px', color: '#007F5F30', fontWeight: 200, transform: 'translateY(-10px)' }}>]</span>
+          <span style={{ fontSize: '120px', color: '#007F5F', fontWeight: 200, transform: 'translateY(-10px)' }}>]</span>
         </div>
 
         {/* Footer Metadata */}
         <div
           style={{
             position: 'absolute',
-            bottom: '60px',
+            bottom: '50px',
             display: 'flex',
-            gap: '40px',
-            fontSize: '12px',
-            fontWeight: 700,
-            textTransform: 'uppercase',
-            letterSpacing: '0.2em',
-            color: '#666',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '10px',
           }}
         >
-          <span>Protocol: SECURE_COMM_v2</span>
-          <span>•</span>
-          <span>HNU FCSIT ICPC Community</span>
-          <span>•</span>
-          <span>Build: STABLE_2026</span>
+          <div
+            style={{
+              display: 'flex',
+              gap: '30px',
+              fontSize: '12px',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.2em',
+              color: '#888',
+            }}
+          >
+            <span style={{ color: '#007F5F' }}>Operator: Mohammed Ibrahim</span>
+            <span>•</span>
+            <span>Protocol: Practice Redefined</span>
+            <span>•</span>
+            <span>HNU - ICPC Community</span>
+          </div>
         </div>
 
         {/* Top Accent Line */}
