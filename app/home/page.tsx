@@ -75,24 +75,24 @@ export default function HomePage() {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-5xl md:text-7xl font-black tracking-tighter uppercase"
+            className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tighter uppercase leading-[0.95]"
           >
             Welcome Back,<br />
             <span className="text-primary">{user.codeforcesHandle}</span>
           </motion.h1>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 w-full md:w-auto">
           <Button
             onClick={handleSync}
             disabled={isSyncing}
             variant="outline"
-            className="h-14 px-8 rounded-2xl border-2 border-border/40 font-black uppercase tracking-widest text-[10px] hover:bg-card/40"
+            className="h-12 md:h-14 flex-1 md:px-8 rounded-xl md:rounded-2xl border-2 border-border/40 font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-card/40 transition-all"
           >
             <RefreshCw className={cn("mr-2 h-4 w-4", isSyncing && "animate-spin")} />
             {isSyncing ? "Syncing Logic" : "Sync Profile"}
           </Button>
-          <Button asChild className="h-14 px-8 rounded-2xl bg-primary font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20">
+          <Button asChild className="h-12 md:h-14 flex-1 md:px-8 rounded-xl md:rounded-2xl bg-primary font-black uppercase tracking-widest text-[9px] md:text-[10px] shadow-lg shadow-primary/20 transition-all">
             <Link href="/training">Launch Session</Link>
           </Button>
         </div>

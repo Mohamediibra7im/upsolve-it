@@ -36,18 +36,18 @@ const HeroSection = ({ user }: { user: any }) => (
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-6xl md:text-8xl font-[1000] tracking-tighter leading-[1.1]"
+          className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-[1000] tracking-tighter leading-[0.95] uppercase"
         >
           UPSOLVE<span className="text-primary">.IT</span>
           <br />
-          <span className="text-muted-foreground/30">PRACTICE REDEFINED.</span>
+          <span className="text-muted-foreground/30 text-2xl sm:text-4xl lg:text-5xl">PRACTICE REDEFINED.</span>
         </motion.h1>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-lg md:text-xl text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed"
+          className="text-base sm:text-lg md:text-xl text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed px-4 sm:px-0"
         >
           Master Codeforces with precision. Build smart training sessions, track your growth with high-fidelity analytics, and conquer every problem in your path.
         </motion.p>
@@ -56,22 +56,22 @@ const HeroSection = ({ user }: { user: any }) => (
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
+          className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 px-6 sm:px-0"
         >
           {user ? (
-            <Button asChild size="lg" className="h-16 px-10 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs shadow-[0_0_40px_rgba(var(--primary),0.3)] hover:scale-105 active:scale-95 transition-all">
+            <Button asChild size="lg" className="h-14 sm:h-16 w-full sm:w-auto px-10 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-[10px] sm:text-xs shadow-[0_0_40px_rgba(var(--primary),0.3)] hover:scale-105 active:scale-95 transition-all">
               <Link href="/home" className="flex items-center gap-3">
                 Enter Command Center <ArrowRight size={18} />
               </Link>
             </Button>
           ) : (
             <>
-              <Button asChild size="lg" className="h-16 px-10 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs shadow-[0_0_40px_rgba(var(--primary),0.3)] hover:scale-105 active:scale-95 transition-all">
+              <Button asChild size="lg" className="h-14 sm:h-16 w-full sm:w-auto px-10 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-[10px] sm:text-xs shadow-[0_0_40px_rgba(var(--primary),0.3)] hover:scale-105 active:scale-95 transition-all">
                 <Link href="/signup" className="flex items-center gap-3">
                   Initialize Protocol <ArrowRight size={18} />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="h-16 px-10 rounded-2xl border-2 border-border/40 font-black uppercase tracking-widest text-xs hover:border-primary/40 hover:bg-primary/5 hover:text-primary transition-all duration-300 backdrop-blur-xl">
+              <Button asChild variant="outline" size="lg" className="h-14 sm:h-16 w-full sm:w-auto px-10 rounded-2xl border-2 border-border/40 font-black uppercase tracking-widest text-[10px] sm:text-xs hover:border-primary/40 hover:bg-primary/5 hover:text-primary transition-all duration-300 backdrop-blur-xl">
                 <Link href="/login">Access Interface</Link>
               </Button>
             </>

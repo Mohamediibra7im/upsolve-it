@@ -216,10 +216,10 @@ export default function StatisticsPage() {
                 </div>
                 
                 <div className="space-y-2">
-                  <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-foreground leading-none">
+                  <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-foreground leading-[0.95]">
                     Analytics <span className="text-primary">&</span> Insights
                   </h1>
-                  <p className="text-lg text-muted-foreground max-w-xl font-medium">
+                  <p className="text-base sm:text-lg text-muted-foreground max-w-xl font-medium">
                     Tracking your evolution as a competitive programmer. 
                     Analyzing <span className="text-foreground font-bold">{user.codeforcesHandle}</span>&apos;s journey.
                   </p>

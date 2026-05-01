@@ -22,7 +22,7 @@ import {
   Lock
 } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -74,7 +74,6 @@ export default function UpsolvePage() {
   const {
     upsolvedProblems,
     isLoading,
-    error,
     deleteUpsolvedProblem,
     onRefreshUpsolvedProblems,
     syncWithHistory,
@@ -160,10 +159,10 @@ export default function UpsolvePage() {
               </div>
               
               <div className="space-y-4">
-                <h1 className="text-5xl sm:text-7xl font-black tracking-tighter text-foreground leading-none">
+                <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tighter text-foreground leading-[0.95]">
                   Upsolve <span className="text-primary">Challenge</span>
                 </h1>
-                <p className="text-lg text-muted-foreground font-medium leading-relaxed max-w-2xl opacity-80">
+                <p className="text-base sm:text-lg text-muted-foreground font-medium leading-relaxed max-w-2xl opacity-80">
                   Conquer the problems that pushed your limits. This is your personal arena to transform past mistakes into future expertise.
                 </p>
               </div>

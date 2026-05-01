@@ -196,36 +196,43 @@ const Footer = () => {
 
 
         {/* Bottom Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-border/20 gap-6">
-          <div className="flex items-center gap-6">
-            <p className="text-xs text-muted-foreground font-medium">
+        <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-border/20 gap-8">
+          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 order-2 md:order-1">
+            <p className="text-[10px] sm:text-xs text-muted-foreground/60 font-medium text-center sm:text-left">
               © {currentYear} Upsolve.it. All rights reserved.
             </p>
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/5">
+            <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/5 w-fit">
               <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-              <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Build: 04.30.2026</span>
+              <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">System Stable: 04.30.2026</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-            <span>Made with</span>
-            <motion.div
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            >
-              <Heart className="h-3.5 w-3.5 text-red-500 fill-red-500" />
-            </motion.div>
-            <span>for CP Communities by</span>
-            <a
-              href="https://mohamediibrahim.dev/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-foreground font-black hover:text-primary transition-colors underline decoration-primary/30 underline-offset-4"
-            >
-              Midoriya
-            </a>
-            <span className="opacity-40">from</span>
-            <span className="font-bold text-foreground/80">HNU - ICPC Community</span>
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-2 gap-y-2 text-[10px] sm:text-xs font-medium text-muted-foreground order-1 md:order-2 text-center md:text-right max-w-[300px] sm:max-w-none">
+            <div className="flex items-center gap-1.5">
+              <span>Made with</span>
+              <motion.div
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="inline-block"
+              >
+                <Heart className="h-3.5 w-3.5 text-red-500 fill-red-500" />
+              </motion.div>
+              <span>for CP Communities</span>
+            </div>
+            <span className="hidden sm:inline opacity-20">|</span>
+            <div className="flex items-center gap-1.5">
+              <span>by</span>
+              <a
+                href="https://mohamediibrahim.dev/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground font-black hover:text-primary transition-colors underline decoration-primary/30 underline-offset-4"
+              >
+                Midoriya
+              </a>
+              <span className="opacity-40">from</span>
+              <span className="font-bold text-foreground/80">HNU - ICPC Community</span>
+            </div>
           </div>
         </div>
       </div>
