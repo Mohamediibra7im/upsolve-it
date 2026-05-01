@@ -15,8 +15,6 @@ import {
   Database, 
   RefreshCw,
   Home,
-  LogOut,
-  ChevronRight,
   Activity
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -189,7 +187,7 @@ export default function AdminPage() {
               <Button 
                 variant="outline"
                 className="h-14 px-8 rounded-2xl bg-card/20 border-white/10 hover:border-primary/40 hover:bg-primary/5 text-foreground transition-all shadow-2xl font-black text-xs uppercase tracking-[0.1em] group"
-                onClick={refreshStats}
+                onClick={() => refreshStats()}
                 disabled={statsLoading}
               >
                 <RefreshCw size={14} className={cn("mr-3 transition-transform group-hover:rotate-180 duration-500", statsLoading && "animate-spin")} />
