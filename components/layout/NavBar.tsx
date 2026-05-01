@@ -86,12 +86,12 @@ const NavBar = () => {
         <div className="flex-1 flex items-center h-full">
           <Link href="/" className="group relative flex flex-col items-start py-2 overflow-visible">
             <div className="flex items-center gap-1.5 leading-none overflow-visible">
-              <span className="text-primary/30 font-light text-2xl md:text-3xl tracking-tighter select-none inline-block -translate-y-[2px]">[</span>
+              <span className="text-primary/30 font-light text-2xl md:text-3xl tracking-tight select-none inline-block -translate-y-[2px]">[</span>
               <div className="flex items-baseline">
-                <span className="font-black text-2xl md:text-3xl tracking-tighter uppercase text-foreground group-hover:text-primary transition-colors duration-500">
+                <span className="font-black text-2xl md:text-3xl tracking-tight uppercase text-foreground group-hover:text-primary transition-colors duration-500">
                   UPSOLVE
                 </span>
-                <span className="font-black text-2xl md:text-3xl tracking-tighter bg-gradient-to-br from-primary to-emerald-500 bg-clip-text text-transparent ml-1 pr-1">
+                <span className="font-black text-2xl md:text-3xl tracking-tight bg-gradient-to-br from-primary to-emerald-500 bg-clip-text text-transparent ml-1 pr-1">
                   .it
                 </span>
                 <motion.span
@@ -105,7 +105,7 @@ const NavBar = () => {
                   className="inline-block w-3 h-6 md:w-4 md:h-8 bg-primary/40 ml-1 translate-y-1"
                 />
               </div>
-              <span className="text-primary/30 font-light text-2xl md:text-3xl tracking-tighter select-none inline-block -translate-y-[2px]">]</span>
+              <span className="text-primary/30 font-light text-2xl md:text-3xl tracking-tight select-none inline-block -translate-y-[2px]">]</span>
             </div>
           </Link>
         </div>

@@ -78,7 +78,8 @@ export default async function Image() {
             flexDirection: 'column',
             alignItems: 'center', 
             justifyContent: 'center',
-            gap: '20px'
+            gap: '20px',
+            fontFamily: 'Montserrat'
           }}
         >
           {/* Top Row: Brackets + Name */}
@@ -90,13 +91,12 @@ export default async function Image() {
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
-                fontFamily: 'Montserrat',
                 lineHeight: 1,
                 transform: 'translateY(15px)'
               }}
             >
-              <span style={{ fontSize: '120px', color: 'white', letterSpacing: '-0.06em' }}>UPSOLVE</span>
-              <span style={{ fontSize: '120px', color: '#007F5F', letterSpacing: '-0.06em', marginLeft: '10px' }}>.it</span>
+              <span style={{ fontSize: '120px', color: 'white', letterSpacing: '0.02em' }}>UPSOLVE</span>
+              <span style={{ fontSize: '120px', color: '#007F5F', letterSpacing: '0.02em', marginLeft: '10px' }}>.it</span>
             </div>
 
             <div style={{ fontSize: '180px', color: '#007F5F', fontWeight: 200, display: 'flex', lineHeight: 1 }}>]</div>
@@ -112,7 +112,7 @@ export default async function Image() {
               borderRadius: '4px'
             }}
           >
-            <span style={{ fontSize: '16px', fontWeight: 900, color: '#007F5F', textTransform: 'uppercase', letterSpacing: '0.6em' }}>
+            <span style={{ fontSize: '16px', fontWeight: 900, color: '#007F5F', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
               Practice Redefined
             </span>
           </div>

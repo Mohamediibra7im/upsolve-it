@@ -36,11 +36,11 @@ const HeroSection = ({ user }: { user: any }) => (
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-[1000] tracking-tighter leading-[0.95] uppercase"
+          className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-[1000] tracking-tight leading-[0.95] uppercase"
         >
           UPSOLVE<span className="text-primary">.IT</span>
           <br />
-          <span className="text-muted-foreground/30 text-2xl sm:text-4xl lg:text-5xl">PRACTICE REDEFINED.</span>
+          <span className="text-muted-foreground/30 text-2xl sm:text-4xl lg:text-5xl tracking-widest">PRACTICE REDEFINED.</span>
         </motion.h1>
 
         <motion.p
@@ -49,7 +49,7 @@ const HeroSection = ({ user }: { user: any }) => (
           transition={{ duration: 0.6, delay: 0.2 }}
           className="text-base sm:text-lg md:text-xl text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed px-4 sm:px-0"
         >
-          Master Codeforces with precision. Build smart training sessions, track your growth with high-fidelity analytics, and conquer every problem in your path.
+          Elevate your competitive protocol. Initialize custom practice sessions, track high-fidelity performance metrics, and optimize your evolution on the Codeforces grid.
         </motion.p>
 
         <motion.div
