@@ -54,7 +54,7 @@ export default function HomePage() {
   };
 
   if (isUserLoading || isHistoryLoading || isUpsolveLoading) {
-    return <Loader message="Accessing Neural Interface..." />;
+    return <Loader message="Loading dashboard..." />;
   }
 
   if (!user) return null;
@@ -70,7 +70,7 @@ export default function HomePage() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.2em]"
           >
             <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-            Neural Link Established
+            Dashboard Connected
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
@@ -90,10 +90,10 @@ export default function HomePage() {
             className="h-12 md:h-14 flex-1 md:px-8 rounded-xl md:rounded-2xl border-2 border-border/40 font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-card/40 transition-all"
           >
             <RefreshCw className={cn("mr-2 h-4 w-4", isSyncing && "animate-spin")} />
-            {isSyncing ? "Syncing Logic" : "Sync Profile"}
+            {isSyncing ? "Updating..." : "Sync Profile"}
           </Button>
           <Button asChild className="h-12 md:h-14 flex-1 md:px-8 rounded-xl md:rounded-2xl bg-primary font-black uppercase tracking-widest text-[9px] md:text-[10px] shadow-lg shadow-primary/20 transition-all">
-            <Link href="/training">Launch Session</Link>
+            <Link href="/training">Start Training</Link>
           </Button>
         </div>
       </div>
@@ -129,7 +129,7 @@ export default function HomePage() {
           <div className="p-8 border-b border-border/20 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <LayoutGrid size={20} className="text-primary" />
-              <h3 className="text-xl font-black uppercase tracking-tight">Activity Grid</h3>
+              <h3 className="text-xl font-black uppercase tracking-tight">Activity History</h3>
             </div>
             <Link href="/statistics" className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">View Analytics</Link>
           </div>
@@ -160,9 +160,9 @@ export default function HomePage() {
 
               <div className="relative z-10 space-y-6">
                 <div className="space-y-1">
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60">Personnel Status</h3>
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60">User Stats</h3>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-[1000] tracking-tighter text-foreground uppercase">Sync Lvl</span>
+                    <span className="text-3xl font-[1000] tracking-tighter text-foreground uppercase">Level</span>
                     <span className="text-5xl font-[1000] tracking-tighter text-primary italic">
                       {Math.floor(Math.sqrt(totalSolved / 2)) + 1}
                     </span>
@@ -173,7 +173,7 @@ export default function HomePage() {
                 <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-3">
                   <div className="flex items-center gap-2 mb-1">
                     <Info size={12} className="text-primary" />
-                    <span className="text-[9px] font-black uppercase tracking-widest text-primary/80">Intelligence Protocol</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-primary/80">Training Points</span>
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
@@ -189,8 +189,8 @@ export default function HomePage() {
 
                 <div className="space-y-3">
                   <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">
-                    <span>Neural Progression</span>
-                    <span>{Math.floor(((totalSolved % 10) / 10) * 100)}% to Next Sync</span>
+                    <span>Progress</span>
+                    <span>{Math.floor(((totalSolved % 10) / 10) * 100)}% to Next Level</span>
                   </div>
                   <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5 p-0.5">
                     <motion.div 
@@ -217,7 +217,7 @@ export default function HomePage() {
                   <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                     <Target size={16} className="text-emerald-500" />
                   </div>
-                  <h3 className="text-sm font-black uppercase tracking-[0.2em] text-emerald-500">Next Objective</h3>
+                  <h3 className="text-sm font-black uppercase tracking-[0.2em] text-emerald-500">Recommended Goal</h3>
                 </div>
 
                 <TooltipProvider delayDuration={0}>
@@ -233,9 +233,9 @@ export default function HomePage() {
                         className="bg-card/95 backdrop-blur-2xl border-white/10 p-4 rounded-xl shadow-2xl max-w-[240px] z-[9999]"
                       >
                         <div className="space-y-2">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-primary">Tactical Logic</p>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-primary">Training Guide</p>
                           <p className="text-[11px] font-medium leading-relaxed text-muted-foreground">
-                            The system analyzes your baseline rating and identifies the <span className="text-foreground font-bold">+100 to +300</span> range as your optimal growth zone. These problems are hard enough to evolve your skills but achievable enough to maintain momentum.
+                            The system analyzes your baseline rating and identifies the <span className="text-foreground font-bold">+100 to +300</span> range as your optimal growth zone. These problems are hard enough to improve your skills but achievable enough to maintain momentum.
                           </p>
                         </div>
                       </TooltipContent>
@@ -245,14 +245,14 @@ export default function HomePage() {
               </div>
 
               <p className="text-foreground/80 font-medium leading-relaxed">
-                Your current trajectory suggests a Focus Session in the{" "}
+                Your current trajectory suggests a Practice Session in the{" "}
                 <span className="text-emerald-500 font-black px-2 tabular-nums">
                   {user.rating + 100} - {user.rating + 300}
                 </span>{" "}
                 range.
               </p>
               <Button asChild className="w-full h-12 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black uppercase tracking-widest text-[10px] shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-1 active:translate-y-0">
-                <Link href="/training">Initiate Objective</Link>
+                <Link href="/training">Start Recommended Session</Link>
               </Button>
             </div>
             
@@ -268,7 +268,7 @@ export default function HomePage() {
               onClick={logout}
               className="w-full h-12 rounded-xl border-border/40 bg-background/40 font-black uppercase tracking-widest text-[10px] hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/40 transition-all"
             >
-              <LogOut size={16} className="mr-2" /> Deauthorize Session
+              <LogOut size={16} className="mr-2" /> Log Out
             </Button>
           </Card>
         </div>

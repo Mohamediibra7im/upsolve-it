@@ -49,7 +49,7 @@ const TrainingControls = ({
           className={cn(buttonClass, "bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white border-rose-500/20 transition-all")}
         >
           <XCircle className="h-4 w-4 mr-2" />
-          Abort Session
+          Cancel Session
         </Button>
       );
     }
@@ -66,7 +66,7 @@ const TrainingControls = ({
             <RefreshCw
               className={cn("h-4 w-4 mr-2", isRefreshing ? "animate-spin" : "")}
             />
-            {isRefreshing ? "Syncing..." : "Sync Status"}
+            {isRefreshing ? "Refreshing..." : "Refresh Status"}
           </Button>
           
           <Button
@@ -74,7 +74,7 @@ const TrainingControls = ({
             className={cn(buttonClass, "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20")}
           >
             <Trophy className="h-4 w-4 mr-2" />
-            End Session
+            Finish Session
           </Button>
           
           {!isMobile && (
@@ -108,7 +108,7 @@ const TrainingControls = ({
                     <div className="flex items-center gap-2.5">
                       <div className="h-2 w-2 rounded-full bg-primary animate-[pulse_2s_infinite]" />
                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">
-                        {isPreContestPeriod ? "Commences In" : "Time Remaining"}
+                        {isPreContestPeriod ? "Starts In" : "Time Remaining"}
                       </span>
                     </div>
                   </div>
@@ -194,7 +194,7 @@ const TrainingControls = ({
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex-1">
                     <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">
-                      {isPreContestPeriod ? "Commences In" : "Session Ends In"}
+                      {isPreContestPeriod ? "Starts In" : "Session Ends In"}
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />

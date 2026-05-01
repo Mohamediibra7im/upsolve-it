@@ -160,7 +160,7 @@ const ProblemsCard = ({
                     ) : (
                       <>
                         <Sparkles className="h-5 w-5 mr-3" />
-                        Initialize Set
+                        Generate Problems
                       </>
                     )}
                   </Button>
@@ -171,7 +171,7 @@ const ProblemsCard = ({
                       className="flex-1 h-14 text-base font-black uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all hover:-translate-y-1"
                     >
                       <Play className="h-5 w-5 mr-3 fill-current" />
-                      Begin Session
+                      Start Session
                     </Button>
                   )}
                 </div>

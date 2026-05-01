@@ -5,9 +5,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordStrengthIndicator } from "@/components/ui/password-strength-indicator";
-import {
-  CardDescription,
-} from "@/components/ui/card";
 import { useToast } from "@/app/_Components/Toast";
 import {
   CheckCircle2,
@@ -30,6 +27,7 @@ import { validatePassword } from "@/utils/passwordValidation";
 import AuthShell from "../login/_Components/AuthShell";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { resolveApiUrl } from "@/lib/apiClient";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -71,7 +69,7 @@ export default function ResetPasswordPage() {
     setError(null);
 
     try {
-      const res = await fetch("/api/auth/initiate-reset", {
+      const res = await fetch(resolveApiUrl("/api/auth/initiate-reset"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ handle }),
@@ -86,6 +84,7 @@ export default function ResetPasswordPage() {
         setError(data.message || "Failed to start verification.");
       }
     } catch (err) {
+      console.error("Initiate reset error:", err);
       setError("System connection error. Please try again later.");
     } finally {
       setIsLoading(false);
@@ -97,7 +96,7 @@ export default function ResetPasswordPage() {
     setError(null);
 
     try {
-      const res = await fetch("/api/auth/verify-submission", {
+      const res = await fetch(resolveApiUrl("/api/auth/verify-submission"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ verificationToken }),
@@ -111,6 +110,7 @@ export default function ResetPasswordPage() {
         setError(data.message || "Verification failed.");
       }
     } catch (err) {
+      console.error("Verify submission error:", err);
       setError("Verification system error.");
     } finally {
       setIsLoading(false);
@@ -138,7 +138,7 @@ export default function ResetPasswordPage() {
     setError(null);
 
     try {
-      const res = await fetch("/api/auth/reset-pin", {
+      const res = await fetch(resolveApiUrl("/api/auth/reset-pin"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ resetToken, newPassword }),
@@ -147,8 +147,8 @@ export default function ResetPasswordPage() {
       const data = await res.json();
       if (res.ok) {
         toast({
-          title: "Protocol Complete",
-          description: "Access credentials updated successfully.",
+          title: "Password Changed",
+          description: "Your password has been updated successfully.",
           variant: "success",
           durationMs: 4000
         });
@@ -160,18 +160,31 @@ export default function ResetPasswordPage() {
         setError(data.message || "Failed to reset password.");
       }
     } catch (err) {
+      console.error("Password reset error:", err);
       setError("Final reset system error.");
     } finally {
       setIsLoading(false);
     }
   };
 
+  const stageTitles = {
+    enterHandle: "Identify Account",
+    verify: "Verify Ownership",
+    resetPassword: "Set New Password",
+  };
+
+  const currentStep = {
+    enterHandle: 1,
+    verify: 2,
+    resetPassword: 3,
+  }[stage];
+
   return (
     <AuthShell
-      title="Security Protocol"
-      subtitle="Verify your identity and re-establish secure access to the network."
+      title="Reset Password"
+      subtitle="Follow the steps below to verify your account and set a new password."
       icon={<ShieldCheck className="h-7 w-7" />}
-      back={{ href: "/", label: "Back to Terminal" }}
+      back={{ href: "/", label: "Back to Home" }}
       className="min-h-[calc(100vh-4rem)]"
     >
       <div className="space-y-10">
@@ -179,28 +192,32 @@ export default function ResetPasswordPage() {
         <div className="flex items-center justify-between gap-6 px-2">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Stage 0{stage === "enterHandle" ? "1" : stage === "verify" ? "2" : "3"}</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Step {currentStep}</span>
               <div className="h-[1px] w-6 bg-primary/30" />
             </div>
             <p className="text-xl font-black text-foreground tracking-tight">
-              {stage === "enterHandle"
-                ? "Initiate Verification"
-                : stage === "verify"
-                  ? "Handle Validation"
-                  : "Credential Override"}
+              {stageTitles[stage]}
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             {[1, 2, 3].map((s) => {
-              const currentStep = stage === "enterHandle" ? 1 : stage === "verify" ? 2 : 3;
+              const isActive = s === currentStep;
+              const isCompleted = s < currentStep;
+
+              let stepStateClass = "w-4 bg-white/10";
+              if (isActive) {
+                stepStateClass = "w-8 bg-primary shadow-[0_0_12px_rgba(var(--primary-rgb),0.4)]";
+              } else if (isCompleted) {
+                stepStateClass = "w-4 bg-emerald-500";
+              }
+
               return (
                 <div
                   key={s}
                   className={cn(
                     "h-2 rounded-full transition-all duration-500",
-                    s === currentStep ? "w-8 bg-primary shadow-[0_0_12px_rgba(var(--primary-rgb),0.4)]" : 
-                    s < currentStep ? "w-4 bg-emerald-500" : "w-4 bg-white/10"
+                    stepStateClass
                   )}
                 />
               );
@@ -221,10 +238,10 @@ export default function ResetPasswordPage() {
               <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10 space-y-2">
                 <div className="flex items-center gap-2 text-primary">
                   <Terminal size={14} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Protocol Instructions</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest">Verification Steps</span>
                 </div>
                 <p className="text-sm text-muted-foreground font-medium leading-relaxed">
-                  Enter your registered Codeforces handle. We will use submission forensics to verify your ownership of the account.
+                  Enter your Codeforces handle. You will need to make a specific submission to prove you own the account.
                 </p>
               </div>
 
@@ -233,7 +250,7 @@ export default function ResetPasswordPage() {
                   htmlFor="handle"
                   className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1"
                 >
-                  Target Handle
+                  Your Handle
                 </label>
                 <div className="relative group">
                   <Input
@@ -260,11 +277,11 @@ export default function ResetPasswordPage() {
                 {isLoading ? (
                   <div className="flex items-center gap-3">
                     <RefreshCw className="h-4 w-4 animate-spin" />
-                    Initializing...
+                    Starting...
                   </div>
                 ) : (
                   <div className="flex items-center gap-3">
-                    Start Protocol <ArrowRight size={14} />
+                    Next Step <ArrowRight size={14} />
                   </div>
                 )}
               </Button>
@@ -285,16 +302,16 @@ export default function ResetPasswordPage() {
                     <AlertTriangle size={32} />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Forensic Submission Required</h3>
+                    <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Action Required</h3>
                     <p className="text-sm text-muted-foreground font-medium leading-relaxed max-w-xs mx-auto">
-                      Navigate to <a href="https://codeforces.com/problemset/problem/4/A" target="_blank" rel="noreferrer" className="text-primary hover:underline underline-offset-4 inline-flex items-center gap-1">Problem 4A <ExternalLink size={12} /></a> and submit a solution that triggers a <span className="text-destructive font-bold">Compilation Error</span>.
+                      Navigate to <a href="https://codeforces.com/problemset/problem/4/A" target="_blank" rel="noreferrer" className="text-primary hover:underline underline-offset-4 inline-flex items-center gap-1">Problem 4A <ExternalLink size={12} /></a> and submit code that results in a <span className="text-destructive font-bold">Compilation Error</span>.
                     </p>
                   </div>
                 </div>
 
                 <div className="p-8 rounded-[2rem] border border-border/40 bg-card/20 backdrop-blur-xl text-center space-y-2">
                   <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center justify-center gap-2">
-                    <Clock size={12} /> Synchronization Window
+                    <Clock size={12} /> Time Remaining
                   </div>
                   <div className="text-5xl font-black text-primary tracking-tighter tabular-nums">
                     {Math.floor(countdown / 60)}:
@@ -311,11 +328,11 @@ export default function ResetPasswordPage() {
                 {isLoading ? (
                   <div className="flex items-center gap-3">
                     <RefreshCw className="h-4 w-4 animate-spin" />
-                    Scanning Submissions...
+                    Checking Submissions...
                   </div>
                 ) : (
                   <div className="flex items-center gap-3">
-                    I Have Submitted — Verify <Shield size={14} />
+                    I've Submitted — Verify Now <Shield size={14} />
                   </div>
                 )}
               </Button>
@@ -336,16 +353,17 @@ export default function ResetPasswordPage() {
                   <CheckCircle2 size={28} />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-lg font-black text-foreground uppercase tracking-tight">Identity Verified</h3>
-                  <p className="text-sm text-muted-foreground font-medium">Re-establishing access keys for <span className="text-primary font-black">{handle}</span></p>
+                  <h3 className="text-lg font-black text-foreground uppercase tracking-tight">Identity Confirmed</h3>
+                  <p className="text-sm text-muted-foreground font-medium">Setting new password for <span className="text-primary font-black">{handle}</span></p>
                 </div>
               </div>
 
               <div className="space-y-6">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">New Access Key</label>
+                  <label htmlFor="newPassword" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">New Password</label>
                   <div className="relative group">
                     <Input
+                      id="newPassword"
                       type={showNewPassword ? "text" : "password"}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
@@ -368,9 +386,10 @@ export default function ResetPasswordPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">Confirm Access Key</label>
+                  <label htmlFor="confirmNewPassword" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">Confirm New Password</label>
                   <div className="relative group">
                     <Input
+                      id="confirmNewPassword"
                       type={showConfirmPassword ? "text" : "password"}
                       value={confirmNewPassword}
                       onChange={(e) => setConfirmNewPassword(e.target.value)}
@@ -398,11 +417,11 @@ export default function ResetPasswordPage() {
                 {isLoading ? (
                   <div className="flex items-center gap-3">
                     <RefreshCw className="h-4 w-4 animate-spin" />
-                    Updating Keys...
+                    Updating Password...
                   </div>
                 ) : (
                   <div className="flex items-center gap-3">
-                    Commit Override <KeyRound size={14} />
+                    Reset Password <KeyRound size={14} />
                   </div>
                 )}
               </Button>
@@ -418,7 +437,7 @@ export default function ResetPasswordPage() {
           >
             <div className="flex items-center justify-center gap-2 text-destructive">
               <Activity size={14} />
-              <span className="text-[10px] font-black uppercase tracking-widest">Protocol Failure</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">Error</span>
             </div>
             <p className="text-sm text-destructive font-medium leading-relaxed">{error}</p>
             <Button 

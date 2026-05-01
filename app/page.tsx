@@ -61,18 +61,18 @@ const HeroSection = ({ user }: { user: any }) => (
           {user ? (
             <Button asChild size="lg" className="h-14 sm:h-16 w-full sm:w-auto px-10 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-[10px] sm:text-xs shadow-[0_0_40px_rgba(var(--primary),0.3)] hover:scale-105 active:scale-95 transition-all">
               <Link href="/home" className="flex items-center gap-3">
-                Enter Command Center <ArrowRight size={18} />
+                Enter Dashboard <ArrowRight size={18} />
               </Link>
             </Button>
           ) : (
             <>
               <Button asChild size="lg" className="h-14 sm:h-16 w-full sm:w-auto px-10 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-[10px] sm:text-xs shadow-[0_0_40px_rgba(var(--primary),0.3)] hover:scale-105 active:scale-95 transition-all">
                 <Link href="/signup" className="flex items-center gap-3">
-                  Initialize Protocol <ArrowRight size={18} />
+                  Get Started <ArrowRight size={18} />
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="h-14 sm:h-16 w-full sm:w-auto px-10 rounded-2xl border-2 border-border/40 font-black uppercase tracking-widest text-[10px] sm:text-xs hover:border-primary/40 hover:bg-primary/5 hover:text-primary transition-all duration-300 backdrop-blur-xl">
-                <Link href="/login">Access Interface</Link>
+                <Link href="/login">Sign In</Link>
               </Button>
             </>
           )}
@@ -172,6 +172,60 @@ const FeatureBento = () => (
   </section>
 );
 
+const EvolutionProtocol = () => (
+  <section className="py-24 bg-card/5 border-y border-border/40 relative overflow-hidden">
+    <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]" />
+    <div className="container mx-auto px-4 relative z-10">
+      <div className="text-center max-w-3xl mx-auto mb-20 space-y-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest"
+        >
+          Operational Workflow
+        </motion.div>
+        <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight">The Evolution Protocol</h2>
+        <p className="text-muted-foreground font-medium text-lg">A standardized, data-driven cycle designed to accelerate your competitive performance.</p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-12 lg:gap-16">
+        {[
+          { step: "01", title: "Sync", desc: "Establish a direct link with your Codeforces identity and history.", icon: RefreshCw },
+          { step: "02", title: "Configure", desc: "Calibrate difficulty levels and target specific problem tags.", icon: Target },
+          { step: "03", title: "Compete", desc: "Engage in timed sessions within a high-performance training environment.", icon: Zap },
+          { step: "04", title: "Analyze", desc: "Identify bottlenecks through detailed analytics and trend reporting.", icon: BarChart3 }
+        ].map((item, i) => (
+          <motion.div 
+            key={item.step} 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.1 }}
+            className="relative group"
+          >
+            <div className="space-y-6 relative z-10">
+              <div className="text-8xl font-black text-primary/5 group-hover:text-primary/10 transition-colors absolute -top-12 -left-4 -z-10 select-none">
+                {item.step}
+              </div>
+              <div className="h-16 w-16 rounded-2xl bg-background border border-border/60 flex items-center justify-center text-primary shadow-2xl group-hover:scale-110 group-hover:border-primary/40 transition-all duration-500">
+                <item.icon size={32} />
+              </div>
+              <div className="space-y-2">
+                <h4 className="text-xl font-black uppercase tracking-tight group-hover:text-primary transition-colors">{item.title}</h4>
+                <p className="text-sm text-muted-foreground font-medium leading-relaxed">{item.desc}</p>
+              </div>
+            </div>
+            {i < 3 && (
+              <div className="hidden md:block absolute top-8 left-[calc(100%+1.5rem)] w-[calc(100%-4rem)] h-[1px] bg-gradient-to-r from-primary/30 to-transparent" />
+            )}
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
 const CommunitySection = () => (
   <section className="py-24 relative overflow-hidden">
     <div className="container mx-auto px-4">
@@ -190,7 +244,7 @@ const CommunitySection = () => (
           
           <div className="space-y-4">
             <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase leading-none">
-              Born from the <span className="text-primary italic">Community</span>
+              Born from the <span className="text-primary">Community</span>
             </h2>
             <p className="text-lg text-muted-foreground font-medium leading-relaxed max-w-xl">
               Upsolve.it isn't just a tool, it's a product raised from the heart of the <span className="text-foreground font-bold">HNU ICPC Community</span>. We built this to elevate our training standards and empower every programmer to reach their full potential.
@@ -258,7 +312,7 @@ const CommunitySection = () => (
                   </div>
                 </div>
                 <div className="pt-6">
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/40">Protocol: COMMUNITY_FIRST</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/40">Mode: COMMUNITY_FIRST</p>
                 </div>
               </CardContent>
             </Card>
@@ -276,13 +330,14 @@ export default function LandingPage() {
   const { user, isLoading } = useUser();
 
   if (isLoading) {
-    return <Loader message="Accessing Neural Interface..." />;
+    return <Loader message="Loading dashboard..." />;
   }
 
   return (
     <div className="relative min-h-screen">
       <HeroSection user={user} />
       <FeatureBento />
+      <EvolutionProtocol />
       <CommunitySection />
     </div>
   );

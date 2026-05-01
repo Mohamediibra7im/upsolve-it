@@ -127,7 +127,7 @@ const LevelSelector = ({
           <div className="space-y-1">
             <CardTitle className="text-2xl sm:text-3xl font-black tracking-tight text-foreground flex items-center gap-3">
               <Trophy className="h-8 w-8 text-primary" />
-              Training Intensity
+              Training Level
             </CardTitle>
             <p className="text-sm text-muted-foreground">Adjust the problem set difficulty to match your goals.</p>
           </div>
@@ -152,13 +152,13 @@ const LevelSelector = ({
             <div className="relative group">
               <div className="absolute -inset-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-[2rem] blur-2xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
               <div className="relative bg-background/60 border border-primary/20 rounded-3xl p-8 text-center space-y-4 backdrop-blur-md shadow-inner">
-                <div className="text-sm font-bold tracking-[0.2em] text-primary uppercase">Current Tier</div>
+                <div className="text-sm font-bold tracking-[0.2em] text-primary uppercase">Current Level</div>
                 <div className="text-6xl sm:text-7xl font-black text-foreground tabular-nums tracking-tighter">
                   {currentLevel?.level || "1"}
                 </div>
                 <div className="flex items-center justify-center gap-6 pt-2">
                   <div className="flex flex-col items-center gap-1">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Perf Rating</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Target Rating</span>
                     <span className="text-lg font-bold text-foreground">{currentLevel?.Performance || "900"}</span>
                   </div>
                   <div className="w-px h-8 bg-border" />
@@ -210,14 +210,14 @@ const LevelSelector = ({
           <div className="space-y-6">
             <h3 className="text-sm font-bold text-foreground uppercase tracking-[0.2em] px-2 flex items-center gap-2">
               <Zap className="h-4 w-4 text-accent" />
-              Difficulty Matrix
+              Difficulty Breakdown
             </h3>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { label: "Phase A", rating: currentLevel?.P1, color: getProblemDifficultyColor(Number.parseInt(currentLevel?.P1 || "0")) },
-                { label: "Phase B", rating: currentLevel?.P2, color: getProblemDifficultyColor(Number.parseInt(currentLevel?.P2 || "0")) },
-                { label: "Phase C", rating: currentLevel?.P3, color: getProblemDifficultyColor(Number.parseInt(currentLevel?.P3 || "0")) },
-                { label: "Phase D", rating: currentLevel?.P4, color: getProblemDifficultyColor(Number.parseInt(currentLevel?.P4 || "0")) }
+                { label: "Problem 1", rating: currentLevel?.P1, color: getProblemDifficultyColor(Number.parseInt(currentLevel?.P1 || "0")) },
+                { label: "Problem 2", rating: currentLevel?.P2, color: getProblemDifficultyColor(Number.parseInt(currentLevel?.P2 || "0")) },
+                { label: "Problem 3", rating: currentLevel?.P3, color: getProblemDifficultyColor(Number.parseInt(currentLevel?.P3 || "0")) },
+                { label: "Problem 4", rating: currentLevel?.P4, color: getProblemDifficultyColor(Number.parseInt(currentLevel?.P4 || "0")) }
               ].map((p) => (
                 <div key={p.label} className="group relative">
                   <div className={`absolute inset-0 bg-gradient-to-br ${p.color} opacity-[0.03] rounded-2xl group-hover:opacity-[0.08] transition-opacity duration-300`} />
@@ -232,7 +232,7 @@ const LevelSelector = ({
                       </div>
                       {!showRatings && (
                         <div className="absolute inset-0 flex items-center text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">
-                          Encrypted
+                          Hidden
                         </div>
                       )}
                     </div>
