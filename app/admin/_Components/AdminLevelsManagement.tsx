@@ -6,13 +6,16 @@ import { apiClient } from "@/lib/apiClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/app/_Components/Toast";
-import { ladderRatingsFromPerformance } from "@/utils/training/modeRatings";
+import {
+  ladderRatingsFromPerformance,
+  LADDER_RATING_BAND_STEP,
+} from "@/utils/training/modeRatings";
 import {
   TRAINING_LEVELS_SWR_KEY,
   fetchTrainingLevelsFromApi,
   type Level,
 } from "@/hooks/useLevels";
-import { Loader2, Plus, Save, Trash2, Layers, Info, Database } from "lucide-react";
+import { Loader2, Plus, Save, Trash2, Layers, Info } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -23,6 +26,16 @@ import { cn } from "@/lib/utils";
 
 /** Matches `getDefaultTrainingLevelDocs()` in the backend (IDs 1…110). */
 const CANONICAL_LEVEL_COUNT = 110;
+
+/** Must stay in sync with `LevelRowDto` / seed max (900…4050 in seed; extra rows may step above). */
+const MAX_LEVEL_PERFORMANCE = 4100;
+
+function snapTargetPerformance(raw: number): number {
+  if (!Number.isFinite(raw)) return 800;
+  const snapped =
+    Math.round(raw / LADDER_RATING_BAND_STEP) * LADDER_RATING_BAND_STEP;
+  return Math.max(800, Math.min(MAX_LEVEL_PERFORMANCE, snapped));
+}
 
 type LevelRow = Pick<Level, "id" | "level" | "time" | "Performance">;
 
@@ -37,34 +50,17 @@ export default function AdminLevelsManagement() {
 
   const [draft, setDraft] = useState<LevelRow[] | null>(null);
   const [saving, setSaving] = useState(false);
-  const [reseeding, setReseeding] = useState(false);
-
-  const handleReseed = async () => {
-    setReseeding(true);
-    try {
-      const result = await apiClient.post<{ count: number }>(
-        "/api/admin/levels/reseed",
-      );
-      toast({
-        title: "Database reseeded",
-        description: `Inserted ${result.count} built-in default levels.`,
-      });
-      await mutate();
-      await globalMutate(TRAINING_LEVELS_SWR_KEY);
-      setDraft(null);
-    } catch (e) {
-      toast({
-        title: "Reseed failed",
-        description: e instanceof Error ? e.message : "Unknown error",
-      });
-    } finally {
-      setReseeding(false);
-    }
-  };
 
   useEffect(() => {
     if (data && draft === null) {
-      setDraft(data.map((r) => ({ ...r })));
+      setDraft(
+        data.map((r) => ({
+          ...r,
+          Performance: String(
+            snapTargetPerformance(Number.parseInt(r.Performance, 10)),
+          ),
+        })),
+      );
     }
   }, [data, draft]);
 
@@ -98,14 +94,16 @@ export default function AdminLevelsManagement() {
       const lastPerf = base.length
         ? Number.parseInt(base[base.length - 1].Performance, 10)
         : 800;
-      const nextPerf = Number.isFinite(lastPerf) ? lastPerf + 25 : 900;
+      const nextPerf = Number.isFinite(lastPerf)
+        ? lastPerf + LADDER_RATING_BAND_STEP
+        : 900;
       return [
         ...base,
         {
           id: maxId + 1,
           level: String(maxId + 1),
           time: "120",
-          Performance: String(Math.min(4000, nextPerf)),
+          Performance: String(snapTargetPerformance(nextPerf)),
         },
       ];
     });
@@ -127,7 +125,7 @@ export default function AdminLevelsManagement() {
           id: r.id,
           level: r.level,
           time: r.time,
-          Performance: Number.parseInt(r.Performance, 10),
+          Performance: snapTargetPerformance(Number.parseInt(r.Performance, 10)),
         })),
       };
       await apiClient.put("/api/admin/levels", payload);
@@ -164,22 +162,9 @@ export default function AdminLevelsManagement() {
           {error instanceof Error ? error.message : String(error)}
         </p>
         <p className="text-xs text-muted-foreground">
-          This replaces all rows in MongoDB with the built-in {CANONICAL_LEVEL_COUNT} default levels
-          (IDs 1–{CANONICAL_LEVEL_COUNT}; targets 900–4050). Requires admin API access.
+          Training levels could not be loaded. Check that the levels API is reachable and the
+          database has been initialized with level data.
         </p>
-        <Button
-          type="button"
-          onClick={handleReseed}
-          disabled={reseeding}
-          className="rounded-xl gap-2 font-black uppercase tracking-widest text-[10px]"
-        >
-          {reseeding ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Database className="h-4 w-4" />
-          )}
-          Reseed default levels
-        </Button>
       </div>
     );
   }
@@ -202,9 +187,10 @@ export default function AdminLevelsManagement() {
             Level distribution
           </h2>
           <p className="text-sm text-muted-foreground max-w-2xl">
-            Each row is a target rating. Problem slots P1–P4 are computed from that
-            target (tight band, at least one problem above target). Edit targets here;
-            the app stays in sync via the API.
+            Each row is a target rating on {LADDER_RATING_BAND_STEP}-point steps (800–
+            {MAX_LEVEL_PERFORMANCE}). Problem slots P1–P4 use CF-style{" "}
+            {LADDER_RATING_BAND_STEP}-point ladder bands from that target. Edit here; the
+            app reads levels from the API.
           </p>
         </div>
         <TooltipProvider>
@@ -224,8 +210,9 @@ export default function AdminLevelsManagement() {
               sideOffset={8}
               className="z-[300] max-w-[min(20rem,calc(100vw-2rem))] overflow-visible whitespace-normal break-words px-3 py-2.5 text-left text-xs leading-relaxed"
             >
-              Stored: level label, session time, and target rating. P1 to P4 are a
-              preview of ladder pool targets (same values as on the Training page).
+              Stored: level label, session time, and target rating (snapped to{" "}
+              {LADDER_RATING_BAND_STEP}-point steps on save). P1–P4 preview uses the same
+              ladder formula as the Training page.
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -281,11 +268,21 @@ export default function AdminLevelsManagement() {
                     <Input
                       type="number"
                       min={800}
-                      max={4000}
+                      max={MAX_LEVEL_PERFORMANCE}
+                      step={LADDER_RATING_BAND_STEP}
                       value={draft[index].Performance}
                       onChange={(e) =>
                         updateRow(index, { Performance: e.target.value })
                       }
+                      onBlur={() => {
+                        const n = Number.parseInt(draft[index].Performance, 10);
+                        const snapped = snapTargetPerformance(n);
+                        if (snapped !== n) {
+                          updateRow(index, {
+                            Performance: String(snapped),
+                          });
+                        }
+                      }}
                       className="h-9 bg-background/60 tabular-nums font-semibold"
                     />
                   </td>
@@ -339,20 +336,6 @@ export default function AdminLevelsManagement() {
           <Button
             type="button"
             variant="outline"
-            onClick={handleReseed}
-            disabled={reseeding}
-            className="rounded-xl font-black uppercase tracking-widest text-[10px] gap-2"
-          >
-            {reseeding ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Database className="h-4 w-4" />
-            )}
-            Reseed {CANONICAL_LEVEL_COUNT} levels
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
             onClick={addRow}
             className="rounded-xl font-black uppercase tracking-widest text-[10px] gap-2"
           >
@@ -363,7 +346,15 @@ export default function AdminLevelsManagement() {
             type="button"
             variant="ghost"
             onClick={() => {
-              if (data) setDraft(data.map((r) => ({ ...r })));
+              if (data)
+                setDraft(
+                  data.map((r) => ({
+                    ...r,
+                    Performance: String(
+                      snapTargetPerformance(Number.parseInt(r.Performance, 10)),
+                    ),
+                  })),
+                );
             }}
             className="rounded-xl text-xs"
           >

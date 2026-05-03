@@ -2,15 +2,20 @@ import type { TrainingMode } from "@/types/TrainingMode";
 
 const clamp = (r: number) => Math.max(800, Math.min(3500, Math.round(r)));
 
-/** Snap to CF-style 100-point rating bands. */
+/** CF-style 100-point bands for ladder targets and derived P1–P4 (admin UI uses the same step). */
+export const LADDER_RATING_BAND_STEP = 100;
+
 function roundRatingBand(x: number): number {
-  return Math.max(800, Math.min(3500, Math.round(x / 100) * 100));
+  const snapped =
+    Math.round(x / LADDER_RATING_BAND_STEP) * LADDER_RATING_BAND_STEP;
+  return Math.max(800, Math.min(3500, snapped));
 }
 
 /**
  * Four ladder targets around the level's performance rating: problems stay near the
  * target, at least one slot is strictly above it (when below 3500), and the easiest
  * slot is not more than ~300 under target (so high-target sessions avoid very easy fillers).
+ * Slots snap to 100-point bands.
  */
 export function ladderRatingsFromPerformance(performance: number): {
   P1: number;
@@ -19,7 +24,7 @@ export function ladderRatingsFromPerformance(performance: number): {
   P4: number;
 } {
   const T = Math.round(performance);
-  const round100 = roundRatingBand;
+  const roundBand = roundRatingBand;
   let hiEff = Math.min(3500, T + 200);
   const loBase = Math.max(800, T - 300);
   if (hiEff <= T && T < 3500) {
@@ -30,18 +35,18 @@ export function ladderRatingsFromPerformance(performance: number): {
     loEff = Math.max(800, hiEff - 300);
   }
   const span = hiEff - loEff;
-  const out = [0, 1, 2, 3].map((i) => round100(loEff + (span * i) / 3));
+  const out = [0, 1, 2, 3].map((i) => roundBand(loEff + (span * i) / 3));
   for (let i = 1; i < 4; i++) {
     if (out[i] <= out[i - 1]) {
-      out[i] = Math.min(3500, out[i - 1] + 100);
+      out[i] = Math.min(3500, out[i - 1] + LADDER_RATING_BAND_STEP);
     }
   }
   if (T < 3500 && out[3] <= T) {
-    out[3] = Math.min(3500, round100(T + 100));
+    out[3] = Math.min(3500, roundBand(T + 100));
   }
   for (let i = 2; i >= 0; i--) {
     if (out[i] >= out[i + 1]) {
-      out[i] = Math.max(800, out[i + 1] - 100);
+      out[i] = Math.max(800, out[i + 1] - LADDER_RATING_BAND_STEP);
     }
   }
   return { P1: out[0], P2: out[1], P3: out[2], P4: out[3] };

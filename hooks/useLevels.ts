@@ -30,7 +30,7 @@ export async function fetchTrainingLevelsFromApi(): Promise<LevelApiRow[]> {
   const j = (await res.json()) as { levels: LevelApiRow[] };
   if (!Array.isArray(j.levels) || j.levels.length === 0) {
     throw new Error(
-      "No training levels in the database. Open Admin → Level Matrix and tap “Reseed default levels”.",
+      "No training levels in the database. An administrator must insert level data (for example via the API or database migration).",
     );
   }
   return j.levels;
