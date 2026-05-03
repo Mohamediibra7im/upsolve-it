@@ -361,10 +361,6 @@ export default function AdminLevelsManagement() {
             Revert changes
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Built-in ladder has {CANONICAL_LEVEL_COUNT} levels (last ID {CANONICAL_LEVEL_COUNT}). This
-          editor shows {draft.length} row{draft.length === 1 ? "" : "s"}.
-        </p>
       </div>
     </div>
   );
