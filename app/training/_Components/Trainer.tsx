@@ -2,7 +2,6 @@
 
 import { TrainingProblem } from "@/types/TrainingProblem";
 import { Training } from "@/types/Training";
-import { ProblemTag } from "@/types/Codeforces";
 import { useState, useEffect, useMemo } from "react";
 import { SubmissionStatus } from "@/utils/codeforces/getTrainingSubmissionStatus";
 
@@ -17,44 +16,30 @@ const Trainer = ({
   isTraining,
   training,
   problems,
-  generateProblems,
-  startTraining,
+  onGenerateProblems,
+  onStartSession,
   stopTraining,
   refreshProblemStatus,
   finishTraining,
-  selectedTags,
-  lb,
-  ub,
-  customRatings,
   submissionStatuses,
   isRefreshing,
   showRatings,
+  hideContestDetails,
+  onProblemOpen,
 }: {
   isTraining: boolean;
   training: Training | null;
   problems: TrainingProblem[] | null;
-  generateProblems: (
-    tags: ProblemTag[],
-    lb: number | null,
-    ub: number | null,
-    customRatings: { P1: number; P2: number; P3: number; P4: number },
-  ) => void;
-  startTraining: (customRatings: {
-    P1: number;
-    P2: number;
-    P3: number;
-    P4: number;
-  }) => void;
+  onGenerateProblems: () => void;
+  onStartSession: () => void;
   stopTraining: () => void;
   refreshProblemStatus: () => void;
   finishTraining: () => void;
-  selectedTags: ProblemTag[];
-  lb: number | null;
-  ub: number | null;
-  customRatings: { P1: number; P2: number; P3: number; P4: number };
   submissionStatuses: SubmissionStatus[];
   isRefreshing: boolean;
   showRatings: boolean;
+  hideContestDetails?: boolean;
+  onProblemOpen?: (problem: TrainingProblem) => void;
 }) => {
   const [currentTime, setCurrentTime] = useState(Date.now());
 
@@ -69,7 +54,9 @@ const Trainer = ({
   }, [isTraining, training?.startTime]);
 
   const isPreContestPeriod = useMemo(() => {
-    return isTraining && !!training?.startTime && currentTime < training.startTime;
+    return (
+      isTraining && !!training?.startTime && currentTime < training.startTime
+    );
   }, [isTraining, training?.startTime, currentTime]);
 
   const [isFinishDialogOpen, setIsFinishDialogOpen] = useState(false);
@@ -85,12 +72,15 @@ const Trainer = ({
     stopTraining();
   };
 
-  const currentProblems = isTraining && training?.problems ? training.problems : problems;
+  const currentProblems =
+    isTraining && training?.problems ? training.problems : problems;
 
   const solvedCount = useMemo(() => {
     if (!isTraining || !currentProblems?.length) return 0;
     const solvedByStatus = new Set(
-      submissionStatuses.filter((s) => s.status === "AC").map((s) => s.problemId),
+      submissionStatuses
+        .filter((s) => s.status === "AC")
+        .map((s) => s.problemId),
     );
     return currentProblems.filter((p) => {
       const pid = `${p.contestId}_${p.index}`;
@@ -114,10 +104,12 @@ const Trainer = ({
         onConfirm={confirmFinish}
       />
 
-      <div className={cn(
-        "grid gap-4 lg:gap-6",
-        isTraining ? "lg:grid-cols-[minmax(0,1fr)_360px]" : "grid-cols-1"
-      )}>
+      <div
+        className={cn(
+          "grid gap-4 lg:gap-6",
+          isTraining ? "lg:grid-cols-[minmax(0,1fr)_360px]" : "grid-cols-1",
+        )}
+      >
         <ProblemsCard
           currentProblems={currentProblems}
           isTraining={isTraining}
@@ -125,14 +117,12 @@ const Trainer = ({
           totalCount={totalCount}
           submissionStatuses={submissionStatuses}
           startTime={training?.startTime ?? null}
-          generateProblems={generateProblems}
-          startTraining={startTraining}
-          selectedTags={selectedTags}
-          lb={lb}
-          ub={ub}
-          customRatings={customRatings}
+          onGenerateProblems={onGenerateProblems}
+          onStartSession={onStartSession}
           problems={problems}
           showRatings={showRatings}
+          hideContestDetails={hideContestDetails}
+          onProblemOpen={onProblemOpen}
         />
 
         <TrainingControls
@@ -152,10 +142,3 @@ const Trainer = ({
 };
 
 export default Trainer;
-
-
-
-
-
-
-

@@ -1,4 +1,7 @@
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
+import useSWR from "swr";
+import { resolveApiUrl } from "@/lib/apiClient";
+import { ladderRatingsFromPerformance } from "@/utils/training/modeRatings";
 
 export interface Level {
   id: number;
@@ -11,33 +14,60 @@ export interface Level {
   P4: string;
 }
 
+/** SWR key shared with admin level editor for cache invalidation after saves. */
+export const TRAINING_LEVELS_SWR_KEY = "training-levels-data";
+
+export type LevelApiRow = Pick<Level, "id" | "level" | "time" | "Performance">;
+
+/** Shared fetcher for SWR (training UI + admin). Levels live only in MongoDB via GET /api/levels. */
+export async function fetchTrainingLevelsFromApi(): Promise<LevelApiRow[]> {
+  const res = await fetch(resolveApiUrl("/api/levels"), {
+    credentials: "omit",
+  });
+  if (!res.ok) {
+    throw new Error(`Levels API error: ${res.status}`);
+  }
+  const j = (await res.json()) as { levels: LevelApiRow[] };
+  if (!Array.isArray(j.levels) || j.levels.length === 0) {
+    throw new Error(
+      "No training levels in the database. Open Admin → Level Matrix and tap “Reseed default levels”.",
+    );
+  }
+  return j.levels;
+}
+
 export const useLevels = () => {
-  const [levels, setLevels] = useState<Level[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, error, isLoading, mutate } = useSWR<LevelApiRow[]>(
+    TRAINING_LEVELS_SWR_KEY,
+    fetchTrainingLevelsFromApi,
+    {
+      revalidateOnFocus: true,
+      dedupingInterval: 60_000,
+      shouldRetryOnError: true,
+    },
+  );
 
-  useEffect(() => {
-    const loadLevels = async () => {
-      try {
-        const response = await fetch("/data/level.json");
-        if (!response.ok) {
-          throw new Error("Failed to load levels");
-        }
-        const data = await response.json();
-        setLevels(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load levels");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadLevels();
-  }, []);
+  const levels: Level[] = useMemo(() => {
+    if (!data?.length) return [];
+    return data.map((level) => {
+      const perf = Number.parseInt(level.Performance, 10);
+      const r = ladderRatingsFromPerformance(
+        Number.isFinite(perf) ? perf : 900,
+      );
+      return {
+        ...level,
+        P1: String(r.P1),
+        P2: String(r.P2),
+        P3: String(r.P3),
+        P4: String(r.P4),
+      };
+    });
+  }, [data]);
 
   const getLevelByPerformance = (performance: number): Level | null => {
     return (
-      levels.find((level) => parseInt(level.Performance) >= performance) || null
+      levels.find((level) => Number.parseInt(level.Performance, 10) >= performance) ||
+      null
     );
   };
 
@@ -46,20 +76,16 @@ export const useLevels = () => {
   };
 
   const getDefaultLevel = (): Level | null => {
-    // Default to level 1 (800-900 performance range)
     return levels.find((level) => level.id === 1) || null;
   };
 
   return {
     levels,
     isLoading,
-    error,
+    error: error ? String(error instanceof Error ? error.message : error) : null,
+    mutateLevels: mutate,
     getLevelByPerformance,
     getLevelById,
     getDefaultLevel,
   };
 };
-
-
-
-

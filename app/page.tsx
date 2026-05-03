@@ -13,7 +13,11 @@ import {
   ShieldCheck,
   LineChart,
   Terminal,
-  Cpu
+  Cpu,
+  ClipboardList,
+  Layers,
+  Sparkles,
+  Timer,
 } from "lucide-react";
 import useUser from "@/hooks/useUser";
 import Loader from "@/app/_Components/Loader";
@@ -29,7 +33,7 @@ const HeroSection = ({ user }: { user: any }) => (
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-black uppercase tracking-[0.2em]"
         >
           <Zap size={14} className="fill-primary" />
-          The Ultimate Training Companion
+          Multi-mode training · Stats · Reviews · Upsolve
         </motion.div>
         
         <motion.h1
@@ -49,7 +53,7 @@ const HeroSection = ({ user }: { user: any }) => (
           transition={{ duration: 0.6, delay: 0.2 }}
           className="text-base sm:text-lg md:text-xl text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed px-4 sm:px-0"
         >
-          Elevate your competitive protocol. Initialize custom practice sessions, track high-fidelity performance metrics, and optimize your evolution on the Codeforces grid.
+          Run ladder, weakness, speed, contest, and endurance sessions, then debrief with post-session reviews, per-mode statistics, performance trajectories, upsolve tracking, and a curated levels path. Everything stays synced with your public Codeforces profile.
         </motion.p>
 
         <motion.div
@@ -98,8 +102,8 @@ const FeatureBento = () => (
               <div className="h-12 w-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-6 mx-auto md:mx-0">
                 <RefreshCw size={24} />
               </div>
-              <h3 className="text-3xl font-black tracking-tight uppercase">Seamless CF Integration</h3>
-              <p className="text-muted-foreground font-medium">Connect your Codeforces handle in seconds. Our system automatically pulls your submission history, ratings, and upsolve targets.</p>
+              <h3 className="text-3xl font-black tracking-tight uppercase">Live Codeforces sync</h3>
+              <p className="text-muted-foreground font-medium">Link your handle once. We pull public ratings, submissions, and progress so dashboards, heatmaps, and session stats stay current; no CF password required.</p>
             </div>
             <div className="flex-1 relative">
               <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
@@ -134,8 +138,8 @@ const FeatureBento = () => (
             <div className="h-12 w-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-6">
               <LineChart size={24} />
             </div>
-            <h3 className="text-2xl font-black tracking-tight uppercase">Elite Insights</h3>
-            <p className="text-muted-foreground font-medium">High-fidelity data visualization tracking your rating progression and problem distribution.</p>
+            <h3 className="text-2xl font-black tracking-tight uppercase">Per-mode analytics</h3>
+            <p className="text-muted-foreground font-medium">Statistics broken down by training mode, performance trends over time, full session history, and trajectory charts, so you see where you actually improve.</p>
           </div>
         </Card>
 
@@ -144,15 +148,15 @@ const FeatureBento = () => (
             <div className="h-12 w-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-6">
               <Target size={24} />
             </div>
-            <h3 className="text-2xl font-black tracking-tight uppercase">Session Builder</h3>
-            <p className="text-muted-foreground font-medium">Generate custom practice sessions based on specific tags and rating ranges to sharpen your edge.</p>
+            <h3 className="text-2xl font-black tracking-tight uppercase">Five training modes</h3>
+            <p className="text-muted-foreground font-medium">Ladder, weakness targeting, speed drills, contest simulation, and endurance blocks: pick the protocol that matches today&apos;s goal, then tune tags and difficulty.</p>
           </div>
         </Card>
 
         <Card className="md:col-span-2 border-border/40 bg-card/20 backdrop-blur-2xl rounded-[2.5rem] p-10 flex flex-col md:flex-row items-center gap-10">
           <div className="relative flex-1 order-2 md:order-1">
              <div className="grid grid-cols-2 gap-4">
-               {[Zap, Cpu, Terminal, ShieldCheck].map((Icon) => (
+               {[Target, Timer, LineChart, Sparkles].map((Icon) => (
                  <div key={Icon.displayName || Icon.name || `icon-${Icon.toString()}`} className="p-6 rounded-3xl border border-border/40 bg-background/40 flex items-center justify-center text-primary/40 group-hover:text-primary/100 transition-colors">
                    <Icon size={32} />
                  </div>
@@ -163,10 +167,72 @@ const FeatureBento = () => (
             <div className="h-12 w-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-6">
               <ShieldCheck size={24} />
             </div>
-            <h3 className="text-3xl font-black tracking-tight uppercase">Secure Protocol</h3>
-            <p className="text-muted-foreground font-medium">Your Codeforces account remains entirely safe. We only use public API data and never ask for your CF credentials.</p>
+            <h3 className="text-3xl font-black tracking-tight uppercase">Secure by design</h3>
+            <p className="text-muted-foreground font-medium">JWT auth, role-aware access, and public CF API data only. Your contest credentials never touch our servers. Help center and support when you need it.</p>
           </div>
         </Card>
+      </div>
+    </div>
+  </section>
+);
+
+const FeatureHighlights = () => (
+  <section className="py-16 bg-background/30">
+    <div className="container mx-auto px-4">
+      <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
+        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-primary">
+          After every session
+        </p>
+        <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight">
+          Close the loop
+        </h2>
+        <p className="text-muted-foreground font-medium">
+          Reviews, upsolve, and structured levels turn raw practice into lasting gains.
+        </p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          {
+            icon: ClipboardList,
+            title: "Session reviews",
+            body: "Debrief each run with solved counts, timing, and notes, so virtual, speed, and contest sessions all leave a paper trail.",
+          },
+          {
+            icon: Layers,
+            title: "Upsolve & streaks",
+            body: "Queue misses for later, track upsolve streaks alongside training streaks, and keep weak problems from slipping through.",
+          },
+          {
+            icon: Sparkles,
+            title: "Levels roadmap",
+            body: "Follow a curated ladder of problems and ratings as you progress, and pair it with weakness mode for targeted fixes.",
+          },
+        ].map((item, i) => {
+          const Icon = item.icon;
+          return (
+          <motion.div
+            key={item.title}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.08 }}
+          >
+            <Card className="h-full border-border/40 bg-card/20 backdrop-blur-2xl rounded-[2rem] p-8 hover:border-primary/30 transition-colors duration-300">
+              <CardContent className="p-0 space-y-5">
+                <div className="h-12 w-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+                  <Icon size={22} />
+                </div>
+                <h3 className="text-xl font-black tracking-tight uppercase">
+                  {item.title}
+                </h3>
+                <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                  {item.body}
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+          );
+        })}
       </div>
     </div>
   </section>
@@ -186,15 +252,15 @@ const EvolutionProtocol = () => (
           Operational Workflow
         </motion.div>
         <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight">The Evolution Protocol</h2>
-        <p className="text-muted-foreground font-medium text-lg">A standardized, data-driven cycle designed to accelerate your competitive performance.</p>
+        <p className="text-muted-foreground font-medium text-lg">From first sync to stats and upsolve: one repeatable loop you can run every week.</p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-12 lg:gap-16">
         {[
-          { step: "01", title: "Sync", desc: "Establish a direct link with your Codeforces identity and history.", icon: RefreshCw },
-          { step: "02", title: "Configure", desc: "Calibrate difficulty levels and target specific problem tags.", icon: Target },
-          { step: "03", title: "Compete", desc: "Engage in timed sessions within a high-performance training environment.", icon: Zap },
-          { step: "04", title: "Analyze", desc: "Identify bottlenecks through detailed analytics and trend reporting.", icon: BarChart3 }
+          { step: "01", title: "Sync", desc: "Connect your handle; ratings, submissions, and heatmaps populate automatically.", icon: RefreshCw },
+          { step: "02", title: "Configure", desc: "Pick a mode (ladder, weakness, speed, contest, or endurance), then set tags and rating band.", icon: Target },
+          { step: "03", title: "Train & review", desc: "Run timed sessions, then open structured reviews to see what actually happened.", icon: Zap },
+          { step: "04", title: "Analyze & upsolve", desc: "Use per-mode statistics, trajectories, and the upsolve list to steer your next block.", icon: BarChart3 }
         ].map((item, i) => (
           <motion.div 
             key={item.step} 
@@ -337,6 +403,7 @@ export default function LandingPage() {
     <div className="relative min-h-screen">
       <HeroSection user={user} />
       <FeatureBento />
+      <FeatureHighlights />
       <EvolutionProtocol />
       <CommunitySection />
     </div>

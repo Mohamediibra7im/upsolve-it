@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,7 +29,63 @@ const LevelSelector = ({
   const { levels, isLoading, getDefaultLevel, getLevelByPerformance } =
     useLevels();
   const { user } = useUser();
-  const [selectedLevelId, setSelectedLevelId] = useState<number>(1);
+
+  const sortedLevels = useMemo(
+    () => [...levels].sort((a, b) => a.id - b.id),
+    [levels],
+  );
+
+  /**
+   * Map props to a level id. When several rows share the same P1–P4 (possible with the
+   * ladder formula), prefer the highest target Performance so we do not stick on an
+   * earlier duplicate row (e.g. cannot leave level 4).
+   */
+  const matchIdFromRatings = useMemo(() => {
+    if (sortedLevels.length === 0) return 1;
+    const same = sortedLevels.filter(
+      (level) =>
+        Number.parseInt(level.P1, 10) === currentRatings.P1 &&
+        Number.parseInt(level.P2, 10) === currentRatings.P2 &&
+        Number.parseInt(level.P3, 10) === currentRatings.P3 &&
+        Number.parseInt(level.P4, 10) === currentRatings.P4,
+    );
+    if (same.length === 0) return sortedLevels[0].id;
+    if (same.length === 1) return same[0].id;
+    const best = same.reduce((a, b) =>
+      Number.parseInt(a.Performance, 10) >= Number.parseInt(b.Performance, 10)
+        ? a
+        : b,
+    );
+    return best.id;
+  }, [sortedLevels, currentRatings]);
+
+  /**
+   * Parent customRatings can lag one commit behind arrow clicks. Track the id we just
+   * requested so increase/decrease still advance correctly until props catch up.
+   */
+  const [pendingLevelId, setPendingLevelId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (pendingLevelId !== null && matchIdFromRatings === pendingLevelId) {
+      setPendingLevelId(null);
+    }
+  }, [pendingLevelId, matchIdFromRatings]);
+
+  useEffect(() => {
+    if (
+      pendingLevelId !== null &&
+      !sortedLevels.some((l) => l.id === pendingLevelId)
+    ) {
+      setPendingLevelId(null);
+    }
+  }, [sortedLevels, pendingLevelId]);
+
+  const activeLevelId = pendingLevelId ?? matchIdFromRatings;
+
+  const maxLevelId = useMemo(
+    () => sortedLevels.reduce((m, l) => Math.max(m, l.id), 0),
+    [sortedLevels],
+  );
 
   // Helper function to get problem difficulty color
   const getProblemDifficultyColor = (rating: number) => {
@@ -43,65 +99,45 @@ const LevelSelector = ({
     return "from-rose-500 to-rose-700"; // LGM/GM
   };
 
-  useEffect(() => {
-    if (levels.length > 0) {
-      const matchingLevel = levels.find(
-        (level) =>
-          Number.parseInt(level.P1) === currentRatings.P1 &&
-          Number.parseInt(level.P2) === currentRatings.P2 &&
-          Number.parseInt(level.P3) === currentRatings.P3 &&
-          Number.parseInt(level.P4) === currentRatings.P4,
-      );
-
-      if (matchingLevel) {
-        setSelectedLevelId(matchingLevel.id);
-      } else if (user?.rating) {
-        const userLevel = getLevelByPerformance(user.rating);
-        if (userLevel) {
-          setSelectedLevelId(userLevel.id);
-          onLevelChange({
-            P1: Number.parseInt(userLevel.P1),
-            P2: Number.parseInt(userLevel.P2),
-            P3: Number.parseInt(userLevel.P3),
-            P4: Number.parseInt(userLevel.P4),
-          });
-        }
-      }
-    }
-  }, [levels, currentRatings, user, getLevelByPerformance, onLevelChange]);
-
-  const handleLevelChange = (levelId: number) => {
-    const level = levels.find((l) => l.id === levelId);
-    if (level) {
-      setSelectedLevelId(levelId);
-      onLevelChange({
-        P1: Number.parseInt(level.P1),
-        P2: Number.parseInt(level.P2),
-        P3: Number.parseInt(level.P3),
-        P4: Number.parseInt(level.P4),
-      });
-    }
+  const applyLevelId = (levelId: number) => {
+    const level = sortedLevels.find((l) => l.id === levelId);
+    if (!level) return;
+    setPendingLevelId(levelId);
+    onLevelChange({
+      P1: Number.parseInt(level.P1, 10),
+      P2: Number.parseInt(level.P2, 10),
+      P3: Number.parseInt(level.P3, 10),
+      P4: Number.parseInt(level.P4, 10),
+    });
   };
 
+  const selectedIndex = sortedLevels.findIndex((l) => l.id === activeLevelId);
+
   const increaseLevel = () => {
-    if (selectedLevelId < levels.length) handleLevelChange(selectedLevelId + 1);
+    if (selectedIndex >= 0 && selectedIndex < sortedLevels.length - 1) {
+      const next = sortedLevels[selectedIndex + 1];
+      applyLevelId(next.id);
+    }
   };
 
   const decreaseLevel = () => {
-    if (selectedLevelId > 1) handleLevelChange(selectedLevelId - 1);
+    if (selectedIndex > 0) {
+      const prev = sortedLevels[selectedIndex - 1];
+      applyLevelId(prev.id);
+    }
   };
 
   const resetToDefault = () => {
     if (user?.rating) {
       const userLevel = getLevelByPerformance(user.rating);
-      if (userLevel) handleLevelChange(userLevel.id);
+      if (userLevel) applyLevelId(userLevel.id);
     } else {
       const defaultLevel = getDefaultLevel();
-      if (defaultLevel) handleLevelChange(defaultLevel.id);
+      if (defaultLevel) applyLevelId(defaultLevel.id);
     }
   };
 
-  const currentLevel = levels.find((level) => level.id === selectedLevelId);
+  const currentLevel = sortedLevels.find((level) => level.id === activeLevelId);
 
   if (isLoading) {
     return (
@@ -176,7 +212,7 @@ const LevelSelector = ({
                 variant="ghost"
                 size="icon"
                 onClick={decreaseLevel}
-                disabled={selectedLevelId <= 1}
+                disabled={selectedIndex <= 0}
                 className="h-14 w-14 rounded-full hover:bg-background shadow-none hover:shadow-xl transition-all duration-300 disabled:opacity-20"
               >
                 <ChevronDown className="h-6 w-6" />
@@ -188,7 +224,13 @@ const LevelSelector = ({
                   <motion.div
                     className="h-full bg-primary"
                     initial={{ width: 0 }}
-                    animate={{ width: `${(selectedLevelId / levels.length) * 100}%` }}
+                    animate={{
+                      width: `${
+                        maxLevelId > 0
+                          ? (activeLevelId / maxLevelId) * 100
+                          : 0
+                      }%`,
+                    }}
                     transition={{ type: "spring", bounce: 0, duration: 0.5 }}
                   />
                 </div>
@@ -198,7 +240,10 @@ const LevelSelector = ({
                 variant="ghost"
                 size="icon"
                 onClick={increaseLevel}
-                disabled={selectedLevelId >= levels.length}
+                disabled={
+                  selectedIndex < 0 ||
+                  selectedIndex >= sortedLevels.length - 1
+                }
                 className="h-14 w-14 rounded-full hover:bg-background shadow-none hover:shadow-xl transition-all duration-300 disabled:opacity-20"
               >
                 <ChevronUp className="h-6 w-6" />
@@ -263,7 +308,7 @@ const LevelSelector = ({
           <div className="px-4 py-1.5 rounded-full bg-muted/30 border border-border/40 flex items-center gap-2">
             <span className="h-1.5 w-1.5 rounded-full bg-accent" />
             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.1em]">
-              Level Range: 1 - {levels.length}
+              Level Range: 1 - {maxLevelId || levels.length}
             </span>
           </div>
         </div>

@@ -7,32 +7,21 @@ import {
   Search, 
   Target, 
   Clock, 
-  ChevronRight, 
-  Filter,
   Layers,
   Zap
 } from "lucide-react";
-import levelsData from "@/public/data/level.json";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-
-interface Level {
-  id: number;
-  level: string;
-  time: string;
-  Performance: string;
-  P1: string;
-  P2: string;
-  P3: string;
-  P4: string;
-}
+import { useLevels } from "@/hooks/useLevels";
+import Loader from "@/app/_Components/Loader";
 
 const LevelsPage = () => {
+  const { levels: levelsData, isLoading } = useLevels();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<"all" | "low" | "medium" | "high" | "expert">("all");
 
   const filteredLevels = useMemo(() => {
-    return (levelsData as Level[]).filter((level) => {
+    return levelsData.filter((level) => {
       const matchesSearch = 
         level.level.toLowerCase().includes(searchQuery.toLowerCase()) ||
         level.Performance.includes(searchQuery);
@@ -47,7 +36,15 @@ const LevelsPage = () => {
 
       return matchesSearch && matchesFilter;
     });
-  }, [searchQuery, filterType]);
+  }, [levelsData, searchQuery, filterType]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center pt-24">
+        <Loader message="Loading levels..." />
+      </div>
+    );
+  }
 
   const container = {
     hidden: { opacity: 0 },

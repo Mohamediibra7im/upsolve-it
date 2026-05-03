@@ -8,6 +8,8 @@ export type SubmissionStatus = {
   problemId: string; // format: "contestId_index"
   status: "AC" | "WA" | "TESTING" | "none"; // AC = accepted, WA = unsuccessful, TESTING = in progress
   lastSubmissionTime?: number;
+  /** Non-OK submissions before first OK after session start; if no OK, total non-ignored attempts */
+  attempts?: number;
 };
 
 const getTrainingSubmissionStatus = async (
@@ -45,9 +47,14 @@ const getTrainingSubmissionStatus = async (
         submissionStatuses.push({
           problemId,
           status: "none",
+          attempts: 0,
         });
         continue;
       }
+
+      const chronological = [...problemSubmissions].sort(
+        (a, b) => a.creationTimeSeconds - b.creationTimeSeconds,
+      );
 
       // Check for AC first, as it's the final success state
       const acceptedSubmission = problemSubmissions.find(
@@ -55,10 +62,16 @@ const getTrainingSubmissionStatus = async (
       );
 
       if (acceptedSubmission) {
+        const acIndex = chronological.findIndex((s) => s.verdict === "OK");
+        const attempts =
+          acIndex >= 0
+            ? chronological.slice(0, acIndex).filter((s) => s.verdict !== "TESTING").length
+            : 0;
         submissionStatuses.push({
           problemId,
           status: "AC",
           lastSubmissionTime: acceptedSubmission.creationTimeSeconds * 1000,
+          attempts,
         });
         continue;
       }
@@ -70,6 +83,7 @@ const getTrainingSubmissionStatus = async (
           problemId,
           status: "TESTING",
           lastSubmissionTime: latestSubmission.creationTimeSeconds * 1000,
+          attempts: chronological.filter((s) => s.verdict !== "TESTING").length,
         });
         continue;
       }
@@ -79,6 +93,7 @@ const getTrainingSubmissionStatus = async (
         problemId,
         status: "WA",
         lastSubmissionTime: latestSubmission.creationTimeSeconds * 1000,
+        attempts: chronological.filter((s) => s.verdict !== "TESTING").length,
       });
     }
 

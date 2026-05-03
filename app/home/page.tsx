@@ -1,6 +1,6 @@
 "use client";
 
-import { useState , useEffect } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -14,9 +14,12 @@ import {
   Trophy,
   Flame,
   LayoutGrid,
-  Info
+  Info,
+  Zap,
+  Users,
 } from "lucide-react";
 import useUser from "@/hooks/useUser";
+import { useFriendRequests } from "@/hooks/useFriendRequests";
 import Loader from "@/app/_Components/Loader";
 import ChangePasswordDialog from "@/app/_Components/ChangePasswordDialog";
 import useHistory from "@/hooks/useHistory";
@@ -32,14 +35,31 @@ import {
   TooltipPortal,
 } from "@/components/ui/tooltip";
 import { useRouter } from "next/navigation";
+import useSWR from "swr";
+import { swrFetcher } from "@/lib/apiClient";
+
+type StreakPayload = {
+  trainingStreak: number;
+  upsolveStreak: number;
+  bestStreak: number;
+  consistencyScore: number;
+};
 
 export default function HomePage() {
   const { user, isLoading: isUserLoading, logout, syncProfile } = useUser();
+  const { incoming: incomingFriendRequests } = useFriendRequests(!!user);
+  const friendRequestCount = incomingFriendRequests.length;
   const { history, isLoading: isHistoryLoading } = useHistory();
   const { upsolvedProblems, isLoading: isUpsolveLoading } = useUpsolvedProblems();
   const { totalSolved } = useHeatmapData(history || [], upsolvedProblems || []);
   const [isSyncing, setIsSyncing] = useState(false);
   const router = useRouter();
+
+  const { data: streaks } = useSWR<StreakPayload>(
+    user ? "/api/users/me/streaks" : null,
+    swrFetcher,
+    { revalidateOnFocus: false },
+  );
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -82,17 +102,35 @@ export default function HomePage() {
           </motion.h1>
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto md:flex-nowrap">
           <Button
             onClick={handleSync}
             disabled={isSyncing}
             variant="outline"
-            className="h-12 md:h-14 flex-1 md:px-8 rounded-xl md:rounded-2xl border-2 border-border/40 font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-card/40 transition-all"
+            className="h-12 md:h-14 flex-1 min-w-[120px] md:px-6 rounded-xl md:rounded-2xl border-2 border-border/40 font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-card/40 transition-all"
           >
             <RefreshCw className={cn("mr-2 h-4 w-4", isSyncing && "animate-spin")} />
             {isSyncing ? "Updating..." : "Sync Profile"}
           </Button>
-          <Button asChild className="h-12 md:h-14 flex-1 md:px-8 rounded-xl md:rounded-2xl bg-primary font-black uppercase tracking-widest text-[9px] md:text-[10px] shadow-lg shadow-primary/20 transition-all">
+          <Button
+            asChild
+            variant="outline"
+            className="h-12 md:h-14 flex-1 min-w-[120px] md:px-6 rounded-xl md:rounded-2xl border-2 border-border/40 font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-card/40 transition-all"
+          >
+            <Link href="/friends" className="relative flex items-center justify-center gap-2">
+              <Users className="h-4 w-4" />
+              Friends
+              {friendRequestCount > 0 && (
+                <span
+                  className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-black leading-none text-white shadow-sm ring-2 ring-background"
+                  aria-label={`${friendRequestCount} pending friend request${friendRequestCount === 1 ? "" : "s"}`}
+                >
+                  {friendRequestCount > 9 ? "9+" : friendRequestCount}
+                </span>
+              )}
+            </Link>
+          </Button>
+          <Button asChild className="h-12 md:h-14 flex-1 min-w-[120px] md:px-8 rounded-xl md:rounded-2xl bg-primary font-black uppercase tracking-widest text-[9px] md:text-[10px] shadow-lg shadow-primary/20 transition-all">
             <Link href="/training">Start Training</Link>
           </Button>
         </div>
@@ -117,6 +155,66 @@ export default function HomePage() {
               <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-4">{stat.label}</p>
               <h4 className="text-4xl font-black tracking-tight mb-1">{stat.value}</h4>
               <p className="text-[10px] font-bold text-muted-foreground uppercase">{stat.sub}</p>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Streak metrics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        {[
+          {
+            label: "Training streak",
+            value: streaks?.trainingStreak ?? "-",
+            sub: "days with a session",
+            icon: Zap,
+            color: "text-amber-500",
+          },
+          {
+            label: "Upsolve streak",
+            value: streaks?.upsolveStreak ?? "-",
+            sub: "days with a solve",
+            icon: Target,
+            color: "text-sky-500",
+          },
+          {
+            label: "Best streak",
+            value: streaks?.bestStreak ?? "-",
+            sub: "training or upsolve",
+            icon: Trophy,
+            color: "text-orange-500",
+          },
+          {
+            label: "Consistency",
+            value:
+              streaks != null ? `${streaks.consistencyScore}%` : "-",
+            sub: "last 7 days (UTC)",
+            icon: CheckCircle2,
+            color: "text-emerald-500",
+          },
+        ].map((stat, i) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 + i * 0.05 }}
+          >
+            <Card className="border-border/40 bg-card/20 backdrop-blur-xl rounded-[2rem] p-6 hover:bg-card/30 transition-colors group overflow-hidden relative">
+              <stat.icon
+                className={cn(
+                  "absolute top-[-10px] right-[-10px] h-20 w-20 opacity-5 group-hover:opacity-10 transition-opacity",
+                  stat.color,
+                )}
+              />
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-4">
+                {stat.label}
+              </p>
+              <h4 className="text-4xl font-black tracking-tight mb-1">
+                {stat.value}
+              </h4>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase">
+                {stat.sub}
+              </p>
             </Card>
           </motion.div>
         ))}
@@ -148,7 +246,7 @@ export default function HomePage() {
           >
             <Card className="border-border/40 bg-card/20 backdrop-blur-xl rounded-[2.5rem] p-8 relative overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-50" />
-              
+
               {/* Pulsing Neural Core Animation */}
               <div className="absolute -right-4 -top-4 w-32 h-32 opacity-20 group-hover:opacity-40 transition-opacity">
                 <svg viewBox="0 0 100 100" className="w-full h-full animate-[spin_10s_linear_infinite]">
@@ -193,7 +291,7 @@ export default function HomePage() {
                     <span>{Math.floor(((totalSolved % 10) / 10) * 100)}% to Next Level</span>
                   </div>
                   <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5 p-0.5">
-                    <motion.div 
+                    <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${(totalSolved % 10) * 10}%` }}
                       className="h-full bg-gradient-to-r from-primary/50 to-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]"
@@ -210,7 +308,7 @@ export default function HomePage() {
           <Card className="border-border/40 bg-card/20 backdrop-blur-xl rounded-[2.5rem] p-8 relative overflow-hidden group">
             <div className="absolute inset-0 bg-emerald-500/5 group-hover:bg-emerald-500/10 transition-colors duration-500" />
             <Target size={120} className="absolute bottom-[-20px] right-[-20px] opacity-10 text-emerald-500 group-hover:scale-110 transition-transform" />
-            
+
             <div className="relative z-10 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -223,13 +321,18 @@ export default function HomePage() {
                 <TooltipProvider delayDuration={0}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button className="h-8 w-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all">
-                        <Info size={14} />
+                      <button
+                        type="button"
+                        title="Training guide"
+                        aria-label="Training guide: how recommended goals work"
+                        className="h-8 w-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all"
+                      >
+                        <Info size={14} aria-hidden />
                       </button>
                     </TooltipTrigger>
                     <TooltipPortal>
-                      <TooltipContent 
-                        side="left" 
+                      <TooltipContent
+                        side="left"
                         className="bg-card/95 backdrop-blur-2xl border-white/10 p-4 rounded-xl shadow-2xl max-w-[240px] z-[9999]"
                       >
                         <div className="space-y-2">
@@ -255,7 +358,7 @@ export default function HomePage() {
                 <Link href="/training">Start Recommended Session</Link>
               </Button>
             </div>
-            
+
             {/* Corner Accent */}
             <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 blur-[40px] rounded-full -mr-10 -mt-10" />
           </Card>
@@ -263,8 +366,8 @@ export default function HomePage() {
           <Card className="border-border/40 bg-card/20 backdrop-blur-xl rounded-[2.5rem] p-8 space-y-4">
             <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-4">Account Systems</h3>
             <ChangePasswordDialog />
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={logout}
               className="w-full h-12 rounded-xl border-border/40 bg-background/40 font-black uppercase tracking-widest text-[10px] hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/40 transition-all"
             >

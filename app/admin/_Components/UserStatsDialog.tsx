@@ -22,49 +22,27 @@ import {
   Clock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-interface UserStats {
-  user: {
-    codeforcesHandle: string;
-    rating: number;
-    rank: string;
-    maxRating: number;
-    maxRank: string;
-  };
-  stats: {
-    totalSessions: number;
-    totalProblems: number;
-    solvedProblems: number;
-    upsolvedCount: number;
-    upsolvedSolvedCount: number;
-    averagePerformance: number;
-    bestPerformance: number;
-    worstPerformance: number;
-    solvingRate: number;
-    averageRating: number;
-    recentTrend: number;
-    recentSessions: number;
-  };
-  trainings: Array<{
-    id: string;
-    startTime: number;
-    endTime: number;
-    performance: number;
-    problemsCount: number;
-    solvedCount: number;
-  }>;
-}
+import type { UserTrainingStatsView } from '@/types/userTrainingStats';
+import { formatAvgProblemRating } from '@/utils/training/formatAvgProblemRating';
 
 interface UserStatsDialogProps {
   statsDialog: { open: boolean; userId: string | null };
   setStatsDialog: (dialog: { open: boolean; userId: string | null }) => void;
-  userStats: UserStats | null;
+  userStats: UserTrainingStatsView | null;
+  /** Dialog header title (default: admin copy) */
+  headerTitle?: string;
+  /** Shown before the friend’s handle in the subtitle (default: admin copy) */
+  headerDescriptionPrefix?: string;
+  closeButtonLabel?: string;
 }
 
 export function UserStatsDialog({ 
   statsDialog, 
   setStatsDialog, 
-  userStats 
+  userStats,
+  headerTitle = 'Personnel Intelligence',
+  headerDescriptionPrefix = 'Deep analysis for',
+  closeButtonLabel = 'Close File',
 }: Readonly<UserStatsDialogProps>) {
   return (
     <Dialog open={statsDialog.open} onOpenChange={(open) => !open && setStatsDialog({ open: false, userId: null })}>
@@ -85,10 +63,11 @@ export function UserStatsDialog({
                 </div>
                 <div className="space-y-1">
                   <DialogTitle className="text-4xl font-black tracking-tighter uppercase text-foreground leading-none">
-                    Personnel Intelligence
+                    {headerTitle}
                   </DialogTitle>
                   <DialogDescription className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 mt-1">
-                    Deep analysis for <span className="text-primary">{userStats.user.codeforcesHandle}</span>
+                    {headerDescriptionPrefix}{' '}
+                    <span className="text-primary">{userStats.user.codeforcesHandle}</span>
                   </DialogDescription>
                 </div>
               </DialogHeader>
@@ -149,6 +128,16 @@ export function UserStatsDialog({
                         <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
                           <div className="text-xl font-black text-foreground">{userStats.stats.totalProblems}</div>
                           <div className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/60">Total</div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-end gap-3">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                            Avg Problem Rating
+                          </span>
+                          <span className="text-2xl font-black tabular-nums text-primary shrink-0">
+                            {formatAvgProblemRating(userStats.stats.averageRating)}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -224,18 +213,26 @@ export function UserStatsDialog({
                 onClick={() => setStatsDialog({ open: false, userId: null })}
                 className="rounded-xl px-10 h-12 font-black uppercase tracking-widest text-xs shadow-xl"
               >
-                Close File
+                {closeButtonLabel}
               </Button>
             </div>
           </div>
         ) : (
-          <div className="h-96 flex flex-col items-center justify-center space-y-6">
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse" />
-              <Loader2 className="h-12 w-12 animate-spin text-primary relative z-10" />
+          <>
+            <DialogTitle className="sr-only">{headerTitle}</DialogTitle>
+            <DialogDescription className="sr-only">
+              Loading statistics
+            </DialogDescription>
+            <div className="h-96 flex flex-col items-center justify-center space-y-6">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse" />
+                <Loader2 className="h-12 w-12 animate-spin text-primary relative z-10" />
+              </div>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground animate-pulse" aria-hidden>
+                Decrypting Intelligence Data...
+              </p>
             </div>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground animate-pulse">Decrypting Intelligence Data...</p>
-          </div>
+          </>
         )}
       </DialogContent>
     </Dialog>

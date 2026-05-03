@@ -5,6 +5,7 @@ import { TrainingProblem } from "@/types/TrainingProblem";
 import getAllProblems from "@/utils/codeforces/getAllProblems";
 import getSolvedProblems from "@/utils/codeforces/getSolvedProblems";
 import { User } from "@/types/User";
+import { expectedTimeSecondsFromRating } from "@/utils/training/expectedTime";
 
 const PROBLEMS_CACHE_KEY = "codeforces-all-problems";
 const SOLVED_PROBLEMS_CACHE_KEY = (handle: string) =>
@@ -15,6 +16,23 @@ const hasAnyTag = (problem: CodeforcesProblem, tags: ProblemTag[]) => {
   if (tags.length === 0) return true;
   return tags.some((tag) => problem.tags.includes(tag.value));
 };
+
+/** Problems whose CF rating is nearest to `target` if an exact match is sparse. */
+function poolByRatingProximity(
+  source: CodeforcesProblem[],
+  target: number,
+): CodeforcesProblem[] {
+  const rated = source.filter(
+    (p) => typeof p.rating === "number" && !Number.isNaN(p.rating),
+  );
+  for (const tol of [0, 100, 200, 400]) {
+    const subset = rated.filter(
+      (p) => Math.abs((p.rating as number) - target) <= tol,
+    );
+    if (subset.length > 0) return subset;
+  }
+  return [];
+}
 
 // Helper to choose a random problem from a pool, avoiding duplicates
 const chooseFrom = (problist: CodeforcesProblem[], alreadyChosen: Set<string>) => {
@@ -107,25 +125,18 @@ const useProblems = (user: User | null | undefined) => {
     }
   }, [user, mutateSolved]);
 
-  const getRandomProblems = useCallback(
+  const getRandomProblemsFromRatings = useCallback(
     (
+      ratings: number[],
       tags: ProblemTag[],
       lb: number | null,
       ub: number | null,
-      customRatings: { P1: number; P2: number; P3: number; P4: number },
     ) => {
-      if (!user || !allProblems || !solvedProblems) {
+      if (!user || allProblems === undefined || solvedProblems === undefined) {
         return;
       }
 
       setIsLoading(true);
-
-      const ratings = [
-        customRatings.P1,
-        customRatings.P2,
-        customRatings.P3,
-        customRatings.P4,
-      ];
 
       // Convert null bounds to defaults
       const lower = lb ?? 0;
@@ -142,10 +153,8 @@ const useProblems = (user: User | null | undefined) => {
 
       const problemPools = ratings.map((rating) => ({
         rating,
-        solved: solvedProblems.filter((problem) => problem.rating === rating),
-        unsolved: unsolvedProblems.filter(
-          (problem) => problem.rating === rating,
-        ),
+        solved: poolByRatingProximity(solvedProblems, rating),
+        unsolved: poolByRatingProximity(unsolvedProblems, rating),
       }));
 
       const alreadyChosen = new Set<string>();
@@ -185,10 +194,13 @@ const useProblems = (user: User | null | undefined) => {
 
         if (!problem) return null;
 
+        const pid = `${problem.contestId}_${problem.index}`;
         return {
           ...problem,
           url: `https://codeforces.com/contest/${problem.contestId}/problem/${problem.index}`,
           solvedTime: null,
+          problemId: pid,
+          expectedTimeSeconds: expectedTimeSecondsFromRating(problem.rating ?? 0),
         };
       });
 
@@ -198,12 +210,35 @@ const useProblems = (user: User | null | undefined) => {
     [user, allProblems, solvedProblems],
   );
 
+  const getRandomProblems = useCallback(
+    (
+      tags: ProblemTag[],
+      lb: number | null,
+      ub: number | null,
+      customRatings: { P1: number; P2: number; P3: number; P4: number },
+    ) => {
+      return getRandomProblemsFromRatings(
+        [
+          customRatings.P1,
+          customRatings.P2,
+          customRatings.P3,
+          customRatings.P4,
+        ],
+        tags,
+        lb,
+        ub,
+      );
+    },
+    [getRandomProblemsFromRatings],
+  );
+
   return {
     allProblems: allProblems ?? [],
     solvedProblems: solvedProblems ?? [],
     isLoading: isLoading || isLoadingAll || isLoadingSolved,
     refreshSolvedProblems,
     getRandomProblems,
+    getRandomProblemsFromRatings,
   };
 };
 

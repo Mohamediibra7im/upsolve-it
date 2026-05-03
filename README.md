@@ -1,4 +1,4 @@
-# [ UPSOLVE.it ] — Command Interface
+# [ UPSOLVE.it ] | Command Interface
 
 > **Frontend Protocol: ALPHA-7**
 > A high-fidelity, glassmorphic dashboard for elite competitive programmers.

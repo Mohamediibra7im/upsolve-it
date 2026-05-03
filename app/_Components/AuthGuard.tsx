@@ -5,14 +5,21 @@ import { usePathname, useRouter } from "next/navigation";
 import useUser from "@/hooks/useUser";
 import Loader from "@/app/_Components/Loader";
 
-const protectedRoutes = ["/training", "/statistics", "/upsolve"];
+const protectedRoots = ["/training", "/statistics", "/upsolve"];
+
+function routeIsProtected(pathname: string | null): boolean {
+  if (!pathname) return false;
+  return protectedRoots.some(
+    (base) => pathname === base || pathname.startsWith(`${base}/`),
+  );
+}
 
 const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoading } = useUser();
   const router = useRouter();
   const pathname = usePathname();
 
-  const isProtectedRoute = protectedRoutes.includes(pathname);
+  const isProtectedRoute = routeIsProtected(pathname);
 
   useEffect(() => {
     // Add a small delay to ensure localStorage is properly loaded

@@ -15,7 +15,8 @@ import {
   Database, 
   RefreshCw,
   Home,
-  Activity
+  Activity,
+  Layers,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -24,12 +25,14 @@ import Link from 'next/link';
 // Modular components
 import { AdminDashboardView } from "./_Components/AdminDashboardView";
 import AdminLogsView from "./_Components/AdminLogsView";
+import AdminLevelsManagement from "./_Components/AdminLevelsManagement";
 
-type AdminTab = "dashboard" | "users" | "logs";
+type AdminTab = "dashboard" | "users" | "logs" | "levels";
 
 const navItems = [
   { id: "dashboard", label: "Strategic Overview", icon: LayoutDashboard, color: "text-primary" },
   { id: "users", label: "Personnel Files", icon: Users, color: "text-emerald-500" },
+  { id: "levels", label: "Level Matrix", icon: Layers, color: "text-violet-500" },
   { id: "logs", label: "System Audit Logs", icon: Database, color: "text-orange-500" },
 ];
 
@@ -115,6 +118,7 @@ export default function AdminPage() {
           <nav className="hidden md:flex items-center gap-1.5 p-1.5 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-md">
             {navItems.map((item) => (
               <button
+                type="button"
                 key={item.id}
                 onClick={() => setActiveTab(item.id as AdminTab)}
                 className={cn(
@@ -174,11 +178,13 @@ export default function AdminPage() {
               <h1 className="text-5xl lg:text-7xl font-black tracking-tighter uppercase text-foreground leading-none">
                 {activeTab === 'dashboard' && "Strategic OverSight"}
                 {activeTab === 'users' && "Personnel Control"}
+                {activeTab === 'levels' && "Level Distribution"}
                 {activeTab === 'logs' && "System Integrity"}
               </h1>
               <p className="text-lg text-muted-foreground font-medium max-w-2xl opacity-70">
                 {activeTab === 'dashboard' && "High-level metrics and growth analysis for the upsolve ecosystem."}
                 {activeTab === 'users' && "Manage identities, roles, and security permissions across the platform."}
+                {activeTab === 'levels' && "Define training level targets; problem ratings P1–P4 follow the ladder formula from each target."}
                 {activeTab === 'logs' && "Real-time audit trail and security event monitoring for system reliability."}
               </p>
             </div>
@@ -230,6 +236,22 @@ export default function AdminPage() {
                 </motion.div>
               )}
 
+              {activeTab === "levels" && (
+                <motion.div
+                  key="levels"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -30 }}
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <Card className="border-white/5 bg-card/20 backdrop-blur-2xl rounded-[3rem] overflow-hidden shadow-2xl shadow-black/50">
+                    <div className="p-8 sm:p-12">
+                      <AdminLevelsManagement />
+                    </div>
+                  </Card>
+                </motion.div>
+              )}
+
               {activeTab === "logs" && (
                 <motion.div
                   key="logs"
@@ -255,7 +277,10 @@ export default function AdminPage() {
         <div className="p-2 rounded-[2.5rem] bg-background/80 border border-white/10 backdrop-blur-2xl shadow-2xl flex items-center justify-around">
           {navItems.map((item) => (
             <button
+              type="button"
               key={item.id}
+              title={item.label}
+              aria-label={item.label}
               onClick={() => setActiveTab(item.id as AdminTab)}
               className={cn(
                 "p-4 rounded-full transition-all duration-300",

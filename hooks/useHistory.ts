@@ -17,9 +17,10 @@ const useHistory = () => {
     swrFetcher,
     {
       revalidateOnFocus: false,
+      revalidateOnMount: true,
       errorRetryCount: 3,
       errorRetryInterval: 2000,
-      dedupingInterval: 5000,
+      dedupingInterval: 3000,
     }
   );
 
