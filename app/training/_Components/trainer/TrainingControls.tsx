@@ -113,33 +113,11 @@ const TrainingControls = ({
                     </div>
                   </div>
                   
-                  <div className="relative">
-                    {/* Digital Timer Frame */}
-                    <div className="absolute -inset-4 bg-primary/5 rounded-[2.5rem] blur-2xl opacity-50" />
-                    <div className="relative rounded-3xl border border-primary/20 bg-background/40 p-8 text-center shadow-[inset_0_0_40px_rgba(var(--primary),0.02)] backdrop-blur-sm overflow-hidden">
-                      {/* Decorative Lines */}
-                      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-                      <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-                      
-                      <div className="relative z-10">
-                        <CountDown
-                          startTime={training.startTime}
-                          endTime={training.endTime}
-                        />
-                      </div>
-                      
-                      {/* Progress Bar Background */}
-                      {!isPreContestPeriod && (
-                        <div className="mt-6 h-1.5 w-full bg-muted/20 rounded-full overflow-hidden">
-                          <motion.div 
-                            className="h-full bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)]"
-                            initial={{ width: 0 }}
-                            animate={{ width: `${(solvedCount / totalCount) * 100}%` }}
-                            transition={{ duration: 1, ease: "easeOut" }}
-                          />
-                        </div>
-                      )}
-                    </div>
+                  <div className="relative px-1">
+                    <CountDown
+                      startTime={training.startTime}
+                      endTime={training.endTime}
+                    />
                   </div>
                   
                   {isTraining && (
@@ -196,11 +174,11 @@ const TrainingControls = ({
                     <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">
                       {isPreContestPeriod ? "Starts In" : "Session Ends In"}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                    <div className="min-w-0">
                       <CountDown
                         startTime={training.startTime}
                         endTime={training.endTime}
+                        compact
                       />
                     </div>
                   </div>

@@ -11,6 +11,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   TrendingUp,
   Calendar,
   BarChart3,
@@ -19,15 +25,29 @@ import {
   CheckCircle2,
   LayoutDashboard,
   AlertTriangle,
-  RefreshCw} from "lucide-react";
+  RefreshCw,
+  Layers,
+  Info,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import {
+  isTrainingProblemCountedSolved,
+  trainingSessionHasSolve,
+} from "@/utils/training/problemCountedSolved";
+import { averageEffectiveProblemRatingForSession } from "@/utils/training/effectiveProblemRating";
+import {
+  formatTrainingModeLabel,
+  normalizeTrainingMode,
+  TRAINING_MODE_ORDER,
+} from "@/utils/training/trainingModeLabel";
+import type { TrainingMode } from "@/types/TrainingMode";
 
 const formatMetric = (value: number | null | undefined) => {
-  if (value === null || value === undefined) return "—";
-  if (Number.isNaN(value)) return "—";
+  if (value === null || value === undefined) return "-";
+  if (Number.isNaN(value)) return "-";
   return String(value);
 };
 
@@ -96,32 +116,50 @@ export default function StatisticsPage() {
 
     const totalSessions = history.length;
     const totalProblems = history.reduce((acc, session) => acc + session.problems.length, 0);
-    const solvedProblems = history.reduce((acc, session) =>
-      acc + session.problems.filter(p => p.solvedTime).length, 0
+    const solvedProblems = history.reduce(
+      (acc, session) =>
+        acc +
+        session.problems.filter((p) => isTrainingProblemCountedSolved(p)).length,
+      0,
     );
     const upsolvedCount = upsolvedProblems?.length || 0;
 
-    const averagePerformance = Math.round(
-      history.reduce((acc, session) => acc + session.performance, 0) / totalSessions
+    /** Same rule as graph / mode cards: perf stats only from sessions with ≥1 solve. */
+    const sessionsWithSolve = history.filter(trainingSessionHasSolve);
+
+    const averagePerformance =
+      sessionsWithSolve.length > 0
+        ? Math.round(
+            sessionsWithSolve.reduce(
+              (acc, session) => acc + (session.performance ?? 0),
+              0,
+            ) / sessionsWithSolve.length,
+          )
+        : null;
+
+    const bestPerformance =
+      sessionsWithSolve.length > 0
+        ? Math.max(...sessionsWithSolve.map((s) => s.performance ?? 0))
+        : null;
+
+    const solvedChronological = [...sessionsWithSolve].sort(
+      (a, b) => a.startTime - b.startTime,
     );
+    const recentTrend =
+      solvedChronological.length >= 2
+        ? (solvedChronological.at(-1)?.performance ?? 0) -
+          (solvedChronological.at(-2)?.performance ?? 0)
+        : 0;
 
-    const bestPerformance = Math.max(...history.map(session => session.performance));
-
-    const recentTrend = history.length >= 2 ?
-      (history.at(-1)?.performance ?? 0) - (history.at(-2)?.performance ?? 0) : 0;
-
-    const averageRatingRaw = history.reduce((acc, session) => {
-      const sessionRatings = Object.values(session.customRatings ?? {}).filter(
-        (r) => typeof r === "number" && Number.isFinite(r),
-      );
-      if (sessionRatings.length === 0) return acc;
-      const sessionAvg =
-        sessionRatings.reduce((sum, rating) => sum + rating, 0) /
-        sessionRatings.length;
-      return acc + sessionAvg;
-    }, 0);
+    const averageRatingRaw = history.reduce(
+      (acc, session) =>
+        acc + averageEffectiveProblemRatingForSession(session),
+      0,
+    );
     const averageRating =
-      averageRatingRaw > 0 ? Math.round(averageRatingRaw / totalSessions) : null;
+      totalSessions > 0
+        ? Math.round(averageRatingRaw / totalSessions)
+        : null;
 
     const solvingRate = totalProblems > 0 ? Math.round((solvedProblems / totalProblems) * 100) : 0;
 
@@ -137,6 +175,59 @@ export default function StatisticsPage() {
       solvingRate
     };
   }, [history, upsolvedProblems]);
+
+  const statsByMode = useMemo(() => {
+    if (!history?.length) return [];
+    const groups = new Map<TrainingMode, typeof history>();
+    for (const session of history) {
+      const mode = normalizeTrainingMode(session.trainingMode);
+      const list = groups.get(mode) ?? [];
+      list.push(session);
+      groups.set(mode, list);
+    }
+    return TRAINING_MODE_ORDER.filter((m) => groups.has(m)).map((mode) => {
+      const sessions = groups.get(mode)!;
+      const totalProblems = sessions.reduce(
+        (acc, s) => acc + s.problems.length,
+        0,
+      );
+      const solved = sessions.reduce(
+        (acc, s) =>
+          acc +
+          s.problems.filter((p) => isTrainingProblemCountedSolved(p)).length,
+        0,
+      );
+      /** Only sessions with ≥1 solve contribute to perf avg/best (miss-only sessions still get a stored estimate). */
+      const sessionsWithSolve = sessions.filter((s) =>
+        s.problems.some((p) => isTrainingProblemCountedSolved(p)),
+      );
+      const avgPerf =
+        sessionsWithSolve.length > 0
+          ? Math.round(
+              sessionsWithSolve.reduce(
+                (acc, s) => acc + (s.performance ?? 0),
+                0,
+              ) / sessionsWithSolve.length,
+            )
+          : 0;
+      const bestPerf =
+        sessionsWithSolve.length > 0
+          ? Math.max(...sessionsWithSolve.map((s) => s.performance ?? 0))
+          : 0;
+      const solvingRate =
+        totalProblems > 0 ? Math.round((solved / totalProblems) * 100) : 0;
+      return {
+        mode,
+        label: formatTrainingModeLabel(mode),
+        sessions: sessions.length,
+        totalProblems,
+        solved,
+        averagePerformance: avgPerf,
+        bestPerformance: bestPerf,
+        solvingRate,
+      };
+    });
+  }, [history]);
 
   if (isLoading || isUserLoading) return <Loader />;
   if (!user) return <Loader />;
@@ -177,7 +268,7 @@ export default function StatisticsPage() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-foreground">Unable to load training data</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {error instanceof Error ? error.message : "Network error — the server may be offline. Your page will load with available data."}
+                  {error instanceof Error ? error.message : "Network error. The server may be offline; your page will load with available data."}
                 </p>
               </div>
               <Button
@@ -309,7 +400,7 @@ export default function StatisticsPage() {
                     <StatCard 
                       title="Avg Performance"
                       value={formatMetric(stats.averagePerformance)}
-                      subValue="Efficiency trend"
+                      subValue="Among sessions with at least one solve"
                       icon={TrendingUp}
                       color="text-emerald-500"
                       trend={stats.recentTrend}
@@ -317,7 +408,7 @@ export default function StatisticsPage() {
                     <StatCard 
                       title="Peak Rating"
                       value={formatMetric(stats.bestPerformance)}
-                      subValue="Personal record"
+                      subValue="Among sessions with at least one solve"
                       icon={Trophy}
                       color="text-amber-500"
                     />
@@ -330,8 +421,126 @@ export default function StatisticsPage() {
                     />
                   </div>
 
-                  {/* Secondary Insights Grid */}
-
+                  {/* Per-mode breakdown */}
+                  {statsByMode.length > 0 ? (
+                    <Card className="border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden w-full">
+                      <CardContent className="p-0">
+                        <div className="p-6 sm:p-8 border-b border-border/40 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+                              <Layers className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg sm:text-xl font-black text-foreground tracking-tight">
+                                Stats by training mode
+                              </h3>
+                              <p className="text-xs sm:text-sm font-medium text-muted-foreground mt-1 max-w-2xl">
+                                Sessions are grouped by how you trained (ladder, speed,
+                                contest, etc.). Totals are per mode only. Average and best
+                                performance use sessions where you solved at least one
+                                problem in that mode.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-6 sm:p-8 pt-2">
+                          <TooltipProvider delayDuration={200}>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                              {statsByMode.map((m) => (
+                              <div
+                                key={m.mode}
+                                className="rounded-2xl border border-border/50 bg-background/40 backdrop-blur-sm p-5 space-y-4 hover:border-primary/25 transition-colors"
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-[10px] font-black uppercase tracking-[0.15em]"
+                                  >
+                                    {m.label}
+                                  </Badge>
+                                  <div className="flex items-center gap-1.5 shrink-0">
+                                    <span className="inline-flex h-5 w-5 items-center justify-center">
+                                      {m.solved === 0 ? (
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <button
+                                              type="button"
+                                              className="rounded-md p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                              aria-label="Why average and best performance are hidden for this mode"
+                                            >
+                                              <Info className="h-3.5 w-3.5" aria-hidden />
+                                            </button>
+                                          </TooltipTrigger>
+                                          <TooltipContent
+                                            side="top"
+                                            className="max-w-[260px] text-xs leading-relaxed"
+                                          >
+                                            Performance is hidden until you have at least one
+                                            solve in this mode. Stored session scores can still
+                                            reflect miss penalties.
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      ) : null}
+                                    </span>
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground tabular-nums">
+                                      {m.sessions}{" "}
+                                      {m.sessions === 1 ? "session" : "sessions"}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3 text-sm">
+                                  <div className="space-y-0.5">
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                      Avg performance
+                                    </p>
+                                    <p className="text-xl font-black tabular-nums text-foreground">
+                                      {m.solved > 0
+                                        ? formatMetric(m.averagePerformance)
+                                        : "-"}
+                                    </p>
+                                  </div>
+                                  <div className="space-y-0.5">
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                      Best
+                                    </p>
+                                    <p className="text-xl font-black tabular-nums text-foreground">
+                                      {m.solved > 0
+                                        ? formatMetric(m.bestPerformance)
+                                        : "-"}
+                                    </p>
+                                  </div>
+                                  <div className="space-y-0.5">
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                      Solve rate
+                                    </p>
+                                    <p className="text-xl font-black tabular-nums text-primary">
+                                      {m.solvingRate}
+                                      <span className="text-sm font-black text-primary/80">
+                                        %
+                                      </span>
+                                    </p>
+                                  </div>
+                                  <div className="space-y-0.5">
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                      Solved / tries
+                                    </p>
+                                    <p className="text-xl font-black tabular-nums text-foreground">
+                                      {m.solved}
+                                      <span className="text-sm font-semibold text-muted-foreground">
+                                        {" "}
+                                        / {m.totalProblems}
+                                      </span>
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                            </div>
+                          </TooltipProvider>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ) : null}
 
                   {/* Trends Section */}
                   <Card className="border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden w-full">
@@ -410,6 +619,10 @@ export default function StatisticsPage() {
     </div>
   );
 }
+
+
+
+
 
 
 

@@ -80,9 +80,13 @@ const getPerformance = (
   const contestDuration = (training.endTime - training.startTime) / 60000; // in minutes
 
   // Extract problem data - no more penalty tracking
+  const customList = Object.values(training.customRatings ?? {});
   const problemData: ProblemPerformance[] = training.problems.map(
     (problem, index) => {
-      const problemRating = Object.values(training.customRatings)[index];
+      const problemRating =
+        problem.rating != null && problem.rating > 0
+          ? problem.rating
+          : (customList[index] ?? 1500);
       const solved = problem.solvedTime !== null;
       const solveTime = problem.solvedTime
         ? (problem.solvedTime - training.startTime) / 60000
@@ -229,8 +233,12 @@ export const getPerformanceBreakdown = (
     expectedDifficulty: "Easy" | "Medium" | "Hard" | "Very Hard";
   }[] = [];
 
+  const crList = Object.values(training.customRatings ?? {});
   training.problems.forEach((problem, index) => {
-    const problemRating = Object.values(training.customRatings)[index];
+    const problemRating =
+      problem.rating != null && problem.rating > 0
+        ? problem.rating
+        : (crList[index] ?? 1500);
     const solved = problem.solvedTime !== null;
     const solveTime = problem.solvedTime
       ? (problem.solvedTime - training.startTime) / 60000
@@ -263,10 +271,13 @@ export const getPerformanceBreakdown = (
   });
 
   const avgProblemRating =
-    Object.values(training.customRatings).reduce(
-      (sum, rating) => sum + rating,
-      0,
-    ) / training.problems.length;
+    training.problems.reduce((sum, problem, index) => {
+      const r =
+        problem.rating != null && problem.rating > 0
+          ? problem.rating
+          : (crList[index] ?? 1500);
+      return sum + r;
+    }, 0) / training.problems.length;
 
   const solveRate =
     training.problems.filter((p) => p.solvedTime !== null).length /
@@ -286,9 +297,15 @@ export const getPerformanceBreakdown = (
     Math.min(1, (contestDuration - avgSolveTime) / contestDuration),
   );
 
+  const ratings = training.problems.map((problem, index) =>
+    problem.rating != null && problem.rating > 0
+      ? problem.rating
+      : (crList[index] ?? 1500),
+  );
   const ratingSpread =
-    Math.max(...Object.values(training.customRatings)) -
-    Math.min(...Object.values(training.customRatings));
+    ratings.length > 0
+      ? Math.max(...ratings) - Math.min(...ratings)
+      : 0;
   const difficultyBalance = Math.max(0, 1 - ratingSpread / 800);
 
   return {

@@ -12,7 +12,14 @@ import {
 } from "@/components/ui/table";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import useUpsolvedProblems from "@/hooks/useUpsolvedProblems";
+import { isTrainingProblemCountedSolved } from "@/utils/training/problemCountedSolved";
+import {
+  formatTrainingModeLabel,
+  normalizeTrainingMode,
+} from "@/utils/training/trainingModeLabel";
+import { averageEffectiveProblemRatingForSession } from "@/utils/training/effectiveProblemRating";
 import { CheckCircle2, XCircle, BadgeCheck } from "lucide-react";
 import { Trash2 } from "lucide-react";
 
@@ -26,12 +33,21 @@ const Problem = ({
   postSolvedTime: number | null;
 }) => {
   const renderStatus = () => {
-    if (problem.solvedTime) {
+    if (isTrainingProblemCountedSolved(problem) && problem.solvedTime) {
       const solvedMinutes = Math.floor((problem.solvedTime - startTime) / 60000);
       return (
         <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-500">
           <CheckCircle2 className="h-4 w-4" />
           <span>{solvedMinutes}m</span>
+        </span>
+      );
+    }
+
+    if (isTrainingProblemCountedSolved(problem)) {
+      return (
+        <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-500">
+          <CheckCircle2 className="h-4 w-4" />
+          <span>Solved</span>
         </span>
       );
     }
@@ -89,12 +105,10 @@ const History = ({
   };
 
   const calculateAverageRating = (training: Training) => {
-    const ratings = Object.values(training.customRatings || {}).filter(
-      (r) => typeof r === "number" && !isNaN(r)
-    );
-    if (ratings.length === 0) return "—";
-    const sum = ratings.reduce((acc, rating) => acc + rating, 0);
-    return Math.round(sum / ratings.length);
+    if (!training.problems?.length) return "-";
+    const avg = averageEffectiveProblemRatingForSession(training);
+    if (!Number.isFinite(avg)) return "-";
+    return Math.round(avg);
   };
 
   if (!history || history.length === 0) {
@@ -113,6 +127,7 @@ const History = ({
           <TableHeader>
             <TableRow>
               <TableHead>Date</TableHead>
+              <TableHead>Mode</TableHead>
               <TableHead>Avg Rating</TableHead>
               {history[0].problems.map((_, index) => (
                 <TableHead key={index}>P{index + 1}</TableHead>
@@ -123,9 +138,16 @@ const History = ({
           </TableHeader>
           <TableBody>
             {history.map((training) => (
-              <TableRow key={training.startTime}>
+              <TableRow key={training._id ?? training.startTime}>
                 <TableCell>
                   {new Date(training.startTime).toLocaleDateString()}
+                </TableCell>
+                <TableCell>
+                  <Badge variant="secondary" className="font-medium">
+                    {formatTrainingModeLabel(
+                      normalizeTrainingMode(training.trainingMode),
+                    )}
+                  </Badge>
                 </TableCell>
                 <TableCell>{calculateAverageRating(training)}</TableCell>
                 {training.problems.map((p) => (
@@ -159,20 +181,27 @@ const History = ({
       <div className="lg:hidden space-y-4">
         {history.map((training) => (
           <Card
-            key={training.startTime}
+            key={training._id ?? training.startTime}
             className="shadow-sm border-border/60 hover:shadow-md transition-shadow"
           >
             <CardContent className="p-5 sm:p-6">
               <div className="space-y-4">
                 {/* Header with date and delete button */}
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg sm:text-xl font-semibold text-foreground">
-                    {new Date(training.startTime).toLocaleDateString("en-US", {
-                      month: "numeric",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </h3>
+                <div className="flex justify-between items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 min-w-0">
+                    <h3 className="text-lg sm:text-xl font-semibold text-foreground">
+                      {new Date(training.startTime).toLocaleDateString("en-US", {
+                        month: "numeric",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </h3>
+                    <Badge variant="secondary" className="text-[10px] font-semibold uppercase tracking-wide">
+                      {formatTrainingModeLabel(
+                      normalizeTrainingMode(training.trainingMode),
+                    )}
+                    </Badge>
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"

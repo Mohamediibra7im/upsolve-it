@@ -8,6 +8,7 @@ import { ToastProvider } from "@/app/_Components/Toast";
 import { Analytics } from "@vercel/analytics/react";
 import { cn } from "@/lib/utils";
 import PageTransition from "@/app/_Components/PageTransition";
+import HelpFab from "@/components/layout/HelpFab";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -90,6 +91,7 @@ export default function RootLayout({
                   </PageTransition>
                 </ConditionalNavBar>
               </AuthGuard>
+              <HelpFab />
             </div>
           </ToastProvider>
         </ThemeProvider>

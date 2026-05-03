@@ -17,12 +17,12 @@ export default function PageTransition({ children }: { children: React.ReactNode
     <AnimatePresence mode="wait">
       <motion.div
         key={pathname}
-        initial="hidden"
+        initial={false}
         animate="enter"
         exit="exit"
         variants={variants}
-        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full flex-grow flex flex-col"
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full flex-grow flex flex-col min-h-0"
       >
         {children}
       </motion.div>

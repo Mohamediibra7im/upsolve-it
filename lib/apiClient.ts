@@ -127,7 +127,7 @@ async function refreshToken(): Promise<boolean> {
       return false;
     } catch (error) {
       console.error('Token refresh error:', error);
-      // Don't logout on network errors — the server may just be temporarily unreachable.
+      // Don't logout on network errors; the server may just be temporarily unreachable.
       // Only return false so the caller can handle it gracefully (e.g. SWR retry).
       return false;
     } finally {

@@ -304,7 +304,7 @@ export default function ResetPasswordPage() {
                   <div className="space-y-2">
                     <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Action Required</h3>
                     <p className="text-sm text-muted-foreground font-medium leading-relaxed max-w-xs mx-auto">
-                      Navigate to <a href="https://codeforces.com/problemset/problem/4/A" target="_blank" rel="noreferrer" className="text-primary hover:underline underline-offset-4 inline-flex items-center gap-1">Problem 4A <ExternalLink size={12} /></a> and submit code that results in a <span className="text-destructive font-bold">Compilation Error</span>.
+                      Navigate to <a href="https://codeforces.com/problemset/problem/4/A" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline underline-offset-4 inline-flex items-center gap-1">Problem 4A <ExternalLink size={12} /></a> and submit code that results in a <span className="text-destructive font-bold">Compilation Error</span>.
                     </p>
                   </div>
                 </div>
@@ -332,7 +332,7 @@ export default function ResetPasswordPage() {
                   </div>
                 ) : (
                   <div className="flex items-center gap-3">
-                    I've Submitted — Verify Now <Shield size={14} />
+                    I've submitted: verify now <Shield size={14} />
                   </div>
                 )}
               </Button>

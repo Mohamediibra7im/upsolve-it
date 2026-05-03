@@ -16,6 +16,7 @@ import { useToast } from '@/app/_Components/Toast';
 import { useAdminUsers, updateUserRole } from '@/hooks/useAdminUsers';
 import { apiFetcher } from '@/lib/apiClient';
 import { User } from '@/types/User';
+import type { UserTrainingStatsView } from '@/types/userTrainingStats';
 
 // Import new modular components
 import { UserTable } from './UserTable';
@@ -44,38 +45,6 @@ interface ConfirmationDialog {
   newRole: 'admin' | 'user' | null;
 }
 
-interface UserStats {
-  user: {
-    codeforcesHandle: string;
-    rating: number;
-    rank: string;
-    maxRating: number;
-    maxRank: string;
-  };
-  stats: {
-    totalSessions: number;
-    totalProblems: number;
-    solvedProblems: number;
-    upsolvedCount: number;
-    upsolvedSolvedCount: number;
-    averagePerformance: number;
-    bestPerformance: number;
-    worstPerformance: number;
-    solvingRate: number;
-    averageRating: number;
-    recentTrend: number;
-    recentSessions: number;
-  };
-  trainings: Array<{
-    id: string;
-    startTime: number;
-    endTime: number;
-    performance: number;
-    problemsCount: number;
-    solvedCount: number;
-  }>;
-}
-
 type SortField = 'createdAt' | 'name';
 type SortOrder = 'asc' | 'desc';
 
@@ -93,7 +62,7 @@ export default function AdminUserManagement() {
     open: false,
     userId: null
   });
-  const [userStats, setUserStats] = useState<UserStats | null>(null);
+  const [userStats, setUserStats] = useState<UserTrainingStatsView | null>(null);
   const [loadingStats, setLoadingStats] = useState(false);
   const { toast } = useToast();
 
@@ -146,7 +115,7 @@ export default function AdminUserManagement() {
   const fetchUserStats = async (userId: string) => {
     setLoadingStats(true);
     try {
-      const data = await apiFetcher<UserStats>(`/api/admin/users/${userId}/stats`);
+      const data = await apiFetcher<UserTrainingStatsView>(`/api/admin/users/${userId}/stats`);
       setUserStats(data);
       setStatsDialog({ open: true, userId });
     } catch (error) {

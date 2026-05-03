@@ -10,14 +10,63 @@ import useUpsolvedProblems from "@/hooks/useUpsolvedProblems";
 import getTrainingSubmissionStatus, {
   SubmissionStatus,
 } from "@/utils/codeforces/getTrainingSubmissionStatus";
+import { apiClient } from "@/lib/apiClient";
+import { mutate as mutateSwr } from "swr";
+import type { TrainingMode } from "@/types/TrainingMode";
+import { expectedTimeSecondsFromRating } from "@/utils/training/expectedTime";
+import { computeSpeedStatus } from "@/utils/training/speedStatus";
 
 const TRAINING_STORAGE_KEY = "training-tracker-training";
 const SUBMISSION_STATUS_STORAGE_KEY = "training-tracker-submission-status";
 
+function buildProblemUpdates(
+  training: Training,
+  problems: TrainingProblem[],
+  statuses: SubmissionStatus[],
+): Record<string, Record<string, unknown>> {
+  const map: Record<string, Record<string, unknown>> = {};
+  for (const problem of problems) {
+    const problemId = problem.problemId ?? `${problem.contestId}_${problem.index}`;
+    const st = statuses.find((s) => s.problemId === problemId);
+    const start = problem.startedAt ?? training.startTime;
+    const isSolved = st?.status === "AC" || problem.solvedTime != null;
+    const solvedAt =
+      st?.status === "AC"
+        ? (st.lastSubmissionTime ?? problem.solvedTime)
+        : (problem.solvedTime ?? undefined);
+    const timeSpentSeconds =
+      isSolved && solvedAt != null
+        ? Math.max(0, Math.round((solvedAt - start) / 1000))
+        : null;
+    const expected =
+      problem.expectedTimeSeconds ??
+      expectedTimeSecondsFromRating(problem.rating ?? 0);
+    const speed = computeSpeedStatus(
+      Boolean(isSolved),
+      timeSpentSeconds,
+      expected,
+    );
+    map[problemId] = {
+      attempts: st?.attempts ?? 0,
+      isSolved,
+      solvedAt: solvedAt ?? null,
+      solvedTime: solvedAt ?? null,
+      timeSpentSeconds,
+      expectedTimeSeconds: expected,
+      speedStatus: speed,
+    };
+  }
+  return map;
+}
+
 const useTraining = () => {
   const router = useRouter();
   const { user, isLoading: isUserLoading } = useUser();
-  const { isLoading: isProblemsLoading, getRandomProblems } = useProblems(user);
+  const {
+    isLoading: isProblemsLoading,
+    getRandomProblems,
+    getRandomProblemsFromRatings,
+  } = useProblems(user);
   const { addTraining } = useHistory();
   const { addUpsolvedProblems } = useUpsolvedProblems();
 
@@ -35,18 +84,34 @@ const useTraining = () => {
 
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const pushSessionSync = useCallback(
+    async (t: Training, probs: TrainingProblem[], statuses: SubmissionStatus[]) => {
+      if (!t.serverSessionId) return;
+      const problemUpdates = buildProblemUpdates(t, probs, statuses);
+      try {
+        await apiClient.post(
+          `/api/training-sessions/${t.serverSessionId}/sync`,
+          { problemUpdates },
+        );
+      } catch (e) {
+        console.error("[sync session]", e);
+      }
+    },
+    [],
+  );
+
   const refreshProblemStatus = useCallback(async () => {
     if (!user || !training || !isTraining || isRefreshing) return;
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     setIsRefreshing(true);
     try {
       const statusResponse = await getTrainingSubmissionStatus(
         user,
         training.problems,
-        training.startTime
+        training.startTime,
       );
 
       if (statusResponse.success) {
@@ -56,27 +121,44 @@ const useTraining = () => {
         if (isClient) {
           localStorage.setItem(
             SUBMISSION_STATUS_STORAGE_KEY,
-            JSON.stringify(newStatuses)
+            JSON.stringify(newStatuses),
           );
         }
 
-        // Then, update the solved times based on the new statuses
         const solvedProblemIds = new Set(
-          newStatuses.filter((s) => s.status === "AC").map((s) => s.problemId)
+          newStatuses.filter((s) => s.status === "AC").map((s) => s.problemId),
         );
 
         const updatedProblems = training.problems.map((problem) => {
-          const problemId = `${problem.contestId}_${problem.index}`;
+          const problemId = problem.problemId ?? `${problem.contestId}_${problem.index}`;
           const isSolved = solvedProblemIds.has(problemId);
           const submission = newStatuses.find((s) => s.problemId === problemId);
-
-          return {
-            ...problem,
-            solvedTime: isSolved
+          const start = problem.startedAt ?? training.startTime;
+          const solvedT =
+            isSolved
               ? (problem.solvedTime ??
                 submission?.lastSubmissionTime ??
                 Date.now())
-              : null,
+              : null;
+          const timeSpentSeconds =
+            isSolved && solvedT != null
+              ? Math.max(0, Math.round((solvedT - start) / 1000))
+              : null;
+          const expected =
+            problem.expectedTimeSeconds ??
+            expectedTimeSecondsFromRating(problem.rating ?? 0);
+          return {
+            ...problem,
+            solvedTime: isSolved ? solvedT : null,
+            isSolved,
+            attempts: submission?.attempts ?? problem.attempts,
+            timeSpentSeconds,
+            expectedTimeSeconds: expected,
+            speedStatus: computeSpeedStatus(
+              isSolved,
+              timeSpentSeconds,
+              expected,
+            ),
           };
         });
 
@@ -84,14 +166,15 @@ const useTraining = () => {
           JSON.stringify(updatedProblems) !== JSON.stringify(training.problems)
         ) {
           setTraining((prev) =>
-            prev ? { ...prev, problems: updatedProblems } : null
+            prev ? { ...prev, problems: updatedProblems } : null,
           );
         }
+
+        await pushSessionSync(training, updatedProblems, newStatuses);
       } else {
-        // Handle API errors gracefully
         console.error(
           "Failed to fetch submission status:",
-          statusResponse.error
+          statusResponse.error,
         );
       }
     } catch (error: unknown) {
@@ -104,20 +187,17 @@ const useTraining = () => {
       clearTimeout(timeoutId);
       setIsRefreshing(false);
     }
-  }, [user, training, isTraining, isClient, isRefreshing]);
+  }, [user, training, isTraining, isClient, isRefreshing, pushSessionSync]);
 
   const finishTraining = useCallback(async () => {
-    // Immediately set training state to false to prevent any race conditions
     setIsTraining(false);
 
     if (!training) return;
 
-    // Check if we're finishing during pre-contest period
     const now = Date.now();
     const isPreContestPeriod = now < training.startTime;
 
     if (isPreContestPeriod) {
-      // If finished during pre-contest period, just clear states without saving
       setProblems([]);
       setTraining(null);
       setSubmissionStatuses([]);
@@ -129,10 +209,8 @@ const useTraining = () => {
       return;
     }
 
-    // Use a local copy of training for the async operations
     const currentTraining = { ...training };
 
-    // Clear all training-related states immediately
     setProblems([]);
     setTraining(null);
     setSubmissionStatuses([]);
@@ -141,58 +219,97 @@ const useTraining = () => {
       localStorage.removeItem(SUBMISSION_STATUS_STORAGE_KEY);
     }
 
-    // Guard: If user is missing, abort and log a warning
     if (!user) {
-      console.warn(
-        "[finishTraining] No user session found. Aborting training finish."
-      );
+      console.warn("[finishTraining] No user session found.");
       return;
     }
 
     const statusResponse = await getTrainingSubmissionStatus(
       user,
       currentTraining.problems,
-      currentTraining.startTime
+      currentTraining.startTime,
     );
 
     let finalProblems = currentTraining.problems;
+    let finalStatuses: SubmissionStatus[] = [];
     if (statusResponse.success) {
+      finalStatuses = statusResponse.data;
       const newStatuses = statusResponse.data;
       const solvedProblemIds = new Set(
-        newStatuses.filter((s) => s.status === "AC").map((s) => s.problemId)
+        newStatuses.filter((s) => s.status === "AC").map((s) => s.problemId),
       );
       finalProblems = currentTraining.problems.map((problem) => {
-        const problemId = `${problem.contestId}_${problem.index}`;
+        const problemId = problem.problemId ?? `${problem.contestId}_${problem.index}`;
         const isSolved = solvedProblemIds.has(problemId);
         const submission = newStatuses.find((s) => s.problemId === problemId);
-
-        return {
-          ...problem,
-          solvedTime: isSolved
+        const start = problem.startedAt ?? currentTraining.startTime;
+        const solvedT =
+          isSolved
             ? (problem.solvedTime ??
               submission?.lastSubmissionTime ??
               Date.now())
-            : null,
+            : null;
+        const timeSpentSeconds =
+          isSolved && solvedT != null
+            ? Math.max(0, Math.round((solvedT - start) / 1000))
+            : null;
+        const expected =
+          problem.expectedTimeSeconds ??
+          expectedTimeSecondsFromRating(problem.rating ?? 0);
+        return {
+          ...problem,
+          solvedTime: isSolved ? solvedT : null,
+          isSolved,
+          attempts: submission?.attempts ?? problem.attempts,
+          timeSpentSeconds,
+          expectedTimeSeconds: expected,
+          speedStatus: computeSpeedStatus(
+            isSolved,
+            timeSpentSeconds,
+            expected,
+          ),
         };
       });
     }
 
+    if (currentTraining.serverSessionId) {
+      const problemUpdates = buildProblemUpdates(
+        { ...currentTraining, problems: finalProblems },
+        finalProblems,
+        finalStatuses,
+      );
+      try {
+        await apiClient.post(
+          `/api/training-sessions/${currentTraining.serverSessionId}/end`,
+          {
+            endTime: Date.now(),
+            problemUpdates,
+          },
+        );
+        // Session lives in the same Training collection; refresh stats/history everywhere.
+        await mutateSwr("/api/trainings");
+      } catch (e) {
+        console.error("[end session]", e);
+      }
+      router.push(
+        `/training/session/${currentTraining.serverSessionId}/review`,
+      );
+      return;
+    }
+
     await addTraining({ ...currentTraining, problems: finalProblems });
     const unsolvedProblems = finalProblems.filter((p) => !p.solvedTime);
-    // Keep the original order as they were selected for training (1st, 2nd, 3rd, 4th)
     await addUpsolvedProblems(unsolvedProblems);
 
     router.push("/statistics");
   }, [training, addTraining, router, addUpsolvedProblems, isClient, user]);
 
-  // Redirect if no user (only after loading is complete)
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push("/");
     }
   }, [user, isUserLoading, router]);
 
-  // Load training and submission statuses from localStorage (only on client)
   useEffect(() => {
     if (!isClient) return;
 
@@ -203,15 +320,13 @@ const useTraining = () => {
     }
 
     const localSubmissionStatuses = localStorage.getItem(
-      SUBMISSION_STATUS_STORAGE_KEY
+      SUBMISSION_STATUS_STORAGE_KEY,
     );
     if (localSubmissionStatuses) {
-      const parsed = JSON.parse(localSubmissionStatuses);
-      setSubmissionStatuses(parsed);
+      setSubmissionStatuses(JSON.parse(localSubmissionStatuses));
     }
   }, [isClient]);
 
-  // Update training in localStorage and handle timer
   useEffect(() => {
     if (!isClient || !training) {
       return;
@@ -222,54 +337,86 @@ const useTraining = () => {
     const timeLeft = training.endTime - now;
 
     if (timeLeft <= 0) {
-      finishTraining();
+      void finishTraining();
       return;
     }
 
     setIsTraining(now <= training.endTime);
 
-    const timer = setTimeout(finishTraining, timeLeft);
+    const timer = setTimeout(() => void finishTraining(), timeLeft);
 
     return () => {
       clearTimeout(timer);
     };
   }, [training, isClient, finishTraining]);
 
-  // Remove auto-refresh - only refresh manually when button is clicked
-  // useEffect(() => {
-  //   if (isTraining) {
-  //     refreshProblemStatus(); // Initial refresh
-  //
-  //     const handleFocus = () => refreshProblemStatus();
-  //     window.addEventListener("focus", handleFocus);
-  //
-  //     return () => {
-  //       window.removeEventListener("focus", handleFocus);
-  //     };
-  //   }
-  // }, [isTraining, refreshProblemStatus]);
-
   const startTraining = useCallback(
-    (customRatings: { P1: number; P2: number; P3: number; P4: number }) => {
+    async (opts: {
+      customRatings: Training["customRatings"];
+      trainingMode: TrainingMode;
+      durationMinutes: number;
+      showRatings: boolean;
+      weaknessFallback?: boolean;
+      level?: string;
+      tags?: string[];
+    }) => {
       if (!user) {
         router.push("/");
         return;
       }
 
-      const contestTime = 120; // 120 minutes
-      const preContestDuration = 10 * 1000; // Fixed 10 seconds in milliseconds
+      const preContestDuration = 10 * 1000;
       const startTime = Date.now() + preContestDuration;
-      const endTime = startTime + contestTime * 60000;
+      const endTime = startTime + opts.durationMinutes * 60000;
 
-      setTraining({
+      const baseTraining: Training = {
         startTime,
         endTime,
-        customRatings,
+        customRatings: opts.customRatings,
         problems,
         performance: 0,
+        trainingMode: opts.trainingMode,
+        showRatings: opts.showRatings,
+        durationMinutes: opts.durationMinutes,
+        weaknessFallback: opts.weaknessFallback,
+        level: opts.level ?? "",
+      };
+
+      let serverSessionId: string | undefined;
+      try {
+        const payload = {
+          trainingMode: opts.trainingMode,
+          level: opts.level ?? "",
+          tags: opts.tags ?? [],
+          showRatings: opts.showRatings,
+          weaknessFallback: opts.weaknessFallback ?? false,
+          startTime,
+          endTime,
+          durationMinutes: opts.durationMinutes,
+          customRatings: opts.customRatings,
+          problems: problems.map((p) => ({
+            ...p,
+            problemId: p.problemId ?? `${p.contestId}_${p.index}`,
+            expectedTimeSeconds:
+              p.expectedTimeSeconds ??
+              expectedTimeSecondsFromRating(p.rating ?? 0),
+          })),
+        };
+        const res = await apiClient.post<{ sessionId: string }>(
+          "/api/training-sessions",
+          payload,
+        );
+        serverSessionId = res.sessionId;
+      } catch (e) {
+        console.error("[training-sessions create]", e);
+      }
+
+      setTraining({
+        ...baseTraining,
+        serverSessionId,
       });
     },
-    [user, problems, router]
+    [user, problems, router],
   );
 
   const stopTraining = () => {
@@ -282,17 +429,72 @@ const useTraining = () => {
     }
   };
 
+  type GenerateResult =
+    | { ok: true; count: number }
+    | { ok: false; reason: "pool-not-ready" | "empty-result" };
+
   const generateProblems = (
     tags: ProblemTag[],
     lb: number | null,
     ub: number | null,
-    customRatings: { P1: number; P2: number; P3: number; P4: number }
-  ) => {
+    customRatings: { P1: number; P2: number; P3: number; P4: number },
+  ): GenerateResult => {
     const newProblems = getRandomProblems(tags, lb, ub, customRatings);
-    if (newProblems) {
-      setProblems(newProblems);
+    if (newProblems === undefined) {
+      return { ok: false, reason: "pool-not-ready" };
     }
+    setProblems(newProblems);
+    if (newProblems.length === 0) {
+      return { ok: false, reason: "empty-result" };
+    }
+    return { ok: true, count: newProblems.length };
   };
+
+  const generateProblemsFromRatings = (
+    ratings: number[],
+    tags: ProblemTag[],
+    lb: number | null,
+    ub: number | null,
+  ): GenerateResult => {
+    const newProblems = getRandomProblemsFromRatings(ratings, tags, lb, ub);
+    if (newProblems === undefined) {
+      return { ok: false, reason: "pool-not-ready" };
+    }
+    setProblems(newProblems);
+    if (newProblems.length === 0) {
+      return { ok: false, reason: "empty-result" };
+    }
+    return { ok: true, count: newProblems.length };
+  };
+
+  const notifyProblemOpened = useCallback(
+    async (problem: TrainingProblem) => {
+      if (!training?.serverSessionId) return;
+      const id = encodeURIComponent(
+        problem.problemId ?? `${problem.contestId}_${problem.index}`,
+      );
+      try {
+        await apiClient.post(
+          `/api/training-sessions/${training.serverSessionId}/problems/${id}/start`,
+          {},
+        );
+        setTraining((prev) => {
+          if (!prev) return null;
+          const pid = problem.problemId ?? `${problem.contestId}_${problem.index}`;
+          const next = prev.problems.map((p) => {
+            const pKey = p.problemId ?? `${p.contestId}_${p.index}`;
+            if (pKey !== pid) return p;
+            if (p.startedAt != null) return p;
+            return { ...p, startedAt: Date.now() };
+          });
+          return { ...prev, problems: next };
+        });
+      } catch (e) {
+        console.error("[problem start]", e);
+      }
+    },
+    [training?.serverSessionId],
+  );
 
   return {
     problems,
@@ -302,15 +504,13 @@ const useTraining = () => {
     isTraining,
     submissionStatuses,
     generateProblems,
+    generateProblemsFromRatings,
     startTraining,
     stopTraining,
     refreshProblemStatus,
     finishTraining,
+    notifyProblemOpened,
   };
 };
 
 export default useTraining;
-
-
-
-

@@ -16,13 +16,16 @@ import {
   Target, 
   LineChart, 
   Layers, 
-  HelpCircle, 
   ShieldAlert,
-  Home as HomeIcon
-, ExternalLink } from "lucide-react";
+  Home as HomeIcon,
+  ClipboardList,
+  ExternalLink,
+  Users,
+} from "lucide-react";
 import ClientOnly from "@/app/_Components/ClientOnly";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import useUser from "@/hooks/useUser";
+import { useFriendRequests } from "@/hooks/useFriendRequests";
 import {
   Sheet,
   SheetContent,
@@ -40,19 +43,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const guestLinks = [
-  { href: "/", label: "Home", icon: HomeIcon },
-  { href: "/help", label: "Help", icon: HelpCircle },
-];
+/** Logged-out users land on `/` by default — no need for a redundant Home link */
+const guestLinks: typeof userLinks = [];
 
 const userLinks = [
   { href: "/", label: "Home", icon: HomeIcon },
   { href: "/home", label: "Dashboard", icon: LayoutDashboard },
   { href: "/training", label: "Training", icon: Target },
+  { href: "/training/reviews", label: "Reviews", icon: ClipboardList },
   { href: "/statistics", label: "Statistics", icon: LineChart },
+  { href: "/friends", label: "Friends", icon: Users },
   { href: "/upsolve", label: "Upsolve", icon: Layers },
   { href: "/levels", label: "Levels", icon: Target },
-  { href: "/help", label: "Help", icon: HelpCircle },
 ];
 
 const adminLinks = [{ href: "/admin", label: "Admin", icon: ShieldAlert }];
@@ -62,6 +64,8 @@ const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { user, logout } = useUser();
+  const { incoming: incomingFriendRequests } = useFriendRequests(!!user);
+  const friendRequestCount = incomingFriendRequests.length;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -110,30 +114,40 @@ const NavBar = () => {
           </Link>
         </div>
 
-        {/* Desktop Navigation - Center */}
-        <nav className="hidden lg:flex items-center justify-center flex-1 h-full gap-1">
-          {visibleLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                "relative flex items-center px-4 h-10 rounded-xl text-sm font-bold transition-all duration-300 group",
-                pathname === link.href
-                  ? "text-primary"
-                  : "text-foreground/60 hover:text-foreground"
-              )}
-            >
-              <span className="relative z-10">{link.label}</span>
-              {pathname === link.href && (
-                <motion.div
-                  layoutId="nav-pill"
-                  className="absolute inset-0 bg-primary/10 rounded-xl z-0"
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                />
-              )}
-            </Link>
-          ))}
-        </nav>
+        {/* Desktop Navigation - Center (hidden for guests — no links until login) */}
+        {visibleLinks.length > 0 && (
+          <nav className="hidden lg:flex items-center justify-center flex-1 h-full gap-1">
+            {visibleLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "relative flex items-center px-4 h-10 rounded-xl text-sm font-bold transition-all duration-300 group",
+                  pathname === link.href
+                    ? "text-primary"
+                    : "text-foreground/60 hover:text-foreground"
+                )}
+              >
+                <span className="relative z-10">{link.label}</span>
+                {link.href === "/friends" && friendRequestCount > 0 && (
+                  <span
+                    className="absolute -right-0.5 -top-1 z-20 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-black leading-none text-white shadow-sm ring-2 ring-background"
+                    aria-label={`${friendRequestCount} pending friend request${friendRequestCount === 1 ? "" : "s"}`}
+                  >
+                    {friendRequestCount > 9 ? "9+" : friendRequestCount}
+                  </span>
+                )}
+                {pathname === link.href && (
+                  <motion.div
+                    layoutId="nav-pill"
+                    className="absolute inset-0 bg-primary/10 rounded-xl z-0"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+              </Link>
+            ))}
+          </nav>
+        )}
 
         {/* Action Section - Right */}
         <div className="flex-1 flex items-center justify-end gap-2 md:gap-4">
@@ -251,7 +265,14 @@ const NavBar = () => {
                       >
                         <div className="flex items-center gap-4">
                           <link.icon size={18} className={cn("transition-colors", pathname === link.href ? "text-primary" : "opacity-40 group-hover:opacity-100")} />
-                          <span className="text-base font-black tracking-tight">{link.label}</span>
+                          <span className="flex items-center gap-2 text-base font-black tracking-tight">
+                            {link.label}
+                            {link.href === "/friends" && friendRequestCount > 0 && (
+                              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-black text-white">
+                                {friendRequestCount > 9 ? "9+" : friendRequestCount}
+                              </span>
+                            )}
+                          </span>
                         </div>
                         <ChevronRight size={16} className="opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-1" />
                       </Link>

@@ -9,50 +9,109 @@ import {
   AreaChart,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
+function formatCalendarDay(ts: number): string {
+  return new Date(ts).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function formatAxisLabel(
+  startTime: number,
+  prevStartTime: number | null,
+): string {
+  const d = new Date(startTime);
+  const dateStr = formatCalendarDay(startTime);
+  if (prevStartTime != null) {
+    const prev = new Date(prevStartTime);
+    if (
+      d.getFullYear() === prev.getFullYear() &&
+      d.getMonth() === prev.getMonth() &&
+      d.getDate() === prev.getDate()
+    ) {
+      return `${dateStr} ${d.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+      })}`;
+    }
+  }
+  return dateStr;
+}
+
 const ProgressChart = ({ history }: { history: Training[] }) => {
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  };
+  const sorted = [...history].sort((a, b) => a.startTime - b.startTime);
 
-  // Sort data chronologically (oldest to newest) for proper left-to-right display
-  const chartData = [...history]
-    .sort((a, b) => a.startTime - b.startTime)
-    .map((training, index) => ({
-      ...training,
-      sessionNumber: index + 1,
-      formattedDate: formatDate(training.startTime),
-    }));
+  const chartData = sorted.map((training, index) => ({
+    ...training,
+    sessionNumber: index + 1,
+    formattedDate: formatAxisLabel(
+      training.startTime,
+      index > 0 ? sorted[index - 1].startTime : null,
+    ),
+  }));
 
-  // Calculate trend
+  const perfValues = chartData
+    .map((d) => d.performance)
+    .filter((v) => typeof v === "number" && Number.isFinite(v));
+  const minPerf = perfValues.length > 0 ? Math.min(...perfValues) : 0;
+  const maxPerf = perfValues.length > 0 ? Math.max(...perfValues) : 100;
+  const span = maxPerf - minPerf || 100;
+  const pad = Math.max(80, span * 0.1);
+  const yDomain: [number, number] = [
+    Math.max(400, Math.floor(minPerf - pad)),
+    Math.min(4000, Math.ceil(maxPerf + pad)),
+  ];
+
+  /**
+   * Badges match the line: same sessions, same performance values.
+   * (Solve-only filtering hid peaks when the highest session had no counted AC.)
+   */
+  const performances = chartData.map((d) => d.performance ?? 0);
+  const bestPerformance =
+    chartData.length > 0 ? Math.max(...performances) : null;
+  const averagePerformance =
+    chartData.length > 0
+      ? Math.round(
+          performances.reduce((sum, p) => sum + p, 0) / chartData.length,
+        )
+      : null;
+
   const getTrend = () => {
-    if (chartData.length < 2) return { direction: "neutral", value: 0 };
+    if (chartData.length < 2)
+      return { direction: "neutral" as const, value: 0 };
 
-    const recent = chartData.slice(-3); // Last 3 sessions
-    const older = chartData.slice(-6, -3); // 3 sessions before that
+    const recent = chartData.slice(-3);
+    const older = chartData.slice(-6, -3);
 
-    if (older.length === 0) return { direction: "neutral", value: 0 };
+    if (older.length === 0)
+      return { direction: "neutral" as const, value: 0 };
 
-    const recentAvg = recent.reduce((sum, item) => sum + item.performance, 0) / recent.length;
-    const olderAvg = older.reduce((sum, item) => sum + item.performance, 0) / older.length;
+    const recentAvg =
+      recent.reduce((sum, item) => sum + (item.performance ?? 0), 0) /
+      recent.length;
+    const olderAvg =
+      older.reduce((sum, item) => sum + (item.performance ?? 0), 0) /
+      older.length;
 
     const difference = recentAvg - olderAvg;
 
-    if (difference > 5) return { direction: "up", value: difference };
-    if (difference < -5) return { direction: "down", value: Math.abs(difference) };
-    return { direction: "neutral", value: 0 };
+    if (difference > 5)
+      return { direction: "up" as const, value: difference };
+    if (difference < -5)
+      return {
+        direction: "down" as const,
+        value: Math.abs(difference),
+      };
+    return { direction: "neutral" as const, value: 0 };
   };
 
   const trend = getTrend();
-  const bestPerformance = Math.max(...chartData.map(d => d.performance));
-  const averagePerformance = Math.round(
-    chartData.reduce((sum, d) => sum + d.performance, 0) / chartData.length
-  );
+
+  const summaryDisplay = (v: number | null) =>
+    v == null || Number.isNaN(v) ? "-" : String(v);
 
   return (
     <Card className="w-full bg-gradient-to-br from-card via-card to-muted/10 border-border/50 shadow-lg">
@@ -61,27 +120,33 @@ const ProgressChart = ({ history }: { history: Training[] }) => {
           <div>
             <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
               Performance Trends
-              {trend.direction === "up" && <TrendingUp className="h-5 w-5 text-green-500" />}
-              {trend.direction === "down" && <TrendingDown className="h-5 w-5 text-red-500" />}
-              {trend.direction === "neutral" && <Minus className="h-5 w-5 text-muted-foreground" />}
+              {trend.direction === "up" && (
+                <TrendingUp className="h-5 w-5 text-green-500" aria-hidden />
+              )}
+              {trend.direction === "down" && (
+                <TrendingDown className="h-5 w-5 text-red-500" aria-hidden />
+              )}
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Track your performance across training sessions
+              Best is the highest point on this line; average is the mean of every
+              session plotted (including sessions with no solves, which can still
+              move the curve).
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Badge variant="outline" className="text-xs">
-              Best: {bestPerformance}
+          <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+            <Badge variant="outline" className="text-xs tabular-nums">
+              Best: {summaryDisplay(bestPerformance)}
             </Badge>
-            <Badge variant="secondary" className="text-xs">
-              Avg: {averagePerformance}
+            <Badge variant="secondary" className="text-xs tabular-nums">
+              Avg: {summaryDisplay(averagePerformance)}
             </Badge>
             {trend.direction !== "neutral" && (
               <Badge
                 variant={trend.direction === "up" ? "default" : "destructive"}
-                className="text-xs"
+                className="text-xs tabular-nums"
               >
-                {trend.direction === "up" ? "↗" : "↘"} {Math.round(trend.value)}
+                {trend.direction === "up" ? "↗" : "↘"}{" "}
+                {Math.round(trend.value)}
               </Badge>
             )}
           </div>
@@ -121,28 +186,42 @@ const ProgressChart = ({ history }: { history: Training[] }) => {
             <XAxis
               dataKey="formattedDate"
               className="text-muted-foreground text-xs sm:text-sm"
-              tick={{ fontSize: 12 }}
+              tick={{ fontSize: 11 }}
               tickLine={false}
               axisLine={false}
+              interval={chartData.length <= 16 ? 0 : "preserveStartEnd"}
+              angle={chartData.length > 6 ? -32 : 0}
+              textAnchor={chartData.length > 6 ? "end" : "middle"}
+              height={chartData.length > 6 ? 52 : 28}
             />
             <YAxis
-              domain={[0, 100]}
+              domain={yDomain}
               tickFormatter={(value) => `${value}`}
               className="text-muted-foreground text-xs sm:text-sm"
               tick={{ fontSize: 12 }}
               tickLine={false}
               axisLine={false}
-              width={35}
+              width={40}
             />
             <Tooltip
-              labelFormatter={(label) => `Session: ${label}`}
+              labelFormatter={(_, payload) => {
+                const row = payload?.[0]?.payload as
+                  | (Training & {
+                      sessionNumber: number;
+                      formattedDate: string;
+                    })
+                  | undefined;
+                if (!row) return "";
+                return `Session ${row.sessionNumber} (${formatCalendarDay(row.startTime)})`;
+              }}
               formatter={(value: number) => [`${value}`, "Performance"]}
               contentStyle={{
                 backgroundColor: "hsl(var(--card))",
                 borderColor: "hsl(var(--border))",
                 borderRadius: "12px",
                 fontSize: "14px",
-                boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05)",
+                boxShadow:
+                  "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05)",
                 border: "1px solid hsl(var(--border))",
               }}
               labelStyle={{
@@ -160,14 +239,14 @@ const ProgressChart = ({ history }: { history: Training[] }) => {
                 fill: "hsl(var(--primary))",
                 strokeWidth: 2,
                 r: 4,
-                stroke: "hsl(var(--background))"
+                stroke: "hsl(var(--background))",
               }}
               activeDot={{
                 r: 7,
                 strokeWidth: 3,
                 stroke: "hsl(var(--primary))",
                 fill: "hsl(var(--background))",
-                className: "drop-shadow-lg"
+                className: "drop-shadow-lg",
               }}
             />
           </AreaChart>
@@ -178,10 +257,3 @@ const ProgressChart = ({ history }: { history: Training[] }) => {
 };
 
 export default ProgressChart;
-
-
-
-
-
-
-
