@@ -20,11 +20,11 @@ import {
 } from "lucide-react";
 import useUser from "@/hooks/useUser";
 import { useFriendRequests } from "@/hooks/useFriendRequests";
-import Loader from "@/app/_Components/Loader";
-import ChangePasswordDialog from "@/app/_Components/ChangePasswordDialog";
+import Loader from "@/components/shared/Loader";
+import ChangePasswordDialog from "@/components/shared/ChangePasswordDialog";
 import useHistory from "@/hooks/useHistory";
 import useUpsolvedProblems from "@/hooks/useUpsolvedProblems";
-import ActivityHeatmap from "@/app/_Components/ActivityHeatmap";
+import ActivityHeatmap from "@/components/shared/ActivityHeatmap";
 import { useHeatmapData } from "@/hooks/useHeatmapData";
 import { cn } from "@/lib/utils";
 import {

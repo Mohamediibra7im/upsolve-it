@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import useUser from "@/hooks/useUser";
-import Loader from "@/app/_Components/Loader";
+import Loader from "@/components/shared/Loader";
 
 const protectedRoots = ["/training", "/statistics", "/upsolve"];
 

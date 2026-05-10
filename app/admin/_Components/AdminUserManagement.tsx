@@ -12,8 +12,8 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Crown, Shield, User as UserIcon, Search, ArrowUpDown, Loader2 } from 'lucide-react';
-import { useToast } from '@/app/_Components/Toast';
-import { useAdminUsers, updateUserRole } from '@/hooks/useAdminUsers';
+import { useToast } from '@/components/providers/Toast';
+import { useAdminUsers, updateUserRole } from '@/hooks/admin/useAdminUsers';
 import { apiFetcher } from '@/lib/apiClient';
 import { User } from '@/types/User';
 import type { UserTrainingStatsView } from '@/types/userTrainingStats';

@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import type { UserTrainingStatsView } from "@/types/userTrainingStats";
 import { cn } from "@/lib/utils";
-import { formatAvgProblemRating } from "@/utils/training/formatAvgProblemRating";
+import { formatAvgProblemRating } from "@/services/training/formatAvgProblemRating";
 
 interface FriendStatsDialogProps {
   open: boolean;
@@ -155,7 +155,7 @@ export function FriendStatsDialog({
                   <p className="shrink-0 text-sm font-medium text-foreground">
                     Recent sessions
                   </p>
-                  <div
+                  <section
                     className="max-h-[min(50vh,280px)] overflow-y-auto overscroll-y-contain rounded-lg border border-border/40 bg-muted/10 py-2 pl-2 pr-1 custom-scrollbar touch-pan-y"
                     tabIndex={0}
                     aria-label="Recent training sessions, scrollable list"
@@ -184,7 +184,7 @@ export function FriendStatsDialog({
                         </li>
                       ))}
                     </ul>
-                  </div>
+                  </section>
                 </div>
               )}
             </div>

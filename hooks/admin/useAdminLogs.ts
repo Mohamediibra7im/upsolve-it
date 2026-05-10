@@ -2,6 +2,9 @@ import useSWR from 'swr';
 import { apiFetcher } from '@/lib/apiClient';
 
 export interface AuditLog {
+  userHandle: string;
+  module: string;
+  ip: string;
   _id: string;
   action: string;
   entity: string;

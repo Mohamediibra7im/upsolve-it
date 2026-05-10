@@ -5,7 +5,7 @@ import { useHeatmapData } from "@/hooks/useHeatmapData";
 import { Training } from "@/types/Training";
 import { TrainingProblem } from "@/types/TrainingProblem";
 import { useMemo, useState } from "react";
-import ClientOnly from "@/app/_Components/ClientOnly";
+import ClientOnly from "@/components/shared/ClientOnly";
 import { cn } from "@/lib/utils";
 import { Activity, Calendar as CalendarIcon, ChevronDown } from "lucide-react";
 import {

@@ -1,4 +1,4 @@
-import getUser from "@/utils/codeforces/getUser";
+import getUser from "@/services/codeforces/getUser";
 import getRankFromRating from "@/utils/getRankFromRating";
 
 export interface UserSyncData {

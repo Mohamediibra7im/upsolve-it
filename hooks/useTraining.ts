@@ -9,12 +9,12 @@ import useHistory from "@/hooks/useHistory";
 import useUpsolvedProblems from "@/hooks/useUpsolvedProblems";
 import getTrainingSubmissionStatus, {
   SubmissionStatus,
-} from "@/utils/codeforces/getTrainingSubmissionStatus";
+} from "@/services/codeforces/getTrainingSubmissionStatus";
 import { apiClient } from "@/lib/apiClient";
 import { mutate as mutateSwr } from "swr";
 import type { TrainingMode } from "@/types/TrainingMode";
-import { expectedTimeSecondsFromRating } from "@/utils/training/expectedTime";
-import { computeSpeedStatus } from "@/utils/training/speedStatus";
+import { expectedTimeSecondsFromRating } from "@/services/training/expectedTime";
+import { computeSpeedStatus } from "@/services/training/speedStatus";
 
 const TRAINING_STORAGE_KEY = "training-tracker-training";
 const SUBMISSION_STATUS_STORAGE_KEY = "training-tracker-submission-status";

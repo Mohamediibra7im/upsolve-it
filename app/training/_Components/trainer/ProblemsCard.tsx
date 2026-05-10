@@ -5,9 +5,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Sparkles, Play } from "lucide-react";
 import { TrainingProblem } from "@/types/TrainingProblem";
-import { SubmissionStatus } from "@/utils/codeforces/getTrainingSubmissionStatus";
+import { SubmissionStatus } from "@/services/codeforces/getTrainingSubmissionStatus";
 import ProblemRow from "./ProblemRow";
-import { speedStatusLabel } from "@/utils/training/speedStatus";
+import { speedStatusLabel } from "@/services/training/speedStatus";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 10 },

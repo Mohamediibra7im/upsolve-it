@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import useUpsolvedProblems from "@/hooks/useUpsolvedProblems";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/app/_Components/Toast";
+import { useToast } from "@/components/providers/Toast";
 import { Lightbulb } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";

@@ -25,14 +25,14 @@ import { useFriendRequests } from "@/hooks/useFriendRequests";
 import { apiClient, apiFetcher } from "@/lib/apiClient";
 import type { UserTrainingStatsView } from "@/types/userTrainingStats";
 import type { FriendSummary } from "@/types/Friend";
-import Loader from "@/app/_Components/Loader";
+import Loader from "@/components/shared/Loader";
 import { FriendStatsDialog } from "@/app/friends/_Components/FriendStatsDialog";
-import { useToast } from "@/app/_Components/Toast";
+import { useToast } from "@/components/providers/Toast";
 import { cn } from "@/lib/utils";
 import {
   isValidCodeforcesHandleFormat,
   normalizeCodeforcesHandleInput,
-} from "@/utils/codeforces/handle";
+} from "@/services/codeforces/handle";
 
 function friendRequestErrorMessage(raw: string): { title: string; description?: string } {
   const m = raw.toLowerCase();

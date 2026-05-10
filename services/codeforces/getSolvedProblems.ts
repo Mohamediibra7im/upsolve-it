@@ -1,7 +1,7 @@
 import { User } from "@/types/User";
 import { CodeforcesProblem, CodeforcesSubmission } from "@/types/Codeforces";
 import { SuccessResponse, ErrorResponse, Response } from "@/types/Response";
-import getSubmissions from "@/utils/codeforces/getSubmissions";
+import getSubmissions from "@/services/codeforces/getSubmissions";
 
 const getSolvedProblems = async (
   user: User,

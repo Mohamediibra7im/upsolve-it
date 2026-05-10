@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAdminLogs, AuditLog } from '@/hooks/useAdminLogs';
+import { useAdminLogs } from '@/hooks/admin/useAdminLogs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -55,6 +55,113 @@ export default function AdminLogsView() {
       case 'TRAINING': return <Activity size={14} />;
       default: return <Tag size={14} />;
     }
+  };
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-20 space-y-4">
+          <Loader2 className="h-10 w-10 animate-spin text-primary opacity-50" />
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Accessing Encrypted Records...</p>
+        </div>
+      );
+    }
+
+    if (isError) {
+      return (
+        <Card className="border-destructive/20 bg-destructive/5 backdrop-blur-xl rounded-[2rem] p-20 text-center">
+          <div className="h-16 w-16 bg-destructive/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Shield className="text-destructive opacity-50" size={32} />
+          </div>
+          <h3 className="text-xl font-bold text-destructive">Secure Connection Failed</h3>
+          <p className="text-sm text-muted-foreground mb-6">We couldn't retrieve the audit logs. You may not have sufficient permissions or the session expired.</p>
+          <Button onClick={() => globalThis.location.reload()} variant="outline" className="rounded-xl">
+            Retry Authorization
+          </Button>
+        </Card>
+      );
+    }
+
+    if (logs.length === 0) {
+      return (
+        <Card className="border-border/40 bg-card/20 backdrop-blur-xl rounded-[2rem] p-20 text-center">
+          <div className="h-16 w-16 bg-muted/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Database className="text-muted-foreground opacity-20" size={32} />
+          </div>
+          <h3 className="text-xl font-bold">No Records Found</h3>
+          <p className="text-sm text-muted-foreground">The audit trail is empty for current filter parameters.</p>
+        </Card>
+      );
+    }
+
+    return (
+      <div className="space-y-3">
+        <AnimatePresence mode="popLayout">
+          {logs.map((log, idx) => (
+            <motion.div
+              key={log._id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.03 }}
+            >
+              <Card className="border-border/40 bg-card/10 hover:bg-card/20 transition-all duration-300 rounded-2xl overflow-hidden group">
+                <CardContent className="p-0">
+                  <div className="flex flex-col md:flex-row md:items-center p-4 md:p-6 gap-4 md:gap-8">
+                    {/* Timestamp */}
+                    <div className="flex items-center gap-3 shrink-0 min-w-[140px]">
+                      <Clock className="h-3 w-3 text-muted-foreground/60" />
+                      <div className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                        {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        <span className="mx-2 opacity-30">|</span>
+                        {new Date(log.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                      </div>
+                    </div>
+
+                    {/* Performed By */}
+                    <div className="flex items-center gap-3 shrink-0 min-w-[180px]">
+                      <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary overflow-hidden">
+                        {log.performedBy?.avatar ? (
+                          <img src={log.performedBy.avatar} alt={log.performedByHandle} className="h-full w-full object-cover" />
+                        ) : (
+                          <User size={14} />
+                        )}
+                      </div>
+                      <div>
+                        <div className="text-sm font-black tracking-tight">{log.performedByHandle}</div>
+                        <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Administrator</div>
+                      </div>
+                    </div>
+
+                    {/* Action & Entity */}
+                    <div className="flex items-center gap-3 shrink-0">
+                      <Badge variant="outline" className={cn("px-3 py-1 font-black uppercase tracking-widest text-[9px] rounded-lg", getActionColor(log.action))}>
+                        {log.action}
+                      </Badge>
+                      <div className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-border/40 rounded-lg text-muted-foreground">
+                        {getEntityIcon(log.entity)}
+                        <span className="text-[9px] font-black uppercase tracking-widest">{log.entity}</span>
+                      </div>
+                    </div>
+
+                    {/* Details */}
+                    <div className="flex-1 overflow-hidden">
+                      <div className="text-[11px] text-muted-foreground/80 font-medium truncate">
+                        {Object.entries(log.details || {}).map(([k, v]) => (
+                          <span key={k} className="mr-4">
+                            <span className="opacity-50 lowercase italic mr-1">{k}:</span>
+                            <span className="text-foreground/90">{typeof v === 'object' ? JSON.stringify(v) : String(v)}</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+    );
   };
 
   return (
@@ -115,98 +222,7 @@ export default function AdminLogsView() {
 
       {/* Logs List */}
       <div className="space-y-4">
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 space-y-4">
-            <Loader2 className="h-10 w-10 animate-spin text-primary opacity-50" />
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Accessing Encrypted Records...</p>
-          </div>
-        ) : isError ? (
-          <Card className="border-destructive/20 bg-destructive/5 backdrop-blur-xl rounded-[2rem] p-20 text-center">
-            <div className="h-16 w-16 bg-destructive/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Shield className="text-destructive opacity-50" size={32} />
-            </div>
-            <h3 className="text-xl font-bold text-destructive">Secure Connection Failed</h3>
-            <p className="text-sm text-muted-foreground mb-6">We couldn't retrieve the audit logs. You may not have sufficient permissions or the session expired.</p>
-            <Button onClick={() => window.location.reload()} variant="outline" className="rounded-xl">
-              Retry Authorization
-            </Button>
-          </Card>
-        ) : logs.length === 0 ? (
-          <Card className="border-border/40 bg-card/20 backdrop-blur-xl rounded-[2rem] p-20 text-center">
-            <div className="h-16 w-16 bg-muted/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Database className="text-muted-foreground opacity-20" size={32} />
-            </div>
-            <h3 className="text-xl font-bold">No Records Found</h3>
-            <p className="text-sm text-muted-foreground">The audit trail is empty for current filter parameters.</p>
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            <AnimatePresence mode="popLayout">
-              {logs.map((log, idx) => (
-                <motion.div
-                  key={log._id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.03 }}
-                >
-                  <Card className="border-border/40 bg-card/10 hover:bg-card/20 transition-all duration-300 rounded-2xl overflow-hidden group">
-                    <CardContent className="p-0">
-                      <div className="flex flex-col md:flex-row md:items-center p-4 md:p-6 gap-4 md:gap-8">
-                        {/* Timestamp */}
-                        <div className="flex items-center gap-3 shrink-0 min-w-[140px]">
-                          <Clock className="h-3 w-3 text-muted-foreground/60" />
-                          <div className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-                            {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            <span className="mx-2 opacity-30">|</span>
-                            {new Date(log.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
-                          </div>
-                        </div>
-
-                        {/* Performed By */}
-                        <div className="flex items-center gap-3 shrink-0 min-w-[180px]">
-                          <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary overflow-hidden">
-                            {log.performedBy?.avatar ? (
-                              <img src={log.performedBy.avatar} alt={log.performedByHandle} className="h-full w-full object-cover" />
-                            ) : (
-                              <User size={14} />
-                            )}
-                          </div>
-                          <div>
-                            <div className="text-sm font-black tracking-tight">{log.performedByHandle}</div>
-                            <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">Administrator</div>
-                          </div>
-                        </div>
-
-                        {/* Action & Entity */}
-                        <div className="flex items-center gap-3 shrink-0">
-                          <Badge variant="outline" className={cn("px-3 py-1 font-black uppercase tracking-widest text-[9px] rounded-lg", getActionColor(log.action))}>
-                            {log.action}
-                          </Badge>
-                          <div className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-border/40 rounded-lg text-muted-foreground">
-                            {getEntityIcon(log.entity)}
-                            <span className="text-[9px] font-black uppercase tracking-widest">{log.entity}</span>
-                          </div>
-                        </div>
-
-                        {/* Details */}
-                        <div className="flex-1 overflow-hidden">
-                          <div className="text-[11px] text-muted-foreground/80 font-medium truncate">
-                            {Object.entries(log.details || {}).map(([k, v]) => (
-                              <span key={k} className="mr-4">
-                                <span className="opacity-50 lowercase italic mr-1">{k}:</span>
-                                <span className="text-foreground/90">{typeof v === 'object' ? JSON.stringify(v) : String(v)}</span>
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        )}
+        {renderContent()}
       </div>
 
       {/* Pagination */}

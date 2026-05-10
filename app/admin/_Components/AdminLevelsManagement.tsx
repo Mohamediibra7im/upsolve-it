@@ -5,11 +5,11 @@ import useSWR, { useSWRConfig } from "swr";
 import { apiClient } from "@/lib/apiClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/app/_Components/Toast";
+import { useToast } from "@/components/providers/Toast";
 import {
   ladderRatingsFromPerformance,
   LADDER_RATING_BAND_STEP,
-} from "@/utils/training/modeRatings";
+} from "@/services/training/modeRatings";
 import {
   TRAINING_LEVELS_SWR_KEY,
   fetchTrainingLevelsFromApi,
@@ -92,7 +92,7 @@ export default function AdminLevelsManagement() {
       const base = prev ?? [];
       const maxId = base.length ? Math.max(...base.map((r) => r.id)) : 0;
       const lastPerf = base.length
-        ? Number.parseInt(base[base.length - 1].Performance, 10)
+        ? Number.parseInt(base.at(-1)!.Performance, 10)
         : 800;
       const nextPerf = Number.isFinite(lastPerf)
         ? lastPerf + LADDER_RATING_BAND_STEP

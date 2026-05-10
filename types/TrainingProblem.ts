@@ -1,5 +1,5 @@
 import { CodeforcesProblem } from "./Codeforces";
-import type { SpeedStatus } from "@/utils/training/speedStatus";
+import type { SpeedStatus } from "@/services/training/speedStatus";
 
 type TrainingProblem = CodeforcesProblem & {
   url: string;

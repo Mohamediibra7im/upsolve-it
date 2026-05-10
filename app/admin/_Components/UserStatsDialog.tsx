@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { UserTrainingStatsView } from '@/types/userTrainingStats';
-import { formatAvgProblemRating } from '@/utils/training/formatAvgProblemRating';
+import { formatAvgProblemRating } from '@/services/training/formatAvgProblemRating';
 
 interface UserStatsDialogProps {
   statsDialog: { open: boolean; userId: string | null };
@@ -171,7 +171,11 @@ export function UserStatsDialog({
                     </h3>
                   </div>
                   <CardContent className="p-8">
-                    <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                    <section
+                      className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar"
+                      tabIndex={0}
+                      aria-label="Recent strategic training history"
+                    >
                       {userStats.trainings.length > 0 ? userStats.trainings.map((training) => (
                         <div key={training.id} className="group relative p-5 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all duration-300">
                           <div className="flex items-center justify-between gap-4">
@@ -201,7 +205,7 @@ export function UserStatsDialog({
                           <p className="text-[10px] font-black uppercase tracking-widest">No Strategic Records Found</p>
                         </div>
                       )}
-                    </div>
+                    </section>
                   </CardContent>
                 </Card>
               </div>

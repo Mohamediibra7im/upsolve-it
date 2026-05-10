@@ -1,13 +1,13 @@
 import "./globals.css";
 import { Inter, Host_Grotesk, JetBrains_Mono } from "next/font/google";
 import type React from "react";
-import AuthGuard from "@/app/_Components/AuthGuard";
+import AuthGuard from "@/components/providers/AuthGuard";
 import ConditionalNavBar from "@/components/layout/ConditionalNavBar";
-import ThemeProvider from "@/app/_Components/ThemeProvider";
-import { ToastProvider } from "@/app/_Components/Toast";
+import ThemeProvider from "@/components/providers/ThemeProvider";
+import { ToastProvider } from "@/components/providers/Toast";
 import { Analytics } from "@vercel/analytics/react";
 import { cn } from "@/lib/utils";
-import PageTransition from "@/app/_Components/PageTransition";
+import PageTransition from "@/components/shared/PageTransition";
 import HelpFab from "@/components/layout/HelpFab";
 
 const inter = Inter({

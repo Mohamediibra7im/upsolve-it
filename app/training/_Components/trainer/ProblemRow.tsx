@@ -5,7 +5,7 @@ import { TrainingProblem } from "@/types/TrainingProblem";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, XCircle, Loader2, Lock, ArrowRight } from "lucide-react";
 import { useState, useEffect } from "react";
-import { SubmissionStatus } from "@/utils/codeforces/getTrainingSubmissionStatus";
+import { SubmissionStatus } from "@/services/codeforces/getTrainingSubmissionStatus";
 import { motion } from "framer-motion";
 
 /** Session-only slot label A-Z (not the contest index); numeric fallback after Z. */

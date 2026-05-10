@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import useHistory from "@/hooks/useHistory";
 import useUser from "@/hooks/useUser";
-import Loader from "@/app/_Components/Loader";
+import Loader from "@/components/shared/Loader";
 import { Training } from "@/types/Training";
 import {
   ArrowRight,

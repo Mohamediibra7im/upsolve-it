@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Crown, Bell, Users, Shield, Settings, Home } from 'lucide-react';
 import useUser from '@/hooks/useUser';
-import Loader from '@/app/_Components/Loader';
+import Loader from '@/components/shared/Loader';
 
 const adminPages = [
   {

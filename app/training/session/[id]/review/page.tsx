@@ -7,7 +7,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import Loader from "@/app/_Components/Loader";
+import Loader from "@/components/shared/Loader";
 import useUpsolvedProblems from "@/hooks/useUpsolvedProblems";
 import type { TrainingProblem } from "@/types/TrainingProblem";
 

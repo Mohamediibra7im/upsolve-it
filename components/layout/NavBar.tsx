@@ -22,7 +22,7 @@ import {
   ExternalLink,
   Users,
 } from "lucide-react";
-import ClientOnly from "@/app/_Components/ClientOnly";
+import ClientOnly from "@/components/shared/ClientOnly";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import useUser from "@/hooks/useUser";
 import { useFriendRequests } from "@/hooks/useFriendRequests";

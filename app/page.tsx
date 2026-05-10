@@ -21,7 +21,7 @@ import {
   Flame,
 } from "lucide-react";
 import useUser from "@/hooks/useUser";
-import Loader from "@/app/_Components/Loader";
+import Loader from "@/components/shared/Loader";
 
 /* ───── Animated number ───── */
 const Counter = ({ to, suffix = "" }: { to: number; suffix?: string }) => {

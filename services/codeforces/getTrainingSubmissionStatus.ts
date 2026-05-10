@@ -2,7 +2,7 @@ import { User } from "@/types/User";
 import { TrainingProblem } from "@/types/TrainingProblem";
 import { CodeforcesSubmission } from "@/types/Codeforces";
 import { SuccessResponse, ErrorResponse, Response } from "@/types/Response";
-import getSubmissions from "@/utils/codeforces/getSubmissions";
+import getSubmissions from "@/services/codeforces/getSubmissions";
 
 export type SubmissionStatus = {
   problemId: string; // format: "contestId_index"

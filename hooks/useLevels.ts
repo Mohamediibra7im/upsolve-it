@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import useSWR from "swr";
 import { resolveApiUrl } from "@/lib/apiClient";
-import { ladderRatingsFromPerformance } from "@/utils/training/modeRatings";
+import { ladderRatingsFromPerformance } from "@/services/training/modeRatings";
 
 export interface Level {
   id: number;

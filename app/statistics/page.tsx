@@ -3,10 +3,10 @@
 import useHistory from "@/hooks/useHistory";
 import useUser from "@/hooks/useUser";
 import useUpsolvedProblems from "@/hooks/useUpsolvedProblems";
-import Loader from "@/app/_Components/Loader";
+import Loader from "@/components/shared/Loader";
 import History from "./_Components/History";
 import ProgressChart from "./_Components/ProgressChart";
-import UpsolveReminder from "@/app/_Components/UpsolveReminder";
+import UpsolveReminder from "@/components/shared/UpsolveReminder";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,13 +36,13 @@ import { cn } from "@/lib/utils";
 import {
   isTrainingProblemCountedSolved,
   trainingSessionHasSolve,
-} from "@/utils/training/problemCountedSolved";
-import { averageEffectiveProblemRatingForSession } from "@/utils/training/effectiveProblemRating";
+} from "@/services/training/problemCountedSolved";
+import { averageEffectiveProblemRatingForSession } from "@/services/training/effectiveProblemRating";
 import {
   formatTrainingModeLabel,
   normalizeTrainingMode,
   TRAINING_MODE_ORDER,
-} from "@/utils/training/trainingModeLabel";
+} from "@/services/training/trainingModeLabel";
 import type { TrainingMode } from "@/types/TrainingMode";
 
 const formatMetric = (value: number | null | undefined) => {
@@ -50,6 +50,14 @@ const formatMetric = (value: number | null | undefined) => {
   if (Number.isNaN(value)) return "-";
   return String(value);
 };
+
+/** Helper to count solved problems in a single training session */
+const countSolvedInSession = (session: any) => 
+  session.problems.filter(isTrainingProblemCountedSolved).length;
+
+/** Helper to check if a session has at least one solve */
+const hasAtLeastOneSolve = (session: any) => 
+  session.problems.some(isTrainingProblemCountedSolved);
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 20 },
@@ -117,9 +125,7 @@ export default function StatisticsPage() {
     const totalSessions = history.length;
     const totalProblems = history.reduce((acc, session) => acc + session.problems.length, 0);
     const solvedProblems = history.reduce(
-      (acc, session) =>
-        acc +
-        session.problems.filter((p) => isTrainingProblemCountedSolved(p)).length,
+      (acc, session) => acc + countSolvedInSession(session),
       0,
     );
     const upsolvedCount = upsolvedProblems?.length || 0;
@@ -187,20 +193,12 @@ export default function StatisticsPage() {
     }
     return TRAINING_MODE_ORDER.filter((m) => groups.has(m)).map((mode) => {
       const sessions = groups.get(mode)!;
-      const totalProblems = sessions.reduce(
-        (acc, s) => acc + s.problems.length,
-        0,
-      );
-      const solved = sessions.reduce(
-        (acc, s) =>
-          acc +
-          s.problems.filter((p) => isTrainingProblemCountedSolved(p)).length,
-        0,
-      );
-      /** Only sessions with ≥1 solve contribute to perf avg/best (miss-only sessions still get a stored estimate). */
-      const sessionsWithSolve = sessions.filter((s) =>
-        s.problems.some((p) => isTrainingProblemCountedSolved(p)),
-      );
+      const totalProblems = sessions.reduce((acc, s) => acc + s.problems.length, 0);
+      const solved = sessions.reduce((acc, s) => acc + countSolvedInSession(s), 0);
+
+      /** Only sessions with ≥1 solve contribute to perf avg/best */
+      const sessionsWithSolve = sessions.filter(hasAtLeastOneSolve);
+
       const avgPerf =
         sessionsWithSolve.length > 0
           ? Math.round(

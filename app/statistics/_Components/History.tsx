@@ -14,12 +14,12 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import useUpsolvedProblems from "@/hooks/useUpsolvedProblems";
-import { isTrainingProblemCountedSolved } from "@/utils/training/problemCountedSolved";
+import { isTrainingProblemCountedSolved } from "@/services/training/problemCountedSolved";
 import {
   formatTrainingModeLabel,
   normalizeTrainingMode,
-} from "@/utils/training/trainingModeLabel";
-import { averageEffectiveProblemRatingForSession } from "@/utils/training/effectiveProblemRating";
+} from "@/services/training/trainingModeLabel";
+import { averageEffectiveProblemRatingForSession } from "@/services/training/effectiveProblemRating";
 import { CheckCircle2, XCircle, BadgeCheck } from "lucide-react";
 import { Trash2 } from "lucide-react";
 

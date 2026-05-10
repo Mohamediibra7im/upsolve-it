@@ -3,7 +3,7 @@
 import { TrainingProblem } from "@/types/TrainingProblem";
 import { Training } from "@/types/Training";
 import { useState, useEffect, useMemo } from "react";
-import { SubmissionStatus } from "@/utils/codeforces/getTrainingSubmissionStatus";
+import { SubmissionStatus } from "@/services/codeforces/getTrainingSubmissionStatus";
 
 // Sub-components
 import StopTrainingDialog from "./trainer/StopTrainingDialog";

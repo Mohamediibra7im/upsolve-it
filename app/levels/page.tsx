@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useLevels } from "@/hooks/useLevels";
-import Loader from "@/app/_Components/Loader";
+import Loader from "@/components/shared/Loader";
 
 const LevelsPage = () => {
   const { levels: levelsData, isLoading } = useLevels();

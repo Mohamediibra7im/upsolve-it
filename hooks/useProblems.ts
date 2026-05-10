@@ -2,10 +2,10 @@ import { useState, useCallback } from "react";
 import useSWR from "swr";
 import { CodeforcesProblem, ProblemTag } from "@/types/Codeforces";
 import { TrainingProblem } from "@/types/TrainingProblem";
-import getAllProblems from "@/utils/codeforces/getAllProblems";
-import getSolvedProblems from "@/utils/codeforces/getSolvedProblems";
+import getAllProblems from "@/services/codeforces/getAllProblems";
+import getSolvedProblems from "@/services/codeforces/getSolvedProblems";
 import { User } from "@/types/User";
-import { expectedTimeSecondsFromRating } from "@/utils/training/expectedTime";
+import { expectedTimeSecondsFromRating } from "@/services/training/expectedTime";
 
 const PROBLEMS_CACHE_KEY = "codeforces-all-problems";
 const SOLVED_PROBLEMS_CACHE_KEY = (handle: string) =>
@@ -27,7 +27,7 @@ function poolByRatingProximity(
   );
   for (const tol of [0, 100, 200, 400]) {
     const subset = rated.filter(
-      (p) => Math.abs((p.rating as number) - target) <= tol,
+      (p) => Math.abs((p.rating) - target) <= tol,
     );
     if (subset.length > 0) return subset;
   }
@@ -69,7 +69,12 @@ const useProblems = (user: User | null | undefined) => {
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
-      dedupingInterval: 3600000,
+      // The CF problem list changes infrequently; cache for 6 hours
+      // so navigation between pages is instant.
+      dedupingInterval: 6 * 3_600_000,
+      // Keep stale data visible while a background revalidation runs,
+      // preventing the loading spinner from re-appearing.
+      keepPreviousData: true,
     },
   );
 

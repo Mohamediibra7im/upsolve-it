@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Gzip compress responses (reduces ~3MB CF problem payload significantly)
+  compress: true,
+  reactStrictMode: true,
+  poweredByHeader: false,
   turbopack: {},
   images: {
     remotePatterns: [

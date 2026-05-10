@@ -8,8 +8,8 @@ import TagSelector from "./_Components/TagSelector";
 import LevelSelector from "./_Components/LevelSelector";
 import useTags from "@/hooks/useTags";
 import useUser from "@/hooks/useUser";
-import Loader from "@/app/_Components/Loader";
-import UpsolveReminder from "@/app/_Components/UpsolveReminder";
+import Loader from "@/components/shared/Loader";
+import UpsolveReminder from "@/components/shared/UpsolveReminder";
 import { Flame } from "lucide-react";
 import { motion } from "framer-motion";
 import ModeSelector from "./_Components/ModeSelector";
@@ -17,10 +17,10 @@ import type { TrainingMode } from "@/types/TrainingMode";
 import {
   buildRatingsForMode,
   customRatingsFromProblems,
-} from "@/utils/training/modeRatings";
+} from "@/services/training/modeRatings";
 import useSWR from "swr";
 import { swrFetcher } from "@/lib/apiClient";
-import { useToast } from "@/app/_Components/Toast";
+import { useToast } from "@/components/providers/Toast";
 
 type WeaknessApi = {
   hasEnoughData: boolean;
@@ -123,8 +123,8 @@ export default function TrainingPage() {
         reportGenerate(r);
         return;
       }
-      const weakVals = weakness.weakTags.map((w) => w.tag);
-      const tagObjs = allTags.filter((t) => weakVals.includes(t.value));
+      const weakVals = new Set(weakness.weakTags.map((w) => w.tag));
+      const tagObjs = allTags.filter((t) => weakVals.has(t.value));
       const base = buildRatingsForMode("weakness", u, customRatings);
       const r = generateProblemsFromRatings(
         base.ratings,
