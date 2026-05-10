@@ -105,10 +105,13 @@ const Hero = ({ user }: { user: any }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.28 }}
-            className="text-lg sm:text-xl md:text-2xl text-muted-foreground/70 font-medium max-w-2xl mx-auto leading-relaxed"
+            className="text-muted-foreground/90 text-lg sm:text-xl leading-relaxed max-w-3xl mx-auto tracking-tight font-medium"
           >
-            Five training modes · live Codeforces sync · per-mode analytics · session reviews · upsolve tracking.{" "}
-            <span className="text-foreground font-semibold">Everything to level up.</span>
+            The ultimate <span className="text-foreground font-black border-b-2 border-primary/20">ecosystem</span> for competitive programmers to{" "}
+            <span className="text-primary font-bold">track progress</span>,{" "}
+            <span className="text-foreground/90 font-bold">optimize training</span>, and achieve{" "}
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent font-black">peak performance</span>{" "}
+            in a data-driven world.
           </motion.p>
 
           {/* CTA */}
