@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import useUser from "@/hooks/useUser";
 import Loader from "@/components/shared/Loader";
@@ -32,18 +32,15 @@ export default function AdminLayout({
   const { user, isLoading } = useUser();
   const router = useRouter();
   const pathname = usePathname();
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  
+  // Directly derive authorization to avoid state-related flashes on re-mount
+  const isAuthorized = user?.role === "admin";
 
   useEffect(() => {
-    if (!isLoading) {
-      if (user?.role === "admin") {
-        setIsAuthorized(true);
-      } else {
-        // Only redirect if we're sure the user isn't an admin
-        router.replace("/");
-      }
+    if (!isLoading && !isAuthorized) {
+      router.replace("/");
     }
-  }, [user, isLoading, router]);
+  }, [user, isLoading, isAuthorized, router]);
 
   if (isLoading || !isAuthorized) {
     return <Loader message="Establishing Secure Connection..." />;
@@ -122,8 +119,8 @@ export default function AdminLayout({
         </div>
       </header>
 
-      <main className="container max-w-[1400px] mx-auto px-6 py-12 lg:py-16">
-        <div className="w-full space-y-12">
+      <main className="container relative max-w-[1400px] mx-auto px-6 py-12 lg:py-16">
+        <div className="relative w-full space-y-12">
            {children}
         </div>
       </main>

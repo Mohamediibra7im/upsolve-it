@@ -10,7 +10,7 @@ const variants = {
   exit: { opacity: 0, x: 0, y: -10 },
 };
 
-export default function PageTransition({ children }: { children: React.ReactNode }) {
+export default function PageTransition({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
 
   return (
@@ -22,7 +22,7 @@ export default function PageTransition({ children }: { children: React.ReactNode
         exit="exit"
         variants={variants}
         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full flex-grow flex flex-col min-h-0"
+        className="w-full flex-grow flex flex-col min-h-0 relative"
       >
         {children}
       </motion.div>

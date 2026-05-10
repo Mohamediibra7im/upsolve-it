@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -24,6 +23,7 @@ import { UserMobileCards } from './UserMobileCards';
 import { RoleConfirmationDialog } from './RoleConfirmationDialog';
 import { UserStatsDialog } from './UserStatsDialog';
 import { Card } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 const getRankColor = (rating: number): string => {
   if (rating === 0) return 'text-gray-500';
@@ -196,86 +196,96 @@ export default function AdminUserManagement() {
   return (
     <div className="space-y-12">
       {/* Integrated Command Center */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Metric Cards - 1/4 width each */}
-        <Card className="border-white/5 bg-card/20 backdrop-blur-2xl rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 opacity-[0.03] group-hover:scale-110 transition-transform duration-500">
-            <UserIcon size={120} />
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* Metric Cards */}
+        <Card className="group relative border-none bg-gradient-to-br from-blue-600/20 to-blue-900/20 backdrop-blur-3xl rounded-[3rem] p-8 overflow-hidden shadow-2xl transition-all duration-500 hover:scale-[1.02]">
+          <div className="absolute top-0 right-0 p-10 opacity-[0.05] group-hover:scale-125 transition-transform duration-700 pointer-events-none">
+            <UserIcon size={180} />
           </div>
-          <div className="flex flex-col h-full justify-between">
-            <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 w-fit">
-              <UserIcon className="h-5 w-5 text-blue-500" />
+          <div className="relative z-10 flex flex-col h-full justify-between gap-8">
+            <div className="flex items-center justify-between">
+              <div className="h-14 w-14 rounded-2xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shadow-xl shadow-blue-500/10">
+                <UserIcon className="h-7 w-7" />
+              </div>
+              <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse shadow-[0_0_12px_rgba(59,130,246,0.8)]" />
             </div>
-            <div className="mt-6">
-              <div className="text-4xl font-black tracking-tighter text-foreground leading-none">{users.length}</div>
-              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mt-1">Total Personnel</div>
+            <div>
+              <div className="text-6xl font-black tracking-tighter text-foreground leading-none group-hover:text-blue-400 transition-colors">{users.length}</div>
+              <div className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 mt-3">Personnel Registry</div>
             </div>
           </div>
         </Card>
 
-        <Card className="border-white/5 bg-card/20 backdrop-blur-2xl rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 opacity-[0.03] group-hover:scale-110 transition-transform duration-500">
-            <Crown size={120} />
+        <Card className="group relative border-none bg-gradient-to-br from-amber-600/20 to-amber-900/20 backdrop-blur-3xl rounded-[3rem] p-8 overflow-hidden shadow-2xl transition-all duration-500 hover:scale-[1.02]">
+          <div className="absolute top-0 right-0 p-10 opacity-[0.05] group-hover:scale-125 transition-transform duration-700 pointer-events-none">
+            <Crown size={180} />
           </div>
-          <div className="flex flex-col h-full justify-between">
-            <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 w-fit">
-              <Crown className="h-5 w-5 text-purple-500" />
+          <div className="relative z-10 flex flex-col h-full justify-between gap-8">
+            <div className="flex items-center justify-between">
+              <div className="h-14 w-14 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-xl shadow-amber-500/10">
+                <Crown className="h-7 w-7" />
+              </div>
+              <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse shadow-[0_0_12px_rgba(245,158,11,0.8)]" />
             </div>
-            <div className="mt-6">
-              <div className="text-4xl font-black tracking-tighter text-foreground leading-none">
+            <div>
+              <div className="text-6xl font-black tracking-tighter text-foreground leading-none group-hover:text-amber-400 transition-colors">
                 {users.filter((u: User) => u.role === 'admin').length}
               </div>
-              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mt-1">Command Staff</div>
+              <div className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 mt-3">Authorized Officers</div>
             </div>
           </div>
         </Card>
 
-        {/* Unified Search & Control - 2/4 width */}
-        <Card className="lg:col-span-2 border-primary/10 bg-primary/5 backdrop-blur-2xl rounded-[2.5rem] p-6 shadow-2xl relative overflow-hidden border-dashed">
-          <div className="flex flex-col h-full gap-6">
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-primary/60 group-focus-within:text-primary transition-colors" />
+        {/* Unified Search & Control Console */}
+        <Card className="lg:col-span-2 border-primary/10 bg-card/20 backdrop-blur-3xl rounded-[3rem] p-8 shadow-2xl relative overflow-hidden group">
+          <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:30px_30px]" />
+          <div className="flex flex-col h-full gap-8 relative z-10">
+            <div className="relative group/input">
+              <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-primary/40 group-focus-within/input:text-primary transition-colors duration-300" />
               </div>
               <Input
                 type="text"
-                placeholder="Query Registry..."
+                placeholder="Initialize Personnel Query..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-14 h-14 bg-white/5 border-white/10 focus:border-primary/50 rounded-2xl font-bold tracking-tight text-lg shadow-inner"
+                className="pl-16 h-16 bg-white/5 border-white/5 focus:border-primary/40 focus:ring-primary/20 rounded-2xl font-bold tracking-tight text-xl shadow-inner transition-all duration-300"
               />
             </div>
             
-            <div className="flex flex-wrap items-center gap-3">
-              <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortField)}>
-                <SelectTrigger className="flex-1 min-w-[140px] h-12 bg-white/5 border-white/10 rounded-xl font-black uppercase tracking-widest text-[9px]">
-                  <ArrowUpDown className="h-3 w-3 mr-2" />
-                  <SelectValue placeholder="Sort" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="codeforcesHandle">Handle</SelectItem>
-                  <SelectItem value="role">Clearance</SelectItem>
-                  <SelectItem value="createdAt">Arrival</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex-1 min-w-[200px]">
+                <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortField)}>
+                  <SelectTrigger className="h-14 bg-white/5 border-white/5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] focus:ring-primary/20">
+                    <div className="flex items-center gap-3">
+                      <ArrowUpDown className="h-3.5 w-3.5 text-primary" />
+                      <SelectValue placeholder="Sort Parameters" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent className="bg-background/95 backdrop-blur-xl border-white/10 rounded-2xl">
+                    <SelectItem value="codeforcesHandle" className="text-[10px] font-black uppercase tracking-widest">Sort by Handle</SelectItem>
+                    <SelectItem value="role" className="text-[10px] font-black uppercase tracking-widest">Sort by Clearance</SelectItem>
+                    <SelectItem value="createdAt" className="text-[10px] font-black uppercase tracking-widest">Sort by Arrival</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               
               <Button
                 variant="outline"
                 size="icon"
                 onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                className="h-12 w-12 bg-white/5 border-white/10 rounded-xl hover:bg-primary hover:text-primary-foreground transition-all shrink-0"
+                className="h-14 w-14 bg-white/5 border-white/5 rounded-2xl hover:bg-primary/20 hover:text-primary hover:border-primary/40 transition-all duration-300 group/sort"
               >
-                <ArrowUpDown className={`h-4 w-4 transition-transform ${sortOrder === 'desc' ? 'rotate-180' : ''}`} />
+                <ArrowUpDown className={cn("h-5 w-5 transition-transform duration-500", sortOrder === 'desc' ? 'rotate-180' : '')} />
               </Button>
 
-              <Badge className="h-12 px-4 bg-primary/20 text-primary border border-primary/30 font-black uppercase tracking-tighter text-[9px] rounded-xl flex items-center shrink-0">
-                {filteredAndSortedUsers.length} TARGETS
-              </Badge>
+              <div className="h-14 px-6 bg-primary/10 text-primary border border-primary/20 font-black uppercase tracking-[0.2em] text-[10px] rounded-2xl flex items-center shadow-lg shadow-primary/5">
+                {filteredAndSortedUsers.length} Units Found
+              </div>
             </div>
           </div>
         </Card>
       </div>
-
       {/* Users List Interface */}
       <div className="w-full space-y-6">
         <div className="flex items-center justify-between px-4">

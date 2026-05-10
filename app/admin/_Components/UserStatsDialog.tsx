@@ -172,7 +172,7 @@ export function UserStatsDialog({
                   </div>
                   <CardContent className="p-8">
                     <section
-                      className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar"
+                      className="relative space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar"
                       tabIndex={0}
                       aria-label="Recent strategic training history"
                     >
