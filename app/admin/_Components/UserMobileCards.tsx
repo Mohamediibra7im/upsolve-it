@@ -4,12 +4,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { 
-  Crown, 
   User as UserIcon, 
   ExternalLink, 
-  Loader2, 
-  BarChart, 
-  Shield} from 'lucide-react';
+  Loader2} from 'lucide-react';
 import { User } from '@/types/User';
 import getRankFromRating from '@/utils/getRankFromRating';
 import { cn } from '@/lib/utils';
@@ -51,17 +48,12 @@ export function UserMobileCards({
 }: Readonly<UserMobileCardsProps>) {
   if (users.length === 0) {
     return (
-      <div className="text-center py-32 space-y-8">
-        <div className="relative inline-block">
-          <div className="absolute inset-0 bg-primary/20 rounded-full blur-[80px] animate-pulse" />
-          <div className="relative p-10 rounded-[3rem] bg-white/5 border border-white/10 shadow-2xl backdrop-blur-3xl">
-            <UserIcon className="h-20 w-20 text-muted-foreground/20 mx-auto" />
-          </div>
-        </div>
-        <div className="space-y-3">
-          <h3 className="text-3xl font-black tracking-tighter text-foreground uppercase">Registry Empty</h3>
-          <p className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 max-w-xs mx-auto">
-            {searchTerm ? `No tactical entities found matching the query "${searchTerm}"` : 'Tactical personnel registry is currently unpopulated'}
+      <div className="text-center py-20 bg-muted/20 rounded-2xl border border-border space-y-4">
+        <UserIcon className="h-12 w-12 text-muted-foreground/30 mx-auto" />
+        <div className="space-y-1">
+          <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">No Users Found</h3>
+          <p className="text-[10px] text-muted-foreground max-w-[200px] mx-auto">
+            {searchTerm ? `No matches for "${searchTerm}"` : 'The member directory is empty'}
           </p>
         </div>
       </div>
@@ -69,102 +61,70 @@ export function UserMobileCards({
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <AnimatePresence mode="popLayout">
-        {users.map((user, idx) => (
-          <motion.div
+        {users.map((user, idx) => {
+          const roleActionLabel = user.role === 'admin' ? "Demote" : "Promote";
+          return (
+            <motion.div
             key={user._id}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.05, duration: 0.5 }}
+            transition={{ delay: idx * 0.03 }}
           >
-            <Card className="group relative border-none bg-card/20 backdrop-blur-3xl rounded-[3rem] overflow-hidden shadow-2xl transition-all duration-500 active:scale-[0.97]">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
-              <CardContent className="p-8 space-y-10 relative z-10">
-                {/* Header: Avatar & Identity */}
-                <div className="flex items-center gap-6">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                    <Avatar className="h-20 w-20 rounded-[2rem] border-2 border-white/10 shadow-2xl relative z-10">
+            <Card className="bg-card border-border rounded-2xl overflow-hidden shadow-xl active:scale-[0.98] transition-transform">
+              <CardContent className="p-5 space-y-4">
+                {/* Identity Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-11 w-11 rounded-xl border border-border">
                       <AvatarImage src={user.avatar} alt={user.codeforcesHandle} className="object-cover" />
-                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-accent/20 text-primary font-black text-xl">
+                      <AvatarFallback className="bg-secondary text-muted-foreground font-bold text-xs">
                         {user.codeforcesHandle?.slice(0, 2).toUpperCase() || '??'}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full border-[4px] border-[#09090b] shadow-lg z-20" />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      <a
-                        href={`https://codeforces.com/profile/${user.codeforcesHandle}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-2xl font-black tracking-tighter text-foreground flex items-center gap-2"
-                      >
+                    <div className="flex flex-col">
+                      <div className="text-sm font-bold text-foreground flex items-center gap-1.5">
                         {user.codeforcesHandle || "Anonymous"}
-                        <ExternalLink size={16} className="text-primary/60" />
-                      </a>
-                    </div>
-                    <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-white/5 border border-white/5 w-fit">
-                      <Shield size={10} className="text-muted-foreground/40" />
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">ID: {user._id.slice(-8)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Tactical Performance Grid */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-6 rounded-[2rem] bg-white/5 border border-white/5 flex flex-col justify-between group/metric">
-                    <div className="text-3xl font-black text-foreground leading-none group-hover/metric:text-primary transition-colors">{user.rating || 0}</div>
-                    <div className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/30 mt-4">Current Rating</div>
-                  </div>
-                  <div className="p-6 rounded-[2rem] bg-white/5 border border-white/5 flex flex-col justify-between group/metric">
-                    <div className={cn("text-sm font-black uppercase tracking-tighter leading-tight", getRankColor(user.rating))}>
-                      {getRankFromRating(user.rating)}
-                    </div>
-                    <div className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/30 mt-4">Personnel Rank</div>
-                  </div>
-                </div>
-
-                {/* Authorization Status */}
-                <div className="flex items-center justify-between p-6 rounded-[2rem] bg-white/5 border border-white/5">
-                  <div className="flex items-center gap-4">
-                    <div className={cn(
-                      "h-12 w-12 rounded-2xl flex items-center justify-center border transition-all duration-500",
-                      user.role === 'admin' ? "bg-primary/10 border-primary/30 text-primary" : "bg-white/5 border-white/10 text-muted-foreground/40"
-                    )}>
-                      {user.role === 'admin' ? <Crown size={20} /> : <UserIcon size={20} />}
-                    </div>
-                    <div>
-                      <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 mb-1">Authorization</div>
-                      <div className={cn("text-xs font-black uppercase tracking-widest", user.role === 'admin' ? "text-primary" : "text-foreground")}>
-                        {user.role} Level
+                        <ExternalLink size={10} className="opacity-30" />
                       </div>
+                      <div className="text-[9px] font-black text-primary uppercase tracking-widest">{user.role}</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 mb-1">Registry</div>
-                    <div className="text-xs font-black text-foreground/80">
+                    <div className="text-[10px] font-bold text-foreground tabular-nums">{user.rating || 0}</div>
+                    <div className={cn("text-[8px] font-bold uppercase tracking-tighter", getRankColor(user.rating))}>
+                      {getRankFromRating(user.rating)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Info Bar */}
+                <div className="flex items-center justify-between p-3 rounded-xl bg-background/50 border border-border">
+                  <div className="space-y-0.5">
+                    <div className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">ID Reference</div>
+                    <div className="text-[9px] font-mono text-muted-foreground/80">#{user._id.slice(-8).toUpperCase()}</div>
+                  </div>
+                  <div className="text-right space-y-0.5">
+                    <div className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Member Since</div>
+                    <div className="text-[9px] font-bold text-muted-foreground/80">
                       {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                     </div>
                   </div>
                 </div>
 
-                {/* Operations Menu */}
-                <div className="flex gap-4 pt-2">
+                {/* Actions */}
+                <div className="flex gap-2">
                   <Button
-                    variant="ghost"
+                    variant="secondary"
                     onClick={() => onFetchStats(user._id)}
                     disabled={loadingStats}
-                    className="flex-1 h-16 rounded-2xl bg-white/5 border border-white/5 hover:bg-primary/10 hover:text-primary hover:border-primary/40 transition-all duration-300 font-black text-[11px] uppercase tracking-[0.3em] shadow-xl group/btn"
+                    className="flex-1 h-10 rounded-xl bg-secondary hover:bg-secondary/80 text-foreground text-[10px] font-bold uppercase tracking-widest border-none"
                   >
                     {loadingStats && statsDialogId === user._id ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <div className="flex items-center gap-3">
-                        <BarChart size={18} className="opacity-40 group-hover/btn:opacity-100 transition-opacity" />
-                        Analytics
-                      </div>
+                      "Stats"
                     )}
                   </Button>
                   <Button
@@ -172,26 +132,22 @@ export function UserMobileCards({
                     onClick={() => onRoleUpdate(user._id, user.role === 'admin' ? 'user' : 'admin')}
                     disabled={updatingId === user._id}
                     className={cn(
-                      "flex-1 h-16 rounded-2xl border transition-all duration-300 font-black text-[11px] uppercase tracking-[0.3em] shadow-xl",
-                      user.role === 'admin'
-                        ? "bg-orange-500/5 border-orange-500/10 text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/40"
-                        : "bg-emerald-500/5 border-emerald-500/10 text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500/40"
+                      "flex-1 h-10 rounded-xl border text-[10px] font-bold uppercase tracking-widest",
+                      user.role === 'admin' ? "bg-red-500/10 border-red-500/20 text-red-400" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
                     )}
                   >
                     {updatingId === user._id ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <div className="flex items-center gap-3">
-                        {user.role === 'admin' ? <UserIcon size={18} className="opacity-40" /> : <Crown size={18} className="opacity-40" />}
-                        {user.role === 'admin' ? "Demote" : "Promote"}
-                      </div>
+                      roleActionLabel
                     )}
                   </Button>
                 </div>
               </CardContent>
             </Card>
           </motion.div>
-        ))}
+          );
+        })}
       </AnimatePresence>
     </div>
   );

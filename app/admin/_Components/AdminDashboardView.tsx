@@ -1,13 +1,11 @@
 'use client';
 
-import React from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { 
   LayoutDashboard, 
   ShieldCheck, 
   Activity, 
-  Bell, 
   Users, 
   Lock 
 } from 'lucide-react';
@@ -23,71 +21,71 @@ interface AdminDashboardViewProps {
 
 export function AdminDashboardView({ stats, statsLoading }: Readonly<AdminDashboardViewProps>) {
   const statCards = [
-    { label: 'Verified Recruits', value: stats.totalUsers, icon: Users, color: 'emerald' },
-    { label: 'Auth Officers', value: stats.adminUsers, icon: Lock, color: 'orange' },
-    { label: 'Network Integrity', value: 'Active', icon: Activity, color: 'sky' },
+    { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'blue' },
+    { label: 'Administrators', value: stats.adminUsers, icon: Lock, color: 'amber' },
+    { label: 'System Status', value: 'Healthy', icon: Activity, color: 'emerald' },
   ];
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="space-y-12"
+      className="space-y-8"
     >
-      {/* Hero Feature */}
-      <Card className="border-white/5 bg-card/10 backdrop-blur-3xl rounded-[3.5rem] overflow-hidden p-8 sm:p-14 relative shadow-2xl">
-        <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none">
+      {/* System Performance Overview */}
+      <Card className="bg-card border-border p-8 lg:p-12 rounded-2xl overflow-hidden relative group">
+        <div className="absolute top-0 right-0 p-12 opacity-[0.02] pointer-events-none group-hover:scale-110 transition-transform duration-1000">
           <LayoutDashboard size={400} />
         </div>
-        <div className="relative flex flex-col md:flex-row items-center gap-12">
-          <div className="flex-1 space-y-8 text-center md:text-left">
-            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-primary/10 border border-primary/20 backdrop-blur-md shadow-inner">
-              <ShieldCheck className="h-5 w-5 text-primary" />
-              <span className="text-[11px] font-black uppercase tracking-[0.3em] text-primary">System Command Verified</span>
+        <div className="relative flex flex-col lg:flex-row items-center gap-12">
+          <div className="flex-1 space-y-6">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 w-fit">
+              <ShieldCheck className="h-4 w-4 text-emerald-500" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">System Integrity Verified</span>
             </div>
-            <h2 className="text-5xl sm:text-7xl font-black tracking-tighter text-foreground leading-none">
-              Strategic <span className="text-primary italic">Intelligence</span>
+            <h2 className="text-4xl lg:text-6xl font-black text-foreground tracking-tight leading-none">
+              Platform <span className="text-primary italic">Overview</span>
             </h2>
-            <p className="text-xl text-muted-foreground font-medium max-w-2xl mx-auto md:mx-0 opacity-80 leading-relaxed">
-              Synthesizing user engagement and performance metrics. All core systems are performing at peak efficiency under current load.
+            <p className="text-base text-muted-foreground font-medium max-w-xl leading-relaxed">
+              Synthesizing platform engagement and core performance indicators. The ecosystem is currently operating within optimal parameters with zero reported latency.
             </p>
           </div>
-          <Card className="border-primary/20 bg-primary/5 backdrop-blur-3xl rounded-[3rem] p-12 min-w-[320px] border-dashed shadow-2xl relative group overflow-hidden">
-            <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-            <div className="text-center space-y-8 relative z-10">
-              <div className="h-20 w-20 rounded-[2rem] bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 mx-auto shadow-xl shadow-emerald-500/10">
-                <Activity size={40} className="animate-pulse" />
+          
+          <div className="w-full lg:w-[360px] p-8 rounded-2xl bg-background/50 border border-border relative overflow-hidden group/uptime">
+            <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover/uptime:opacity-100 transition-opacity" />
+            <div className="relative z-10 flex flex-col items-center text-center gap-6">
+              <div className="h-16 w-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 shadow-xl shadow-emerald-500/10">
+                <Activity size={32} className="animate-pulse" />
               </div>
-              <div>
-                <div className="text-5xl font-black text-foreground tracking-tighter">99.98%</div>
-                <div className="text-[12px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mt-2">Operational Uptime</div>
+              <div className="space-y-1">
+                <div className="text-4xl font-black text-foreground tracking-tighter">99.99%</div>
+                <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Operational Uptime</div>
               </div>
             </div>
-          </Card>
+          </div>
         </div>
       </Card>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {statCards.map((stat) => (
-          <Card key={stat.label} className="border-white/5 bg-card/20 backdrop-blur-2xl rounded-[3rem] overflow-hidden group hover:border-primary/30 hover:shadow-3xl transition-all duration-500">
-            <CardContent className="p-10 space-y-8">
+          <Card key={stat.label} className="bg-card border-border p-8 rounded-2xl group hover:border-primary/20 transition-all">
+            <div className="flex flex-col gap-6">
               <div className={cn(
-                "h-16 w-16 rounded-2xl flex items-center justify-center border transition-all duration-500 group-hover:scale-110 shadow-lg",
-                stat.color === "sky" && "bg-sky-500/10 border-sky-500/20 text-sky-500 shadow-sky-500/10",
-                stat.color === "emerald" && "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 shadow-emerald-500/10",
-                stat.color === "orange" && "bg-orange-500/10 border-orange-500/20 text-orange-500 shadow-orange-500/10"
+                "h-12 w-12 rounded-xl flex items-center justify-center border transition-transform group-hover:scale-110",
+                stat.color === "blue" && "bg-blue-500/10 border-blue-500/20 text-blue-500",
+                stat.color === "amber" && "bg-amber-500/10 border-amber-500/20 text-amber-500",
+                stat.color === "emerald" && "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
               )}>
-                <stat.icon size={32} />
+                <stat.icon size={24} />
               </div>
-              <div className="space-y-2">
-                <div className="text-[11px] font-black uppercase tracking-[0.25em] text-muted-foreground/60">{stat.label}</div>
-                <div className="text-5xl font-black text-foreground tracking-tighter">
+              <div className="space-y-1">
+                <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{stat.label}</div>
+                <div className="text-4xl font-black text-foreground tabular-nums">
                   {statsLoading ? "..." : stat.value}
                 </div>
               </div>
-            </CardContent>
+            </div>
           </Card>
         ))}
       </div>

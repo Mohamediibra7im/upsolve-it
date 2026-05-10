@@ -11,5 +11,5 @@ export default function AdminPage() {
     router.replace("/admin/dashboard");
   }, [router]);
 
-  return <Loader message="Redirecting to HQ..." />;
+  return <Loader message="Redirecting to Admin Console..." />;
 }

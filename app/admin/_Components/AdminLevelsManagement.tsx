@@ -15,14 +15,13 @@ import {
   fetchTrainingLevelsFromApi,
   type Level,
 } from "@/hooks/useLevels";
-import { Loader2, Plus, Save, Trash2, Layers, Info } from "lucide-react";
+import { Loader2, Plus, Save, Trash2, Layers, Info, Shield } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 
 /** Matches `getDefaultTrainingLevelDocs()` in the backend (IDs 1…110). */
 const CANONICAL_LEVEL_COUNT = 110;
@@ -148,23 +147,28 @@ export default function AdminLevelsManagement() {
 
   if (isLoading && !data) {
     return (
-      <div className="flex items-center justify-center py-24 text-muted-foreground gap-2">
-        <Loader2 className="h-5 w-5 animate-spin" />
-        Loading levels…
+      <div className="flex flex-col items-center justify-center py-20 space-y-4">
+        <Loader2 className="h-10 w-10 animate-spin text-primary opacity-50" />
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Accessing training matrix...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-8 space-y-4 max-w-xl">
-        <p className="text-sm text-destructive font-medium">
-          {error instanceof Error ? error.message : String(error)}
-        </p>
-        <p className="text-xs text-muted-foreground">
-          Training levels could not be loaded. Check that the levels API is reachable and the
-          database has been initialized with level data.
-        </p>
+      <div className="rounded-2xl border-destructive/20 bg-destructive/5 p-8 space-y-4 max-w-xl text-center mx-auto">
+        <div className="h-12 w-12 bg-destructive/20 rounded-full flex items-center justify-center mx-auto">
+          <Shield className="text-destructive opacity-50" size={24} />
+        </div>
+        <div className="space-y-1">
+          <h3 className="text-sm font-bold text-destructive uppercase tracking-widest">Initialization Failed</h3>
+          <p className="text-xs text-muted-foreground">
+            {error instanceof Error ? error.message : "Training levels could not be synchronized."}
+          </p>
+        </div>
+        <Button onClick={() => globalThis.location.reload()} variant="outline" className="rounded-xl border-border hover:bg-secondary/50">
+          Retry Sync
+        </Button>
       </div>
     );
   }
@@ -174,97 +178,80 @@ export default function AdminLevelsManagement() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-primary">
-            <Layers className="h-5 w-5" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">
-              Training ladder
-            </span>
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-primary font-bold text-[10px] uppercase tracking-widest">
+            <Layers size={12} />
+            Training Configuration
           </div>
-          <h2 className="text-2xl font-black tracking-tight uppercase">
-            Level distribution
-          </h2>
-          <p className="text-sm text-muted-foreground max-w-2xl">
-            Each row is a target rating on {LADDER_RATING_BAND_STEP}-point steps (800–
-            {MAX_LEVEL_PERFORMANCE}). Problem slots P1–P4 use CF-style{" "}
-            {LADDER_RATING_BAND_STEP}-point ladder bands from that target. Edit here; the
-            app reads levels from the API.
+          <h2 className="text-2xl font-black text-foreground tracking-tight">Distribution Matrix</h2>
+          <p className="text-xs text-muted-foreground font-medium max-w-xl">
+            Configure target rating steps ({LADDER_RATING_BAND_STEP}pts). The P1–P4 ladder bands are automatically derived from the target baseline.
           </p>
         </div>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-border/40 text-muted-foreground hover:text-foreground"
-                aria-label="How ladder targets work"
-              >
-                <Info className="h-4 w-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent
-              side="left"
-              align="start"
-              sideOffset={8}
-              className="z-[300] max-w-[min(20rem,calc(100vw-2rem))] overflow-visible whitespace-normal break-words px-3 py-2.5 text-left text-xs leading-relaxed"
-            >
-              Stored: level label, session time, and target rating (snapped to{" "}
-              {LADDER_RATING_BAND_STEP}-point steps on save). P1–P4 preview uses the same
-              ladder formula as the Training page.
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        
+        <div className="flex items-center gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="h-9 w-9 rounded-xl border border-border bg-secondary/50 flex items-center justify-center text-muted-foreground cursor-help">
+                  <span className="sr-only">Help</span>
+                  <Info size={16} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="left" className="bg-card border-border text-muted-foreground text-[10px] max-w-xs">
+                Stored: level label, session time, and target rating. Ladder bands are calculated in real-time.
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </div>
 
-      <div className="rounded-2xl border border-border/40 bg-card/30 overflow-hidden">
-        <div className="max-h-[min(65vh,560px)] overflow-auto">
-          <table className="w-full text-sm">
-            <thead className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border/40">
+      <div className="border border-border rounded-2xl overflow-hidden bg-background/50 shadow-2xl">
+        <div className="max-h-[560px] overflow-auto">
+          <table className="w-full text-[11px]">
+            <thead className="sticky top-0 z-10 bg-muted border-b border-border">
               <tr className="text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                <th className="px-3 py-3 w-14">ID</th>
-                <th className="px-3 py-3">Label</th>
-                <th className="px-3 py-3 w-20">Time</th>
-                <th className="px-3 py-3 w-28">Target</th>
-                <th className="px-3 py-3 w-16">P1</th>
-                <th className="px-3 py-3 w-16">P2</th>
-                <th className="px-3 py-3 w-16">P3</th>
-                <th className="px-3 py-3 w-16">P4</th>
-                <th className="px-3 py-3 w-14" />
+                <th className="px-6 py-4 w-16">ID</th>
+                <th className="px-4 py-4">Label</th>
+                <th className="px-4 py-4 w-24">Time (min)</th>
+                <th className="px-4 py-4 w-32">Target</th>
+                <th className="px-4 py-4 w-20 text-center">P1</th>
+                <th className="px-4 py-4 w-20 text-center">P2</th>
+                <th className="px-4 py-4 w-20 text-center">P3</th>
+                <th className="px-4 py-4 w-20 text-center">P4</th>
+                <th className="px-6 py-4 w-16" />
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-border/50">
               {previewRows.map((row, index) => (
                 <tr
                   key={row.id}
-                  className={cn(
-                    "border-b border-border/20 hover:bg-white/[0.03]",
-                    index % 2 === 1 && "bg-muted/10",
-                  )}
+                  className="hover:bg-white/[0.02] transition-colors group"
                 >
-                  <td className="px-3 py-2 tabular-nums text-muted-foreground">
-                    {row.id}
+                  <td className="px-6 py-3 tabular-nums text-muted-foreground font-mono">
+                    #{String(row.id).padStart(3, '0')}
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-3">
                     <Input
                       value={draft[index].level}
                       onChange={(e) =>
                         updateRow(index, { level: e.target.value })
                       }
-                      className="h-9 bg-background/60 font-medium"
+                      className="h-9 bg-background/50 border-border rounded-lg text-foreground font-bold focus:ring-primary/20"
                     />
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-3">
                     <Input
                       value={draft[index].time}
                       onChange={(e) =>
                         updateRow(index, { time: e.target.value })
                       }
-                      className="h-9 bg-background/60 tabular-nums"
+                      className="h-9 bg-background/50 border-border rounded-lg text-muted-foreground tabular-nums focus:ring-primary/20"
                     />
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-3">
                     <Input
                       type="number"
                       min={800}
@@ -283,32 +270,31 @@ export default function AdminLevelsManagement() {
                           });
                         }
                       }}
-                      className="h-9 bg-background/60 tabular-nums font-semibold"
+                      className="h-9 bg-background border-primary/20 rounded-lg text-foreground font-black tabular-nums focus:ring-primary/30"
                     />
                   </td>
-                  <td className="px-3 py-2 tabular-nums text-muted-foreground">
+                  <td className="px-4 py-3 tabular-nums text-muted-foreground text-center font-bold">
                     {row.P1}
                   </td>
-                  <td className="px-3 py-2 tabular-nums text-muted-foreground">
+                  <td className="px-4 py-3 tabular-nums text-muted-foreground text-center font-bold">
                     {row.P2}
                   </td>
-                  <td className="px-3 py-2 tabular-nums text-muted-foreground">
+                  <td className="px-4 py-3 tabular-nums text-muted-foreground text-center font-bold">
                     {row.P3}
                   </td>
-                  <td className="px-3 py-2 tabular-nums font-medium text-primary">
+                  <td className="px-4 py-3 tabular-nums text-primary text-center font-black">
                     {row.P4}
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-6 py-3 text-right">
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-9 w-9 text-muted-foreground hover:text-destructive"
+                      className="h-8 w-8 rounded-lg text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
                       disabled={draft.length <= 1}
                       onClick={() => removeRow(index)}
-                      aria-label="Remove row"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 size={14} />
                     </Button>
                   </td>
                 </tr>
@@ -318,49 +304,47 @@ export default function AdminLevelsManagement() {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <div className="flex flex-wrap items-center gap-3">
-          <Button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="rounded-xl font-black uppercase tracking-widest text-[10px] gap-2"
-          >
-            {saving ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
-            Save to database
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={addRow}
-            className="rounded-xl font-black uppercase tracking-widest text-[10px] gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Add level
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => {
-              if (data)
-                setDraft(
-                  data.map((r) => ({
-                    ...r,
-                    Performance: String(
-                      snapTargetPerformance(Number.parseInt(r.Performance, 10)),
-                    ),
-                  })),
-                );
-            }}
-            className="rounded-xl text-xs"
-          >
-            Revert changes
-          </Button>
-        </div>
+      <div className="flex flex-wrap items-center gap-3 pt-2">
+        <Button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className="h-10 px-6 rounded-xl bg-primary text-primary-foreground font-bold uppercase tracking-widest text-[10px] gap-2 shadow-lg shadow-primary/20"
+        >
+          {saving ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4" />
+          )}
+          Commit Changes
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={addRow}
+          className="h-10 px-6 rounded-xl bg-secondary/50 border border-border hover:bg-secondary text-foreground font-bold uppercase tracking-widest text-[10px] gap-2"
+        >
+          <Plus className="h-4 w-4 text-primary" />
+          Add Matrix Row
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => {
+            if (data)
+              setDraft(
+                data.map((r) => ({
+                  ...r,
+                  Performance: String(
+                    snapTargetPerformance(Number.parseInt(r.Performance, 10)),
+                  ),
+                })),
+              );
+          }}
+          className="h-10 px-4 rounded-xl text-muted-foreground hover:text-foreground text-[10px] font-bold uppercase tracking-widest"
+        >
+          Reset Draft
+        </Button>
       </div>
     </div>
   );
