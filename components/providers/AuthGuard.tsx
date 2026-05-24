@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import useUser from "@/hooks/useUser";
 import Loader from "@/components/shared/Loader";
 
-const protectedRoots = ["/training", "/statistics", "/upsolve"];
+const protectedRoots = ["/dashboard", "/training", "/statistics", "/upsolve"];
 
 function routeIsProtected(pathname: string | null): boolean {
   if (!pathname) return false;

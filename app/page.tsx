@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import useUser from "@/hooks/useUser";
 import Loader from "@/components/shared/Loader";
+import Dashboard from "./_Components/Dashboard";
 
 /* ───── Animated number ───── */
 const Counter = ({ to, suffix = "" }: { to: number; suffix?: string }) => {
@@ -123,7 +124,7 @@ const Hero = ({ user }: { user: any }) => {
           >
             {user ? (
               <Button asChild size="lg" className="h-16 w-full sm:w-auto px-14 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs shadow-[0_8px_40px_hsl(var(--primary)/0.35)] hover:shadow-[0_14px_50px_hsl(var(--primary)/0.5)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300">
-                <Link href="/home" className="flex items-center gap-3">Dashboard <ArrowRight size={18} /></Link>
+                <Link href="/dashboard" className="flex items-center gap-3">Dashboard <ArrowRight size={18} /></Link>
               </Button>
             ) : (
               <>
@@ -363,10 +364,7 @@ const Community = () => (
 );
 
 /* ═══════════════════ PAGE ═══════════════════ */
-export default function LandingPage() {
-  const { user, isLoading } = useUser();
-  if (isLoading) return <Loader message="Loading..." />;
-
+function GuestLandingPage({ user }: { user: any }) {
   return (
     <div className="relative min-h-screen">
       <Hero user={user} />
@@ -376,4 +374,11 @@ export default function LandingPage() {
       <Community />
     </div>
   );
+}
+
+export default function RootPage() {
+  const { user, isLoading } = useUser();
+  if (isLoading) return <Loader message="Loading..." />;
+
+  return <GuestLandingPage user={user} />;
 }

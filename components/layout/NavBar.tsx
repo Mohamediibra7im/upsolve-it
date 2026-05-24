@@ -47,8 +47,7 @@ import {
 const guestLinks: typeof userLinks = [];
 
 const userLinks = [
-  { href: "/", label: "Home", icon: HomeIcon },
-  { href: "/home", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/training", label: "Training", icon: Target },
   { href: "/training/reviews", label: "Reviews", icon: ClipboardList },
   { href: "/statistics", label: "Statistics", icon: LineChart },

@@ -14,7 +14,8 @@ import {
   Crown, 
   User as UserIcon, 
   ExternalLink, 
-  Loader2} from 'lucide-react';
+  Loader2
+} from 'lucide-react';
 import { User } from '@/types/User';
 import getRankFromRating from '@/utils/getRankFromRating';
 import { cn } from '@/lib/utils';
@@ -50,7 +51,7 @@ export function UserTable({
   statsDialogId, 
   updatingId, 
   onFetchStats, 
-  onRoleUpdate 
+  onRoleUpdate
 }: Readonly<UserTableProps>) {
   return (
     <div className="w-full">
@@ -64,7 +65,7 @@ export function UserTable({
             <TableHead className="h-12 px-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody className="relative">
           <AnimatePresence mode="popLayout">
             {users.map((user, idx) => {
               const roleActionLabel = user.role === 'admin' ? "Demote" : "Promote";
@@ -145,6 +146,7 @@ export function UserTable({
                 {/* Actions */}
                 <TableCell className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-2 opacity-40 group-hover:opacity-100 transition-opacity">
+
                     <Button
                       size="sm"
                       variant="ghost"

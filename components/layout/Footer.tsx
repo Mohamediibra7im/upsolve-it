@@ -28,7 +28,7 @@ import { Button } from "@/components/ui/button";
 
 const footerLinks = {
   platform: [
-    { label: "Dashboard", href: "/home" },
+    { label: "Dashboard", href: "/dashboard" },
     { label: "Training", href: "/training" },
     { label: "Statistics", href: "/statistics" },
     { label: "Upsolve List", href: "/upsolve" },

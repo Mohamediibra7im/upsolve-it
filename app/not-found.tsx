@@ -77,7 +77,7 @@ export default function NotFound() {
 
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full pt-4">
               <Button asChild className="w-full h-14 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20 hover:scale-105 transition-all">
-                <Link href="/home" className="flex items-center gap-3">
+                <Link href="/dashboard" className="flex items-center gap-3">
                   <Home size={16} /> Return to Base
                 </Link>
               </Button>

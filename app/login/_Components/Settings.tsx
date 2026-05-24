@@ -77,7 +77,7 @@ const Settings = ({ initialMode = "login" }: SettingsProps) => {
         setError(response.error || "An unknown error occurred.");
       } else {
         // Successful login/register → go home immediately
-        router.replace("/");
+        router.replace("/dashboard");
       }
     } catch (_err) {
       setError("Failed to connect to the server.");

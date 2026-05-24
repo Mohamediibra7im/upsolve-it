@@ -56,7 +56,7 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed z-50 top-4 right-4 left-4 sm:left-auto sm:top-4 sm:bottom-auto flex flex-col gap-3 pointer-events-none max-w-sm sm:max-w-md mx-auto sm:mx-0">
+      <div className="fixed z-[99999] top-24 right-4 left-4 sm:left-auto sm:top-24 sm:bottom-auto flex flex-col gap-3 pointer-events-none max-w-sm sm:max-w-md mx-auto sm:mx-0">
         {items.map((item) => (
           <div key={item.id} className="pointer-events-auto">
             <ToastCard item={item} onClose={() => remove(item.id)} />

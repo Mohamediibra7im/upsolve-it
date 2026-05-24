@@ -63,7 +63,7 @@ function formatRequestTime(createdAt?: string) {
 export default function FriendsPage() {
   const { user, isLoading: isUserLoading } = useUser();
   const router = useRouter();
-  const { friends, isLoading, mutate: mutateFriends } = useFriends();
+  const { friends, isLoading, mutate: mutateFriends } = useFriends(!!user);
   const {
     incoming,
     outgoing,
@@ -271,7 +271,7 @@ export default function FriendsPage() {
       <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-3">
           <Button variant="ghost" size="sm" asChild className="w-fit -ml-2 gap-2 font-black uppercase tracking-widest text-[10px]">
-            <Link href="/home">
+            <Link href="/dashboard">
               <ArrowLeft className="h-4 w-4" />
               Dashboard
             </Link>

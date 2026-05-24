@@ -270,7 +270,7 @@ export default function SessionReviewPage() {
             <Button
               variant="ghost"
               className="font-black uppercase tracking-widest text-[10px]"
-              onClick={() => router.push("/home")}
+              onClick={() => router.push("/dashboard")}
             >
               Dashboard
             </Button>

@@ -38,6 +38,20 @@ export async function updateUserRole(userId: string, role: "admin" | "user") {
   });
 }
 
+export async function syncUserRating(userId: string) {
+  return apiFetcher<{ user: User }>(`/api/admin/users/${userId}/sync`, {
+    method: "POST",
+  });
+}
+
+export async function syncBatchUserRatings(userIds: string[]) {
+  return apiFetcher<{ synced: number; failed: number }>(`/api/admin/users/sync-batch`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userIds }),
+  });
+}
+
 
 
 

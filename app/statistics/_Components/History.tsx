@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Link from "next/link";
 import { Training } from "@/types/Training";
 import { TrainingProblem } from "@/types/TrainingProblem";
@@ -10,6 +11,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,8 +28,7 @@ import {
   normalizeTrainingMode,
 } from "@/services/training/trainingModeLabel";
 import { averageEffectiveProblemRatingForSession } from "@/services/training/effectiveProblemRating";
-import { CheckCircle2, XCircle, BadgeCheck } from "lucide-react";
-import { Trash2 } from "lucide-react";
+import { CheckCircle2, XCircle, BadgeCheck, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2 } from "lucide-react";
 
 const Problem = ({
   problem,
@@ -90,7 +97,20 @@ const History = ({
   deleteTraining: (trainingId: string) => void;
   isDeleting: string | null;
 }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(10);
   const { upsolvedProblems } = useUpsolvedProblems();
+
+  // Pagination calculations
+  const totalItems = history.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedHistory = history.slice(startIndex, endIndex);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
 
   const findPostSolvedTime = (p: TrainingProblem): number | null => {
     const found = upsolvedProblems?.find(
@@ -136,8 +156,8 @@ const History = ({
               <TableHead className="text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {history.map((training) => (
+          <TableBody className="relative">
+            {paginatedHistory.map((training) => (
               <TableRow key={training._id ?? training.startTime}>
                 <TableCell>
                   {new Date(training.startTime).toLocaleDateString()}
@@ -178,8 +198,8 @@ const History = ({
       </div>
 
       {/* Mobile & Tablet Card View */}
-      <div className="lg:hidden space-y-4">
-        {history.map((training) => (
+      <div className="lg:hidden relative space-y-4">
+        {paginatedHistory.map((training) => (
           <Card
             key={training._id ?? training.startTime}
             className="shadow-sm border-border/60 hover:shadow-md transition-shadow"
@@ -259,6 +279,73 @@ const History = ({
           </Card>
         ))}
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-border/20 bg-muted/5 mt-4 rounded-3xl">
+          {/* Page Size Selector */}
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Rows per page</span>
+            <Select value={String(pageSize)} onValueChange={(value) => { setPageSize(Number(value)); setCurrentPage(1); }}>
+              <SelectTrigger className="h-9 w-20 bg-background/50 border-border/40 rounded-xl text-xs font-bold focus:ring-primary/20">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border/40 rounded-xl">
+                {[5, 10, 25, 50].map((size) => (
+                  <SelectItem key={size} value={String(size)} className="text-xs font-bold">
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Page Info & Navigation */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mr-2">
+              Page {currentPage} of {totalPages}
+            </span>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => goToPage(1)}
+              disabled={currentPage === 1}
+              className="h-9 w-9 rounded-lg bg-secondary/50 border border-border/40 hover:bg-secondary disabled:opacity-30"
+            >
+              <ChevronsLeft size={14} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="h-9 w-9 rounded-lg bg-secondary/50 border border-border/40 hover:bg-secondary disabled:opacity-30"
+            >
+              <ChevronLeft size={14} />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="h-9 w-9 rounded-lg bg-secondary/50 border border-border/40 hover:bg-secondary disabled:opacity-30"
+            >
+              <ChevronRight size={14} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => goToPage(totalPages)}
+              disabled={currentPage === totalPages}
+              className="h-9 w-9 rounded-lg bg-secondary/50 border border-border/40 hover:bg-secondary disabled:opacity-30"
+            >
+              <ChevronsRight size={14} />
+            </Button>
+          </div>
+        </div>
+      )}
     </>
   );
 };

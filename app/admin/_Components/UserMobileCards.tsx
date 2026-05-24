@@ -6,7 +6,8 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { 
   User as UserIcon, 
   ExternalLink, 
-  Loader2} from 'lucide-react';
+  Loader2
+} from 'lucide-react';
 import { User } from '@/types/User';
 import getRankFromRating from '@/utils/getRankFromRating';
 import { cn } from '@/lib/utils';
@@ -61,7 +62,7 @@ export function UserMobileCards({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="relative space-y-4">
       <AnimatePresence mode="popLayout">
         {users.map((user, idx) => {
           const roleActionLabel = user.role === 'admin' ? "Demote" : "Promote";
@@ -115,6 +116,7 @@ export function UserMobileCards({
 
                 {/* Actions */}
                 <div className="flex gap-2">
+
                   <Button
                     variant="secondary"
                     onClick={() => onFetchStats(user._id)}
