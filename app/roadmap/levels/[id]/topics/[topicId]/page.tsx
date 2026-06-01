@@ -77,41 +77,9 @@ const getCodeforcesUrl = (cfProblemId: string): string => {
   return `https://codeforces.com/problemset`;
 };
 
-// Helper to extract problem index and title nicely for display
+// Helper to extract problem title for display
 const getProblemDisplayName = (problem: { cfProblemId: string; title: string }) => {
-  let index = "";
-  const cfId = problem.cfProblemId.trim();
-
-  if (cfId.toLowerCase().includes("problem/")) {
-    const parts = cfId.split("/").filter(Boolean);
-    index = parts[parts.length - 1]; // e.g. "B"
-  } else if (cfId.toLowerCase().includes("/")) {
-    const parts = cfId.split("/").filter(Boolean);
-    index = parts[parts.length - 1];
-  } else {
-    index = cfId; // e.g. "1234A" or "A"
-  }
-
-  // Ensure index is uppercase and clean (not a full URL)
-  if (index.toLowerCase().startsWith("http") || index.includes(".")) {
-    index = "";
-  } else {
-    index = index.toUpperCase();
-  }
-
-  const title = problem.title || "";
-
-  if (title) {
-    if (index) {
-      if (title.toLowerCase().startsWith(index.toLowerCase())) {
-        return title;
-      }
-      return `${index} - ${title}`;
-    }
-    return title;
-  }
-
-  return index || cfId;
+  return problem.title || problem.cfProblemId;
 };
 
 const TopicPage = () => {

@@ -99,7 +99,7 @@ export default function AdminSessionDetailPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const { upsertVideo, deleteVideo, upsertSheet, addProblem, deleteProblem } =
+  const { upsertVideo, deleteVideo, upsertSheet, addProblem, deleteProblem, deleteProblems } =
     useAdminRoadmapTopics(levelId);
 
   const [activeTab, setActiveTab] = useState<"video" | "problems">("video");
@@ -230,12 +230,12 @@ export default function AdminSessionDetailPage() {
   // Problem form
   const [probTitle, setProbTitle] = useState("");
   const [cfProblemId, setCfProblemId] = useState("");
-  const [difficulty, setDifficulty] = useState("Easy");
   const [probOrderIndex, setProbOrderIndex] = useState(0);
-  const [xpReward, setXpReward] = useState(50);
+  const [xpReward, setXpReward] = useState(0);
 
   // Problems list
   const [activeProblems, setActiveProblems] = useState<any[]>([]);
+  const [selectedProblems, setSelectedProblems] = useState<Set<string>>(new Set());
   const [bulkMarkdown, setBulkMarkdown] = useState("");
   const [isBulkAdding, setIsBulkAdding] = useState(false);
 
@@ -261,6 +261,9 @@ export default function AdminSessionDetailPage() {
         }
         if (res.problems) {
           setActiveProblems(res.problems);
+        }
+        if (res.level?.xpPerAcceptedProblem != null) {
+          setXpReward(res.level.xpPerAcceptedProblem);
         }
       }
     } catch (err) {
@@ -377,7 +380,6 @@ export default function AdminSessionDetailPage() {
       await addProblem(activeSheetId, {
         title: probTitle,
         cfProblemId,
-        difficulty,
         orderIndex: Number(probOrderIndex),
         xpReward: Number(xpReward),
       });
@@ -389,7 +391,7 @@ export default function AdminSessionDetailPage() {
       setProbTitle("");
       setCfProblemId("");
       setProbOrderIndex(activeProblems.length + 1);
-      setXpReward(50);
+      setXpReward(topicData?.level?.xpPerAcceptedProblem ?? 10);
       await refreshProblems();
     } catch (err: any) {
       toast({
@@ -414,6 +416,63 @@ export default function AdminSessionDetailPage() {
       toast({
         title: "Error",
         description: "Failed to delete problem",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const toggleProblemSelection = (id: string) => {
+    setSelectedProblems((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedProblems.size === activeProblems.length) {
+      setSelectedProblems(new Set());
+    } else {
+      setSelectedProblems(new Set(activeProblems.map((p) => p._id)));
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (!confirm(`Delete ${selectedProblems.size} selected problem(s)?`)) return;
+    try {
+      await deleteProblems(Array.from(selectedProblems));
+      toast({
+        title: "Deleted",
+        description: `${selectedProblems.size} problem(s) removed`,
+        variant: "success",
+      });
+      setSelectedProblems(new Set());
+      await refreshProblems();
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message || "Failed to delete problems",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    if (!confirm("Delete ALL problems from this sheet? This cannot be undone.")) return;
+    try {
+      await deleteProblems(activeProblems.map((p) => p._id));
+      toast({
+        title: "Deleted",
+        description: "All problems removed from sheet",
+        variant: "success",
+      });
+      setSelectedProblems(new Set());
+      await refreshProblems();
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message || "Failed to delete problems",
         variant: "destructive",
       });
     }
@@ -478,7 +537,6 @@ export default function AdminSessionDetailPage() {
     try {
       let nameColIdx = 0;
       let linkColIdx = 1;
-      let diffColIdx = -1;
 
       const headerRow = rows[0];
       const isHeader = headerRow.some(
@@ -505,8 +563,6 @@ export default function AdminSessionDetailPage() {
             lower.includes("href")
           ) {
             linkColIdx = idx;
-          } else if (lower.includes("diff") || lower.includes("level")) {
-            diffColIdx = idx;
           }
         });
         dataRows = rows.slice(1);
@@ -518,15 +574,12 @@ export default function AdminSessionDetailPage() {
         }
       }
 
-      let orderIdx = activeProblems.length;
       let addedCount = 0;
 
       for (const row of dataRows) {
         if (row.length < 2) continue;
         const title = row[nameColIdx] || "";
         const link = row[linkColIdx] || "";
-        const rawDiff =
-          diffColIdx >= 0 ? row[diffColIdx] || "Easy" : "Easy";
 
         let parsedLink = link;
         const linkMatch = link.match(/\[([^\]]+)\]\(([^)]+)\)/);
@@ -542,19 +595,11 @@ export default function AdminSessionDetailPage() {
         }
 
         if (parsedTitle && parsedLink) {
-          const diffFormatted =
-            rawDiff.charAt(0).toUpperCase() + rawDiff.slice(1).toLowerCase();
-
           await addProblem(activeSheetId, {
             title: parsedTitle,
             cfProblemId: parsedLink,
-            difficulty: ["Easy", "Medium", "Hard"].includes(diffFormatted)
-              ? diffFormatted
-              : "Easy",
-            orderIndex: orderIdx,
-            xpReward: 50,
+            xpReward: topicData?.level?.xpPerAcceptedProblem ?? 10,
           });
-          orderIdx++;
           addedCount++;
         }
       }
@@ -862,9 +907,41 @@ export default function AdminSessionDetailPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
+                {selectedProblems.size > 0 && (
+                  <div className="flex items-center gap-3 px-6 py-3 border-b border-border/30 bg-primary/5">
+                    <span className="text-xs font-bold text-primary">
+                      {selectedProblems.size} selected
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleDeleteSelected}
+                      className="rounded-xl text-destructive hover:bg-destructive/10 text-xs font-black uppercase tracking-[0.1em] gap-1.5"
+                    >
+                      <Trash2 size={12} />
+                      Delete Selected
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedProblems(new Set())}
+                      className="rounded-xl text-muted-foreground hover:text-foreground text-xs font-black uppercase tracking-[0.1em]"
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                )}
                 <Table>
                   <TableHeader className="bg-background/30">
                     <TableRow>
+                      <TableHead className="px-6 py-4 w-10">
+                        <input
+                          type="checkbox"
+                          checked={activeProblems.length > 0 && selectedProblems.size === activeProblems.length}
+                          onChange={toggleSelectAll}
+                          className="h-4 w-4 rounded border-border/60 accent-primary cursor-pointer"
+                        />
+                      </TableHead>
                       <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest">
                         #
                       </TableHead>
@@ -884,7 +961,21 @@ export default function AdminSessionDetailPage() {
                   </TableHeader>
                   <TableBody>
                     {activeProblems.map((p) => (
-                      <TableRow key={p._id} className="hover:bg-card/30">
+                      <TableRow
+                        key={p._id}
+                        className={cn(
+                          "hover:bg-card/30",
+                          selectedProblems.has(p._id) && "bg-primary/5"
+                        )}
+                      >
+                        <TableCell className="px-6 py-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedProblems.has(p._id)}
+                            onChange={() => toggleProblemSelection(p._id)}
+                            className="h-4 w-4 rounded border-border/60 accent-primary cursor-pointer"
+                          />
+                        </TableCell>
                         <TableCell className="px-6 py-3 font-mono text-xs font-bold text-muted-foreground">
                           {p.orderIndex}
                         </TableCell>
@@ -926,6 +1017,17 @@ export default function AdminSessionDetailPage() {
                     ))}
                   </TableBody>
                 </Table>
+                <div className="flex justify-end px-6 py-3 border-t border-border/30">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleDeleteAll}
+                    className="rounded-xl text-destructive hover:bg-destructive/10 text-xs font-black uppercase tracking-[0.1em] gap-1.5"
+                  >
+                    <Trash2 size={12} />
+                    Delete All
+                  </Button>
+                </div>
               </div>
             )}
           </div>

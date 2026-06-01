@@ -88,6 +88,14 @@ export const useAdminRoadmapTopics = (levelId?: string) => {
     await mutate();
   };
 
+  const deleteProblems = async (problemIds: string[]) => {
+    await apiClient.delete(`/api/admin/roadmap/problems`, {
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ problemIds }),
+    });
+    await mutate();
+  };
+
   const importProblems = async (sheetId: string, body: { contestId?: number; force?: boolean }) => {
     const res = await apiClient.post(`/api/admin/roadmap/sheets/${sheetId}/import`, body);
     await mutate();
@@ -107,6 +115,7 @@ export const useAdminRoadmapTopics = (levelId?: string) => {
     upsertSheet,
     addProblem,
     deleteProblem,
+    deleteProblems,
     importProblems,
   };
 };
