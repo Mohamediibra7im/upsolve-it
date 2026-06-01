@@ -613,7 +613,7 @@ export default function ProfilePage() {
                     );
                   }) : (
                     <div className="px-5 py-8 text-center">
-                      <p className="text-xs text-muted-foreground/50 font-medium">No training sessions yet.</p>
+                      <p className="text-xs text-muted-foreground/50 font-medium">No practice sessions yet.</p>
                       <Button asChild variant="outline" className="mt-3 h-9 rounded-xl text-[9px] font-black uppercase tracking-widest">
                         <Link href="/training">Start Your First Session</Link>
                       </Button>

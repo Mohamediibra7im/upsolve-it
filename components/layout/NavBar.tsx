@@ -89,8 +89,7 @@ const NavBar = () => {
   }, [pathname]);
 
   const baseLinks = user ? userLinks : guestLinks;
-  const visibleLinks =
-    user?.role === "admin" ? [...baseLinks, ...adminLinks] : baseLinks;
+  const visibleLinks = baseLinks;
 
   return (
     <header
@@ -366,6 +365,30 @@ const NavBar = () => {
                               className="text-muted-foreground/30 group-hover:text-muted-foreground/60 group-hover:translate-x-0.5 transition-all"
                             />
                           </button>
+
+                          {user?.role === "admin" && (
+                            <Link
+                              href="/admin"
+                              onClick={() => setAvatarMenuOpen(false)}
+                              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-foreground/80 hover:text-foreground hover:bg-muted/50 dark:hover:bg-white/5 transition-all duration-200 group"
+                            >
+                              <div className="h-8 w-8 rounded-lg bg-amber-500/8 dark:bg-amber-400/12 flex items-center justify-center text-amber-500 dark:text-amber-400 group-hover:bg-amber-500/15 transition-colors">
+                                <ShieldAlert size={14} />
+                              </div>
+                              <div className="flex-1">
+                                <span className="text-[12px] font-semibold block">
+                                  Admin Panel
+                                </span>
+                                <span className="text-[10px] text-muted-foreground/50">
+                                  Manage platform
+                                </span>
+                              </div>
+                              <ChevronRight
+                                size={13}
+                                className="text-muted-foreground/30 group-hover:text-muted-foreground/60 group-hover:translate-x-0.5 transition-all"
+                              />
+                            </Link>
+                          )}
                         </div>
 
                         {/* Separator */}

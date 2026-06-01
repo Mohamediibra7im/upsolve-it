@@ -51,7 +51,7 @@ const quickStartSteps = [
   },
   {
     id: 3,
-    title: 'Start Your First Training Session',
+    title: 'Start Your First Practice Session',
     description: 'Generate problems and begin practicing with customized difficulty',
     icon: Play,
     time: '5 minutes',
@@ -221,7 +221,7 @@ export default function QuickStartGuide({ onBack }: Readonly<QuickStartGuideProp
             <div className="space-y-2">
               <h2 className="text-4xl font-black text-foreground tracking-tight">Operational!</h2>
               <p className="text-muted-foreground font-medium max-w-sm mx-auto opacity-80">
-                Onboarding protocol complete. You are now authorized to initiate high-performance training sessions.
+                Onboarding protocol complete. You are now authorized to initiate high-performance practice sessions.
               </p>
             </div>
           </div>

@@ -17,8 +17,8 @@ interface SearchResult {
 const helpContent: SearchResult[] = [
   {
     id: '1',
-    title: 'How to start your first training session',
-    description: 'Learn how to set up and begin a training session with custom difficulty and tags.',
+    title: 'How to start your first practice session',
+    description: 'Learn how to set up and begin a practice session with custom difficulty and tags.',
     category: 'Training',
     tags: ['training', 'beginner', 'session', 'setup'],
     relevance: 0.9,

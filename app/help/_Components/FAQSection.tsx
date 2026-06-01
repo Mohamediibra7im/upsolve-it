@@ -49,8 +49,8 @@ const faqs: FAQ[] = [
   },
   {
     id: '3',
-    question: 'How does the training session work?',
-    answer: 'Training sessions generate random problems based on your selected difficulty level and tags. You can set a custom rating range, choose specific problem types, and practice at your own pace. The system tracks your progress and provides detailed analytics.',
+    question: 'How does the practice session work?',
+    answer: 'Practice sessions generate random problems based on your selected difficulty level and tags. You can set a custom rating range, choose specific problem types, and practice at your own pace. The system tracks your progress and provides detailed analytics.',
     category: 'Training',
     tags: ['training', 'problems', 'difficulty'],
     popular: true,
@@ -106,7 +106,7 @@ const faqs: FAQ[] = [
   {
     id: '10',
     question: 'Can I practice specific topics or problem types?',
-    answer: 'Yes! When setting up a training session, you can select specific tags like "Dynamic Programming", "Graph Theory", "Data Structures", etc. This helps you focus on weak areas or practice specific topics.',
+    answer: 'Yes! When setting up a practice session, you can select specific tags like "Dynamic Programming", "Graph Theory", "Data Structures", etc. This helps you focus on weak areas or practice specific topics.',
     category: 'Training',
     tags: ['tags', 'topics', 'practice'],
     popular: false,

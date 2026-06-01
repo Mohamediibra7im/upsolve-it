@@ -119,7 +119,7 @@ const History = ({
     return found?.solvedTime ?? null;
   };
   const onDelete = (trainingId: string) => {
-    if (confirm("Are you sure you want to delete this training session?")) {
+    if (confirm("Are you sure you want to delete this practice session?")) {
       deleteTraining(trainingId);
     }
   };

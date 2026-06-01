@@ -51,7 +51,7 @@ const formatMetric = (value: number | null | undefined) => {
   return String(value);
 };
 
-/** Helper to count solved problems in a single training session */
+/** Helper to count solved problems in a single practice session */
 const countSolvedInSession = (session: any) => 
   session.problems.filter(isTrainingProblemCountedSolved).length;
 
@@ -316,7 +316,7 @@ export default function StatisticsPage() {
 
                 <div className="flex flex-wrap gap-4 pt-2">
                   <Button asChild size="lg" className="h-12 px-8 rounded-2xl font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all hover:-translate-y-1">
-                    <Link href="/training">New Training Session</Link>
+                    <Link href="/training">New Practice Session</Link>
                   </Button>
                   <Button asChild variant="outline" size="lg" className="h-12 px-8 rounded-2xl font-bold border-border/60 hover:bg-background/80 transition-all">
                     <Link href="/upsolve">View Upsolve Queue</Link>
@@ -604,7 +604,7 @@ export default function StatisticsPage() {
                 <BarChart3 className="h-16 w-16 text-muted-foreground/30 mx-auto mb-6" />
                 <h3 className="text-3xl font-black text-foreground mb-2">Initialize Your Journey</h3>
                 <p className="text-muted-foreground max-w-xs mx-auto mb-8 font-medium">
-                  Complete your first training session to unlock personalized analytics and performance tracking.
+                  Complete your first practice session to unlock personalized analytics and performance tracking.
                 </p>
                 <Button asChild size="lg" className="rounded-2xl px-10 font-black tracking-widest uppercase text-xs h-14 shadow-xl shadow-primary/20 transition-all hover:-translate-y-1">
                   <Link href="/training">Launch First Session</Link>

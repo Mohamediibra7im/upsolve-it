@@ -191,7 +191,7 @@ export function AdminDashboardView({
       tone: "emerald" as const,
     },
     {
-      label: "Training Sessions",
+      label: "Practice Sessions",
       value: formatNumber(stats.totalTrainings),
       detail: `${formatNumber(stats.completedTrainings)} completed`,
       icon: LineChart,

@@ -158,7 +158,7 @@ export function FriendStatsDialog({
                   <section
                     className="relative max-h-[min(50vh,280px)] overflow-y-auto overscroll-y-contain rounded-lg border border-border/40 bg-muted/10 py-2 pl-2 pr-1 custom-scrollbar touch-pan-y"
                     tabIndex={0}
-                    aria-label="Recent training sessions, scrollable list"
+                    aria-label="Recent practice sessions, scrollable list"
                   >
                     <ul className="space-y-2 pr-1">
                       {userStats.trainings.map((t) => (

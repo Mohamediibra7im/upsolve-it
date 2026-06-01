@@ -67,7 +67,7 @@ export default function TrainingReviewsPage() {
               Past sessions
             </h1>
             <p className="text-muted-foreground max-w-xl">
-              Open the full breakdown for any completed training session,
+              Open the full breakdown for any completed practice session,
               including stats, timing, and insights.
             </p>
           </div>
