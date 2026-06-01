@@ -32,6 +32,9 @@ export const metadata: Metadata = {
   authors: [{ name: "Mohammed Ibrahim" }],
   creator: "Upsolve.it",
   publisher: "Upsolve.it",
+  other: {
+    "google-site-verification": "FrZhoocCX8UYIlAOJ52uTw_h2qeeBIshrKH5E_i4qT0",
+  },
   formatDetection: {
     email: false,
     address: false,
