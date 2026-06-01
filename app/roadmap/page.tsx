@@ -218,12 +218,15 @@ const RoadmapLandingPage = () => {
                       ),
                     )
                   : 0;
+                const isFirstLevel = index === 0;
                 const status =
-                  level.topicsUnlockedCount === 0
-                    ? "Locked"
-                    : level.topicsUnlockedCount === level.topicsCount
-                      ? "Complete"
-                      : "In Progress";
+                  isFirstLevel && level.topicsUnlockedCount === 0
+                    ? "In Progress"
+                    : level.topicsUnlockedCount === 0
+                      ? "Locked"
+                      : level.topicsUnlockedCount === level.topicsCount
+                        ? "Complete"
+                        : "In Progress";
 
                 return (
                   <motion.div
