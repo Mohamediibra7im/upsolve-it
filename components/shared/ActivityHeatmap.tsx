@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { useHeatmapData } from "@/hooks/useHeatmapData";
+import { useHeatmapData, RoadmapActivityData } from "@/hooks/useHeatmapData";
 import { Training } from "@/types/Training";
 import { TrainingProblem } from "@/types/TrainingProblem";
 import { useMemo, useState } from "react";
@@ -25,17 +25,19 @@ import {
 interface ActivityHeatmapProps {
   history: Training[];
   upsolvedProblems?: TrainingProblem[];
+  roadmapActivity?: RoadmapActivityData;
 }
 
 const ActivityHeatmap = ({
   history,
   upsolvedProblems = [],
+  roadmapActivity = { problemDates: [], topicDates: [] },
 }: ActivityHeatmapProps) => {
   const { theme } = useTheme();
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
   
-  const { values: heatmapData, totalSolved } = useHeatmapData(history, upsolvedProblems);
+  const { values: heatmapData, totalSolved } = useHeatmapData(history, upsolvedProblems, roadmapActivity);
 
   // Extract all unique years from history
   const availableYears = useMemo(() => {
@@ -50,14 +52,23 @@ const ActivityHeatmap = ({
       years.add(new Date(ms).getFullYear());
     };
 
+    const processDateString = (dateStr: string) => {
+      const d = new Date(dateStr);
+      if (!Number.isNaN(d.getTime())) {
+        years.add(d.getFullYear());
+      }
+    };
+
     history.forEach(t => {
       processTime(t.endTime);
       t.problems?.forEach(p => processTime(p.solvedTime));
     });
     upsolvedProblems.forEach(p => processTime(p.solvedTime));
+    roadmapActivity.problemDates?.forEach(processDateString);
+    roadmapActivity.topicDates?.forEach(processDateString);
 
     return Array.from(years).sort((a, b) => b - a);
-  }, [history, upsolvedProblems, currentYear]);
+  }, [history, upsolvedProblems, roadmapActivity, currentYear]);
 
   // Group data by months for the selected year
   const monthsData = useMemo(() => {

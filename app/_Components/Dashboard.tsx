@@ -39,7 +39,7 @@ import {
 } from "@/components/ui/tooltip";
 import useSWR from "swr";
 import {swrFetcher} from "@/lib/apiClient";
-import {useRoadmapUserSummary, useRoadmapLeaderboard} from "@/hooks/useRoadmap";
+import {useRoadmapUserSummary, useRoadmapLeaderboard, useRoadmapActivity} from "@/hooks/useRoadmap";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 
 type StreakPayload = {
@@ -55,11 +55,12 @@ export default function Dashboard() {
   const friendRequestCount = incomingFriendRequests.length;
   const {history, isLoading: isHistoryLoading} = useHistory();
   const {upsolvedProblems, isLoading: isUpsolveLoading} = useUpsolvedProblems();
-  const {totalSolved} = useHeatmapData(history || [], upsolvedProblems || []);
   const [isSyncing, setIsSyncing] = useState(false);
 
   const {summary} = useRoadmapUserSummary(!!user);
   const {leaderboard} = useRoadmapLeaderboard();
+  const {activity: roadmapActivity} = useRoadmapActivity(!!user);
+  const {totalSolved} = useHeatmapData(history || [], upsolvedProblems || [], roadmapActivity);
 
   const {data: streaks} = useSWR<StreakPayload>(
     user ? "/api/users/me/streaks" : null,
@@ -433,7 +434,7 @@ export default function Dashboard() {
                   Activity History
                 </h3>
                 <p className="text-[9px] font-bold text-muted-foreground/75 dark:text-muted-foreground/50 uppercase tracking-widest">
-                  Training & upsolve timeline
+                  Training, upsolve & roadmap timeline
                 </p>
               </div>
             </div>
@@ -448,6 +449,7 @@ export default function Dashboard() {
             <ActivityHeatmap
               history={history || []}
               upsolvedProblems={upsolvedProblems || []}
+              roadmapActivity={roadmapActivity}
             />
           </div>
         </Card>

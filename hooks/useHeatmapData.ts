@@ -12,9 +12,15 @@ export interface HeatmapData {
   totalSolved: number;
 }
 
+export interface RoadmapActivityData {
+  problemDates: string[];
+  topicDates: string[];
+}
+
 export const useHeatmapData = (
   history: Training[],
   upsolvedProblems: TrainingProblem[] = [],
+  roadmapActivity: RoadmapActivityData = { problemDates: [], topicDates: [] },
 ): HeatmapData => {
   return useMemo(() => {
     const dailyCounts: { [key: string]: number } = {};
@@ -30,6 +36,11 @@ export const useHeatmapData = (
       if (Number.isNaN(numTime)) return null;
       const ms = numTime < 10000000000 ? numTime * 1000 : numTime;
       const d = new Date(ms);
+      return Number.isNaN(d.getTime()) ? null : d;
+    };
+
+    const processDateString = (dateStr: string) => {
+      const d = new Date(dateStr);
       return Number.isNaN(d.getTime()) ? null : d;
     };
 
@@ -80,11 +91,27 @@ export const useHeatmapData = (
       }
     });
 
+    // 3. Process Roadmap Problem Solves
+    roadmapActivity.problemDates?.forEach((dateStr, idx) => {
+      const d = processDateString(dateStr);
+      if (d) {
+        addToHeatmap(d, `roadmap-problem-${idx}`);
+      }
+    });
+
+    // 4. Process Roadmap Topic Completions
+    roadmapActivity.topicDates?.forEach((dateStr, idx) => {
+      const d = processDateString(dateStr);
+      if (d) {
+        addToHeatmap(d, `roadmap-topic-${idx}`);
+      }
+    });
+
     const values = Object.keys(dailyCounts).map((date) => ({
       date,
       count: dailyCounts[date],
     }));
 
     return { values, totalSolved };
-  }, [history, upsolvedProblems]);
+  }, [history, upsolvedProblems, roadmapActivity]);
 };

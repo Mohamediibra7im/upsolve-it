@@ -3,6 +3,11 @@ import useSWR from "swr";
 import { swrFetcher } from "@/lib/apiClient";
 import type { RoadmapLevel, RoadmapLevelDetail, RoadmapTopicDetail, UserRoadmapSummary, LeaderboardEntry } from "@/types/Roadmap";
 
+export interface RoadmapActivity {
+  problemDates: string[];
+  topicDates: string[];
+}
+
 const ROADMAP_LEVELS_KEY = "roadmap-levels";
 
 export const useRoadmapLevels = () => {
@@ -135,5 +140,28 @@ export const useRoadmapLeaderboard = (query?: { level?: string; period?: string 
     isLoading: !isClient || isLoading,
     error: error ? String(error) : null,
     mutateLeaderboard: mutate,
+  };
+};
+
+export const useRoadmapActivity = (enabled = true) => {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const { data, error, isLoading } = useSWR<RoadmapActivity>(
+    isClient && enabled ? "/api/roadmap/user/activity" : null,
+    swrFetcher,
+    {
+      revalidateOnFocus: true,
+      dedupingInterval: 60_000,
+    },
+  );
+
+  return {
+    activity: data ?? { problemDates: [], topicDates: [] },
+    isLoading: !isClient || isLoading,
+    error: error ? String(error) : null,
   };
 };
