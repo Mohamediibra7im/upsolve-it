@@ -528,6 +528,33 @@ const TopicPage = () => {
                     </div>
                   )}
 
+                  {/* Codeforces Group Link */}
+                  {data.sheet?.cfGroupUrl && (
+                    <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5 space-y-2">
+                      <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-primary">
+                        <ExternalLink className="h-4 w-4" />
+                        Codeforces Practice Group
+                      </div>
+                      <p className="text-xs text-muted-foreground/80 leading-relaxed font-medium">
+                        Join the Codeforces group to practice and submit solutions for this sheet.
+                      </p>
+                      <a
+                        href={data.sheet.cfGroupUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline break-all"
+                      >
+                        {data.sheet.cfGroupUrl}
+                        <ExternalLink className="h-3 w-3 shrink-0" />
+                      </a>
+                      {data.sheet.groupNote && (
+                        <p className="text-[11px] text-muted-foreground/70 italic pt-1 border-t border-border/40 mt-2">
+                          {data.sheet.groupNote}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   {/* Problems Table */}
                   {data.sheet && (
                     <div className="overflow-hidden rounded-2xl border border-border/60 bg-background/50">
