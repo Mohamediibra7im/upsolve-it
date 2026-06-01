@@ -33,17 +33,15 @@ const useUser = () => {
 
     const initializeSession = async () => {
       try {
-        const token = localStorage.getItem("token");
         const storedUser = localStorage.getItem("user");
 
-        if (token && storedUser) {
+        if (storedUser) {
           try {
             const parsedUser = JSON.parse(storedUser);
             await mutate(parsedUser, false);
           } catch (e) {
             console.error("Failed to parse stored user:", e);
             localStorage.removeItem("user");
-            localStorage.removeItem("token");
             await mutate(null, false);
           }
         } else {
@@ -95,7 +93,6 @@ const useUser = () => {
         }
 
         if (isClient) {
-          localStorage.setItem("token", data.token);
           localStorage.setItem("user", JSON.stringify(data.user));
         }
 
@@ -141,7 +138,6 @@ const useUser = () => {
     }
 
     if (isClient) {
-      localStorage.removeItem("token");
       localStorage.removeItem("user");
     }
     mutate(null, false);
@@ -152,13 +148,12 @@ const useUser = () => {
     newPassword: string,
   ): Promise<Response<null>> => {
     try {
-      const token = localStorage.getItem("token");
       const res = await fetch(resolveApiUrl("/api/auth/reset-pin"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
+        credentials: "include",
         body: JSON.stringify({ oldPassword, newPassword }),
       });
 
@@ -176,16 +171,9 @@ const useUser = () => {
 
   const syncProfile = useCallback(async (): Promise<Response<User>> => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        return ErrorResponse("Not authenticated");
-      }
-
       const res = await fetch(resolveApiUrl("/api/auth/sync-profile"), {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: "include",
       });
 
       const data = await res.json();

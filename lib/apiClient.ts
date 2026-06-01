@@ -1,6 +1,7 @@
 /**
  * Centralized API client that handles token expiration
  * Automatically renews tokens when they expire
+ * Tokens are stored in httpOnly cookies (not localStorage)
  */
 
 import { User } from '@/types/User';
@@ -49,12 +50,11 @@ export function clearRefreshCallback() {
 /**
  * Handles logout and redirects to home page
  * Calls server-side logout endpoint to revoke refresh token,
- * removes token and user from localStorage, calls logoutCallback if provided,
+ * clears user from localStorage, calls logoutCallback if provided,
  * and performs delayed redirect to '/' only when pathname !== '/'
  */
 async function handleLogoutRedirect() {
   // 1. Clear client-side state immediately
-  localStorage.removeItem('token');
   localStorage.removeItem('user');
 
   if (logoutCallback) {
@@ -110,21 +110,16 @@ async function refreshToken(): Promise<boolean> {
 
       const data = await response.json();
 
-      // Update access token and user in localStorage
-      // Refresh token is automatically updated in httpOnly cookie by server
-      if (data.token) {
-        localStorage.setItem('token', data.token);
-        if (data.user) {
-          localStorage.setItem('user', JSON.stringify(data.user));
-          // Notify refresh callback to update user state
-          if (refreshCallback) {
-            refreshCallback(data.user);
-          }
+      // Update user in localStorage
+      // Access token and refresh token are automatically updated in httpOnly cookies by server
+      if (data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+        // Notify refresh callback to update user state
+        if (refreshCallback) {
+          refreshCallback(data.user);
         }
-        return true;
       }
-
-      return false;
+      return true;
     } catch (error) {
       console.error('Token refresh error:', error);
       // Don't logout on network errors; the server may just be temporarily unreachable.
@@ -171,9 +166,7 @@ export async function apiFetcher<T = unknown>(url: string, options: RequestInit 
   }
 
   const resolvedUrl = resolveApiUrl(url);
-  const token = localStorage.getItem('token');
   const headers = new Headers(options.headers);
-  if (token) headers.set('Authorization', `Bearer ${token}`);
 
   const response = await fetch(resolvedUrl, {
     ...options,
