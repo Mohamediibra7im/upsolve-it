@@ -40,7 +40,7 @@ const LevelsPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center pt-24">
+      <div className="min-h-screen flex items-center justify-center pt-0">
         <Loader message="Loading levels..." />
       </div>
     );
@@ -62,7 +62,7 @@ const LevelsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-12 px-4 md:px-8">
+    <div className="min-h-screen bg-background pt-0 pb-12 px-4 md:px-8">
       {/* Background Accents */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px]" />

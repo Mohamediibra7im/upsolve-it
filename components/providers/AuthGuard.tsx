@@ -1,11 +1,17 @@
 "use client";
 
-import { useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import {useEffect} from "react";
+import {usePathname, useRouter} from "next/navigation";
 import useUser from "@/hooks/useUser";
 import Loader from "@/components/shared/Loader";
 
-const protectedRoots = ["/dashboard", "/training", "/statistics", "/upsolve"];
+const protectedRoots = [
+  "/dashboard",
+  "/profile",
+  "/training",
+  "/statistics",
+  "/upsolve",
+];
 
 function routeIsProtected(pathname: string | null): boolean {
   if (!pathname) return false;
@@ -14,8 +20,8 @@ function routeIsProtected(pathname: string | null): boolean {
   );
 }
 
-const AuthGuard = ({ children }: { children: React.ReactNode }) => {
-  const { user, isLoading } = useUser();
+const AuthGuard = ({children}: {children: React.ReactNode}) => {
+  const {user, isLoading} = useUser();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -46,10 +52,3 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default AuthGuard;
-
-
-
-
-
-
-

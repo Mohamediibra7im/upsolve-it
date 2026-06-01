@@ -230,6 +230,14 @@ export const apiClient = {
       headers: { 'Content-Type': 'application/json', ...options.headers }
     }),
   
+  patch: <T = unknown>(url: string, data?: any, options: RequestInit = {}) => 
+    apiFetcher<T>(url, { 
+      ...options, 
+      method: 'PATCH', 
+      body: data ? JSON.stringify(data) : undefined,
+      headers: { 'Content-Type': 'application/json', ...options.headers }
+    }),
+  
   delete: <T = unknown>(url: string, options: RequestInit = {}) => 
     apiFetcher<T>(url, { ...options, method: 'DELETE' }),
 };

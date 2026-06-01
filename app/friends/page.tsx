@@ -345,8 +345,8 @@ export default function FriendsPage() {
                           <Image
                             src={row.from.avatar}
                             alt=""
-                            width={48}
-                            height={48}
+                            fill
+                            sizes="48px"
                             className="object-cover"
                             unoptimized
                           />
@@ -412,8 +412,8 @@ export default function FriendsPage() {
                           <Image
                             src={row.to.avatar}
                             alt=""
-                            width={48}
-                            height={48}
+                            fill
+                            sizes="48px"
                             className="object-cover"
                             unoptimized
                           />
@@ -473,8 +473,8 @@ export default function FriendsPage() {
                       <Image
                         src={f.avatar}
                         alt=""
-                        width={48}
-                        height={48}
+                        fill
+                        sizes="48px"
                         className="object-cover"
                         unoptimized
                       />

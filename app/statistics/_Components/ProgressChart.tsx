@@ -214,7 +214,7 @@ const ProgressChart = ({ history }: { history: Training[] }) => {
                 if (!row) return "";
                 return `Session ${row.sessionNumber} (${formatCalendarDay(row.startTime)})`;
               }}
-              formatter={(value: number) => [`${value}`, "Performance"]}
+              formatter={(value: any) => [`${value}`, "Performance"]}
               contentStyle={{
                 backgroundColor: "hsl(var(--card))",
                 borderColor: "hsl(var(--border))",

@@ -1,31 +1,34 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import {useState, useEffect} from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import ModeToggle from "@/components/layout/ModeToggle";
-import { 
-  Menu, 
-  ChevronRight, 
-  Terminal, 
-  LogOut, 
-  Settings, 
-  LayoutDashboard, 
-  Target, 
-  LineChart, 
-  Layers, 
+import {usePathname} from "next/navigation";
+import {motion, AnimatePresence} from "framer-motion";
+import {Button} from "@/components/ui/button";
+import {
+  Menu,
+  ChevronRight,
+  Terminal,
+  LogOut,
+  LayoutDashboard,
+  Target,
+  LineChart,
+  Layers,
   ShieldAlert,
-  Home as HomeIcon,
   ClipboardList,
+  Compass,
   ExternalLink,
   Users,
+  User,
+  Sun,
+  Moon,
+  Zap,
+  Trophy,
 } from "lucide-react";
 import ClientOnly from "@/components/shared/ClientOnly";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import useUser from "@/hooks/useUser";
-import { useFriendRequests } from "@/hooks/useFriendRequests";
+import {useFriendRequests} from "@/hooks/useFriendRequests";
 import {
   Sheet,
   SheetContent,
@@ -33,38 +36,33 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { cn } from "@/lib/utils";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import {cn} from "@/lib/utils";
+import {useTheme} from "next-themes";
 
-/** Logged-out users land on `/` by default — no need for a redundant Home link */
 const guestLinks: typeof userLinks = [];
 
 const userLinks = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/training", label: "Training", icon: Target },
-  { href: "/training/reviews", label: "Reviews", icon: ClipboardList },
-  { href: "/statistics", label: "Statistics", icon: LineChart },
-  { href: "/friends", label: "Friends", icon: Users },
-  { href: "/upsolve", label: "Upsolve", icon: Layers },
-  { href: "/levels", label: "Levels", icon: Target },
+  {href: "/dashboard", label: "Dashboard", icon: LayoutDashboard},
+  {href: "/training", label: "Training", icon: Target},
+  {href: "/roadmap", label: "Roadmap", icon: Compass},
+  {href: "/training/reviews", label: "Reviews", icon: ClipboardList},
+  {href: "/statistics", label: "Statistics", icon: LineChart},
+  {href: "/friends", label: "Friends", icon: Users},
+  {href: "/upsolve", label: "Upsolve", icon: Layers},
+  {href: "/levels", label: "Levels", icon: Trophy},
 ];
 
-const adminLinks = [{ href: "/admin", label: "Admin", icon: ShieldAlert }];
+const adminLinks = [{href: "/admin", label: "Admin", icon: ShieldAlert}];
 
 const NavBar = () => {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { user, logout } = useUser();
-  const { incoming: incomingFriendRequests } = useFriendRequests(!!user);
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const {user, logout} = useUser();
+  const {incoming: incomingFriendRequests} = useFriendRequests(!!user);
   const friendRequestCount = incomingFriendRequests.length;
+  const {theme, setTheme} = useTheme();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -72,251 +70,503 @@ const NavBar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close avatar menu on click outside
+  useEffect(() => {
+    if (!avatarMenuOpen) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest("[data-avatar-menu]")) {
+        setAvatarMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [avatarMenuOpen]);
+
+  // Close avatar menu on route change
+  useEffect(() => {
+    setAvatarMenuOpen(false);
+  }, [pathname]);
+
   const baseLinks = user ? userLinks : guestLinks;
-  const visibleLinks = user?.role === "admin" ? [...baseLinks, ...adminLinks] : baseLinks;
+  const visibleLinks =
+    user?.role === "admin" ? [...baseLinks, ...adminLinks] : baseLinks;
 
   return (
-    <header 
+    <header
       className={cn(
-        "sticky top-0 z-50 w-full transition-all duration-500",
-        scrolled 
-          ? "h-16 bg-background/80 backdrop-blur-xl border-b border-border/40 shadow-xl" 
-          : "h-20 bg-background/0 border-b border-transparent"
+        "sticky top-0 z-50 w-full transition-all duration-500 bg-transparent px-3 sm:px-4 md:px-8 pointer-events-none",
+        scrolled ? "py-2" : "py-3 md:py-4",
       )}
     >
-      <div className="container mx-auto h-full px-4 md:px-8 flex items-center justify-between gap-4">
-        {/* Logo Section - Left */}
-        <div className="flex-1 flex items-center h-full">
-          <Link href="/" className="group relative flex flex-col items-start py-2 overflow-visible">
-            <div className="flex items-center gap-1.5 leading-none overflow-visible">
-              <span className="text-primary/30 font-light text-2xl md:text-3xl tracking-tight select-none inline-block -translate-y-[2px]">[</span>
+      <div
+        className={cn(
+          "container mx-auto max-w-7xl h-14 rounded-2xl border backdrop-blur-xl transition-all duration-500 flex items-center justify-between px-3 md:px-5 pointer-events-auto",
+          scrolled
+            ? "bg-background/92 dark:bg-background/85 border-border/60 dark:border-border/50 shadow-lg shadow-black/[0.04] dark:shadow-black/20"
+            : "bg-background/75 dark:bg-background/60 border-border/40 dark:border-border/30 shadow-md shadow-black/[0.03] dark:shadow-black/15",
+        )}
+      >
+        {/* Logo */}
+        <div className="flex-none flex items-center h-full">
+          <Link href="/" className="overflow-visible select-none">
+            <motion.div
+              initial="initial"
+              whileHover="hover"
+              className="flex items-center gap-0.5 leading-none cursor-pointer"
+            >
+              <motion.span
+                variants={{
+                  initial: {x: 0},
+                  hover: {x: -3, color: "hsl(var(--primary))"},
+                }}
+                transition={{type: "spring", stiffness: 400, damping: 20}}
+                className="text-foreground/25 dark:text-foreground/20 font-light text-xl tracking-tight"
+              >
+                {"<"}
+              </motion.span>
               <div className="flex items-baseline">
-                <span className="font-black text-2xl md:text-3xl tracking-tight uppercase text-foreground group-hover:text-primary transition-colors duration-500">
+                <span className="font-black text-base md:text-lg tracking-tight uppercase text-foreground">
                   UPSOLVE
                 </span>
-                <span className="font-black text-2xl md:text-3xl tracking-tight bg-gradient-to-br from-primary to-emerald-500 bg-clip-text text-transparent ml-1 pr-1">
+                <span className="font-black text-base md:text-lg tracking-tight bg-gradient-to-br from-primary to-emerald-500 bg-clip-text text-transparent">
                   .it
                 </span>
                 <motion.span
-                  animate={{ opacity: [1, 1, 0, 0] }}
-                  transition={{ 
-                    duration: 0.8, 
-                    repeat: Infinity, 
+                  animate={{opacity: [1, 1, 0, 0]}}
+                  transition={{
+                    duration: 0.9,
+                    repeat: Infinity,
                     times: [0, 0.5, 0.5, 1],
-                    ease: "linear" 
+                    ease: "linear",
                   }}
-                  className="inline-block w-3 h-6 md:w-4 md:h-8 bg-primary/40 ml-1 translate-y-1"
+                  className="inline-block w-[3px] h-4 bg-primary/50 ml-0.5 translate-y-[1px] rounded-full"
                 />
               </div>
-              <span className="text-primary/30 font-light text-2xl md:text-3xl tracking-tight select-none inline-block -translate-y-[2px]">]</span>
-            </div>
+              <motion.span
+                variants={{
+                  initial: {x: 0},
+                  hover: {x: 3, color: "hsl(var(--primary))"},
+                }}
+                transition={{type: "spring", stiffness: 400, damping: 20}}
+                className="text-foreground/25 dark:text-foreground/20 font-light text-xl tracking-tight"
+              >
+                {"/>"}
+              </motion.span>
+            </motion.div>
           </Link>
         </div>
 
-        {/* Desktop Navigation - Center (hidden for guests — no links until login) */}
+        {/* Desktop Navigation - Center */}
         {visibleLinks.length > 0 && (
-          <nav className="hidden lg:flex items-center justify-center flex-1 h-full gap-1">
-            {visibleLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "relative flex items-center px-4 h-10 rounded-xl text-sm font-bold transition-all duration-300 group",
-                  pathname === link.href
-                    ? "text-primary"
-                    : "text-foreground/60 hover:text-foreground"
-                )}
-              >
-                <span className="relative z-10">{link.label}</span>
-                {link.href === "/friends" && friendRequestCount > 0 && (
-                  <span
-                    className="absolute -right-0.5 -top-1 z-20 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-black leading-none text-white shadow-sm ring-2 ring-background"
-                    aria-label={`${friendRequestCount} pending friend request${friendRequestCount === 1 ? "" : "s"}`}
-                  >
-                    {friendRequestCount > 9 ? "9+" : friendRequestCount}
-                  </span>
-                )}
-                {pathname === link.href && (
-                  <motion.div
-                    layoutId="nav-pill"
-                    className="absolute inset-0 bg-primary/10 rounded-xl z-0"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+          <nav className="hidden lg:flex items-center justify-center flex-1 h-full gap-0.5 px-4">
+            {visibleLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-[0.08em] transition-all duration-200 group",
+                    isActive
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <link.icon
+                    size={13}
+                    className={cn(
+                      "transition-colors duration-200",
+                      isActive
+                        ? "text-primary"
+                        : "text-muted-foreground/60 group-hover:text-foreground/70",
+                    )}
                   />
-                )}
-              </Link>
-            ))}
+                  <span className="relative z-10">{link.label}</span>
+                  {link.href === "/friends" && friendRequestCount > 0 && (
+                    <span className="absolute -right-1 -top-1 z-20 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[8px] font-black leading-none text-white shadow-sm ring-2 ring-background">
+                      {friendRequestCount > 9 ? "9+" : friendRequestCount}
+                    </span>
+                  )}
+                  {isActive && (
+                    <motion.div
+                      layoutId="nav-active-pill"
+                      className="absolute inset-0 bg-primary/8 dark:bg-primary/12 rounded-lg border border-primary/15 dark:border-primary/20"
+                      transition={{
+                        type: "spring",
+                        bounce: 0.15,
+                        duration: 0.5,
+                      }}
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
         )}
 
-        {/* Action Section - Right */}
-        <div className="flex-1 flex items-center justify-end gap-2 md:gap-4">
+        {/* Right Actions */}
+        <div className="flex-none flex items-center gap-1.5 md:gap-2">
+          {/* Theme Toggle */}
+          <ClientOnly>
+            <button
+              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+              className="relative h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 dark:hover:bg-white/5 transition-all duration-200"
+              aria-label="Toggle theme"
+            >
+              <Sun className="h-[15px] w-[15px] rotate-0 scale-100 transition-all duration-300 dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-[15px] w-[15px] rotate-90 scale-0 transition-all duration-300 dark:rotate-0 dark:scale-100" />
+            </button>
+          </ClientOnly>
+
+          {/* User / Auth */}
           <ClientOnly>
             {user ? (
-              <div className="flex items-center gap-2 md:gap-4">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="outline-none group flex items-center gap-3 bg-card/30 border border-border/40 hover:border-primary/40 hover:bg-card/50 px-2 md:px-4 py-1.5 rounded-2xl transition-all duration-300">
-                      <div className="relative">
-                        <Avatar className="w-8 h-8 border-2 border-primary/20 group-hover:border-primary/40 transition-colors">
-                          <AvatarImage src={user.avatar} alt={user.codeforcesHandle} />
-                          <AvatarFallback className="bg-primary/10 text-[10px] font-black uppercase">
-                            {user.codeforcesHandle?.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 border-2 border-background" />
-                      </div>
-                      <div className="hidden md:flex flex-col items-start leading-tight">
-                        <span className="text-[11px] font-black uppercase tracking-tighter">{user.codeforcesHandle}</span>
-                        <span className="text-[9px] font-bold text-muted-foreground/60">{user.rank || "Recruit"}</span>
-                      </div>
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 mt-2 rounded-2xl bg-background/95 backdrop-blur-xl border-border/40 shadow-2xl p-2">
-                    <DropdownMenuLabel className="px-3 py-2">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">Operator Status</p>
-                        <p className="text-sm font-bold tracking-tight">{user.codeforcesHandle}</p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-border/20 mx-1" />
-                    <DropdownMenuItem 
-                      className="rounded-xl px-3 py-2.5 focus:bg-primary/20 focus:text-primary cursor-pointer transition-colors"
-                      onClick={() => window.open(`https://codeforces.com/profile/${user.codeforcesHandle}`, '_blank')}
+              <div className="relative" data-avatar-menu>
+                {/* Avatar Trigger */}
+                <button
+                  onClick={() => setAvatarMenuOpen((v) => !v)}
+                  className={cn(
+                    "outline-none group flex items-center gap-2 pl-1.5 pr-2 md:pr-2.5 py-1 rounded-xl transition-all duration-300",
+                    avatarMenuOpen
+                      ? "bg-primary/8 dark:bg-primary/10 ring-1 ring-primary/30"
+                      : "hover:bg-muted/50 dark:hover:bg-white/5",
+                  )}
+                >
+                  <div className="relative">
+                    <div
+                      className={cn(
+                        "rounded-full p-[2px] transition-all duration-300",
+                        avatarMenuOpen
+                          ? "bg-gradient-to-br from-primary to-emerald-400"
+                          : "bg-gradient-to-br from-border to-border group-hover:from-primary/50 group-hover:to-emerald-400/50",
+                      )}
                     >
-                      <ExternalLink className="mr-2 h-4 w-4 opacity-70" />
-                      <span className="text-xs font-black uppercase tracking-tight">View CF Profile</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className="rounded-xl px-3 py-2.5 focus:bg-red-500/20 focus:text-red-500 cursor-pointer text-muted-foreground/80 transition-colors"
-                      onClick={logout}
+                      <Avatar className="w-7 h-7 border-2 border-background">
+                        <AvatarImage
+                          src={user.avatar}
+                          alt={user.codeforcesHandle}
+                        />
+                        <AvatarFallback className="bg-primary/10 text-[10px] font-black uppercase text-primary">
+                          {user.codeforcesHandle?.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                    <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-background" />
+                  </div>
+                  <div className="hidden md:flex flex-col items-start leading-none">
+                    <span className="text-[11px] font-bold tracking-tight text-foreground">
+                      {user.codeforcesHandle}
+                    </span>
+                    <span className="text-[9px] font-medium text-muted-foreground/60">
+                      {user.rank || "Recruit"}
+                    </span>
+                  </div>
+                </button>
+
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {avatarMenuOpen && (
+                    <motion.div
+                      initial={{opacity: 0, y: 6, scale: 0.97}}
+                      animate={{opacity: 1, y: 0, scale: 1}}
+                      exit={{opacity: 0, y: 6, scale: 0.97}}
+                      transition={{duration: 0.18, ease: [0.16, 1, 0.3, 1]}}
+                      className="absolute right-0 top-[calc(100%+8px)] w-72 z-[9999] origin-top-right"
                     >
-                      <LogOut className="mr-2 h-4 w-4 opacity-70" />
-                      <span className="text-xs font-black uppercase tracking-tight">Logout</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                      <div className="rounded-2xl bg-card border border-border/60 dark:border-border/40 shadow-2xl shadow-black/10 dark:shadow-black/30 overflow-hidden">
+                        {/* Profile Card Header */}
+                        <div className="relative p-4 pb-3">
+                          {/* Gradient accent strip */}
+                          <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-br from-primary/15 via-emerald-500/10 to-transparent dark:from-primary/20 dark:via-emerald-500/15 rounded-t-2xl" />
+
+                          <div className="relative flex items-start gap-3">
+                            <div className="rounded-full p-[2px] bg-gradient-to-br from-primary to-emerald-400 shadow-lg shadow-primary/20">
+                              <Avatar className="w-11 h-11 border-2 border-card">
+                                <AvatarImage
+                                  src={user.avatar}
+                                  alt={user.codeforcesHandle}
+                                />
+                                <AvatarFallback className="bg-primary/10 text-sm font-black uppercase text-primary">
+                                  {user.codeforcesHandle?.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                            </div>
+                            <div className="flex-1 min-w-0 pt-0.5">
+                              <p className="text-sm font-bold tracking-tight text-foreground truncate">
+                                {user.codeforcesHandle}
+                              </p>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 dark:bg-primary/15 px-1.5 py-0.5 rounded-md">
+                                  <Zap size={9} />
+                                  {user.rank || "Recruit"}
+                                </span>
+                                {user.rating && (
+                                  <span className="text-[10px] font-medium text-muted-foreground/70">
+                                    {user.rating}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+
+                        </div>
+
+                        {/* Separator */}
+                        <div className="h-px bg-border/50 dark:bg-border/30 mx-3" />
+
+                        {/* Quick Actions */}
+                        <div className="p-2">
+                          <Link
+                            href="/profile"
+                            onClick={() => setAvatarMenuOpen(false)}
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-foreground/80 hover:text-foreground hover:bg-muted/50 dark:hover:bg-white/5 transition-all duration-200 group"
+                          >
+                            <div className="h-8 w-8 rounded-lg bg-primary/8 dark:bg-primary/12 flex items-center justify-center text-primary group-hover:bg-primary/15 transition-colors">
+                              <User size={14} />
+                            </div>
+                            <div className="flex-1">
+                              <span className="text-[12px] font-semibold block">
+                                My Profile
+                              </span>
+                              <span className="text-[10px] text-muted-foreground/50">
+                                View stats & progress
+                              </span>
+                            </div>
+                            <ChevronRight
+                              size={13}
+                              className="text-muted-foreground/30 group-hover:text-muted-foreground/60 group-hover:translate-x-0.5 transition-all"
+                            />
+                          </Link>
+
+                          <button
+                            onClick={() => {
+                              window.open(
+                                `https://codeforces.com/profile/${user.codeforcesHandle}`,
+                                "_blank",
+                              );
+                              setAvatarMenuOpen(false);
+                            }}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-foreground/80 hover:text-foreground hover:bg-muted/50 dark:hover:bg-white/5 transition-all duration-200 group"
+                          >
+                            <div className="h-8 w-8 rounded-lg bg-blue-500/8 dark:bg-blue-400/12 flex items-center justify-center text-blue-500 dark:text-blue-400 group-hover:bg-blue-500/15 transition-colors">
+                              <ExternalLink size={14} />
+                            </div>
+                            <div className="flex-1 text-left">
+                              <span className="text-[12px] font-semibold block">
+                                Codeforces Profile
+                              </span>
+                              <span className="text-[10px] text-muted-foreground/50">
+                                Open in new tab
+                              </span>
+                            </div>
+                            <ChevronRight
+                              size={13}
+                              className="text-muted-foreground/30 group-hover:text-muted-foreground/60 group-hover:translate-x-0.5 transition-all"
+                            />
+                          </button>
+                        </div>
+
+                        {/* Separator */}
+                        <div className="h-px bg-border/50 dark:bg-border/30 mx-3" />
+
+                        {/* Logout */}
+                        <div className="p-2">
+                          <button
+                            onClick={() => {
+                              logout();
+                              setAvatarMenuOpen(false);
+                            }}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground/70 hover:text-red-500 hover:bg-red-500/5 dark:hover:bg-red-500/8 transition-all duration-200 group"
+                          >
+                            <div className="h-8 w-8 rounded-lg bg-muted/40 dark:bg-muted/20 flex items-center justify-center group-hover:bg-red-500/10 transition-colors">
+                              <LogOut
+                                size={14}
+                                className="group-hover:text-red-500 transition-colors"
+                              />
+                            </div>
+                            <span className="text-[12px] font-semibold">
+                              Sign Out
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ) : (
-              <div className="hidden sm:flex items-center gap-2">
-                <Button 
-                  asChild 
-                  variant="ghost" 
-                  className="font-bold text-xs uppercase tracking-widest px-6 rounded-xl border border-border/40 hover:border-primary/40 hover:bg-primary/10 text-foreground hover:text-primary transition-all duration-300"
+              <div className="hidden sm:flex items-center gap-1.5">
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="text-[11px] font-semibold px-3.5 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 dark:hover:bg-white/5 transition-all duration-200"
                 >
-                  <Link href="/login">Login</Link>
+                  <Link href="/login">Log in</Link>
                 </Button>
                 <Button
                   asChild
-                  className="font-bold text-xs uppercase tracking-widest px-6 rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:scale-105"
+                  className="text-[11px] font-semibold px-4 h-8 rounded-lg bg-primary text-primary-foreground shadow-md shadow-primary/15 hover:shadow-lg hover:shadow-primary/20 hover:brightness-110 transition-all duration-200"
                 >
-                  <Link href="/signup">Join Community</Link>
+                  <Link href="/signup">Join Free</Link>
                 </Button>
               </div>
             )}
           </ClientOnly>
 
-          <ClientOnly>
-            <ModeToggle />
-          </ClientOnly>
-
-          {/* Mobile Menu Trigger */}
-          <div className="lg:hidden">
+          {/* Mobile Menu */}
+          <div className="lg:hidden flex items-center">
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="relative h-10 w-10 rounded-xl bg-card/30 border border-border/40"
+                  className="relative h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 dark:hover:bg-white/5"
                 >
-                  <Menu className="h-5 w-5" />
+                  <Menu className="h-4 w-4" />
                   <span className="sr-only">Toggle Menu</span>
                 </Button>
               </SheetTrigger>
 
-              <SheetContent side="right" className="w-[320px] p-0 border-l border-border/40 bg-background/95 backdrop-blur-2xl">
-                <SheetHeader className="p-8 border-b border-border/20">
+              <SheetContent
+                side="right"
+                className="w-[300px] sm:w-[340px] p-0 border-l border-border/50 dark:border-border/30 bg-background/98 dark:bg-background/95 backdrop-blur-2xl"
+              >
+                <SheetHeader className="p-5 pb-4 border-b border-border/40 dark:border-border/20">
                   <SheetTitle>
                     <div className="flex items-center gap-3 text-left">
-                      <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
-                        <Terminal size={20} />
+                      <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary/15 to-emerald-500/10 border border-primary/15 flex items-center justify-center text-primary">
+                        <Terminal size={18} />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-xl font-black tracking-tighter uppercase">Menu</span>
-                        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Navigation Center</span>
+                        <span className="text-base font-bold tracking-tight">
+                          Navigation
+                        </span>
+                        <span className="text-[10px] font-medium text-muted-foreground/50">
+                          Quick access to all pages
+                        </span>
                       </div>
                     </div>
                   </SheetTitle>
                 </SheetHeader>
 
-                <div className="flex flex-col h-[calc(100%-100px)] justify-between p-6">
-                  <div className="space-y-2">
-                    {visibleLinks.map((link) => (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        onClick={() => setIsMenuOpen(false)}
-                        className={cn(
-                          "flex items-center justify-between group p-4 rounded-2xl border transition-all duration-300",
-                          pathname === link.href
-                            ? "bg-primary/10 border-primary/20 text-primary"
-                            : "bg-transparent border-transparent text-muted-foreground hover:bg-white/5 hover:text-foreground"
-                        )}
-                      >
-                        <div className="flex items-center gap-4">
-                          <link.icon size={18} className={cn("transition-colors", pathname === link.href ? "text-primary" : "opacity-40 group-hover:opacity-100")} />
-                          <span className="flex items-center gap-2 text-base font-black tracking-tight">
-                            {link.label}
-                            {link.href === "/friends" && friendRequestCount > 0 && (
-                              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-black text-white">
-                                {friendRequestCount > 9 ? "9+" : friendRequestCount}
-                              </span>
+                <div className="flex flex-col h-[calc(100%-73px)] justify-between overflow-y-auto">
+                  <div className="p-3 space-y-0.5">
+                    {visibleLinks.map((link) => {
+                      const isActive = pathname === link.href;
+                      return (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          onClick={() => setIsMenuOpen(false)}
+                          className={cn(
+                            "flex items-center justify-between group p-3 rounded-xl transition-all duration-200",
+                            isActive
+                              ? "bg-primary/8 dark:bg-primary/12 text-primary"
+                              : "text-foreground/70 hover:bg-muted/50 dark:hover:bg-white/5 hover:text-foreground",
+                          )}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={cn(
+                                "h-8 w-8 rounded-lg flex items-center justify-center transition-colors",
+                                isActive
+                                  ? "bg-primary/12 dark:bg-primary/18 text-primary"
+                                  : "bg-muted/40 dark:bg-muted/20 text-muted-foreground/60 group-hover:text-foreground/60",
+                              )}
+                            >
+                              <link.icon size={15} />
+                            </div>
+                            <span className="flex items-center gap-2 text-[13px] font-semibold">
+                              {link.label}
+                              {link.href === "/friends" &&
+                                friendRequestCount > 0 && (
+                                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[8px] font-bold text-white">
+                                    {friendRequestCount > 9
+                                      ? "9+"
+                                      : friendRequestCount}
+                                  </span>
+                                )}
+                            </span>
+                          </div>
+                          <ChevronRight
+                            size={14}
+                            className={cn(
+                              "transition-all duration-200",
+                              isActive
+                                ? "text-primary/50"
+                                : "opacity-0 group-hover:opacity-60 group-hover:translate-x-0.5",
                             )}
-                          </span>
-                        </div>
-                        <ChevronRight size={16} className="opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-1" />
-                      </Link>
-                    ))}
+                          />
+                        </Link>
+                      );
+                    })}
                   </div>
 
-                  <div className="space-y-4 pt-6 border-t border-border/20">
+                  <div className="p-3 space-y-3 border-t border-border/40 dark:border-border/20">
                     {user ? (
-                      <div className="p-4 rounded-2xl bg-card/30 border border-border/40 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10 border-2 border-primary/20">
-                            <AvatarImage src={user.avatar} />
-                            <AvatarFallback>{user.codeforcesHandle?.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <div className="flex flex-col">
-                            <span className="text-sm font-black tracking-tight uppercase">{user.codeforcesHandle}</span>
-                            <span className="text-[9px] font-bold text-muted-foreground/60">{user.rating} · {user.rank}</span>
+                      <div className="p-3 rounded-xl bg-muted/30 dark:bg-muted/10 border border-border/40 dark:border-border/20 flex items-center justify-between">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="rounded-full p-[2px] bg-gradient-to-br from-primary/50 to-emerald-400/50">
+                            <Avatar className="h-8 w-8 border-2 border-background">
+                              <AvatarImage src={user.avatar} />
+                              <AvatarFallback className="text-[10px] font-bold uppercase">
+                                {user.codeforcesHandle?.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                          </div>
+                          <div className="flex flex-col min-w-0 leading-tight">
+                            <span className="text-[12px] font-bold tracking-tight truncate">
+                              {user.codeforcesHandle}
+                            </span>
+                            <span className="text-[10px] font-medium text-muted-foreground/50 truncate">
+                              {user.rating && `${user.rating} · `}
+                              {user.rank}
+                            </span>
                           </div>
                         </div>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={logout}
-                          className="h-10 w-10 rounded-xl hover:bg-red-500/10 hover:text-red-500"
+                          className="h-8 w-8 rounded-lg hover:bg-red-500/10 hover:text-red-500 flex-shrink-0 transition-colors"
                         >
-                          <LogOut size={18} />
+                          <LogOut size={15} />
                         </Button>
                       </div>
                     ) : (
-                      <div className="grid gap-3">
-                        <Button asChild variant="outline" className="h-12 rounded-2xl font-black text-[10px] uppercase tracking-widest">
-                          <Link href="/login" onClick={() => setIsMenuOpen(false)}>Login</Link>
+                      <div className="grid gap-1.5">
+                        <Button
+                          asChild
+                          variant="outline"
+                          className="h-10 rounded-xl text-[12px] font-semibold border-border/50 hover:bg-muted/40"
+                        >
+                          <Link
+                            href="/login"
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            Log in
+                          </Link>
                         </Button>
-                        <Button asChild className="h-12 rounded-2xl font-black text-[10px] uppercase tracking-widest bg-primary">
-                          <Link href="/signup" onClick={() => setIsMenuOpen(false)}>Join Community</Link>
+                        <Button
+                          asChild
+                          className="h-10 rounded-xl text-[12px] font-semibold bg-primary text-primary-foreground"
+                        >
+                          <Link
+                            href="/signup"
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            Join Free
+                          </Link>
                         </Button>
                       </div>
                     )}
-                    
-                    <div className="flex items-center justify-between px-2">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">© 2026 Upsolve.it</span>
-                      <div className="flex gap-4">
-                        <Settings size={14} className="text-muted-foreground/40 hover:text-primary transition-colors cursor-pointer" />
-                        <Terminal size={14} className="text-muted-foreground/40 hover:text-primary transition-colors cursor-pointer" />
-                      </div>
+
+                    <div className="flex items-center justify-between px-1.5">
+                      <span className="text-[9px] font-medium text-muted-foreground/40">
+                        © 2026 Upsolve.it
+                      </span>
                     </div>
                   </div>
                 </div>

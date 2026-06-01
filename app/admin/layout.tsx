@@ -15,8 +15,10 @@ import {
   LogOut,
   Bell,
   Menu,
-  X
-, ChevronLeft } from 'lucide-react';
+  X,
+  ChevronLeft,
+  Compass
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -31,6 +33,7 @@ const navItems = [
   { id: "dashboard", href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard, desc: "Platform Metrics" },
   { id: "users", href: "/admin/users", label: "User Management", icon: Users, desc: "Registry & Roles" },
   { id: "levels", href: "/admin/levels", label: "Level Distribution", icon: Layers, desc: "Target Configuration" },
+  { id: "roadmap", href: "/admin/roadmap", label: "Roadmap", icon: Compass, desc: "Levels & Sessions" },
   { id: "logs", href: "/admin/logs", label: "Audit Logs", icon: Database, desc: "Security Records" },
 ];
 
@@ -106,6 +109,8 @@ export default function AdminLayout({
           {/* Toggle Button - Floating on the border */}
           <button 
             onClick={() => setCompact(!isCompact)}
+            title="Toggle Sidebar"
+            aria-label="Toggle Sidebar"
             className={cn(
               "hidden lg:flex absolute -right-3 top-7 h-6 w-6 items-center justify-center rounded-full bg-card border border-border text-muted-foreground hover:text-primary hover:border-primary/50 transition-all duration-300 z-[160] shadow-xl",
               isCompact && "rotate-180"
@@ -118,6 +123,8 @@ export default function AdminLayout({
             variant="ghost" 
             size="icon" 
             onClick={() => setSidebarOpen(false)}
+            title="Close Sidebar"
+            aria-label="Close Sidebar"
             className="ml-auto lg:hidden text-muted-foreground hover:text-foreground"
           >
             <X size={20} />
@@ -191,8 +198,8 @@ export default function AdminLayout({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Link href="/" className="block mt-4 flex justify-center">
-                    <Button variant="ghost" className="h-10 w-10 p-0 text-muted-foreground hover:text-foreground hover:bg-destructive/10 hover:border-destructive/20 rounded-xl border border-transparent flex items-center justify-center">
+                  <Link href="/" className="mt-4 flex justify-center">
+                    <Button variant="ghost" title="Exit Console" className="h-10 w-10 p-0 text-muted-foreground hover:text-foreground hover:bg-destructive/10 hover:border-destructive/20 rounded-xl border border-transparent flex items-center justify-center">
                       <LogOut size={16} />
                     </Button>
                   </Link>
