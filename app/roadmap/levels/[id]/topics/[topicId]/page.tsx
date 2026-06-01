@@ -211,7 +211,7 @@ const TopicPage = () => {
 
       if (newSolved && res.xpDelta > 0) {
         toast({
-          title: "Problem Solved! ✅",
+          title: "Problem Solved!",
           description: `Earned +${res.xpDelta} XP!`,
           variant: "success",
         });
