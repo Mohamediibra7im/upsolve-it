@@ -618,7 +618,7 @@ const TopicPage = () => {
                                     </span>
                                   ) : (
                                     <span className="inline-flex items-center gap-1 text-[10px] font-black text-muted-foreground/60 bg-muted/65 px-2.5 py-0.5 rounded border border-border uppercase tracking-wider">
-                                      Open
+                                      Unsolved
                                     </span>
                                   )}
                                 </TableCell>
