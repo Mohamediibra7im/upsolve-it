@@ -83,6 +83,15 @@ export const useAdminRoadmapTopics = (levelId?: string) => {
     return res.problem;
   };
 
+  const addProblems = async (sheetId: string, problems: Array<{ cfProblemId: string; title?: string; xpReward?: number }>) => {
+    const res = await apiClient.post<{ inserted: number; skipped: number }>(
+      `/api/admin/roadmap/sheets/${sheetId}/problems/bulk`,
+      { problems },
+    );
+    await mutate();
+    return res;
+  };
+
   const deleteProblem = async (problemId: string) => {
     await apiClient.delete(`/api/admin/roadmap/problems/${problemId}`);
     await mutate();
@@ -114,6 +123,7 @@ export const useAdminRoadmapTopics = (levelId?: string) => {
     deleteVideo,
     upsertSheet,
     addProblem,
+    addProblems,
     deleteProblem,
     deleteProblems,
     importProblems,

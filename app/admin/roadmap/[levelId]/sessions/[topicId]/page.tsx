@@ -99,7 +99,7 @@ export default function AdminSessionDetailPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const { upsertVideo, deleteVideo, upsertSheet, addProblem, deleteProblem, deleteProblems } =
+  const { upsertVideo, deleteVideo, upsertSheet, addProblem, addProblems, deleteProblem, deleteProblems } =
     useAdminRoadmapTopics(levelId);
 
   const [activeTab, setActiveTab] = useState<"video" | "problems">("video");
@@ -574,7 +574,7 @@ export default function AdminSessionDetailPage() {
         }
       }
 
-      let addedCount = 0;
+      const problemsToAdd: Array<{ title: string; cfProblemId: string; xpReward: number }> = [];
 
       for (const row of dataRows) {
         if (row.length < 2) continue;
@@ -595,18 +595,28 @@ export default function AdminSessionDetailPage() {
         }
 
         if (parsedTitle && parsedLink) {
-          await addProblem(activeSheetId, {
+          problemsToAdd.push({
             title: parsedTitle,
             cfProblemId: parsedLink,
             xpReward: topicData?.level?.xpPerAcceptedProblem ?? 10,
           });
-          addedCount++;
         }
       }
 
+      if (problemsToAdd.length === 0) {
+        toast({
+          title: "No problems found",
+          description: "Could not parse any valid problems from the table.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const result = await addProblems(activeSheetId, problemsToAdd);
+
       toast({
         title: "Bulk Import Complete",
-        description: `Successfully imported ${addedCount} problems from Markdown table!`,
+        description: `Imported ${result.inserted} problem(s)${result.skipped > 0 ? `, skipped ${result.skipped} duplicate(s)` : ""}.`,
         variant: "success",
       });
       setBulkMarkdown("");
