@@ -210,7 +210,7 @@ const LevelPage = () => {
                         <span className="text-[9px] font-black uppercase tracking-[0.25em] text-muted-foreground/60 block group-hover:text-primary transition-colors">
                           Mission {topic.orderIndex}
                         </span>
-                        <h3 className="text-lg font-black text-foreground mt-1 line-clamp-1">
+                        <h3 className="text-lg font-black text-foreground mt-1">
                           {topic.title}
                         </h3>
                       </div>
