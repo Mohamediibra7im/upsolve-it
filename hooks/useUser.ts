@@ -212,7 +212,7 @@ const useUser = () => {
     }
   }, []);
 
-  const verifyCodeforcesProfile = useCallback(async (): Promise<Response<null>> => {
+  const verifyCodeforcesProfile = useCallback(async (): Promise<Response<{ xpEarned: number }>> => {
     try {
       const res = await fetch(resolveApiUrl("/api/auth/verify-codeforces-profile"), {
         method: "POST",
@@ -230,7 +230,7 @@ const useUser = () => {
         await mutate(updatedUser, false);
       }
 
-      return SuccessResponse(null);
+      return SuccessResponse({ xpEarned: data.xpEarned ?? 50 });
     } catch (error) {
       console.error("Verify Codeforces profile failed:", error);
       return ErrorResponse("Failed to verify profile");

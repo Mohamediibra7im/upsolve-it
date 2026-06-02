@@ -91,7 +91,7 @@ const VerifyCodeforcesDialog = ({
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
-  const [xpAwarded, setXpAwarded] = useState(false);
+  const [xpAwarded, setXpAwarded] = useState<number | null>(null);
   const [timerStartedAt, setTimerStartedAt] = useState<number | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -192,8 +192,8 @@ const VerifyCodeforcesDialog = ({
     setError(null);
     try {
       const res = await verifyCodeforcesProfile();
-      if (res.success) {
-        setXpAwarded(true);
+      if (res.success && res.data) {
+        setXpAwarded(res.data.xpEarned);
         navigateStep("success");
       } else if (!res.success) {
         setError(res.error || "Verification failed");
@@ -228,7 +228,7 @@ const VerifyCodeforcesDialog = ({
     setExpiresAt(null);
     setError(null);
     setCopied(false);
-    setXpAwarded(false);
+    setXpAwarded(null);
     onClose();
   };
 
@@ -866,7 +866,7 @@ const VerifyCodeforcesDialog = ({
                 </motion.div>
 
                 {/* XP reward */}
-                {xpAwarded && (
+                {xpAwarded !== null && (
                   <motion.div
                     initial={{opacity: 0, scale: 0.8}}
                     animate={{opacity: 1, scale: 1}}
@@ -875,7 +875,7 @@ const VerifyCodeforcesDialog = ({
                   >
                     <Sparkles className="h-4 w-4 text-primary" />
                     <span className="text-sm font-black text-primary">
-                      +{XP_REWARD} XP Earned!
+                      +{xpAwarded} XP Earned!
                     </span>
                   </motion.div>
                 )}
