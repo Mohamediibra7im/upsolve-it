@@ -9,5 +9,6 @@ export interface User {
   organization?: string;
   lastSyncTime?: number;
   role: "user" | "admin";
+  isVerified: boolean;
   createdAt?: string;
 }

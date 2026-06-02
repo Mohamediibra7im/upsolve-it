@@ -19,6 +19,7 @@ import {
   Clock,
   CheckCircle2,
   Sparkles,
+  ShieldCheck,
 } from "lucide-react";
 import useUser from "@/hooks/useUser";
 import {useRoadmapUserSummary} from "@/hooks/useRoadmap";
@@ -282,8 +283,14 @@ export default function ProfilePage() {
                   )}
                 </div>
 
-                <h1 className="text-3xl md:text-5xl font-[1000] tracking-tighter uppercase text-foreground leading-none">
+                <h1 className="text-3xl md:text-5xl font-[1000] tracking-tighter uppercase text-foreground leading-none flex items-center gap-3">
                   {user.codeforcesHandle}
+                  {user.isVerified && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase tracking-wider">
+                      <ShieldCheck size={12} />
+                      Verified
+                    </span>
+                  )}
                 </h1>
 
                 <div className="flex flex-wrap gap-2 text-[9px] font-black uppercase tracking-wider text-muted-foreground/80">

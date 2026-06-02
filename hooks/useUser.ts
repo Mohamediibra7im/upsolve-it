@@ -193,6 +193,50 @@ const useUser = () => {
     }
   }, [isClient, mutate]);
 
+  const generateVerificationCode = useCallback(async (): Promise<Response<{ code: string; expiresAt: number }>> => {
+    try {
+      const res = await fetch(resolveApiUrl("/api/auth/generate-verification-code"), {
+        method: "POST",
+        credentials: "include",
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return ErrorResponse(data.message);
+      }
+
+      return SuccessResponse({ code: data.code, expiresAt: data.expiresAt });
+    } catch (error) {
+      console.error("Generate verification code failed:", error);
+      return ErrorResponse("Failed to generate verification code");
+    }
+  }, []);
+
+  const verifyCodeforcesProfile = useCallback(async (): Promise<Response<null>> => {
+    try {
+      const res = await fetch(resolveApiUrl("/api/auth/verify-codeforces-profile"), {
+        method: "POST",
+        credentials: "include",
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return ErrorResponse(data.message);
+      }
+
+      if (isClient && user) {
+        const updatedUser = { ...user, isVerified: true };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        await mutate(updatedUser, false);
+      }
+
+      return SuccessResponse(null);
+    } catch (error) {
+      console.error("Verify Codeforces profile failed:", error);
+      return ErrorResponse("Failed to verify profile");
+    }
+  }, [isClient, user, mutate]);
+
   return {
     user,
     isLoading: isInitializing || !isClient,
@@ -202,6 +246,8 @@ const useUser = () => {
     logout,
     resetPassword,
     syncProfile,
+    generateVerificationCode,
+    verifyCodeforcesProfile,
   };
 };
 

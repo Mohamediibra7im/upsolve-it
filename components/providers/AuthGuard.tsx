@@ -1,9 +1,10 @@
 "use client";
 
-import {useEffect} from "react";
-import {usePathname, useRouter} from "next/navigation";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import useUser from "@/hooks/useUser";
 import Loader from "@/components/shared/Loader";
+import VerificationRequired from "@/components/shared/VerificationRequired";
 
 const protectedRoots = [
   "/dashboard",
@@ -11,7 +12,13 @@ const protectedRoots = [
   "/training",
   "/statistics",
   "/upsolve",
+  "/friends",
+  "/roadmap",
+  "/community",
+  "/report",
 ];
+
+const unauthedRoots = ["/", "/login", "/signup", "/reset-password"];
 
 function routeIsProtected(pathname: string | null): boolean {
   if (!pathname) return false;
@@ -20,15 +27,22 @@ function routeIsProtected(pathname: string | null): boolean {
   );
 }
 
-const AuthGuard = ({children}: {children: React.ReactNode}) => {
-  const {user, isLoading} = useUser();
+function routeIsPublic(pathname: string | null): boolean {
+  if (!pathname) return false;
+  return unauthedRoots.some(
+    (base) => pathname === base || pathname.startsWith(`${base}/`),
+  );
+}
+
+const AuthGuard = ({ children }: { children: React.ReactNode }) => {
+  const { user, isLoading } = useUser();
   const router = useRouter();
   const pathname = usePathname();
 
   const isProtectedRoute = routeIsProtected(pathname);
+  const isPublicRoute = routeIsPublic(pathname);
 
   useEffect(() => {
-    // Add a small delay to ensure localStorage is properly loaded
     const timer = setTimeout(() => {
       if (!isLoading && !user && isProtectedRoute) {
         router.push("/");
@@ -38,14 +52,21 @@ const AuthGuard = ({children}: {children: React.ReactNode}) => {
     return () => clearTimeout(timer);
   }, [isLoading, user, router, isProtectedRoute]);
 
-  // Show loader while checking authentication
   if (isLoading && isProtectedRoute) {
     return <Loader />;
   }
 
-  // Show loader while waiting for user data to load from localStorage
   if (!user && isProtectedRoute) {
     return <Loader />;
+  }
+
+  // Block unverified users from all pages (except public/login pages)
+  if (user && !user.isVerified && !isPublicRoute) {
+    return (
+      <VerificationRequired isVerified={false}>
+        {children}
+      </VerificationRequired>
+    );
   }
 
   return <>{children}</>;
