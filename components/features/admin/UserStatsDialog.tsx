@@ -30,9 +30,7 @@ interface UserStatsDialogProps {
   statsDialog: { open: boolean; userId: string | null };
   setStatsDialog: (dialog: { open: boolean; userId: string | null }) => void;
   userStats: UserTrainingStatsView | null;
-  /** Dialog header title (default: admin copy) */
-  headerTitle?: string;
-  /** Shown before the friend’s handle in the subtitle (default: admin copy) */
+  /** Shown before the friend's handle in the subtitle (default: admin copy) */
   headerDescriptionPrefix?: string;
   closeButtonLabel?: string;
 }
@@ -41,7 +39,6 @@ export function UserStatsDialog({
   statsDialog, 
   setStatsDialog, 
   userStats,
-  _headerTitle = 'User Performance Profile',
   headerDescriptionPrefix = 'Analytical overview for',
   closeButtonLabel = 'Close Profile',
 }: Readonly<UserStatsDialogProps>) {
