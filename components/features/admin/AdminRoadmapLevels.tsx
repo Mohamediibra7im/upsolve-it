@@ -106,7 +106,7 @@ export default function AdminRoadmapLevelsComponent() {
         description: `Level is now ${!lvl.isPublished ? "Published" : "Draft"}`,
         variant: "success",
       });
-    } catch (err: any) {
+    } catch (_err: any) {
       toast({ title: "Error", description: "Failed to update publish state", variant: "destructive" });
     }
   };

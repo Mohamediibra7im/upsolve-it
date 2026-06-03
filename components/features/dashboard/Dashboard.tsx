@@ -25,7 +25,7 @@ type StreakPayload = {
 };
 
 export default function Dashboard() {
-  const {user, isLoading: isUserLoading, logout, syncProfile} = useUser();
+  const {user, isLoading: isUserLoading, logout: _logout, syncProfile} = useUser();
   const {incoming: incomingFriendRequests} = useFriendRequests(!!user);
   const friendRequestCount = incomingFriendRequests.length;
   const {history, isLoading: isHistoryLoading} = useHistory();

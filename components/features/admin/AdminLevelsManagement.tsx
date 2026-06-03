@@ -23,9 +23,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-/** Matches `getDefaultTrainingLevelDocs()` in the backend (IDs 1…110). */
-const CANONICAL_LEVEL_COUNT = 110;
-
 /** Must stay in sync with `LevelRowDto` / seed max (900…4050 in seed; extra rows may step above). */
 const MAX_LEVEL_PERFORMANCE = 4100;
 

@@ -15,7 +15,6 @@ import {VisuallyHidden} from "@radix-ui/react-visually-hidden";
 import {useUser} from "@/hooks/auth";
 import {
   ArrowLeft,
-  Check,
   CheckCircle2,
   Copy,
   ExternalLink,
@@ -158,7 +157,7 @@ const VerifyCodeforcesDialog = ({
     } else {
       setTimeLeft(0);
     }
-  }, [expiresAt, step]);
+  }, [expiresAt, step, timerStartedAt]);
 
   const isExpired =
     expiresAt !== null &&

@@ -3,7 +3,7 @@ import { swrFetcher } from "@/lib/apiClient";
 import type { FriendsListResponse } from "@/types/Friend";
 
 export function useFriends(enabled = true) {
-  const { data, error, isLoading, mutate } = useSWR<FriendsListResponse>(
+  const { data, error, isLoading: _isLoading, mutate } = useSWR<FriendsListResponse>(
     enabled ? "/api/friends" : null,
     swrFetcher,
     { revalidateOnFocus: true },

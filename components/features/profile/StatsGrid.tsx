@@ -4,13 +4,8 @@ import Link from "next/link";
 import { m } from "framer-motion";
 import {
   ArrowRight,
-  Award,
   BarChart3,
-  Flame,
-  Trophy,
   TrendingUp,
-  Crown,
-  Target,
   Clock,
   CheckCircle2,
   Sparkles,

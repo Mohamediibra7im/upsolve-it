@@ -12,11 +12,7 @@ import {
   Video,
   ExternalLink,
   ChevronRight,
-  Trophy,
-  Play,
   Check,
-  Sparkles,
-  Award,
 } from "lucide-react";
 import Loader from "@/components/shared/Loader";
 import {useRoadmapTopic} from "@/hooks/roadmap";
@@ -34,7 +30,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type {ToggleProblemResult} from "@/types/Roadmap";
-import {Card} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 
 const Orb = ({className}: {className?: string}) => (

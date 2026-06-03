@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -12,7 +12,6 @@ import {
   PlusCircle,
   ExternalLink,
   RefreshCw,
-  X,
 } from "lucide-react";
 import { useAdminRoadmapTopics } from "@/hooks/admin/useAdminRoadmap";
 import { apiClient } from "@/lib/apiClient";
@@ -96,7 +95,6 @@ export default function AdminSessionDetailClient() {
   const params = useParams<{ levelId: string; topicId: string }>();
   const levelId = params?.levelId ?? "";
   const topicId = params?.topicId ?? "";
-  const router = useRouter();
   const { toast } = useToast();
 
   const { upsertVideo, deleteVideo, upsertSheet, addProblem, addProblems, deleteProblem, deleteProblems } =
@@ -313,7 +311,7 @@ export default function AdminSessionDetailClient() {
         variant: "success",
       });
       await loadTopicData();
-    } catch (err: any) {
+    } catch (_err: any) {
       toast({
         title: "Error",
         description: "Failed to save video",
@@ -338,7 +336,7 @@ export default function AdminSessionDetailClient() {
         description: "Problem sheet configured",
         variant: "success",
       });
-    } catch (err: any) {
+    } catch (_err: any) {
       toast({
         title: "Error",
         description: "Failed to save sheet settings",
@@ -412,7 +410,7 @@ export default function AdminSessionDetailClient() {
         variant: "success",
       });
       await refreshProblems();
-    } catch (err: any) {
+    } catch (_err: any) {
       toast({
         title: "Error",
         description: "Failed to delete problem",

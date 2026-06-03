@@ -172,7 +172,7 @@ export default function HelpCenter() {
                 { label: 'Security Protocols', icon: Shield, href: '/help/faq' },
                 { label: 'Analytics Insights', icon: BarChart3, href: '/help/faq' },
                 { label: 'Account Recovery', icon: User, href: '/help/support' },
-              ].map((topic: any, idx) => (
+              ].map((topic: any, _idx) => (
                 <Button
                   key={topic.label}
                   asChild

@@ -1,6 +1,5 @@
 "use client";
 
-import { m } from "framer-motion";
 import { Trophy, Crown, Flame, Award, Target } from "lucide-react";
 import { useUser } from "@/hooks/auth";
 import { useRoadmapUserSummary } from "@/hooks/roadmap";
@@ -41,7 +40,7 @@ export default function ProfilePage() {
   const { user, isLoading, syncProfile, logout } = useUser();
   const { summary, isLoading: isSummaryLoading } = useRoadmapUserSummary(!!user);
   const { history } = useHistory();
-  const { upsolvedProblems } = useUpsolvedProblems();
+  const { upsolvedProblems: _upsolvedProblems } = useUpsolvedProblems();
   const { data: streaks } = useSWR<StreakPayload>(
     user ? "/api/users/me/streaks" : null,
     swrFetcher,

@@ -11,7 +11,6 @@ import {
   ArrowLeft,
   Video,
   Award,
-  Check,
   Activity,
   Shield,
   Play,
@@ -20,7 +19,6 @@ import {
 import Loader from "@/components/shared/Loader";
 import {useRoadmapLevel} from "@/hooks/roadmap";
 import {cn} from "@/lib/utils";
-import {Card} from "@/components/ui/card";
 
 const Orb = ({className}: {className?: string}) => (
   <div

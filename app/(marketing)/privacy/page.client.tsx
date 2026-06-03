@@ -1,4 +1,4 @@
-import { Shield, Lock, Eye, Cookie, FileText, ArrowLeft } from "lucide-react";
+import { Shield, Lock, Eye, Cookie, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 

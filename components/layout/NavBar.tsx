@@ -53,8 +53,6 @@ const userLinks = [
   {href: "/levels", label: "Levels", icon: Trophy},
 ];
 
-const adminLinks = [{href: "/admin", label: "Admin", icon: ShieldAlert}];
-
 const NavBar = () => {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);

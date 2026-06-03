@@ -6,7 +6,7 @@ import type { FriendRequestsResponse } from "@/types/Friend";
  * @param enabled Pass false when logged out so we never hit `/api/friends/requests` (401).
  */
 export function useFriendRequests(enabled = true) {
-  const { data, error, isLoading, mutate } = useSWR<FriendRequestsResponse>(
+  const { data, error, isLoading: _isLoading, mutate } = useSWR<FriendRequestsResponse>(
     enabled ? "/api/friends/requests" : null,
     swrFetcher,
     { revalidateOnFocus: true },

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useAdminLogs } from '@/hooks/admin/useAdminLogs';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -159,7 +160,7 @@ export default function AdminLogsView() {
                       <div className="flex items-center gap-2.5">
                         <div className="h-7 w-7 rounded-lg bg-secondary border border-border overflow-hidden shrink-0">
                           {log.performedBy?.avatar ? (
-                            <img src={log.performedBy.avatar} alt={log.performedByHandle} className="h-full w-full object-cover" />
+                            <Image src={log.performedBy.avatar} alt={log.performedByHandle} width={28} height={28} unoptimized className="h-full w-full object-cover" />
                           ) : (
                             <div className="h-full w-full flex items-center justify-center text-muted-foreground/50 bg-background">
                               <User size={12} />
@@ -218,7 +219,7 @@ export default function AdminLogsView() {
                       <div className="flex items-center gap-2.5">
                         <div className="h-8 w-8 rounded-lg bg-secondary border border-border overflow-hidden shrink-0">
                           {log.performedBy?.avatar ? (
-                            <img src={log.performedBy.avatar} alt={log.performedByHandle} className="h-full w-full object-cover" />
+                            <Image src={log.performedBy.avatar} alt={log.performedByHandle} width={32} height={32} unoptimized className="h-full w-full object-cover" />
                           ) : (
                             <div className="h-full w-full flex items-center justify-center text-muted-foreground/50 bg-background">
                               <User size={14} />

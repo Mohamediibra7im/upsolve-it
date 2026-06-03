@@ -97,7 +97,6 @@ export function buildRatingsForMode(
         hideDetails: true,
       };
     case "endurance": {
-      const n = 7;
       const spread = [-250, -150, -50, 0, 50, 150, 250];
       return {
         ratings: spread.map((d) => clamp(u + d)),

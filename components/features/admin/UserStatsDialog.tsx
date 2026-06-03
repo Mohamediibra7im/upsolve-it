@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
@@ -40,7 +41,7 @@ export function UserStatsDialog({
   statsDialog, 
   setStatsDialog, 
   userStats,
-  headerTitle = 'User Performance Profile',
+  _headerTitle = 'User Performance Profile',
   headerDescriptionPrefix = 'Analytical overview for',
   closeButtonLabel = 'Close Profile',
 }: Readonly<UserStatsDialogProps>) {
@@ -64,7 +65,7 @@ export function UserStatsDialog({
                   className="mb-6 size-20 rounded-2xl bg-background border border-border shadow-2xl flex items-center justify-center p-0 overflow-hidden"
                 >
                   {userStats.user.avatar ? (
-                    <img src={userStats.user.avatar} alt="" className="size-full object-cover" />
+                    <Image src={userStats.user.avatar} alt="" width={80} height={80} unoptimized className="size-full object-cover" />
                   ) : (
                     <BarChart className="size-10 text-primary" />
                   )}

@@ -4,6 +4,7 @@ import { useEffect , useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import {useUser} from "@/hooks/auth";
 import Loader from "@/components/shared/Loader";
+import Image from "next/image";
 import { m, AnimatePresence } from "framer-motion";
 import { 
   Shield, 
@@ -182,7 +183,7 @@ export default function AdminLayout({
           <div className={cn("flex items-center rounded-2xl bg-background/50 border border-border transition-all", isCompact ? "p-2 justify-center" : "gap-3 p-3")}>
             <div className="size-10 rounded-xl bg-secondary border border-border flex items-center justify-center text-muted-foreground font-black overflow-hidden shrink-0">
               {user?.avatar ? (
-                <img src={user.avatar} alt={user.codeforcesHandle} className="size-full object-cover" />
+                <Image src={user.avatar} alt={user.codeforcesHandle} width={40} height={40} unoptimized className="size-full object-cover" />
               ) : (
                 user?.codeforcesHandle?.[0].toUpperCase()
               )}

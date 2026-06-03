@@ -3,7 +3,7 @@ import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import prettierConfig from "eslint-config-prettier";
 import tseslint from "typescript-eslint";
 
-export default [
+const eslintConfig = [
   {
     ignores: [
       "components/ui/**",
@@ -63,3 +63,5 @@ export default [
     }
   }
 ];
+
+export default eslintConfig;

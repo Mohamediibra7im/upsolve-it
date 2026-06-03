@@ -7,11 +7,8 @@ import {
   ArrowLeft,
   Trophy,
   Zap,
-  Target,
   Crown,
   Medal,
-  TrendingUp,
-  Users,
   ChevronDown,
 } from "lucide-react";
 import { useRoadmapLeaderboard, useRoadmapLevels } from "@/hooks/roadmap";
@@ -19,7 +16,7 @@ import { useUser } from "@/hooks/auth";
 import Loader from "@/components/shared/Loader";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card } from "@/components/ui/card";
+
 
 const XP_TIERS = [
   { min: 5000, label: "Legend", color: "text-amber-400", bg: "bg-amber-400/10", border: "border-amber-400/20" },
@@ -48,7 +45,6 @@ const LeaderboardPage = () => {
   const isLoading = levelsLoading || boardLoading;
 
   const podium = leaderboard.slice(0, 3);
-  const list = leaderboard.slice(3);
 
   const currentUserRank = user
     ? leaderboard.find((e) => String(e.userId) === String(user._id))

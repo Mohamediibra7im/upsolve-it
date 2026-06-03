@@ -64,7 +64,7 @@ function Colon({ compact }: { compact?: boolean }) {
 }
 
 const CountDown = ({ startTime, endTime, compact }: CountDownProps) => {
-  const [tick, setTick] = useState<number>(0);
+  const [_tick, setTick] = useState<number>(0);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

@@ -7,12 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Shield,
-  ShieldCheck,
   Trophy,
   Sparkles,
   Lock,
   Zap,
-  CheckCircle2,
   ArrowRight,
 } from "lucide-react";
 import VerifyCodeforcesDialog from "./VerifyCodeforcesDialog";

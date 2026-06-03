@@ -17,7 +17,7 @@ const HeroSection = ({user}: {user: any}) => {
   });
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "35%"]);
   const opacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
-  const {summary} = useRoadmapUserSummary(!!user);
+  const {summary: _summary} = useRoadmapUserSummary(!!user);
 
   return (
     <section

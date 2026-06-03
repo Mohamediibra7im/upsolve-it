@@ -3,7 +3,6 @@
 import {useEffect, useState, useRef} from "react";
 import {Loader2} from "lucide-react";
 import {FaLock} from "react-icons/fa6";
-import {cn} from "@/lib/utils";
 
 type ProgressPayload = {
   currentTime: number;
@@ -57,7 +56,7 @@ const VideoPlayer = ({
   const initialSeekRef = useRef(initialSeekSeconds);
   useEffect(() => {
     initialSeekRef.current = initialSeekSeconds;
-  }, [videoUrl]); // only reset initial seek position when the video changes
+  }, [initialSeekSeconds]);
 
   useEffect(() => {
     if (isLocked || !videoUrl) return;

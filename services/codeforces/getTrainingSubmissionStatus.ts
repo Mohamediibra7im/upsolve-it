@@ -24,7 +24,6 @@ const getTrainingSubmissionStatus = async (
     }
 
     const submissions = res.data;
-    const problemIds = problems.map((p) => `${p.contestId}_${p.index}`);
     const submissionStatuses: SubmissionStatus[] = [];
 
     for (const problem of problems) {

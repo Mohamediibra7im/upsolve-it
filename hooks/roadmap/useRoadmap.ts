@@ -8,8 +8,6 @@ export interface RoadmapActivity {
   topicDates: string[];
 }
 
-const ROADMAP_LEVELS_KEY = "roadmap-levels";
-
 export const useRoadmapLevels = () => {
   const [isClient, setIsClient] = useState(false);
 

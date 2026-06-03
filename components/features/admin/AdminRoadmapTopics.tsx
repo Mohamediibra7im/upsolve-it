@@ -8,8 +8,6 @@ import {
   Edit2,
   Trash2,
   ArrowLeft,
-  Target,
-  Video,
   ListMusic,
   ChevronRight,
 } from "lucide-react";
@@ -149,7 +147,7 @@ export default function AdminRoadmapTopicsComponent({
         description: "Session deleted successfully",
         variant: "success",
       });
-    } catch (err: any) {
+    } catch (_err: any) {
       toast({
         title: "Error",
         description: "Failed to delete session",

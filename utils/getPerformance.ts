@@ -172,7 +172,6 @@ export const getRealTimePerformance = (
   solvedCount: number;
 } => {
   const timeRemaining = Math.max(0, training.endTime - currentTime);
-  const contestDuration = (training.endTime - training.startTime) / 60000;
 
   // Calculate current performance based on solved problems so far
   const currentPerformance = getPerformance(training, userRating);

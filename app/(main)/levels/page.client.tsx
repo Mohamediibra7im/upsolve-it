@@ -165,7 +165,7 @@ const LevelsPage = () => {
                         { label: "P2", val: level.P2 },
                         { label: "P3", val: level.P3 },
                         { label: "P4", val: level.P4 }
-                      ].map((p, idx) => (
+                      ].map((p, _idx) => (
                         <div key={p.label} className="bg-background/30 p-2 rounded-xl border border-border/20 flex flex-col items-center justify-center">
                           <span className="text-[8px] font-black text-muted-foreground/40 uppercase mb-0.5">{p.label}</span>
                           <span className="text-xs font-bold font-mono text-foreground">{p.val}</span>

@@ -13,7 +13,7 @@ import {
   Zap,
   Filter
 } from "lucide-react";
-import { m, AnimatePresence } from "framer-motion";
+import { m } from "framer-motion";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 

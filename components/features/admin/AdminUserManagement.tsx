@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import Image from 'next/image';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -42,20 +43,6 @@ const RATING_FILTERS = [
 ] as const;
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100] as const;
-
-const getRankColor = (rating: number): string => {
-  if (rating === 0) return 'text-gray-500';
-  if (rating < 1200) return 'text-gray-600';
-  if (rating < 1400) return 'text-green-600';
-  if (rating < 1600) return 'text-cyan-600';
-  if (rating < 1900) return 'text-blue-600';
-  if (rating < 2100) return 'text-purple-600';
-  if (rating < 2300) return 'text-yellow-600';
-  if (rating < 2400) return 'text-orange-600';
-  if (rating < 2600) return 'text-red-600';
-  if (rating < 3000) return 'text-red-700';
-  return 'text-red-800';
-};
 
 interface ConfirmationDialog {
   open: boolean;
@@ -286,9 +273,9 @@ export default function AdminUserManagement() {
         <div className="flex items-center gap-3">
           <div className="px-4 py-2 rounded-xl bg-secondary/50 border border-border flex items-center gap-3">
             <div className="flex -space-x-2">
-              {users.slice(0, 3).map((u: User, i) => (
+              {users.slice(0, 3).map((u: User, _i) => (
                 <div key={u._id} className="size-6 rounded-full border-2 border-background bg-secondary overflow-hidden">
-                  <img src={u.avatar} alt="" className="size-full object-cover" />
+                  <Image src={u.avatar} alt="" width={24} height={24} unoptimized className="size-full object-cover" />
                 </div>
               ))}
             </div>
