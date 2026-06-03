@@ -106,7 +106,7 @@ export const useRoadmapUserSummary = (enabled = true) => {
   };
 };
 
-export const useRoadmapLeaderboard = (query?: { level?: string; period?: string }) => {
+export const useRoadmapLeaderboard = (query?: { level?: string; period?: string; limit?: number }) => {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {

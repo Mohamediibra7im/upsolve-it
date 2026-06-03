@@ -33,7 +33,7 @@ export default function Dashboard() {
   const [isSyncing, setIsSyncing] = useState(false);
 
   const {summary} = useRoadmapUserSummary(!!user);
-  const {leaderboard} = useRoadmapLeaderboard();
+  const {leaderboard} = useRoadmapLeaderboard({ limit: 5 });
   const {activity: roadmapActivity} = useRoadmapActivity(!!user);
   const {totalSolved} = useHeatmapData(history || [], upsolvedProblems || [], roadmapActivity);
 
