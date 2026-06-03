@@ -2,9 +2,9 @@
 
 import { useEffect , useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import useUser from "@/hooks/useUser";
+import {useUser} from "@/hooks/auth";
 import Loader from "@/components/shared/Loader";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { 
   Shield, 
   LayoutDashboard, 
@@ -74,7 +74,7 @@ export default function AdminLayout({
       {/* Sidebar Overlay (Mobile) */}
       <AnimatePresence>
         {!isSidebarOpen && (
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -95,14 +95,14 @@ export default function AdminLayout({
         {/* Brand Header */}
         <div className={cn("h-20 flex items-center border-b border-border transition-all relative", isCompact ? "px-0 justify-center" : "px-8")}>
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="h-9 w-9 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20 shrink-0">
+            <div className="size-9 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20 shrink-0">
               <Shield size={20} />
             </div>
             {!isCompact && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="whitespace-nowrap">
+              <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="whitespace-nowrap">
                 <div className="text-sm font-black tracking-tight text-foreground uppercase leading-none">Admin Console</div>
                 <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Management Hub</div>
-              </motion.div>
+              </m.div>
             )}
           </div>
           
@@ -112,7 +112,7 @@ export default function AdminLayout({
             title="Toggle Sidebar"
             aria-label="Toggle Sidebar"
             className={cn(
-              "hidden lg:flex absolute -right-3 top-7 h-6 w-6 items-center justify-center rounded-full bg-card border border-border text-muted-foreground hover:text-primary hover:border-primary/50 transition-all duration-300 z-[160] shadow-xl",
+              "hidden lg:flex absolute -right-3 top-7 size-6 items-center justify-center rounded-full bg-card border border-border text-muted-foreground hover:text-primary hover:border-primary/50 transition-all duration-300 z-[160] shadow-xl",
               isCompact && "rotate-180"
             )}
           >
@@ -152,10 +152,10 @@ export default function AdminLayout({
                 >
                   <item.icon size={18} className={cn("shrink-0 transition-transform group-hover:scale-110", isActive ? "opacity-100" : "opacity-60")} />
                   {!isCompact && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 min-w-0">
+                    <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 min-w-0">
                       <div className="text-xs font-bold leading-none mb-1">{item.label}</div>
                       <div className="text-[9px] font-medium opacity-50 truncate">{item.desc}</div>
-                    </motion.div>
+                    </m.div>
                   )}
                   {isActive && !isCompact && <ChevronRight size={14} className="opacity-40" />}
                 </Link>
@@ -180,18 +180,18 @@ export default function AdminLayout({
         {/* User Footer */}
         <div className={cn("border-t border-border bg-black/5 transition-all", isCompact ? "p-3" : "p-6")}>
           <div className={cn("flex items-center rounded-2xl bg-background/50 border border-border transition-all", isCompact ? "p-2 justify-center" : "gap-3 p-3")}>
-            <div className="h-10 w-10 rounded-xl bg-secondary border border-border flex items-center justify-center text-muted-foreground font-black overflow-hidden shrink-0">
+            <div className="size-10 rounded-xl bg-secondary border border-border flex items-center justify-center text-muted-foreground font-black overflow-hidden shrink-0">
               {user?.avatar ? (
-                <img src={user.avatar} alt={user.codeforcesHandle} className="h-full w-full object-cover" />
+                <img src={user.avatar} alt={user.codeforcesHandle} className="size-full object-cover" />
               ) : (
                 user?.codeforcesHandle?.[0].toUpperCase()
               )}
             </div>
             {!isCompact && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 min-w-0">
+              <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 min-w-0">
                 <div className="text-xs font-bold text-foreground truncate">{user?.codeforcesHandle}</div>
                 <div className="text-[9px] font-bold text-primary uppercase tracking-widest">Active Admin</div>
-              </motion.div>
+              </m.div>
             )}
           </div>
           {isCompact ? (
@@ -199,7 +199,7 @@ export default function AdminLayout({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link href="/" className="mt-4 flex justify-center">
-                    <Button variant="ghost" title="Exit Console" className="h-10 w-10 p-0 text-muted-foreground hover:text-foreground hover:bg-destructive/10 hover:border-destructive/20 rounded-xl border border-transparent flex items-center justify-center">
+                    <Button variant="ghost" title="Exit Console" className="size-10 p-0 text-muted-foreground hover:text-foreground hover:bg-destructive/10 hover:border-destructive/20 rounded-xl border border-transparent flex items-center justify-center">
                       <LogOut size={16} />
                     </Button>
                   </Link>
@@ -242,11 +242,11 @@ export default function AdminLayout({
           </div>
 
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground bg-background/50 border border-border relative">
+            <Button variant="ghost" size="icon" className="size-10 rounded-xl text-muted-foreground hover:text-foreground bg-background/50 border border-border relative">
               <Bell size={18} />
-              <div className="absolute top-2.5 right-2.5 h-1.5 w-1.5 bg-primary rounded-full border-2 border-card" />
+              <div className="absolute top-2.5 right-2.5 size-1.5 bg-primary rounded-full border-2 border-card" />
             </Button>
-            <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-2xl">
+            <div className="size-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-2xl">
               <Shield size={20} />
             </div>
           </div>

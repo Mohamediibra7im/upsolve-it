@@ -1,24 +1,11 @@
-'use client';
+import ClientPage from "./page.client";
+import type { Metadata } from "next";
 
-import AdminLogsView from "../_Components/AdminLogsView";
-import { Card } from "@/components/ui/card";
-import { motion } from "framer-motion";
+export const metadata: Metadata = {
+  title: "Logs | Upsolve.it Admin",
+  description: "View platform activity logs.",
+};
 
-export default function AdminLogsPage() {
-  return (
-    <div className="space-y-6">
-
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <Card className="border-border bg-card rounded-2xl overflow-hidden shadow-2xl">
-          <div className="p-8 sm:p-12">
-            <AdminLogsView />
-          </div>
-        </Card>
-      </motion.div>
-    </div>
-  );
+export default function Page(props: any) {
+  return <ClientPage {...props} />;
 }

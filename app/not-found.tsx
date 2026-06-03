@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Terminal, Home, ArrowLeft, Cpu, ShieldAlert } from "lucide-react";
 
@@ -13,12 +13,12 @@ export default function NotFound() {
     <div className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden bg-background">
       {/* Background Decorative Elements */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-red-500/5 rounded-full blur-[120px]" />
+        <div className="absolute top-1/4 left-1/4 size-[500px] bg-primary/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 size-[500px] bg-red-500/5 rounded-full blur-[120px]" />
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)] opacity-20" />
       </div>
 
-      <motion.div
+      <m.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
@@ -31,25 +31,25 @@ export default function NotFound() {
           <div className="flex flex-col items-center text-center space-y-8">
             {/* Icon Group */}
             <div className="relative">
-              <motion.div
+              <m.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                 className="absolute -inset-4 border border-dashed border-primary/20 rounded-full"
               />
-              <div className="h-20 w-20 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500">
+              <div className="size-20 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500">
                 <ShieldAlert size={40} />
               </div>
             </div>
 
             <div className="space-y-4">
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-[0.2em]"
               >
                 Critical Status: 404
-              </motion.div>
+              </m.div>
               <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase leading-none">
                 Protocol<br />
                 <span className="text-primary italic">Interrupted</span>
@@ -103,7 +103,7 @@ export default function NotFound() {
             <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">Err: NULL_PTR</span>
           </div>
         </div>
-      </motion.div>
+      </m.div>
     </div>
   );
 }

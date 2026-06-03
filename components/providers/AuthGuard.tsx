@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import useUser from "@/hooks/useUser";
+import {useUser} from "@/hooks/auth";
 import Loader from "@/components/shared/Loader";
 import VerificationRequired from "@/components/shared/VerificationRequired";
 

@@ -1,0 +1,1 @@
+export { FriendStatsDialog } from "./FriendStatsDialog";

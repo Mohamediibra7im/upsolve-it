@@ -1,24 +1,11 @@
-'use client';
+import ClientPage from "./page.client";
+import type { Metadata } from "next";
 
-import AdminUserManagement from "../_Components/AdminUserManagement";
-import { Card } from "@/components/ui/card";
-import { motion } from "framer-motion";
+export const metadata: Metadata = {
+  title: "User Management | Upsolve.it Admin",
+  description: "Manage platform users and roles.",
+};
 
-export default function AdminUsersPage() {
-  return (
-    <div className="space-y-6">
-
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <Card className="border-border bg-card rounded-2xl overflow-hidden shadow-2xl">
-          <div className="p-8 sm:p-12">
-            <AdminUserManagement />
-          </div>
-        </Card>
-      </motion.div>
-    </div>
-  );
+export default function Page(props: any) {
+  return <ClientPage {...props} />;
 }

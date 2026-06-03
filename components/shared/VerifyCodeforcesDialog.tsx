@@ -1,7 +1,7 @@
 "use client";
 
 import {useState, useCallback, useEffect, useRef} from "react";
-import {motion, AnimatePresence} from "framer-motion";
+import {m, AnimatePresence} from "framer-motion";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import {
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {VisuallyHidden} from "@radix-ui/react-visually-hidden";
-import useUser from "@/hooks/useUser";
+import {useUser} from "@/hooks/auth";
 import {
   ArrowLeft,
   Check,
@@ -77,6 +77,38 @@ function TimerBar({ pct, isLow }: { pct: number; isLow: boolean }) {
     />
   );
 }
+
+const steps = [
+  {icon: ScrollText, label: "Open Settings"},
+  {icon: KeyRound, label: "Paste Code"},
+  {icon: ShieldCheck, label: "Verify"},
+];
+
+interface CountdownTimerProps {
+  expiresAt: number | null;
+  timerStartedAt: number | null;
+  timeLeft: number;
+}
+
+const CountdownTimer = ({ expiresAt, timerStartedAt, timeLeft }: CountdownTimerProps) => {
+  if (!expiresAt || !timerStartedAt) return null;
+  const totalDuration = Math.max(1, Math.ceil((expiresAt - timerStartedAt) / 1000));
+  const elapsed = Math.max(0, totalDuration - timeLeft);
+  const pct = Math.max(0, Math.min(100, ((totalDuration - elapsed) / totalDuration) * 100));
+  const isLow = timeLeft <= 60;
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className={`flex items-center gap-1.5 text-xs font-bold ${isLow ? "text-destructive" : "text-primary"}`}>
+        <Clock className="size-3" />
+        <span>{formatTime(timeLeft)}</span>
+      </div>
+      <div className="w-20 h-1.5 rounded-full bg-muted/50 overflow-hidden">
+        <TimerBar pct={pct} isLow={isLow} />
+      </div>
+    </div>
+  );
+};
 
 const VerifyCodeforcesDialog = ({
   isOpen,
@@ -232,36 +264,8 @@ const VerifyCodeforcesDialog = ({
     onClose();
   };
 
-  const steps = [
-    {icon: ScrollText, label: "Open Settings"},
-    {icon: KeyRound, label: "Paste Code"},
-    {icon: ShieldCheck, label: "Verify"},
-  ];
-
   const currentStepIndex =
     step === "step1" ? 0 : step === "step2" ? 1 : step === "step3" ? 2 : -1;
-
-  const CountdownTimer = () => {
-    const barRef = useRef<HTMLDivElement>(null);
-
-    if (!expiresAt || !timerStartedAt) return null;
-    const totalDuration = Math.max(1, Math.ceil((expiresAt - timerStartedAt) / 1000));
-    const elapsed = Math.max(0, totalDuration - timeLeft);
-    const pct = Math.max(0, Math.min(100, ((totalDuration - elapsed) / totalDuration) * 100));
-    const isLow = timeLeft <= 60;
-
-    return (
-      <div className="flex items-center gap-2">
-        <div className={`flex items-center gap-1.5 text-xs font-bold ${isLow ? "text-destructive" : "text-primary"}`}>
-          <Clock className="h-3 w-3" />
-          <span>{formatTime(timeLeft)}</span>
-        </div>
-        <div className="w-20 h-1.5 rounded-full bg-muted/50 overflow-hidden">
-          <TimerBar pct={pct} isLow={isLow} />
-        </div>
-      </div>
-    );
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -277,7 +281,7 @@ const VerifyCodeforcesDialog = ({
         {step !== "intro" && step !== "success" && (
           <div className="relative">
             <div className="h-1 bg-muted/50">
-              <motion.div
+              <m.div
                 className="h-full bg-gradient-to-r from-primary to-accent"
                 initial={{width: "0%"}}
                 animate={{
@@ -293,19 +297,19 @@ const VerifyCodeforcesDialog = ({
             </div>
             <div className="flex items-center justify-between px-6 py-3 pr-14 bg-gradient-to-r from-primary/10 via-accent/5 to-transparent">
               <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-primary" />
+                <Shield className="size-4 text-primary" />
                 <span className="text-xs font-black uppercase tracking-widest text-primary">
                   Verification Quest
                 </span>
               </div>
               {step === "step2" || step === "step3" ? (
-                <CountdownTimer />
+                <CountdownTimer expiresAt={expiresAt} timerStartedAt={timerStartedAt} timeLeft={timeLeft} />
               ) : (
                 <Badge
                   variant="outline"
                   className="border-primary/30 text-primary text-[10px] font-bold gap-1"
                 >
-                  <Trophy className="h-3 w-3" />+{XP_REWARD} XP
+                  <Trophy className="size-3" />+{XP_REWARD} XP
                 </Badge>
               )}
             </div>
@@ -316,7 +320,7 @@ const VerifyCodeforcesDialog = ({
                 const isActive = i === currentStepIndex;
                 const isDone = i < currentStepIndex;
                 return (
-                  <div key={i} className="flex items-center gap-1">
+                  <div key={s.label} className="flex items-center gap-1">
                     <div
                       className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold transition-all duration-300 ${
                         isDone
@@ -327,9 +331,9 @@ const VerifyCodeforcesDialog = ({
                       }`}
                     >
                       {isDone ? (
-                        <CheckCircle2 className="h-3 w-3" />
+                        <CheckCircle2 className="size-3" />
                       ) : (
-                        <StepIcon className="h-3 w-3" />
+                        <StepIcon className="size-3" />
                       )}
                       <span className="hidden sm:inline">{s.label}</span>
                     </div>
@@ -349,7 +353,7 @@ const VerifyCodeforcesDialog = ({
           <AnimatePresence mode="wait" custom={direction}>
             {/* INTRO STEP */}
             {step === "intro" && (
-              <motion.div
+              <m.div
                 key="intro"
                 custom={direction}
                 variants={slideVariants}
@@ -363,7 +367,7 @@ const VerifyCodeforcesDialog = ({
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/5 to-primary/10" />
                   <div className="absolute inset-0 bg-grid-pattern opacity-10" />
                   <div className="relative p-6 text-center">
-                    <motion.div
+                    <m.div
                       initial={{scale: 0, rotate: -180}}
                       animate={{scale: 1, rotate: 0}}
                       transition={{
@@ -372,10 +376,10 @@ const VerifyCodeforcesDialog = ({
                         damping: 15,
                         delay: 0.2,
                       }}
-                      className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/25 mb-4"
+                      className="mx-auto size-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/25 mb-4"
                     >
-                      <Shield className="h-8 w-8 text-primary-foreground" />
-                    </motion.div>
+                      <Shield className="size-8 text-primary-foreground" />
+                    </m.div>
                     <h2 className="text-xl font-black tracking-tight">
                       Verification Quest
                     </h2>
@@ -391,24 +395,24 @@ const VerifyCodeforcesDialog = ({
                     Quest Objectives
                   </p>
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 border border-border/30">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-                      <ScrollText className="h-3 w-3 text-primary" />
+                    <div className="flex-shrink-0 size-6 rounded-full bg-primary/20 flex items-center justify-center">
+                      <ScrollText className="size-3 text-primary" />
                     </div>
                     <span className="text-sm text-muted-foreground">
                       Open your Codeforces profile settings
                     </span>
                   </div>
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 border border-border/30">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-                      <KeyRound className="h-3 w-3 text-primary" />
+                    <div className="flex-shrink-0 size-6 rounded-full bg-primary/20 flex items-center justify-center">
+                      <KeyRound className="size-3 text-primary" />
                     </div>
                     <span className="text-sm text-muted-foreground">
                       Paste a verification code in your first name
                     </span>
                   </div>
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 border border-border/30">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-                      <ShieldCheck className="h-3 w-3 text-primary" />
+                    <div className="flex-shrink-0 size-6 rounded-full bg-primary/20 flex items-center justify-center">
+                      <ShieldCheck className="size-3 text-primary" />
                     </div>
                     <span className="text-sm text-muted-foreground">
                       Verify and unlock your badge
@@ -418,8 +422,8 @@ const VerifyCodeforcesDialog = ({
 
                 {/* Rewards preview */}
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 mb-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center">
-                    <Trophy className="h-5 w-5 text-primary" />
+                  <div className="flex-shrink-0 size-10 rounded-lg bg-primary/15 flex items-center justify-center">
+                    <Trophy className="size-5 text-primary" />
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-bold">Reward</p>
@@ -431,7 +435,7 @@ const VerifyCodeforcesDialog = ({
                     variant="outline"
                     className="border-primary/30 text-primary text-xs font-bold"
                   >
-                    <Sparkles className="h-3 w-3 mr-1" />+{XP_REWARD}
+                    <Sparkles className="size-3 mr-1" />+{XP_REWARD}
                   </Badge>
                 </div>
 
@@ -450,22 +454,22 @@ const VerifyCodeforcesDialog = ({
                 >
                   {isGenerating ? (
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                      <div className="size-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                       Initializing...
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <Zap className="h-4 w-4" />
+                      <Zap className="size-4" />
                       Start Quest
                     </div>
                   )}
                 </Button>
-              </motion.div>
+              </m.div>
             )}
 
             {/* STEP 1 */}
             {step === "step1" && (
-              <motion.div
+              <m.div
                 key="step1"
                 custom={direction}
                 variants={slideVariants}
@@ -481,7 +485,7 @@ const VerifyCodeforcesDialog = ({
                     onClick={() => navigateStep("intro")}
                     className="gap-1 text-muted-foreground"
                   >
-                    <ArrowLeft className="h-4 w-4" />
+                    <ArrowLeft className="size-4" />
                     Back
                   </Button>
                   <Badge
@@ -510,7 +514,7 @@ const VerifyCodeforcesDialog = ({
                     className="group flex items-center justify-center gap-2 w-full h-12 rounded-xl bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-bold text-sm transition-all shadow-lg shadow-primary/20"
                   >
                     Open Codeforces Settings
-                    <ExternalLink className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+                    <ExternalLink className="size-4 group-hover:translate-x-0.5 transition-transform" />
                   </a>
                 </div>
 
@@ -537,15 +541,15 @@ const VerifyCodeforcesDialog = ({
                 >
                   <div className="flex items-center gap-2">
                     Continue Quest
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="size-4" />
                   </div>
                 </Button>
-              </motion.div>
+              </m.div>
             )}
 
             {/* STEP 2 */}
             {step === "step2" && (
-              <motion.div
+              <m.div
                 key="step2"
                 custom={direction}
                 variants={slideVariants}
@@ -561,7 +565,7 @@ const VerifyCodeforcesDialog = ({
                     onClick={() => navigateStep("step1")}
                     className="gap-1 text-muted-foreground"
                   >
-                    <ArrowLeft className="h-4 w-4" />
+                    <ArrowLeft className="size-4" />
                     Back
                   </Button>
                   <Badge
@@ -586,7 +590,7 @@ const VerifyCodeforcesDialog = ({
                   <div className="mt-6 text-center space-y-4">
                     <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">
                       <div className="flex items-center justify-center gap-2 mb-2">
-                        <Clock className="h-5 w-5 text-destructive" />
+                        <Clock className="size-5 text-destructive" />
                         <p className="text-sm font-bold text-destructive">
                           Code Expired
                         </p>
@@ -611,12 +615,12 @@ const VerifyCodeforcesDialog = ({
                     >
                       {isGenerating ? (
                         <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                          <div className="size-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                           Generating...
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
-                          <RotateCcw className="h-4 w-4" />
+                          <RotateCcw className="size-4" />
                           Regenerate Code
                         </div>
                       )}
@@ -639,12 +643,12 @@ const VerifyCodeforcesDialog = ({
                         >
                           {copied ? (
                             <>
-                              <CheckCircle2 className="h-4 w-4 text-green-500" />
+                              <CheckCircle2 className="size-4 text-green-500" />
                               Copied!
                             </>
                           ) : (
                             <>
-                              <Copy className="h-4 w-4" />
+                              <Copy className="size-4" />
                               Copy
                             </>
                           )}
@@ -664,17 +668,17 @@ const VerifyCodeforcesDialog = ({
                     >
                       <div className="flex items-center gap-2">
                         I&apos;ve pasted the code
-                        <ArrowRight className="h-4 w-4" />
+                        <ArrowRight className="size-4" />
                       </div>
                     </Button>
                   </>
                 )}
-              </motion.div>
+              </m.div>
             )}
 
             {/* STEP 3 */}
             {step === "step3" && (
-              <motion.div
+              <m.div
                 key="step3"
                 custom={direction}
                 variants={slideVariants}
@@ -690,7 +694,7 @@ const VerifyCodeforcesDialog = ({
                     onClick={() => navigateStep("step2")}
                     className="gap-1 text-muted-foreground"
                   >
-                    <ArrowLeft className="h-4 w-4" />
+                    <ArrowLeft className="size-4" />
                     Back
                   </Button>
                   <Badge
@@ -719,7 +723,7 @@ const VerifyCodeforcesDialog = ({
                   <div className="mt-4 text-center space-y-4">
                     <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">
                       <div className="flex items-center justify-center gap-2 mb-2">
-                        <Clock className="h-5 w-5 text-destructive" />
+                        <Clock className="size-5 text-destructive" />
                         <p className="text-sm font-bold text-destructive">
                           Code Expired
                         </p>
@@ -744,12 +748,12 @@ const VerifyCodeforcesDialog = ({
                     >
                       {isGenerating ? (
                         <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                          <div className="size-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                           Generating...
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
-                          <RotateCcw className="h-4 w-4" />
+                          <RotateCcw className="size-4" />
                           Regenerate Code
                         </div>
                       )}
@@ -772,12 +776,12 @@ const VerifyCodeforcesDialog = ({
                     >
                       {isVerifying ? (
                         <div className="flex items-center gap-2">
-                          <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                          <div className="size-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                           Verifying...
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
-                          <ShieldCheck className="h-5 w-5" />
+                          <ShieldCheck className="size-5" />
                           Complete Quest
                           <Badge
                             variant="outline"
@@ -790,12 +794,12 @@ const VerifyCodeforcesDialog = ({
                     </Button>
                   </>
                 )}
-              </motion.div>
+              </m.div>
             )}
 
             {/* SUCCESS STEP */}
             {step === "success" && (
-              <motion.div
+              <m.div
                 key="success"
                 custom={direction}
                 variants={slideVariants}
@@ -808,18 +812,18 @@ const VerifyCodeforcesDialog = ({
                 {/* Achievement unlock animation */}
                 <div className="relative mb-6">
                   {/* Radial burst */}
-                  <motion.div
+                  <m.div
                     initial={{scale: 0, opacity: 0}}
                     animate={{scale: 1, opacity: 1}}
                     transition={{duration: 0.5, delay: 0.1}}
                     className="absolute inset-0 flex items-center justify-center"
                   >
-                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 animate-ping" />
-                  </motion.div>
+                    <div className="size-32 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 animate-ping" />
+                  </m.div>
 
                   {/* Stars */}
                   {[...Array(6)].map((_, i) => (
-                    <motion.div
+                    <m.div
                       key={i}
                       initial={{scale: 0, opacity: 0, x: 0, y: 0}}
                       animate={{
@@ -831,12 +835,12 @@ const VerifyCodeforcesDialog = ({
                       transition={{duration: 1, delay: 0.3 + i * 0.1}}
                       className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
                     >
-                      <Sparkles className="h-4 w-4 text-primary fill-primary/50" />
-                    </motion.div>
+                      <Sparkles className="size-4 text-primary fill-primary/50" />
+                    </m.div>
                   ))}
 
                   {/* Badge */}
-                  <motion.div
+                  <m.div
                     initial={{scale: 0, rotate: -180}}
                     animate={{scale: 1, rotate: 0}}
                     transition={{
@@ -845,14 +849,14 @@ const VerifyCodeforcesDialog = ({
                       damping: 12,
                       delay: 0.2,
                     }}
-                    className="mx-auto w-24 h-24 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-2xl shadow-primary/30"
+                    className="mx-auto size-24 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-2xl shadow-primary/30"
                   >
-                    <ShieldCheck className="h-12 w-12 text-primary-foreground" />
-                  </motion.div>
+                    <ShieldCheck className="size-12 text-primary-foreground" />
+                  </m.div>
                 </div>
 
                 {/* Achievement unlocked text */}
-                <motion.div
+                <m.div
                   initial={{opacity: 0, y: 10}}
                   animate={{opacity: 1, y: 0}}
                   transition={{delay: 0.5}}
@@ -863,24 +867,24 @@ const VerifyCodeforcesDialog = ({
                   <DialogTitle className="text-2xl font-black">
                     Profile Verified!
                   </DialogTitle>
-                </motion.div>
+                </m.div>
 
                 {/* XP reward */}
                 {xpAwarded !== null && (
-                  <motion.div
+                  <m.div
                     initial={{opacity: 0, scale: 0.8}}
                     animate={{opacity: 1, scale: 1}}
                     transition={{delay: 0.7, type: "spring"}}
                     className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/15 to-accent/15 border border-primary/25"
                   >
-                    <Sparkles className="h-4 w-4 text-primary" />
+                    <Sparkles className="size-4 text-primary" />
                     <span className="text-sm font-black text-primary">
                       +{xpAwarded} XP Earned!
                     </span>
-                  </motion.div>
+                  </m.div>
                 )}
 
-                <motion.p
+                <m.p
                   initial={{opacity: 0}}
                   animate={{opacity: 1}}
                   transition={{delay: 0.9}}
@@ -888,9 +892,9 @@ const VerifyCodeforcesDialog = ({
                 >
                   You&apos;ve unlocked your verified badge — a mark of
                   authenticity. Showcase your achievements!
-                </motion.p>
+                </m.p>
 
-                <motion.div
+                <m.div
                   initial={{opacity: 0, y: 10}}
                   animate={{opacity: 1, y: 0}}
                   transition={{delay: 1.1}}
@@ -900,12 +904,12 @@ const VerifyCodeforcesDialog = ({
                     className="mt-6 w-full h-12 text-base font-bold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
                   >
                     <div className="flex items-center gap-2">
-                      <UserCheck className="h-5 w-5" />
+                      <UserCheck className="size-5" />
                       Claim Reward
                     </div>
                   </Button>
-                </motion.div>
-              </motion.div>
+                </m.div>
+              </m.div>
             )}
           </AnimatePresence>
         </div>

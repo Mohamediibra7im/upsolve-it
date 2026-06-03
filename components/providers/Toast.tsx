@@ -113,7 +113,7 @@ const ToastCard = ({ item, onClose }: { item: ToastItem; onClose: () => void }) 
         <div className="flex items-start gap-2 sm:gap-3">
           {/* Icon */}
           <div className={`flex-shrink-0 mt-0.5 ${iconColor}`}>
-            <IconComponent className="h-4 w-4 sm:h-5 sm:w-5" />
+            <IconComponent className="size-4 sm:h-5 sm:w-5" />
           </div>
 
           {/* Content */}
@@ -143,7 +143,7 @@ const ToastCard = ({ item, onClose }: { item: ToastItem; onClose: () => void }) 
             `}
             onClick={onClose}
           >
-            <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <X className="size-3.5 sm:h-4 sm:w-4" />
           </button>
         </div>
       </div>

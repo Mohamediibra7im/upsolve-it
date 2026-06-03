@@ -32,7 +32,7 @@ const ConfirmDialog = ({
         <DialogHeader className="space-y-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-destructive/10 rounded-full">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
+              <AlertTriangle className="size-5 text-destructive" />
             </div>
             <DialogTitle className="text-lg font-semibold text-foreground">
               Delete Problem
@@ -85,12 +85,12 @@ const ConfirmDialog = ({
           >
             {isLoading ? (
               <div className="flex items-center gap-2">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                <div className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                 Deleting...
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="size-4" />
                 Delete Problem
               </div>
             )}

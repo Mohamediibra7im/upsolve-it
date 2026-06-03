@@ -7,10 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const Profile = ({ user }: { user: User }) => {
   return (
     <Card className="card-premium group relative overflow-hidden border-2 border-border/50 hover:border-primary/30 transition-all duration-500 h-full flex flex-col">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-primary/20 transition-all duration-500"></div>
+      <div className="absolute top-0 right-0 size-32 bg-primary/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-primary/20 transition-all duration-500"></div>
       <CardHeader className="relative z-10 pb-4">
         <div className="flex items-center gap-3">
-          <Avatar className="h-12 w-12 border-2 border-border">
+          <Avatar className="size-12 border-2 border-border">
             <AvatarImage src={user.avatar} alt={user.codeforcesHandle} />
             <AvatarFallback>
               {user.codeforcesHandle.charAt(0).toUpperCase()}

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/sheet";
 import { KeyRound } from "lucide-react";
 import { validatePassword } from "@/utils/passwordValidation";
-import useUser from "@/hooks/useUser";
+import {useUser} from "@/hooks/auth";
 
 const ChangePasswordDialog = () => {
   const [open, setOpen] = useState(false);
@@ -99,7 +99,7 @@ const ChangePasswordDialog = () => {
           className="w-full h-10 sm:h-12 text-xs sm:text-sm font-semibold rounded-lg btn-enhanced hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-indigo-500/10 hover:border-blue-500/60 hover:shadow-lg hover:shadow-blue-500/20 group relative overflow-hidden"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/8 to-blue-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <KeyRound className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 relative z-10 transition-transform duration-300 group-hover:rotate-12" />
+          <KeyRound className="mr-1.5 sm:mr-2 size-3.5 sm:h-4 sm:w-4 relative z-10 transition-transform duration-300 group-hover:rotate-12" />
           <span className="relative z-10">Change Password</span>
         </Button>
       </SheetTrigger>

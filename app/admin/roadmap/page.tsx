@@ -1,11 +1,11 @@
-"use client";
+import ClientPage from "./page.client";
+import type { Metadata } from "next";
 
-import AdminRoadmapLevelsComponent from "../_Components/AdminRoadmapLevels";
+export const metadata: Metadata = {
+  title: "Roadmap Management | Upsolve.it Admin",
+  description: "Manage roadmap levels and curriculum structure.",
+};
 
-export default function AdminRoadmapPage() {
-  return (
-    <div>
-      <AdminRoadmapLevelsComponent />
-    </div>
-  );
+export default function Page(props: any) {
+  return <ClientPage {...props} />;
 }

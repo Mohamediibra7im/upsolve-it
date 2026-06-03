@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import useUpsolvedProblems from "@/hooks/useUpsolvedProblems";
+import {useUpsolvedProblems} from "@/hooks/data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/providers/Toast";
 import { Lightbulb } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 const SNOOZE_STORAGE_KEY = "training-tracker-upsolve-snoozed";
 
@@ -89,7 +89,7 @@ const UpsolveReminder = () => {
   };
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: -30 }}
       animate={{ opacity: 1, y: 0 }}
       className="relative w-full group mb-6"
@@ -99,8 +99,8 @@ const UpsolveReminder = () => {
       
       <Card className="relative overflow-hidden border-border/40 bg-card/40 backdrop-blur-2xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] rounded-[2.5rem]">
         {/* Decorative Light Leaks */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[100px] -mr-32 -mt-32" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent/5 rounded-full blur-[100px] -ml-32 -mb-32" />
+        <div className="absolute top-0 right-0 size-64 bg-primary/10 rounded-full blur-[100px] -mr-32 -mt-32" />
+        <div className="absolute bottom-0 left-0 size-64 bg-accent/5 rounded-full blur-[100px] -ml-32 -mb-32" />
         
         <CardContent className="p-8 sm:p-10">
           <div className="flex flex-col lg:flex-row items-center gap-10">
@@ -108,8 +108,8 @@ const UpsolveReminder = () => {
             <div className="flex-1 flex flex-col sm:flex-row items-center sm:items-start gap-8 text-center sm:text-left">
               <div className="relative group/icon">
                 <div className="absolute inset-0 bg-primary/30 rounded-2xl blur-xl group-hover/icon:blur-2xl transition-all animate-pulse" />
-                <div className="relative h-16 w-16 rounded-[1.25rem] bg-background/60 flex items-center justify-center border border-primary/20 shadow-inner group-hover/icon:scale-110 transition-transform duration-500">
-                  <Lightbulb className="h-8 w-8 text-primary" />
+                <div className="relative size-16 rounded-[1.25rem] bg-background/60 flex items-center justify-center border border-primary/20 shadow-inner group-hover/icon:scale-110 transition-transform duration-500">
+                  <Lightbulb className="size-8 text-primary" />
                 </div>
               </div>
               
@@ -155,7 +155,7 @@ const UpsolveReminder = () => {
           </div>
         </CardContent>
       </Card>
-    </motion.div>
+    </m.div>
   );
 };
 

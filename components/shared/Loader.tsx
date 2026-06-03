@@ -10,9 +10,9 @@ interface LoaderProps {
 
 const Loader = ({ fullScreen = true, message = "Loading...", size = "md" }: LoaderProps) => {
   const sizeClasses = {
-    sm: "w-8 h-8",
-    md: "w-16 h-16",
-    lg: "w-24 h-24",
+    sm: "size-8",
+    md: "size-16",
+    lg: "size-24",
   };
 
   const textSizeClasses = {
@@ -30,8 +30,8 @@ const Loader = ({ fullScreen = true, message = "Loading...", size = "md" }: Load
       <div className="relative">
         {/* Animated background glow */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="absolute w-40 h-40 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute w-32 h-32 bg-gradient-to-r from-accent/20 via-primary/20 to-accent/20 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute size-40 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute size-32 bg-gradient-to-r from-accent/20 via-primary/20 to-accent/20 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
         </div>
 
         {/* Main loader content */}
@@ -71,9 +71,9 @@ const Loader = ({ fullScreen = true, message = "Loading...", size = "md" }: Load
             </p>
             {/* Animated dots */}
             <div className="flex items-center justify-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms', animationDuration: '1.4s' }}></div>
-              <div className="w-2 h-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: '200ms', animationDuration: '1.4s' }}></div>
-              <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '400ms', animationDuration: '1.4s' }}></div>
+              <div className="size-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms', animationDuration: '1.4s' }}></div>
+              <div className="size-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: '200ms', animationDuration: '1.4s' }}></div>
+              <div className="size-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '400ms', animationDuration: '1.4s' }}></div>
             </div>
           </div>
         </div>

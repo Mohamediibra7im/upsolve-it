@@ -3,7 +3,7 @@
 import {useState, useEffect} from "react";
 import Link from "next/link";
 import {usePathname} from "next/navigation";
-import {motion, AnimatePresence} from "framer-motion";
+import {m, AnimatePresence} from "framer-motion";
 import {Button} from "@/components/ui/button";
 import {
   Menu,
@@ -27,8 +27,8 @@ import {
 } from "lucide-react";
 import ClientOnly from "@/components/shared/ClientOnly";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import useUser from "@/hooks/useUser";
-import {useFriendRequests} from "@/hooks/useFriendRequests";
+import {useUser} from "@/hooks/auth";
+import {useFriendRequests} from "@/hooks/social";
 import {
   Sheet,
   SheetContent,
@@ -45,6 +45,7 @@ const userLinks = [
   {href: "/dashboard", label: "Dashboard", icon: LayoutDashboard},
   {href: "/training", label: "Training", icon: Target},
   {href: "/roadmap", label: "Roadmap", icon: Compass},
+  {href: "/leaderboard", label: "Leaderboard", icon: Trophy},
   {href: "/training/reviews", label: "Reviews", icon: ClipboardList},
   {href: "/statistics", label: "Statistics", icon: LineChart},
   {href: "/friends", label: "Friends", icon: Users},
@@ -109,12 +110,12 @@ const NavBar = () => {
         {/* Logo */}
         <div className="flex-none flex items-center h-full">
           <Link href="/" className="overflow-visible select-none">
-            <motion.div
+            <m.div
               initial="initial"
               whileHover="hover"
               className="flex items-center gap-0.5 leading-none cursor-pointer"
             >
-              <motion.span
+              <m.span
                 variants={{
                   initial: {x: 0},
                   hover: {x: -3, color: "hsl(var(--primary))"},
@@ -123,7 +124,7 @@ const NavBar = () => {
                 className="text-foreground/25 dark:text-foreground/20 font-light text-xl tracking-tight"
               >
                 {"<"}
-              </motion.span>
+              </m.span>
               <div className="flex items-baseline">
                 <span className="font-black text-base md:text-lg tracking-tight uppercase text-foreground">
                   UPSOLVE
@@ -131,7 +132,7 @@ const NavBar = () => {
                 <span className="font-black text-base md:text-lg tracking-tight bg-gradient-to-br from-primary to-emerald-500 bg-clip-text text-transparent">
                   .it
                 </span>
-                <motion.span
+                <m.span
                   animate={{opacity: [1, 1, 0, 0]}}
                   transition={{
                     duration: 0.9,
@@ -142,7 +143,7 @@ const NavBar = () => {
                   className="inline-block w-[3px] h-4 bg-primary/50 ml-0.5 translate-y-[1px] rounded-full"
                 />
               </div>
-              <motion.span
+              <m.span
                 variants={{
                   initial: {x: 0},
                   hover: {x: 3, color: "hsl(var(--primary))"},
@@ -151,8 +152,8 @@ const NavBar = () => {
                 className="text-foreground/25 dark:text-foreground/20 font-light text-xl tracking-tight"
               >
                 {"/>"}
-              </motion.span>
-            </motion.div>
+              </m.span>
+            </m.div>
           </Link>
         </div>
 
@@ -188,7 +189,7 @@ const NavBar = () => {
                     </span>
                   )}
                   {isActive && (
-                    <motion.div
+                    <m.div
                       layoutId="nav-active-pill"
                       className="absolute inset-0 bg-primary/8 dark:bg-primary/12 rounded-lg border border-primary/15 dark:border-primary/20"
                       transition={{
@@ -210,11 +211,11 @@ const NavBar = () => {
           <ClientOnly>
             <button
               onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-              className="relative h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 dark:hover:bg-white/5 transition-all duration-200"
+              className="relative size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 dark:hover:bg-white/5 transition-all duration-200"
               aria-label="Toggle theme"
             >
-              <Sun className="h-[15px] w-[15px] rotate-0 scale-100 transition-all duration-300 dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-[15px] w-[15px] rotate-90 scale-0 transition-all duration-300 dark:rotate-0 dark:scale-100" />
+              <Sun className="size-[15px] rotate-0 scale-100 transition-all duration-300 dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute size-[15px] rotate-90 scale-0 transition-all duration-300 dark:rotate-0 dark:scale-100" />
             </button>
           </ClientOnly>
 
@@ -241,7 +242,7 @@ const NavBar = () => {
                           : "bg-gradient-to-br from-border to-border group-hover:from-primary/50 group-hover:to-emerald-400/50",
                       )}
                     >
-                      <Avatar className="w-7 h-7 border-2 border-background">
+                      <Avatar className="size-7 border-2 border-background">
                         <AvatarImage
                           src={user.avatar}
                           alt={user.codeforcesHandle}
@@ -251,7 +252,7 @@ const NavBar = () => {
                         </AvatarFallback>
                       </Avatar>
                     </div>
-                    <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-background" />
+                    <div className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-emerald-500 border-2 border-background" />
                   </div>
                   <div className="hidden md:flex flex-col items-start leading-none">
                     <span className="text-[11px] font-bold tracking-tight text-foreground">
@@ -266,7 +267,7 @@ const NavBar = () => {
                 {/* Dropdown Menu */}
                 <AnimatePresence>
                   {avatarMenuOpen && (
-                    <motion.div
+                    <m.div
                       initial={{opacity: 0, y: 6, scale: 0.97}}
                       animate={{opacity: 1, y: 0, scale: 1}}
                       exit={{opacity: 0, y: 6, scale: 0.97}}
@@ -281,7 +282,7 @@ const NavBar = () => {
 
                           <div className="relative flex items-start gap-3">
                             <div className="rounded-full p-[2px] bg-gradient-to-br from-primary to-emerald-400 shadow-lg shadow-primary/20">
-                              <Avatar className="w-11 h-11 border-2 border-card">
+                              <Avatar className="size-11 border-2 border-card">
                                 <AvatarImage
                                   src={user.avatar}
                                   alt={user.codeforcesHandle}
@@ -322,7 +323,7 @@ const NavBar = () => {
                             onClick={() => setAvatarMenuOpen(false)}
                             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-foreground/80 hover:text-foreground hover:bg-muted/50 dark:hover:bg-white/5 transition-all duration-200 group"
                           >
-                            <div className="h-8 w-8 rounded-lg bg-primary/8 dark:bg-primary/12 flex items-center justify-center text-primary group-hover:bg-primary/15 transition-colors">
+                            <div className="size-8 rounded-lg bg-primary/8 dark:bg-primary/12 flex items-center justify-center text-primary group-hover:bg-primary/15 transition-colors">
                               <User size={14} />
                             </div>
                             <div className="flex-1">
@@ -349,7 +350,7 @@ const NavBar = () => {
                             }}
                             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-foreground/80 hover:text-foreground hover:bg-muted/50 dark:hover:bg-white/5 transition-all duration-200 group"
                           >
-                            <div className="h-8 w-8 rounded-lg bg-blue-500/8 dark:bg-blue-400/12 flex items-center justify-center text-blue-500 dark:text-blue-400 group-hover:bg-blue-500/15 transition-colors">
+                            <div className="size-8 rounded-lg bg-blue-500/8 dark:bg-blue-400/12 flex items-center justify-center text-blue-500 dark:text-blue-400 group-hover:bg-blue-500/15 transition-colors">
                               <ExternalLink size={14} />
                             </div>
                             <div className="flex-1 text-left">
@@ -372,7 +373,7 @@ const NavBar = () => {
                               onClick={() => setAvatarMenuOpen(false)}
                               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-foreground/80 hover:text-foreground hover:bg-muted/50 dark:hover:bg-white/5 transition-all duration-200 group"
                             >
-                              <div className="h-8 w-8 rounded-lg bg-amber-500/8 dark:bg-amber-400/12 flex items-center justify-center text-amber-500 dark:text-amber-400 group-hover:bg-amber-500/15 transition-colors">
+                              <div className="size-8 rounded-lg bg-amber-500/8 dark:bg-amber-400/12 flex items-center justify-center text-amber-500 dark:text-amber-400 group-hover:bg-amber-500/15 transition-colors">
                                 <ShieldAlert size={14} />
                               </div>
                               <div className="flex-1">
@@ -403,7 +404,7 @@ const NavBar = () => {
                             }}
                             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground/70 hover:text-red-500 hover:bg-red-500/5 dark:hover:bg-red-500/8 transition-all duration-200 group"
                           >
-                            <div className="h-8 w-8 rounded-lg bg-muted/40 dark:bg-muted/20 flex items-center justify-center group-hover:bg-red-500/10 transition-colors">
+                            <div className="size-8 rounded-lg bg-muted/40 dark:bg-muted/20 flex items-center justify-center group-hover:bg-red-500/10 transition-colors">
                               <LogOut
                                 size={14}
                                 className="group-hover:text-red-500 transition-colors"
@@ -415,7 +416,7 @@ const NavBar = () => {
                           </button>
                         </div>
                       </div>
-                    </motion.div>
+                    </m.div>
                   )}
                 </AnimatePresence>
               </div>
@@ -445,9 +446,9 @@ const NavBar = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="relative h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 dark:hover:bg-white/5"
+                  className="relative size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 dark:hover:bg-white/5"
                 >
-                  <Menu className="h-4 w-4" />
+                  <Menu className="size-4" />
                   <span className="sr-only">Toggle Menu</span>
                 </Button>
               </SheetTrigger>
@@ -459,7 +460,7 @@ const NavBar = () => {
                 <SheetHeader className="p-5 pb-4 border-b border-border/40 dark:border-border/20">
                   <SheetTitle>
                     <div className="flex items-center gap-3 text-left">
-                      <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary/15 to-emerald-500/10 border border-primary/15 flex items-center justify-center text-primary">
+                      <div className="size-9 rounded-xl bg-gradient-to-br from-primary/15 to-emerald-500/10 border border-primary/15 flex items-center justify-center text-primary">
                         <Terminal size={18} />
                       </div>
                       <div className="flex flex-col">
@@ -493,7 +494,7 @@ const NavBar = () => {
                           <div className="flex items-center gap-3">
                             <div
                               className={cn(
-                                "h-8 w-8 rounded-lg flex items-center justify-center transition-colors",
+                                "size-8 rounded-lg flex items-center justify-center transition-colors",
                                 isActive
                                   ? "bg-primary/12 dark:bg-primary/18 text-primary"
                                   : "bg-muted/40 dark:bg-muted/20 text-muted-foreground/60 group-hover:text-foreground/60",
@@ -532,7 +533,7 @@ const NavBar = () => {
                       <div className="p-3 rounded-xl bg-muted/30 dark:bg-muted/10 border border-border/40 dark:border-border/20 flex items-center justify-between">
                         <div className="flex items-center gap-2.5 min-w-0">
                           <div className="rounded-full p-[2px] bg-gradient-to-br from-primary/50 to-emerald-400/50">
-                            <Avatar className="h-8 w-8 border-2 border-background">
+                            <Avatar className="size-8 border-2 border-background">
                               <AvatarImage src={user.avatar} />
                               <AvatarFallback className="text-[10px] font-bold uppercase">
                                 {user.codeforcesHandle?.charAt(0)}
@@ -553,7 +554,7 @@ const NavBar = () => {
                           variant="ghost"
                           size="icon"
                           onClick={logout}
-                          className="h-8 w-8 rounded-lg hover:bg-red-500/10 hover:text-red-500 flex-shrink-0 transition-colors"
+                          className="size-8 rounded-lg hover:bg-red-500/10 hover:text-red-500 flex-shrink-0 transition-colors"
                         >
                           <LogOut size={15} />
                         </Button>

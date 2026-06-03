@@ -30,6 +30,7 @@ export type RoadmapTopicSummary = RoadmapTopicBase & {
     videoPct: number;
     sheetUnlocked: boolean;
     lastPositionSec: number;
+    sheetPct: number;
     isLocked: boolean;
     isComplete: boolean;
   };

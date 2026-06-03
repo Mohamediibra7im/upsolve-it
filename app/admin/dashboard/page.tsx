@@ -1,24 +1,11 @@
-'use client';
+import ClientPage from "./page.client";
+import type { Metadata } from "next";
 
-import { useAdminStats } from "@/hooks/admin/useAdminStats";
-import { AdminDashboardView } from "../_Components/AdminDashboardView";
-import { motion } from "framer-motion";
+export const metadata: Metadata = {
+  title: "Admin Dashboard | Upsolve.it",
+  description: "Admin dashboard overview and statistics.",
+};
 
-export default function AdminDashboardPage() {
-  const { stats, isLoading } = useAdminStats();
-
-  return (
-    <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <AdminDashboardView 
-          stats={stats}
-          statsLoading={isLoading}
-        />
-      </motion.div>
-    </div>
-  );
+export default function Page(props: any) {
+  return <ClientPage {...props} />;
 }

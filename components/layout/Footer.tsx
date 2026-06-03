@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import {
   Heart,
   Github,
@@ -10,7 +10,7 @@ import {
   Globe,
   ShieldAlert
 } from "lucide-react";
-import useUser from "@/hooks/useUser";
+import {useUser} from "@/hooks/auth";
 import {
   Tooltip,
   TooltipContent,
@@ -59,7 +59,7 @@ const Footer = () => {
     <footer className="relative border-t border-border/40 bg-background/80 backdrop-blur-2xl overflow-hidden pt-16 pb-8">
       {/* Background Decorative Elements */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-[120px]" />
+        <div className="absolute -bottom-24 -left-24 size-96 bg-primary/5 rounded-full blur-[120px]" />
         <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
       </div>
 
@@ -86,16 +86,16 @@ const Footer = () => {
             </Link>
 
             <div className="flex items-center gap-4">
-              <a href="https://github.com/HNU-ICPC-Community" target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-xl bg-card/40 border border-border/40 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 transition-all">
+              <a href="https://github.com/HNU-ICPC-Community" target="_blank" rel="noopener noreferrer" className="size-10 rounded-xl bg-card/40 border border-border/40 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 transition-all">
                 <Github size={18} />
               </a>
-              <a href="https://www.facebook.com/fcsit.hnu.icpc" target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-xl bg-card/40 border border-border/40 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 transition-all">
+              <a href="https://www.facebook.com/fcsit.hnu.icpc" target="_blank" rel="noopener noreferrer" className="size-10 rounded-xl bg-card/40 border border-border/40 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 transition-all">
                 <Facebook size={18} />
               </a>
-              <a href="https://www.linkedin.com/company/hnu-fcsit-icpc-community" target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-xl bg-card/40 border border-border/40 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 transition-all">
+              <a href="https://www.linkedin.com/company/hnu-fcsit-icpc-community" target="_blank" rel="noopener noreferrer" className="size-10 rounded-xl bg-card/40 border border-border/40 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 transition-all">
                 <Linkedin size={18} />
               </a>
-              <a href="https://docs.hnuicpc.tech" target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-xl bg-card/40 border border-border/40 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 transition-all">
+              <a href="https://docs.hnuicpc.tech" target="_blank" rel="noopener noreferrer" className="size-10 rounded-xl bg-card/40 border border-border/40 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 transition-all">
                 <Globe size={18} />
               </a>
             </div>
@@ -133,7 +133,7 @@ const Footer = () => {
                         <DialogContent className="bg-card/90 backdrop-blur-3xl border-border/40 max-w-md rounded-[2.5rem] p-10">
                           <DialogTitle className="sr-only">Secure Sector Access Required</DialogTitle>
                           <div className="space-y-8 text-center">
-                            <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-[0_0_30px_rgba(var(--primary),0.2)]">
+                            <div className="mx-auto size-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-[0_0_30px_rgba(var(--primary),0.2)]">
                               <ShieldAlert size={32} />
                             </div>
                             
@@ -202,7 +202,7 @@ const Footer = () => {
               © {currentYear} Upsolve.it. All rights reserved.
             </p>
             <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/5 w-fit">
-              <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+              <div className="size-1.5 rounded-full bg-primary animate-pulse" />
               <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">System Stable: 04.30.2026</span>
             </div>
           </div>
@@ -210,13 +210,13 @@ const Footer = () => {
           <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-2 gap-y-2 text-[10px] sm:text-xs font-medium text-muted-foreground order-1 md:order-2 text-center md:text-right max-w-[300px] sm:max-w-none">
             <div className="flex items-center gap-1.5">
               <span>Made with</span>
-              <motion.div
+              <m.div
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
                 className="inline-block"
               >
-                <Heart className="h-3.5 w-3.5 text-red-500 fill-red-500" />
-              </motion.div>
+                <Heart className="size-3.5 text-red-500 fill-red-500" />
+              </m.div>
               <span>for CP Communities</span>
             </div>
             <span className="hidden sm:inline opacity-20">|</span>

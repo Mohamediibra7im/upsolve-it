@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
 import React from "react";
 
@@ -15,7 +15,7 @@ export default function PageTransition({ children }: Readonly<{ children: React.
 
   return (
     <AnimatePresence mode="wait">
-      <motion.div
+      <m.div
         key={pathname}
         initial={false}
         animate="enter"
@@ -25,7 +25,7 @@ export default function PageTransition({ children }: Readonly<{ children: React.
         className="w-full flex-grow flex flex-col min-h-0 relative"
       >
         {children}
-      </motion.div>
+      </m.div>
     </AnimatePresence>
   );
 }

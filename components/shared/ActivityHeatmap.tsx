@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { useHeatmapData, RoadmapActivityData } from "@/hooks/useHeatmapData";
+import { useHeatmapData, RoadmapActivityData } from "@/hooks/data";
 import { Training } from "@/types/Training";
 import { TrainingProblem } from "@/types/TrainingProblem";
 import { useMemo, useState } from "react";
@@ -215,7 +215,7 @@ const ActivityHeatmap = ({
                         </Tooltip>
                       </TooltipProvider>
                     ) : (
-                      <div className="w-full h-full opacity-0" />
+                      <div className="size-full opacity-0" />
                     )}
                   </div>
                 ))}
@@ -228,7 +228,7 @@ const ActivityHeatmap = ({
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-6 border-t border-white/5">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-primary animate-pulse" />
+              <Activity className="size-4 text-primary animate-pulse" />
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
                 Annual Output Analysis
               </span>
@@ -240,7 +240,7 @@ const ActivityHeatmap = ({
                   <div 
                     key={level}
                     className={cn(
-                      "w-2.5 h-2.5 rounded-[1px] border",
+                      "size-2.5 rounded-[1px] border",
                       getIntensityClass(level)
                     )}
                   />

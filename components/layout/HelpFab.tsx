@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +14,7 @@ export default function HelpFab() {
   if (pathname === "/help" || pathname.startsWith("/admin")) return null;
 
   return (
-    <motion.div
+    <m.div
       className="pointer-events-none fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-[max(1.25rem,env(safe-area-inset-right))] z-40 md:bottom-8 md:right-8"
       initial={{ opacity: 0, scale: 0.88, y: 16 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -24,7 +24,7 @@ export default function HelpFab() {
         href="/help"
         aria-label="Open help center"
         className={cn(
-          "pointer-events-auto group relative flex h-14 w-14 items-center justify-center rounded-2xl md:h-[3.75rem] md:w-[3.75rem]",
+          "pointer-events-auto group relative flex size-14 items-center justify-center rounded-2xl md:h-[3.75rem] md:w-[3.75rem]",
           "bg-background/85 backdrop-blur-xl",
           "border border-primary/35 text-primary",
           "shadow-[0_0_0_1px_rgba(16,185,129,0.12),0_10px_40px_-10px_rgba(16,185,129,0.35),0_8px_24px_-8px_rgba(0,0,0,0.55)]",
@@ -48,10 +48,10 @@ export default function HelpFab() {
           aria-hidden
         />
         <HelpCircle
-          className="relative z-10 h-7 w-7 shrink-0 drop-shadow-[0_0_14px_rgba(52,211,153,0.45)] transition-transform duration-300 group-hover:scale-110 md:h-8 md:w-8"
+          className="relative z-10 size-7 shrink-0 drop-shadow-[0_0_14px_rgba(52,211,153,0.45)] transition-transform duration-300 group-hover:scale-110 md:h-8 md:w-8"
           strokeWidth={1.65}
         />
       </Link>
-    </motion.div>
+    </m.div>
   );
 }

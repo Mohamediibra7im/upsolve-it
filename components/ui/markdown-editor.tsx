@@ -85,14 +85,14 @@ Use standard emojis: 🎉 ✨ 📱 💻 🚀
                 <div className="flex items-center gap-2">
                     <Dialog>
                         <DialogTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                                <HelpCircle className="h-4 w-4" />
+                            <Button variant="ghost" size="sm" className="size-7 p-0">
+                                <HelpCircle className="size-4" />
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                             <DialogHeader>
                                 <DialogTitle className="flex items-center gap-2">
-                                    <FileText className="h-5 w-5" />
+                                    <FileText className="size-5" />
                                     Markdown Guide
                                 </DialogTitle>
                                 <DialogDescription>
@@ -117,11 +117,11 @@ Use standard emojis: 🎉 ✨ 📱 💻 🚀
                     <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "edit" | "preview")}>
                         <TabsList className="grid w-full grid-cols-2">
                             <TabsTrigger value="edit" className="flex items-center gap-2">
-                                <Edit3 className="h-4 w-4" />
+                                <Edit3 className="size-4" />
                                 Edit
                             </TabsTrigger>
                             <TabsTrigger value="preview" className="flex items-center gap-2">
-                                <Eye className="h-4 w-4" />
+                                <Eye className="size-4" />
                                 Preview
                             </TabsTrigger>
                         </TabsList>
