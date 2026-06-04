@@ -228,7 +228,7 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 className="text-foreground font-black hover:text-primary transition-colors underline decoration-primary/30 underline-offset-4"
               >
-                Midoriya
+                Mohamed Ibrahim
               </a>
               <span className="opacity-40">from</span>
               <span className="font-bold text-foreground/80">HNU - ICPC Community</span>
