@@ -1,7 +1,7 @@
 "use client";
 
 import {m} from "framer-motion";
-import {Terminal, ArrowUpRight, BookOpen, Users, Globe, Code} from "lucide-react";
+import {ArrowUpRight, BookOpen, Globe} from "lucide-react";
 import Counter from "./Counter";
 
 const CommunitySection = () => (
@@ -128,10 +128,10 @@ const CommunitySection = () => (
           {/* Micro UI: Community Avatar Group */}
           <div className="flex items-center justify-between p-3.5 bg-background/50 border border-border/40 rounded-2xl text-[10px]">
             <div className="flex -space-x-2.5 overflow-hidden">
-              <div className="inline-block size-6 rounded-full ring-2 ring-background bg-primary/20 text-[8px] font-black flex items-center justify-center border border-primary/20">JD</div>
-              <div className="inline-block size-6 rounded-full ring-2 ring-background bg-primary/10 text-[8px] font-black flex items-center justify-center border border-primary/20">AM</div>
-              <div className="inline-block size-6 rounded-full ring-2 ring-background bg-emerald-500/10 text-[8px] font-black flex items-center justify-center border border-emerald-500/20 text-emerald-500">KS</div>
-              <div className="inline-block size-6 rounded-full ring-2 ring-background bg-muted border border-border text-[8px] font-bold flex items-center justify-center text-muted-foreground/70">+500</div>
+              <div className="size-6 rounded-full ring-2 ring-background bg-primary/20 text-[8px] font-black flex items-center justify-center border border-primary/20">JD</div>
+              <div className="size-6 rounded-full ring-2 ring-background bg-primary/10 text-[8px] font-black flex items-center justify-center border border-primary/20">AM</div>
+              <div className="size-6 rounded-full ring-2 ring-background bg-emerald-500/10 text-[8px] font-black flex items-center justify-center border border-emerald-500/20 text-emerald-500">KS</div>
+              <div className="size-6 rounded-full ring-2 ring-background bg-muted border border-border text-[8px] font-bold flex items-center justify-center text-muted-foreground/70">+500</div>
             </div>
             <span className="font-black text-primary uppercase text-[8px] tracking-wider bg-primary/10 px-2 py-1 rounded-md border border-primary/25">Join Hub</span>
           </div>
@@ -143,7 +143,7 @@ const CommunitySection = () => (
           whileInView={{opacity: 1, y: 0}}
           viewport={{once: true}}
           transition={{duration: 0.5, delay: 0.2}}
-          className="p-6 md:p-8 rounded-3xl bg-card/40 backdrop-blur-md border border-border/40 hover:border-primary/30 hover:bg-primary/[0.01] transition-all duration-500 ease-out group relative overflow-hidden md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-6 items-center text-center divide-y divide-border/20 md:divide-y-0 md:divide-x divide-border/20"
+          className="p-6 md:p-8 rounded-3xl bg-card/40 backdrop-blur-md border border-border/40 hover:border-primary/30 hover:bg-primary/[0.01] transition-all duration-500 ease-out group relative overflow-hidden md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-6 items-center text-center divide-y md:divide-y-0 md:divide-x divide-border/20"
         >
           <div className="absolute inset-0 bg-grid-pattern opacity-[0.01] pointer-events-none" />
           
@@ -179,7 +179,7 @@ const CommunitySection = () => (
               100%
             </span>
             <span className="block text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-              Free &amp; Open Source
+              Free &amp; Community-Driven
             </span>
           </div>
         </m.div>

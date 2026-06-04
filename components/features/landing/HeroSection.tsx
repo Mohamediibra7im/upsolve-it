@@ -45,7 +45,7 @@ const HeroSection = ({user}: {user: any}) => {
               <span className="animate-ping absolute inline-flex size-full rounded-full bg-primary opacity-60" />
               <span className="relative inline-flex rounded-full size-1.5 bg-primary" />
             </span>{" "}
-            <span>Free · Open Source · By ICPC Community</span>
+            <span>Free · By HNU ICPC Community · Codeforces Companion</span>
           </m.div>
 
           {/* heading */}
