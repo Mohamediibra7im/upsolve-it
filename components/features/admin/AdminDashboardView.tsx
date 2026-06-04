@@ -207,9 +207,9 @@ export function AdminDashboardView({
       tone: "amber" as const,
     },
     {
-      label: "Upsolves",
-      value: formatNumber(stats.totalUpsolvedProblems),
-      detail: `${stats.upsolveSolveRate}% completed`,
+      label: "Roadmap Levels",
+      value: formatNumber(stats.totalLevels),
+      detail: `${formatNumber(stats.totalLevelsCompleted)} levels completed`,
       icon: CheckCircle2,
       tone: "cyan" as const,
     },
@@ -559,6 +559,14 @@ export function AdminDashboardView({
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
             {
+              label: "Verified Users",
+              value: formatNumber(stats.verifiedUsers),
+            },
+            {
+              label: "Unverified Users",
+              value: formatNumber(stats.unverifiedUsers),
+            },
+            {
               label: "Completed Sessions",
               value: formatNumber(stats.completedTrainings),
             },
@@ -573,6 +581,14 @@ export function AdminDashboardView({
             {
               label: "Completed Upsolves",
               value: formatNumber(stats.completedUpsolves),
+            },
+            {
+              label: "Total XP Earned",
+              value: formatNumber(stats.totalXpEarned),
+            },
+            {
+              label: "Topics Completed",
+              value: formatNumber(stats.totalTopicsCompleted),
             },
           ].map((item) => (
             <div

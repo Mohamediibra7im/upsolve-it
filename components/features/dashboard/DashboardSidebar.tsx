@@ -200,7 +200,7 @@ export default function DashboardSidebar({
               </Link>
             </div>
             <div className="divide-y divide-border/50 dark:divide-border/10">
-              {leaderboard.slice(0, 5).map((entry) => {
+              {leaderboard.slice(0, 3).map((entry) => {
                 const isMe =
                   String(entry.userId) === String(user._id);
                 return (

@@ -6,6 +6,8 @@ export interface AdminStats {
   adminUsers: number;
   regularUsers: number;
   recentlyJoinedUsers: number;
+  verifiedUsers: number;
+  unverifiedUsers: number;
   activeUsers: number;
   averageRating: number;
   totalTrainings: number;
@@ -20,6 +22,10 @@ export interface AdminStats {
   totalUpsolvedProblems: number;
   completedUpsolves: number;
   upsolveSolveRate: number;
+  totalLevels: number;
+  totalXpEarned: number;
+  totalLevelsCompleted: number;
+  totalTopicsCompleted: number;
   ratingBands: Array<{
     label: string;
     count: number;
@@ -44,6 +50,8 @@ const defaultStats: AdminStats = {
   adminUsers: 0,
   regularUsers: 0,
   recentlyJoinedUsers: 0,
+  verifiedUsers: 0,
+  unverifiedUsers: 0,
   activeUsers: 0,
   averageRating: 0,
   totalTrainings: 0,
@@ -58,6 +66,10 @@ const defaultStats: AdminStats = {
   totalUpsolvedProblems: 0,
   completedUpsolves: 0,
   upsolveSolveRate: 0,
+  totalLevels: 0,
+  totalXpEarned: 0,
+  totalLevelsCompleted: 0,
+  totalTopicsCompleted: 0,
   ratingBands: [
     { label: "<1200", count: 0 },
     { label: "1200-1399", count: 0 },
