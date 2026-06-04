@@ -4,6 +4,8 @@ export type RoadmapLevel = {
   description: string;
   orderIndex: number;
   isPublished: boolean;
+  visibility: 'all' | 'specific_users';
+  allowedUserIds: string[];
   videoUnlockSheetPct: number;
   sheetUnlockTopicPct: number;
   levelCompletionPct: number;

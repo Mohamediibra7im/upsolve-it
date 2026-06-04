@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Plus, Edit2, Trash2, Layers, Check, X, ArrowRight } from "lucide-react";
+import { Plus, Edit2, Trash2, Layers, Check, X, ArrowRight, Search, Users, Eye, EyeOff } from "lucide-react";
 import { useAdminRoadmapLevels } from "@/hooks/admin/useAdminRoadmap";
+import { useAdminUsers } from "@/hooks/admin/useAdminUsers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/components/providers/Toast";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ import type { RoadmapLevel } from "@/types/Roadmap";
 
 export default function AdminRoadmapLevelsComponent() {
   const { levels, isLoading, createLevel, updateLevel, deleteLevel } = useAdminRoadmapLevels();
+  const { users } = useAdminUsers();
   const { toast } = useToast();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -25,16 +26,37 @@ export default function AdminRoadmapLevelsComponent() {
   const [description, setDescription] = useState("");
   const [orderIndex, setOrderIndex] = useState(0);
   const [isPublished, setIsPublished] = useState(true);
+  const [visibility, setVisibility] = useState<"all" | "specific_users">("all");
+  const [allowedUserIds, setAllowedUserIds] = useState<string[]>([]);
+  const [userSearch, setUserSearch] = useState("");
   const [videoUnlockSheetPct, setVideoUnlockSheetPct] = useState(80);
   const [sheetUnlockTopicPct, setSheetUnlockTopicPct] = useState(60);
   const [levelCompletionPct, setLevelCompletionPct] = useState(80);
   const [xpPerAcceptedProblem, setXpPerAcceptedProblem] = useState(50);
+
+  const filteredUsers = useMemo(() => {
+    if (!userSearch.trim()) return users;
+    const q = userSearch.toLowerCase();
+    return users.filter(
+      (u) =>
+        u.codeforcesHandle.toLowerCase().includes(q) ||
+        u._id.toLowerCase().includes(q)
+    );
+  }, [users, userSearch]);
+
+  const selectedUsers = useMemo(
+    () => users.filter((u) => allowedUserIds.includes(u._id)),
+    [users, allowedUserIds]
+  );
 
   const resetForm = () => {
     setTitle("");
     setDescription("");
     setOrderIndex(levels.length);
     setIsPublished(true);
+    setVisibility("all");
+    setAllowedUserIds([]);
+    setUserSearch("");
     setVideoUnlockSheetPct(80);
     setSheetUnlockTopicPct(60);
     setLevelCompletionPct(80);
@@ -53,11 +75,25 @@ export default function AdminRoadmapLevelsComponent() {
     setDescription(lvl.description || "");
     setOrderIndex(lvl.orderIndex);
     setIsPublished(lvl.isPublished);
+    setVisibility(lvl.visibility || "all");
+    setAllowedUserIds(lvl.allowedUserIds || []);
+    setUserSearch("");
     setVideoUnlockSheetPct(lvl.videoUnlockSheetPct);
     setSheetUnlockTopicPct(lvl.sheetUnlockTopicPct);
     setLevelCompletionPct(lvl.levelCompletionPct);
     setXpPerAcceptedProblem(lvl.xpPerAcceptedProblem);
     setIsOpen(true);
+  };
+
+  const handleAddUser = (userId: string) => {
+    if (!allowedUserIds.includes(userId)) {
+      setAllowedUserIds((prev) => [...prev, userId]);
+    }
+    setUserSearch("");
+  };
+
+  const handleRemoveUser = (userId: string) => {
+    setAllowedUserIds((prev) => prev.filter((id) => id !== userId));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,6 +103,8 @@ export default function AdminRoadmapLevelsComponent() {
       description,
       orderIndex: Number(orderIndex),
       isPublished,
+      visibility,
+      allowedUserIds: visibility === "specific_users" ? allowedUserIds : [],
       videoUnlockSheetPct: Number(videoUnlockSheetPct),
       sheetUnlockTopicPct: Number(sheetUnlockTopicPct),
       levelCompletionPct: Number(levelCompletionPct),
@@ -158,7 +196,7 @@ export default function AdminRoadmapLevelsComponent() {
                 Create Level
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md bg-card border-border text-foreground">
+            <DialogContent className="max-w-lg bg-card border-border text-foreground max-h-[90vh] overflow-y-auto">
               <form onSubmit={handleSubmit}>
                 <DialogHeader>
                   <DialogTitle>{editingLevel ? "Edit Level" : "Create Roadmap Level"}</DialogTitle>
@@ -201,6 +239,82 @@ export default function AdminRoadmapLevelsComponent() {
                       <option value="false">Draft</option>
                     </select>
                   </div>
+                  <div className="grid grid-cols-3 items-center gap-4">
+                    <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Visibility</label>
+                    <select title="Select visibility" value={visibility} onChange={(e) => setVisibility(e.target.value as "all" | "specific_users")} className="col-span-2 rounded-xl border border-border/40 bg-background/50 px-3 py-2 text-xs focus:outline-none">
+                      <option value="all">All Users</option>
+                      <option value="specific_users">Specific Users</option>
+                    </select>
+                  </div>
+
+                  {visibility === "specific_users" && (
+                    <div className="space-y-3 rounded-xl border border-border/40 bg-background/30 p-4">
+                      <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground flex items-center gap-2">
+                        <Users size={14} />
+                        Allowed Users ({selectedUsers.length})
+                      </label>
+
+                      {/* Selected users chips */}
+                      {selectedUsers.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {selectedUsers.map((u) => (
+                            <span
+                              key={u._id}
+                              className="inline-flex items-center gap-1 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-1 text-[10px] font-bold text-primary"
+                            >
+                              {u.codeforcesHandle}
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveUser(u._id)}
+                                className="ml-0.5 rounded-full hover:bg-primary/20 p-0.5"
+                              >
+                                <X size={10} />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Search input */}
+                      <div className="relative">
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          value={userSearch}
+                          onChange={(e) => setUserSearch(e.target.value)}
+                          placeholder="Search by Codeforces handle..."
+                          className="pl-9 rounded-xl text-xs"
+                        />
+                      </div>
+
+                      {/* User dropdown */}
+                      {userSearch.trim() && filteredUsers.length > 0 && (
+                        <div className="max-h-40 overflow-y-auto rounded-xl border border-border/40 bg-background/80 divide-y divide-border/20">
+                          {filteredUsers.slice(0, 15).map((u) => (
+                            <button
+                              key={u._id}
+                              type="button"
+                              onClick={() => handleAddUser(u._id)}
+                              disabled={allowedUserIds.includes(u._id)}
+                              className={cn(
+                                "w-full flex items-center gap-3 px-3 py-2 text-left text-xs transition-colors",
+                                allowedUserIds.includes(u._id)
+                                  ? "opacity-40 cursor-not-allowed"
+                                  : "hover:bg-primary/5 cursor-pointer"
+                              )}
+                            >
+                              <span className="font-bold text-foreground">{u.codeforcesHandle}</span>
+                              <span className="text-muted-foreground">#{u.rank}</span>
+                              <span className="ml-auto text-muted-foreground">{u.rating}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {userSearch.trim() && filteredUsers.length === 0 && (
+                        <p className="text-[10px] text-muted-foreground text-center py-2">No users found matching &quot;{userSearch}&quot;</p>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <DialogFooter>
@@ -215,67 +329,104 @@ export default function AdminRoadmapLevelsComponent() {
         {isLoading ? (
           <div className="p-8 text-center text-muted-foreground">Loading levels...</div>
         ) : levels.length === 0 ? (
-          <div className="p-12 text-center text-muted-foreground italic">No levels created yet. Click "Create Level" to start the curriculum.</div>
+          <div className="p-12 text-center text-muted-foreground italic">No levels created yet. Click &quot;Create Level&quot; to start the curriculum.</div>
         ) : (
-          <Table>
-            <TableHeader className="bg-background/40">
-              <TableRow>
-                <TableHead className="px-6 py-4">Order</TableHead>
-                <TableHead className="px-6 py-4">Title</TableHead>
-                <TableHead className="px-6 py-4">Video watch %</TableHead>
-                <TableHead className="px-6 py-4">Sheet solve %</TableHead>
-                <TableHead className="px-6 py-4">Level complete %</TableHead>
-                <TableHead className="px-6 py-4">XP Per accepted</TableHead>
-                <TableHead className="px-6 py-4">Status</TableHead>
-                <TableHead className="px-6 py-4 text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {levels.map((lvl) => (
-                <TableRow key={lvl._id} className="hover:bg-card/20">
-                  <TableCell className="px-6 py-4 font-mono font-bold text-xs">{lvl.orderIndex}</TableCell>
-                  <TableCell className="px-6 py-4 font-bold">
-                    <div className="flex flex-col">
-                      <span className="text-foreground">{lvl.title}</span>
-                      <span className="text-[10px] text-muted-foreground font-normal mt-0.5 line-clamp-1 max-w-[240px]">{lvl.description}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-6 py-4 text-xs font-mono">{lvl.videoUnlockSheetPct}%</TableCell>
-                  <TableCell className="px-6 py-4 text-xs font-mono">{lvl.sheetUnlockTopicPct}%</TableCell>
-                  <TableCell className="px-6 py-4 text-xs font-mono">{lvl.levelCompletionPct}%</TableCell>
-                  <TableCell className="px-6 py-4 text-xs font-mono text-primary font-bold">+{lvl.xpPerAcceptedProblem} XP</TableCell>
-                  <TableCell className="px-6 py-4">
-                    <button
-                      onClick={() => handleTogglePublish(lvl)}
-                      className={cn(
-                        "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[9px] font-black uppercase tracking-[0.1em]",
-                        lvl.isPublished
-                          ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
-                          : "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-border/30">
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 w-16">Order</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Title</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center">Video %</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center">Sheet %</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center">Complete %</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center">XP</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center">Visibility</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center">Status</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/20">
+                {levels.map((lvl) => (
+                  <tr key={lvl._id} className="group hover:bg-white/[0.02] transition-colors">
+                    <td className="px-6 py-5">
+                      <span className="inline-flex items-center justify-center size-8 rounded-lg bg-muted/50 text-xs font-mono font-bold text-muted-foreground">
+                        {lvl.orderIndex}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5 max-w-[280px]">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{lvl.title}</span>
+                        <span className="text-[11px] text-muted-foreground/60 font-normal mt-1 line-clamp-1">{lvl.description}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-5 text-center">
+                      <span className="text-xs font-bold text-muted-foreground/80">{lvl.videoUnlockSheetPct}%</span>
+                    </td>
+                    <td className="px-6 py-5 text-center">
+                      <span className="text-xs font-bold text-muted-foreground/80">{lvl.sheetUnlockTopicPct}%</span>
+                    </td>
+                    <td className="px-6 py-5 text-center">
+                      <span className="text-xs font-bold text-muted-foreground/80">{lvl.levelCompletionPct}%</span>
+                    </td>
+                    <td className="px-6 py-5 text-center">
+                      <span className="text-sm font-black text-primary">+{lvl.xpPerAcceptedProblem} XP</span>
+                    </td>
+                    <td className="px-6 py-5 text-center">
+                      {lvl.visibility === "specific_users" ? (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/25 px-3 py-1 text-[10px] font-bold uppercase tracking-wider">
+                          <EyeOff size={11} />
+                          {lvl.allowedUserIds?.length ?? 0} Users
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/25 px-3 py-1 text-[10px] font-bold uppercase tracking-wider">
+                          <Eye size={11} />
+                          All
+                        </span>
                       )}
-                    >
-                      {lvl.isPublished ? <Check size={10} /> : <X size={10} />}
-                      {lvl.isPublished ? "Published" : "Draft"}
-                    </button>
-                  </TableCell>
-                  <TableCell className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Link href={`/admin/roadmap/${lvl._id}`} className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.15em] bg-primary/10 border border-primary/20 text-primary px-3 py-1.5 rounded-xl hover:bg-primary/25 transition">
-                        Sessions
-                        <ArrowRight size={12} />
-                      </Link>
-                      <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(lvl)} className="rounded-xl size-8 hover:bg-secondary">
-                        <Edit2 size={14} className="text-muted-foreground hover:text-foreground" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(lvl._id)} className="rounded-xl size-8 hover:bg-destructive/10">
-                        <Trash2 size={14} className="text-destructive" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                    </td>
+                    <td className="px-6 py-5 text-center">
+                      <button
+                        onClick={() => handleTogglePublish(lvl)}
+                        className={cn(
+                          "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-all",
+                          lvl.isPublished
+                            ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"
+                            : "bg-amber-500/15 text-amber-400 border border-amber-500/25"
+                        )}
+                      >
+                        {lvl.isPublished ? <Check size={11} /> : <X size={11} />}
+                        {lvl.isPublished ? "Published" : "Draft"}
+                      </button>
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Link
+                          href={`/admin/roadmap/${lvl._id}`}
+                          className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-primary/10 border border-primary/20 text-primary px-3 py-1.5 rounded-lg hover:bg-primary/20 hover:border-primary/30 transition-all"
+                        >
+                          Sessions
+                          <ArrowRight size={12} />
+                        </Link>
+                        <button
+                          onClick={() => handleOpenEdit(lvl)}
+                          className="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(lvl._id)}
+                          className="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
