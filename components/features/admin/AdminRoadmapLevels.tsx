@@ -15,7 +15,8 @@ import type { RoadmapLevel } from "@/types/Roadmap";
 
 export default function AdminRoadmapLevelsComponent() {
   const { levels, isLoading, createLevel, updateLevel, deleteLevel } = useAdminRoadmapLevels();
-  const { users } = useAdminUsers();
+  const adminUsers = useAdminUsers();
+  const users = useMemo(() => adminUsers?.users ?? [], [adminUsers?.users]);
   const { toast } = useToast();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -35,19 +36,20 @@ export default function AdminRoadmapLevelsComponent() {
   const [xpPerAcceptedProblem, setXpPerAcceptedProblem] = useState(50);
 
   const filteredUsers = useMemo(() => {
-    if (!userSearch.trim()) return users;
+    const list = Array.isArray(users) ? users : [];
+    if (!userSearch.trim()) return list;
     const q = userSearch.toLowerCase();
-    return users.filter(
+    return list.filter(
       (u) =>
-        u.codeforcesHandle.toLowerCase().includes(q) ||
-        u._id.toLowerCase().includes(q)
+        u.codeforcesHandle?.toLowerCase().includes(q) ||
+        u._id?.toLowerCase().includes(q)
     );
   }, [users, userSearch]);
 
-  const selectedUsers = useMemo(
-    () => users.filter((u) => allowedUserIds.includes(u._id)),
-    [users, allowedUserIds]
-  );
+  const selectedUsers = useMemo(() => {
+    const list = Array.isArray(users) ? users : [];
+    return list.filter((u) => allowedUserIds.includes(u._id));
+  }, [users, allowedUserIds]);
 
   const resetForm = () => {
     setTitle("");
@@ -266,6 +268,7 @@ export default function AdminRoadmapLevelsComponent() {
                               <button
                                 type="button"
                                 onClick={() => handleRemoveUser(u._id)}
+                                aria-label={`Remove ${u.codeforcesHandle}`}
                                 className="ml-0.5 rounded-full hover:bg-primary/20 p-0.5"
                               >
                                 <X size={10} />
@@ -410,12 +413,14 @@ export default function AdminRoadmapLevelsComponent() {
                         </Link>
                         <button
                           onClick={() => handleOpenEdit(lvl)}
+                          aria-label={`Edit ${lvl.title}`}
                           className="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
                         >
                           <Edit2 size={14} />
                         </button>
                         <button
                           onClick={() => handleDelete(lvl._id)}
+                          aria-label={`Delete ${lvl.title}`}
                           className="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
                         >
                           <Trash2 size={14} />
