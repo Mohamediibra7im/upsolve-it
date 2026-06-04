@@ -47,31 +47,29 @@ const GamifiedShowcase = () => {
   return (
     <section className="py-32 relative overflow-hidden">
       <div className="container mx-auto px-6 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-          {/* Left Text */}
-          <div className="lg:col-span-5 space-y-8">
-            <m.div
-              initial={{opacity: 0, y: 15}}
-              whileInView={{opacity: 1, y: 0}}
-              viewport={{once: true}}
-              className="space-y-4"
-            >
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.25em]">
-                <Trophy size={11} /> New Gamified Features
-              </span>
-              <h2 className="text-4xl md:text-6xl font-[1000] tracking-tighter uppercase leading-[0.95]">
-                Practice
-                <br />
-                Gamified.
-              </h2>
-              <p className="text-muted-foreground/90 font-medium text-lg leading-relaxed">
-                We've integrated a powerful checkbox-based roadmap progress
-                tracker and a premium Trophy-inspired rewards system. Track your
-                climbing trajectory in real time.
-              </p>
-            </m.div>
+        
+        {/* Centered Section Title */}
+        <m.div
+          initial={{opacity: 0, y: 16}}
+          whileInView={{opacity: 1, y: 0}}
+          viewport={{once: true}}
+          className="text-center max-w-2xl mx-auto mb-24 space-y-4"
+        >
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
+            Track Your Progress
+          </span>
+          <h2 className="text-4xl md:text-6xl font-[1000] tracking-tighter uppercase leading-[0.95]">
+            <span className="bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent">Practice</span>{" "}
+            <span className="bg-gradient-to-r from-primary to-emerald-400 bg-clip-text text-transparent">Gamified.</span>
+          </h2>
+          <p className="text-muted-foreground font-medium text-lg pt-1">
+            We've integrated a powerful checkbox-based roadmap progress tracker and a premium Trophy-inspired rewards system. Track your climbing trajectory in real time.
+          </p>
+        </m.div>
 
-            {/* List of Features */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+          {/* Left Feature Selector */}
+          <div className="lg:col-span-5 space-y-6">
             <div className="space-y-6">
               {[
                 {
