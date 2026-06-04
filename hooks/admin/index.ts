@@ -9,3 +9,11 @@ export {
 } from "./useAdminUsers";
 export { useAdminStats } from "./useAdminStats";
 export type { AdminStats } from "./useAdminStats";
+export {
+  useWhatsNewPublished,
+  useWhatsNewAdmin,
+  createWhatsNewEntry,
+  updateWhatsNewEntry,
+  deleteWhatsNewEntry,
+} from "./useWhatsNew";
+export type { WhatsNewEntry } from "./useWhatsNew";

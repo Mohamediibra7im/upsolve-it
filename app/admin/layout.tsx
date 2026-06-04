@@ -18,7 +18,8 @@ import {
   Menu,
   X,
   ChevronLeft,
-  Compass
+  Compass,
+  Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -35,6 +36,7 @@ const navItems = [
   { id: "users", href: "/admin/users", label: "User Management", icon: Users, desc: "Registry & Roles" },
   { id: "levels", href: "/admin/levels", label: "Level Distribution", icon: Layers, desc: "Target Configuration" },
   { id: "roadmap", href: "/admin/roadmap", label: "Roadmap", icon: Compass, desc: "Levels & Sessions" },
+  { id: "whats-new", href: "/admin/whats-new", label: "What's New", icon: Sparkles, desc: "Changelog Entries" },
   { id: "logs", href: "/admin/logs", label: "Audit Logs", icon: Database, desc: "Security Records" },
 ];
 
@@ -46,7 +48,7 @@ export default function AdminLayout({
   const { user, isLoading } = useUser();
   const router = useRouter();
   const pathname = usePathname();
-  const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isCompact, setCompact] = useState(false);
   
   const isAuthorized = user?.role === "admin";
@@ -66,6 +68,11 @@ export default function AdminLayout({
     }
   }, [user, isLoading, isAuthorized, router]);
 
+  // Close sidebar on mobile when navigating
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
+
   if (isLoading || !isAuthorized) {
     return <Loader message="Loading..." />;
   }
@@ -74,12 +81,15 @@ export default function AdminLayout({
     <div className="min-h-screen bg-background text-foreground flex">
       {/* Sidebar Overlay (Mobile) */}
       <AnimatePresence>
-        {!isSidebarOpen && (
+        {isSidebarOpen && (
           <m.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setSidebarOpen(true)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setSidebarOpen(false);
+            }}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[140] lg:hidden"
           />
         )}
@@ -88,8 +98,8 @@ export default function AdminLayout({
       {/* Sidebar Navigation */}
       <aside 
         className={cn(
-          "fixed inset-y-0 left-0 z-[150] bg-card border-r border-border flex flex-col transition-all duration-300 lg:translate-x-0 lg:static lg:h-screen",
-          isSidebarOpen ? "-translate-x-full" : "translate-x-0",
+          "fixed inset-y-0 left-0 z-[150] bg-card border-r border-border flex flex-col transform transition-transform duration-300 lg:translate-x-0 lg:static lg:h-screen",
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full",
           isCompact ? "w-20" : "w-72"
         )}
       >
@@ -123,7 +133,10 @@ export default function AdminLayout({
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={() => setSidebarOpen(false)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setSidebarOpen(false);
+            }}
             title="Close Sidebar"
             aria-label="Close Sidebar"
             className="ml-auto lg:hidden text-muted-foreground hover:text-foreground"
@@ -227,10 +240,13 @@ export default function AdminLayout({
         <header className="h-20 shrink-0 bg-card/60 backdrop-blur-xl border-b border-border px-8 flex items-center justify-between z-[100]">
           <div className="flex items-center gap-4">
             <Button 
-              variant="ghost" 
+              variant="default" 
               size="icon" 
-              onClick={() => setSidebarOpen(true)}
-              className={cn("lg:hidden text-muted-foreground hover:text-foreground", !isSidebarOpen && "hidden")}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSidebarOpen(true);
+              }}
+              className={cn("lg:hidden bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl shadow-lg shadow-primary/20", isSidebarOpen && "hidden")}
             >
               <Menu size={24} />
             </Button>

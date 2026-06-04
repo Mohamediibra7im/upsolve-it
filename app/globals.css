@@ -460,3 +460,11 @@ body {
       transparent);
   animation: shimmer 2s infinite;
 }
+
+/* Remove default quotation marks from tailwind typography blockquotes */
+.prose blockquote p:first-of-type::before {
+  content: none !important;
+}
+.prose blockquote p:last-of-type::after {
+  content: none !important;
+}

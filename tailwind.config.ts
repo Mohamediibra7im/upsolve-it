@@ -64,6 +64,16 @@ const config: Config = {
           "5": "hsl(var(--chart-5))",
         },
       },
+      typography: {
+        DEFAULT: {
+          css: {
+            'blockquote p:first-of-type::before': { content: 'none' },
+            'blockquote p:last-of-type::after': { content: 'none' },
+            'blockquote::before': { content: 'none' },
+            'blockquote::after': { content: 'none' },
+          },
+        },
+      },
     },
   },
   plugins: [

@@ -9,3 +9,4 @@ export { RoleConfirmationDialog } from "./RoleConfirmationDialog";
 export { UserMobileCards } from "./UserMobileCards";
 export { UserStatsDialog } from "./UserStatsDialog";
 export { UserTable } from "./UserTable";
+export { default as AdminWhatsNew } from "./AdminWhatsNew";

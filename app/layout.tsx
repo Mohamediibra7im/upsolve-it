@@ -8,6 +8,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { cn } from "@/lib/utils";
 import PageTransition from "@/components/shared/PageTransition";
 import HelpFab from "@/components/layout/HelpFab";
+import WhatsNewFab from "@/components/layout/WhatsNewFab";
 import { LazyMotion, domMax, MotionConfig } from "framer-motion";
 
 const inter = Inter({
@@ -94,6 +95,7 @@ export default function RootLayout({
                     {children}
                   </PageTransition>
                 </AuthGuard>
+                <WhatsNewFab />
                 <HelpFab />
               </div>
             </MotionConfig>
