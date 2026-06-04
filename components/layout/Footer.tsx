@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { m } from "framer-motion";
 import {
@@ -54,6 +55,19 @@ const footerLinks = {
 const Footer = () => {
   const { user } = useUser();
   const currentYear = new Date().getFullYear();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const getFormattedDate = () => {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const year = now.getFullYear();
+    return `${month}.${day}.${year}`;
+  };
 
   return (
     <footer className="relative border-t border-border/40 bg-background/80 backdrop-blur-2xl overflow-hidden pt-16 pb-8">
@@ -203,7 +217,9 @@ const Footer = () => {
             </p>
             <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/5 w-fit">
               <div className="size-1.5 rounded-full bg-primary animate-pulse" />
-              <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">System Stable: 04.30.2026</span>
+              <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">
+                System Stable: {mounted ? getFormattedDate() : "04.30.2026"}
+              </span>
             </div>
           </div>
 
