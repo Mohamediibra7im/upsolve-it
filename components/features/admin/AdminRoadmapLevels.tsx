@@ -158,18 +158,27 @@ export default function AdminRoadmapLevelsComponent() {
         <div className="rounded-2xl border border-border/40 bg-card p-5">
           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Total Levels</span>
           <p className="text-3xl font-heading font-black text-foreground mt-2">{levels.length}</p>
+          <p className="text-[10px] text-muted-foreground mt-1">
+            {levels.filter((l) => l.isPublished).length} published, {levels.filter((l) => !l.isPublished).length} drafts
+          </p>
         </div>
         <div className="rounded-2xl border border-border/40 bg-card p-5">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Standard Video Unlock</span>
-          <p className="text-3xl font-heading font-black text-primary mt-2">80%</p>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Avg Video Unlock</span>
+          <p className="text-3xl font-heading font-black text-primary mt-2">
+            {levels.length > 0 ? Math.round(levels.reduce((sum, l) => sum + l.videoUnlockSheetPct, 0) / levels.length) : 0}%
+          </p>
         </div>
         <div className="rounded-2xl border border-border/40 bg-card p-5">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Standard Sheet Unlock</span>
-          <p className="text-3xl font-heading font-black text-emerald-400 mt-2">60%</p>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Avg Sheet Unlock</span>
+          <p className="text-3xl font-heading font-black text-emerald-400 mt-2">
+            {levels.length > 0 ? Math.round(levels.reduce((sum, l) => sum + l.sheetUnlockTopicPct, 0) / levels.length) : 0}%
+          </p>
         </div>
         <div className="rounded-2xl border border-border/40 bg-card p-5">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Standard Level Complete</span>
-          <p className="text-3xl font-heading font-black text-amber-500 mt-2">80%</p>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Avg Completion</span>
+          <p className="text-3xl font-heading font-black text-amber-500 mt-2">
+            {levels.length > 0 ? Math.round(levels.reduce((sum, l) => sum + l.levelCompletionPct, 0) / levels.length) : 0}%
+          </p>
         </div>
       </div>
 
