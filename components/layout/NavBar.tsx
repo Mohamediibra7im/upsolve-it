@@ -225,7 +225,7 @@ const NavBar = () => {
                 <button
                   onClick={() => setAvatarMenuOpen((v) => !v)}
                   className={cn(
-                    "outline-none group flex items-center gap-2 pl-1.5 pr-2 md:pr-2.5 py-1 rounded-xl transition-all duration-300",
+                    "outline-none group flex items-center p-1 rounded-xl transition-all duration-300",
                     avatarMenuOpen
                       ? "bg-primary/8 dark:bg-primary/10 ring-1 ring-primary/30"
                       : "hover:bg-muted/50 dark:hover:bg-white/5",
@@ -251,14 +251,6 @@ const NavBar = () => {
                       </Avatar>
                     </div>
                     <div className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-emerald-500 border-2 border-background" />
-                  </div>
-                  <div className="hidden md:flex flex-col items-start leading-none">
-                    <span className="text-[11px] font-bold tracking-tight text-foreground">
-                      {user.codeforcesHandle}
-                    </span>
-                    <span className="text-[9px] font-medium text-muted-foreground/60">
-                      {user.rank || "Recruit"}
-                    </span>
                   </div>
                 </button>
 
