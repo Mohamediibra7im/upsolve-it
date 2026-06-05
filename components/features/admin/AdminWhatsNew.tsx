@@ -25,10 +25,8 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeRaw from "rehype-raw";
 import { cn } from "@/lib/utils";
+import MarkdownRenderer from "@/components/ui/markdown-renderer";
 
 type EditorMode = "list" | "create" | "edit";
 
@@ -269,20 +267,15 @@ export default function AdminWhatsNew() {
 
           {showPreview ? (
             <div className="p-6 min-h-[320px]">
-              <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-primary prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none prose-pre:bg-black/40 prose-pre:border prose-pre:border-border/50 prose-pre:rounded-xl prose-img:rounded-xl prose-blockquote:border-primary/30">
-                {form.content ? (
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    rehypePlugins={[rehypeRaw]}
-                  >
-                    {form.content}
-                  </ReactMarkdown>
-                ) : (
+              <MarkdownRenderer
+                className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-primary prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none prose-pre:bg-black/40 prose-pre:border prose-pre:border-border/50 prose-pre:rounded-xl prose-img:rounded-xl prose-blockquote:border-primary/30"
+              >
+                {form.content || (
                   <p className="text-muted-foreground italic">
                     Nothing to preview yet...
                   </p>
                 )}
-              </div>
+              </MarkdownRenderer>
             </div>
           ) : (
             <textarea

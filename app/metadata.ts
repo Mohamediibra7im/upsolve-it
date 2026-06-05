@@ -1,16 +1,19 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Upsolve.it - Practice Redefined",
+  title: {
+    default: "Upsolve.it - Practice, Track and Dominate",
+    template: "%s | Upsolve.it",
+  },
   description:
-    "Master competitive programming with intelligent practice sessions, track your progress, and climb the Codeforces ladder with Upsolve.it.",
+    "The ultimate command center for competitive programmers. Master Codeforces with intelligent practice sessions, track your evolution, and dominate the competitive programming ladder.",
   metadataBase: new URL("https://upsolve-it.hnuicpc.tech"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Upsolve.it - Practice Redefined",
-    description: "Intelligence-driven training for competitive programmers. Optimize your upsolve flow and track tactical metrics.",
+    title: "Upsolve.it - Practice, Track and Dominate",
+    description: "The ultimate command center for competitive programmers. Master Codeforces with intelligent practice sessions, track your evolution, and dominate the competitive programming ladder.",
     url: "https://upsolve-it.hnuicpc.tech",
     siteName: "Upsolve.it",
     locale: "en_US",
@@ -18,8 +21,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Upsolve.it - Practice Redefined",
-    description: "Intelligence-driven training for competitive programmers.",
+    title: "Upsolve.it - Practice, Track and Dominate",
+    description: "The ultimate command center for competitive programmers. Master Codeforces with intelligent practice sessions, track your evolution, and dominate the competitive programming ladder.",
   },
   keywords: [
     "Upsolve.it",
@@ -28,6 +31,8 @@ export const metadata: Metadata = {
     "cp training",
     "upsolve",
     "HNU ICPC",
+    "virtual contest",
+    "algorithm practice",
   ],
   authors: [{ name: "Mohammed Ibrahim" }],
   creator: "Upsolve.it",

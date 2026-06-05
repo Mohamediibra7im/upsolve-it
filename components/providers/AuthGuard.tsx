@@ -42,22 +42,15 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const isProtectedRoute = routeIsProtected(pathname);
   const isPublicRoute = routeIsPublic(pathname);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!isLoading && !user && isProtectedRoute) {
-        router.push("/");
-      }
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [isLoading, user, router, isProtectedRoute]);
-
+  // Handle loading state
   if (isLoading && isProtectedRoute) {
     return <Loader />;
   }
 
-  if (!user && isProtectedRoute) {
-    return <Loader />;
+  // Redirect to home if not authenticated and trying to access protected route
+  if (!isLoading && !user && isProtectedRoute) {
+    router.push("/");
+    return null; // Return null during redirect
   }
 
   // Block unverified users from all pages (except public/login pages)

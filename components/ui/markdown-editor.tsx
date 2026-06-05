@@ -15,9 +15,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeRaw from "rehype-raw";
+import MarkdownRenderer from "@/components/ui/markdown-renderer";
 
 interface MarkdownEditorProps {
     value: string;
@@ -99,14 +97,7 @@ Use standard emojis: 🎉 ✨ 📱 💻 🚀
                                     Learn how to format your messages with Markdown
                                 </DialogDescription>
                             </DialogHeader>
-                            <div className="prose prose-sm max-w-none dark:prose-invert">
-                                <ReactMarkdown
-                                    remarkPlugins={[remarkGfm]}
-                                    rehypePlugins={[rehypeRaw]}
-                                >
-                                    {markdownGuide}
-                                </ReactMarkdown>
-                            </div>
+                            <MarkdownRenderer>{markdownGuide}</MarkdownRenderer>
                         </DialogContent>
                     </Dialog>
                 </div>
@@ -148,14 +139,7 @@ Use standard emojis: 🎉 ✨ 📱 💻 🚀
                         <TabsContent value="preview" className="mt-0">
                             <div className="min-h-[120px] p-3 bg-gray-50 dark:bg-gray-900 rounded-md border">
                                 {value.trim() ? (
-                                    <div className="prose prose-sm max-w-none dark:prose-invert text-sm">
-                                        <ReactMarkdown
-                                            remarkPlugins={[remarkGfm]}
-                                            rehypePlugins={[rehypeRaw]}
-                                        >
-                                            {value}
-                                        </ReactMarkdown>
-                                    </div>
+                                    <MarkdownRenderer className="text-sm">{value}</MarkdownRenderer>
                                 ) : (
                                     <div className="text-muted-foreground text-sm italic">
                                         Nothing to preview. Switch to Edit tab to write your message.

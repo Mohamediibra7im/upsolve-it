@@ -10,6 +10,7 @@ import PageTransition from "@/components/shared/PageTransition";
 import HelpFab from "@/components/layout/HelpFab";
 import WhatsNewFab from "@/components/layout/WhatsNewFab";
 import { LazyMotion, domMax, MotionConfig } from "framer-motion";
+import ErrorBoundary from "@/components/shared/ErrorBoundary";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -36,7 +37,7 @@ const structuredData = {
   "@type": "WebApplication",
   name: "Upsolve.it",
   description:
-    "A Codeforces virtual contest practice platform for competitive programming",
+    "The ultimate command center for competitive programmers. Master Codeforces with intelligent practice sessions, track your evolution, and dominate the competitive programming ladder.",
   url: "https://upsolve-it.hnuicpc.tech",
   applicationCategory: "EducationalApplication",
   operatingSystem: "Web Browser",
@@ -50,7 +51,7 @@ const structuredData = {
     name: "Mohammed Ibrahim",
   },
   keywords:
-    "Codeforces, competitive programming, virtual contest, practice problems, algorithm practice",
+    "Upsolve.it, Codeforces, competitive programming, virtual contest, practice problems, algorithm practice, upsolve, HNU ICPC",
   featureList: [
     "Custom virtual contests",
     "Problem rating selection",
@@ -58,6 +59,12 @@ const structuredData = {
     "Statistics and analytics",
     "Upsolving list",
     "Tag-based problem selection",
+    "Problem statistics",
+    "Rating tracking",
+    "Problem analytics",
+    "Practice sessions",
+    "Problem analytics",
+
   ],
 };
 
@@ -69,6 +76,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={cn(inter.variable, hostGrotesk.variable, jetbrainsMono.variable)}>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <script id="structured-data" type="application/ld+json">
           {JSON.stringify(structuredData)}
         </script>
@@ -92,7 +101,7 @@ export default function RootLayout({
                 </div>
                 <AuthGuard>
                   <PageTransition>
-                    {children}
+                    <ErrorBoundary>{children}</ErrorBoundary>
                   </PageTransition>
                 </AuthGuard>
                 <WhatsNewFab />

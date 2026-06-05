@@ -116,7 +116,7 @@ const NavBar = () => {
               <m.span
                 variants={{
                   initial: {x: 0},
-                  hover: {x: -3, color: "hsl(var(--primary))"},
+                  hover: {x: -3, color: "#007F5F"},
                 }}
                 transition={{type: "spring", stiffness: 400, damping: 20}}
                 className="text-foreground/25 dark:text-foreground/20 font-light text-xl tracking-tight"
@@ -144,7 +144,7 @@ const NavBar = () => {
               <m.span
                 variants={{
                   initial: {x: 0},
-                  hover: {x: 3, color: "hsl(var(--primary))"},
+                  hover: {x: 3, color: "#007F5F"},
                 }}
                 transition={{type: "spring", stiffness: 400, damping: 20}}
                 className="text-foreground/25 dark:text-foreground/20 font-light text-xl tracking-tight"

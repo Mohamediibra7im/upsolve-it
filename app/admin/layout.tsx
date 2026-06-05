@@ -53,6 +53,11 @@ export default function AdminLayout({
   
   const isAuthorized = user?.role === "admin";
 
+  // Close sidebar on mobile when navigating
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
+
   useEffect(() => {
     const saved = localStorage.getItem('admin-sidebar-compact');
     if (saved) setCompact(saved === 'true');
@@ -67,11 +72,6 @@ export default function AdminLayout({
       router.replace("/");
     }
   }, [user, isLoading, isAuthorized, router]);
-
-  // Close sidebar on mobile when navigating
-  useEffect(() => {
-    setSidebarOpen(false);
-  }, [pathname]);
 
   if (isLoading || !isAuthorized) {
     return <Loader message="Loading..." />;

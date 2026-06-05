@@ -2,9 +2,9 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Upsolve.it | CP Training Tracker',
+    name: 'Upsolve.it - Practice, Track and Dominate',
     short_name: 'Upsolve.it',
-    description: 'The ultimate command center for competitive programmers. Master Codeforces with precision and track your evolution.',
+    description: 'The ultimate command center for competitive programmers. Master Codeforces with intelligent practice sessions, track your evolution, and dominate the competitive programming ladder.',
     start_url: '/',
     display: 'standalone',
     background_color: '#050505',

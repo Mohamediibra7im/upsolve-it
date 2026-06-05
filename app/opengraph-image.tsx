@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
 
-export const alt = 'Upsolve.it - CP Training Tracker';
+export const alt = 'Upsolve.it - The ultimate command center for competitive programmers';
 export const size = {
   width: 1200,
   height: 630,

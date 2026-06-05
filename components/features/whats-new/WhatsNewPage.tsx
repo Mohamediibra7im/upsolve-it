@@ -4,10 +4,8 @@ import { useWhatsNewPublished, type WhatsNewEntry } from "@/hooks/admin";
 import Loader from "@/components/shared/Loader";
 import { m } from "framer-motion";
 import { Sparkles, Calendar, Tag, Rocket } from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeRaw from "rehype-raw";
 import { cn } from "@/lib/utils";
+import MarkdownRenderer from "@/components/ui/markdown-renderer";
 
 function formatDate(dateStr: string | null) {
   if (!dateStr) return "";
@@ -64,11 +62,11 @@ function EntryCard({ entry, index }: { entry: WhatsNewEntry; index: number }) {
 
         {/* Markdown Body */}
         <div className="px-6 pb-6 sm:px-8 sm:pb-8">
-          <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none prose-pre:bg-black/40 prose-pre:border prose-pre:border-border/50 prose-pre:rounded-xl prose-img:rounded-xl prose-blockquote:border-primary/30">
-            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
-              {entry.content}
-            </ReactMarkdown>
-          </div>
+          <MarkdownRenderer
+            className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none prose-pre:bg-black/40 prose-pre:border prose-pre:border-border/50 prose-pre:rounded-xl prose-img:rounded-xl prose-blockquote:border-primary/30"
+          >
+            {entry.content}
+          </MarkdownRenderer>
         </div>
       </div>
     </m.article>

@@ -5,7 +5,7 @@
 
 ---
 
-## 🎨 Design Philosophy: "The Command Console"
+## Design Philosophy: "The Command Console"
 
 The Upsolve.it interface is designed to feel like a tactical engineering terminal. It prioritizes data density, visual clarity, and professional-grade aesthetics.
 
@@ -13,16 +13,17 @@ The Upsolve.it interface is designed to feel like a tactical engineering termina
 - **Glassmorphism**: Sophisticated backdrop blurs and subtle borders for a modern "OS" feel.
 - **Emerald Primary**: High-contrast, accessibility-tested color palette centered around #007F5F.
 
-## 🛠️ Technical Stack
+## Technical Stack
 
-- **Framework**: Next.js 15+ (App Router)
+- **Framework**: Next.js 16+ (App Router)
 - **Styling**: Tailwind CSS + Custom CSS Variables
 - **Components**: Radix UI + Shadcn/ui
 - **State/Data**: SWR (Stale-While-Revalidate)
 - **Motion**: Framer Motion for micro-interactions
 - **Icons**: Lucide React (Tactical set)
+- **Testing**: Jest + React Testing Library
 
-## 🚀 Key Interface Modules
+## Key Interface Modules
 
 ### 1. Signal Support Console
 A premium contact portal with localized terminology ("Inbound Signal", "Transmission Status") and high-fidelity form validation.
@@ -33,7 +34,7 @@ Real-time Codeforces synchronization, rating progression charts (Recharts), and 
 ### 3. Training Center
 Intelligent problem generation with custom filters for tags and difficulty levels.
 
-## 📦 Getting Started
+## Getting Started
 
 1. **Environment Config**:
    Create `.env.local`:
@@ -47,39 +48,43 @@ Intelligent problem generation with custom filters for tags and difficulty level
    npm run dev
    ```
 
-## 📂 Folder Architecture & Standards
+## Scripts
 
-We follow a clean, modular, and domain-scoped architecture to maximize reuse and maintainability:
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Production build |
+| `npm run lint` | Run ESLint |
+| `npm test` | Run tests |
+
+## Folder Architecture & Standards
 
 ### 1. Route Groups (`app/`)
-Routing folders are grouped by layout rules using Next.js **Route Groups** (omitted from URL paths):
-- **`app/(auth)/`** (`/login`, `/signup`, `/reset-password`) - Navbar-free, centered layouts.
-- **`app/(main)/`** (`/dashboard`, `/training`, `/roadmap`, `/statistics`, etc.) - Padded container layout with navigation header and footer.
-- **`app/(marketing)/`** (`/`, `/help`, `/community`, `/privacy`) - Edge-to-edge full-bleed layouts with navigation header and footer.
-- **`app/admin/`** - Dedicated admin control panel layout with sidebar console.
+- **`app/(auth)/`** - Login, signup, reset-password (navbar-free, centered layouts)
+- **`app/(main)/`** - Dashboard, training, roadmap, statistics (padded container with nav)
+- **`app/(marketing)/`** - Landing, help, community, privacy (edge-to-edge full-bleed)
+- **`app/admin/`** - Admin control panel with sidebar console
 
 ### 2. Feature Components (`components/features/`)
-Colocated page-specific components are organized under `components/features/{domain}/` to keep the `app/` folder focused strictly on routing:
-- `components/features/landing/` - Extracted landing sections (Hero, Showcase, etc.).
-- `components/features/dashboard/` - Extracted dashboard cards and widgets (Stats, Streaks, Sidebar).
-- `components/features/training/`, `roadmap/`, `admin/`, etc. - Module-specific interfaces.
+Colocated page-specific components organized by domain:
+- `components/features/landing/` - Hero, Showcase, etc.
+- `components/features/dashboard/` - Stats, Streaks, Sidebar widgets
+- `components/features/training/`, `roadmap/`, `admin/` - Module-specific interfaces
 
 ### 3. Shared Components (`components/shared/` & `components/ui/`)
-- `components/shared/` - Reusable application utilities (`Loader`, `ConfirmDialog`, `ActivityHeatmap`).
-- `components/ui/` - Primitive, headless styling primitives (Radix + shadcn/ui).
-- `components/layout/` - Shell chrome structures (`NavBar`, `Footer`, `HelpFab`).
+- `components/shared/` - Reusable utilities (Loader, ConfirmDialog, ErrorBoundary)
+- `components/ui/` - Primitive UI components (Radix + shadcn/ui)
+- `components/layout/` - Shell structures (NavBar, Footer, HelpFab)
 
 ### 4. Domain-Scoped Hooks (`hooks/`)
-Custom React hooks are organized into domain subdirectories with barrel exports:
-- `hooks/auth/` (e.g. `useUser`)
-- `hooks/training/` (e.g. `useTraining`, `useProblems`)
-- `hooks/social/` (e.g. `useFriends`)
-- `hooks/roadmap/` (e.g. `useRoadmap`, `useLevels`)
-- `hooks/data/` (e.g. `useHeatmapData`, `useHistory`)
+- `hooks/auth/` - `useUser`
+- `hooks/training/` - `useTraining`, `useProblems`
+- `hooks/social/` - `useFriends`
+- `hooks/roadmap/` - `useRoadmap`, `useLevels`
+- `hooks/data/` - `useHeatmapData`, `useHistory`
 
 ---
 
 <div align="center">
   <p>Optimized for Performance & Tactical Dominance</p>
 </div>
-
