@@ -329,6 +329,8 @@ const LeaderboardPage = () => {
               {leaderboard.map((entry, idx) => {
                 const isCurrentUser = user && String(entry.userId) === String(user._id);
                 const tier = getTier(entry.totalXp);
+                const prevEntry = idx > 0 ? leaderboard[idx - 1] : null;
+                const showRank = !prevEntry || prevEntry.rank !== entry.rank;
 
                 return (
                   <m.div
@@ -348,24 +350,30 @@ const LeaderboardPage = () => {
                     >
                       {/* Rank */}
                       <div className="flex items-center justify-center">
-                        {entry.rank <= 3 ? (
-                          <div
-                            className={cn(
-                              "flex items-center justify-center size-8 rounded-lg text-xs font-black",
-                              entry.rank === 1 && "bg-amber-400/15 text-amber-400",
-                              entry.rank === 2 && "bg-zinc-400/15 text-zinc-400",
-                              entry.rank === 3 && "bg-amber-700/15 text-amber-700"
-                            )}
-                          >
-                            {entry.rank === 1 ? (
-                              <Crown className="size-4 fill-current" />
-                            ) : (
-                              entry.rank
-                            )}
-                          </div>
+                        {showRank ? (
+                          entry.rank <= 3 ? (
+                            <div
+                              className={cn(
+                                "flex items-center justify-center size-8 rounded-lg text-xs font-black",
+                                entry.rank === 1 && "bg-amber-400/15 text-amber-400",
+                                entry.rank === 2 && "bg-zinc-400/15 text-zinc-400",
+                                entry.rank === 3 && "bg-amber-700/15 text-amber-700"
+                              )}
+                            >
+                              {entry.rank === 1 ? (
+                                <Crown className="size-4 fill-current" />
+                              ) : (
+                                entry.rank
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-xs font-bold text-muted-foreground/60 font-mono">
+                              #{entry.rank}
+                            </span>
+                          )
                         ) : (
-                          <span className="text-xs font-bold text-muted-foreground/60 font-mono">
-                            #{entry.rank}
+                          <span className="text-xs font-bold text-muted-foreground/30 font-mono">
+                            —
                           </span>
                         )}
                       </div>
@@ -379,7 +387,7 @@ const LeaderboardPage = () => {
                               {entry.handle.substring(0, 2).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
-                          {entry.rank <= 3 && (
+                          {showRank && entry.rank <= 3 && (
                             <span
                               className={cn(
                                 "absolute -top-1 -right-1 size-3.5 rounded-full border-2 border-background dark:border-zinc-950 flex items-center justify-center text-[7px] font-black",
