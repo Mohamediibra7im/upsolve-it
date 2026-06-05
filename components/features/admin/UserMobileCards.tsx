@@ -78,7 +78,10 @@ export function UserMobileCards({
                 {/* Identity Header */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Avatar className="size-11 rounded-xl border border-border">
+                    <Avatar 
+                      onClick={() => onFetchStats(user._id)}
+                      className="size-11 rounded-xl border border-border cursor-pointer hover:opacity-85 transition-opacity"
+                    >
                       <AvatarImage src={user.avatar} alt={user.codeforcesHandle} className="object-cover" />
                       <AvatarFallback className="bg-secondary text-muted-foreground font-bold text-xs">
                         {user.codeforcesHandle?.slice(0, 2).toUpperCase() || '??'}
@@ -86,8 +89,21 @@ export function UserMobileCards({
                     </Avatar>
                     <div className="flex flex-col">
                       <div className="text-sm font-bold text-foreground flex items-center gap-1.5">
-                        {user.codeforcesHandle || "Anonymous"}
-                        <ExternalLink size={10} className="opacity-30" />
+                        <span
+                          onClick={() => onFetchStats(user._id)}
+                          className="hover:text-primary transition-colors cursor-pointer"
+                        >
+                          {user.codeforcesHandle || "Anonymous"}
+                        </span>
+                        <a
+                          href={`https://codeforces.com/profile/${user.codeforcesHandle}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-muted-foreground hover:text-primary transition-colors opacity-30 hover:opacity-100"
+                          title="Open Codeforces Profile"
+                        >
+                          <ExternalLink size={10} />
+                        </a>
                       </div>
                       <div className="text-[9px] font-black text-primary uppercase tracking-widest">{user.role}</div>
                     </div>

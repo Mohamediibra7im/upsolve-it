@@ -16,6 +16,7 @@ import { useUser } from "@/hooks/auth";
 import Loader from "@/components/shared/Loader";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserProfileDialog } from "@/components/features/profile";
 
 
 const XP_TIERS = [
@@ -36,6 +37,7 @@ const LeaderboardPage = () => {
 
   const [period, setPeriod] = useState<"all" | "weekly" | "monthly">("all");
   const [selectedLevelId, setSelectedLevelId] = useState<string>("");
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const { leaderboard, isLoading: boardLoading } = useRoadmapLeaderboard({
     level: selectedLevelId || undefined,
@@ -192,9 +194,10 @@ const LeaderboardPage = () => {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.1 }}
-                    className="flex-1 flex flex-col items-center min-w-0"
+                    onClick={() => setSelectedUserId(podium[1].userId)}
+                    className="flex-1 flex flex-col items-center min-w-0 cursor-pointer group"
                   >
-                    <div className="relative mb-3 shrink-0 group">
+                    <div className="relative mb-3 shrink-0">
                       <div className="rounded-full p-[2px] bg-gradient-to-br from-zinc-300 to-zinc-400 shadow-lg shadow-zinc-400/10">
                         <Avatar className="size-16 sm: sm:size-20 border-[3px] border-background dark:border-zinc-900 group-hover:scale-105 transition-transform duration-300">
                           <AvatarImage src={podium[1].avatar ?? ""} />
@@ -207,7 +210,7 @@ const LeaderboardPage = () => {
                         <Medal className="size-3.5 text-zinc-400" />
                       </div>
                     </div>
-                    <span className="font-heading font-black text-xs sm:text-sm text-foreground truncate max-w-full text-center px-1">
+                    <span className="font-heading font-black text-xs sm:text-sm text-foreground truncate max-w-full text-center px-1 group-hover:text-primary transition-colors">
                       {podium[1].handle}
                     </span>
                     <span className="text-[10px] sm:text-xs font-bold text-zinc-400 mt-0.5 flex items-center gap-0.5">
@@ -234,9 +237,10 @@ const LeaderboardPage = () => {
                     initial={{ opacity: 0, y: 45 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.7 }}
-                    className="flex-[1.15] flex flex-col items-center min-w-0 z-10"
+                    onClick={() => setSelectedUserId(podium[0].userId)}
+                    className="flex-[1.15] flex flex-col items-center min-w-0 z-10 cursor-pointer group"
                   >
-                    <div className="relative mb-3 shrink-0 group">
+                    <div className="relative mb-3 shrink-0">
                       <div className="rounded-full p-[3px] bg-gradient-to-br from-amber-300 to-amber-500 shadow-xl shadow-amber-400/20">
                         <Avatar className="size-20 sm: sm:size-24 border-[4px] border-background dark:border-zinc-900 group-hover:scale-105 transition-transform duration-300">
                           <AvatarImage src={podium[0].avatar ?? ""} />
@@ -249,7 +253,7 @@ const LeaderboardPage = () => {
                         <Crown className=".5 size-4.5 text-amber-400 drop-shadow-[0_0_4px_rgba(245,158,11,0.5)]" />
                       </div>
                     </div>
-                    <span className="font-heading font-black text-sm sm:text-base text-foreground truncate max-w-full text-center px-1">
+                    <span className="font-heading font-black text-sm sm:text-base text-foreground truncate max-w-full text-center px-1 group-hover:text-primary transition-colors">
                       {podium[0].handle}
                     </span>
                     <span className="text-xs sm:text-sm font-black text-amber-400 mt-0.5 flex items-center gap-0.5">
@@ -276,9 +280,10 @@ const LeaderboardPage = () => {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.2 }}
-                    className="flex-1 flex flex-col items-center min-w-0"
+                    onClick={() => setSelectedUserId(podium[2].userId)}
+                    className="flex-1 flex flex-col items-center min-w-0 cursor-pointer group"
                   >
-                    <div className="relative mb-3 shrink-0 group">
+                    <div className="relative mb-3 shrink-0">
                       <div className="rounded-full p-[2px] bg-gradient-to-br from-amber-600 to-amber-700 shadow-lg shadow-amber-700/10">
                         <Avatar className="size-14 sm: sm:size-16 border-[3px] border-background dark:border-zinc-900 group-hover:scale-105 transition-transform duration-300">
                           <AvatarImage src={podium[2].avatar ?? ""} />
@@ -291,7 +296,7 @@ const LeaderboardPage = () => {
                         <Medal className="size-3 text-amber-700" />
                       </div>
                     </div>
-                    <span className="font-heading font-black text-xs sm:text-sm text-foreground truncate max-w-full text-center px-1">
+                    <span className="font-heading font-black text-xs sm:text-sm text-foreground truncate max-w-full text-center px-1 group-hover:text-primary transition-colors">
                       {podium[2].handle}
                     </span>
                     <span className="text-[10px] sm:text-xs font-bold text-amber-700 mt-0.5 flex items-center gap-0.5">
@@ -371,7 +376,10 @@ const LeaderboardPage = () => {
                       </div>
 
                       {/* User */}
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div 
+                        onClick={() => setSelectedUserId(entry.userId)}
+                        className="flex items-center gap-3 min-w-0 cursor-pointer group/user"
+                      >
                         <div className="relative shrink-0">
                           <Avatar className="size-9 border border-border/60 dark:border-zinc-800 bg-background dark:bg-zinc-900">
                             <AvatarImage src={entry.avatar ?? ""} />
@@ -394,7 +402,7 @@ const LeaderboardPage = () => {
                         </div>
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="font-heading font-black text-sm text-foreground truncate">
+                            <span className="font-heading font-black text-sm text-foreground truncate group-hover/user:text-primary transition-colors">
                               {entry.handle}
                             </span>
                             {isCurrentUser && (
@@ -447,6 +455,12 @@ const LeaderboardPage = () => {
                 );
               })}
             </div>
+
+            <UserProfileDialog
+              userId={selectedUserId}
+              open={selectedUserId !== null}
+              onOpenChange={(open) => !open && setSelectedUserId(null)}
+            />
           </>
         )}
       </div>

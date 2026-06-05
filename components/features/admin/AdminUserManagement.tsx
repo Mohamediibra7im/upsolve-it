@@ -22,7 +22,7 @@ import type { UserTrainingStatsView } from '@/types/userTrainingStats';
 import { UserTable } from './UserTable';
 import { UserMobileCards } from './UserMobileCards';
 import { RoleConfirmationDialog } from './RoleConfirmationDialog';
-import { UserStatsDialog } from './UserStatsDialog';
+import { UserProfileDialog } from '@/components/features/profile';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
@@ -71,8 +71,6 @@ export default function AdminUserManagement() {
     open: false,
     userId: null
   });
-  const [userStats, setUserStats] = useState<UserTrainingStatsView | null>(null);
-  const [loadingStats, setLoadingStats] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const { toast } = useToast();
 
@@ -150,22 +148,8 @@ export default function AdminUserManagement() {
     }
   }, [isError, toast]);
 
-  const fetchUserStats = async (userId: string) => {
-    setLoadingStats(true);
-    try {
-      const data = await apiFetcher<UserTrainingStatsView>(`/api/admin/users/${userId}/stats`);
-      setUserStats(data);
-      setStatsDialog({ open: true, userId });
-    } catch (error) {
-      toast({
-        title: "Failed to Load Statistics",
-        description: error instanceof Error ? error.message : "Unable to fetch user statistics. Please try again.",
-        variant: "destructive",
-        durationMs: 4000
-      });
-    } finally {
-      setLoadingStats(false);
-    }
+  const fetchUserStats = (userId: string) => {
+    setStatsDialog({ open: true, userId });
   };
 
   const handleSyncBatchRatings = async () => {
@@ -410,7 +394,7 @@ export default function AdminUserManagement() {
           <div className="hidden lg:block w-full">
             <UserTable
               users={paginatedUsers}
-              loadingStats={loadingStats}
+              loadingStats={false}
               statsDialogId={statsDialog.userId}
               updatingId={updating}
               onFetchStats={fetchUserStats}
@@ -422,7 +406,7 @@ export default function AdminUserManagement() {
           <div className="lg:hidden space-y-4 p-6">
             <UserMobileCards
               users={paginatedUsers}
-              loadingStats={loadingStats}
+              loadingStats={false}
               statsDialogId={statsDialog.userId}
               updatingId={updating}
               onFetchStats={fetchUserStats}
@@ -546,10 +530,10 @@ export default function AdminUserManagement() {
         handleConfirmRoleChange={handleConfirmRoleChange}
       />
 
-      <UserStatsDialog
-        statsDialog={statsDialog}
-        setStatsDialog={setStatsDialog}
-        userStats={userStats}
+      <UserProfileDialog
+        userId={statsDialog.userId}
+        open={statsDialog.open}
+        onOpenChange={(open) => !open && setStatsDialog({ open: false, userId: null })}
       />
     </div>
   );

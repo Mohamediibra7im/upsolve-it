@@ -22,11 +22,10 @@ import { Input } from "@/components/ui/input";
 import {useUser} from "@/hooks/auth";
 import { useFriends } from "@/hooks/social";
 import { useFriendRequests } from "@/hooks/social";
-import { apiClient, apiFetcher } from "@/lib/apiClient";
-import type { UserTrainingStatsView } from "@/types/userTrainingStats";
+import { apiClient } from "@/lib/apiClient";
 import type { FriendSummary } from "@/types/Friend";
 import Loader from "@/components/shared/Loader";
-import { FriendStatsDialog } from "@/components/features/friends";
+import { UserProfileDialog } from "@/components/features/profile";
 import { useToast } from "@/components/providers/Toast";
 import { cn } from "@/lib/utils";
 import {
@@ -80,8 +79,6 @@ export default function FriendsPage() {
     open: boolean;
     userId: string | null;
   }>({ open: false, userId: null });
-  const [friendStats, setFriendStats] = useState<UserTrainingStatsView | null>(null);
-  const [loadingStats, setLoadingStats] = useState(false);
 
   const refreshAll = async () => {
     await Promise.all([mutateFriends(), mutateRequests()]);
@@ -221,7 +218,6 @@ export default function FriendsPage() {
       await refreshAll();
       if (statsDialog.userId === f._id) {
         setStatsDialog({ open: false, userId: null });
-        setFriendStats(null);
       }
       toast({
         title: "Removed",
@@ -240,26 +236,8 @@ export default function FriendsPage() {
     }
   };
 
-  const openFriendStats = async (friendUserId: string) => {
+  const openFriendStats = (friendUserId: string) => {
     setStatsDialog({ open: true, userId: friendUserId });
-    setFriendStats(null);
-    setLoadingStats(true);
-    try {
-      const data = await apiFetcher<UserTrainingStatsView>(
-        `/api/friends/${friendUserId}/stats`,
-      );
-      setFriendStats(data);
-    } catch (err) {
-      setStatsDialog({ open: false, userId: null });
-      toast({
-        title: "Could not load stats",
-        description: err instanceof Error ? err.message : "Please try again.",
-        variant: "destructive",
-        durationMs: 5000,
-      });
-    } finally {
-      setLoadingStats(false);
-    }
   };
 
   if (isUserLoading || !user) {
@@ -469,7 +447,10 @@ export default function FriendsPage() {
                 >
                 <Card className="border-border/40 bg-card/20 backdrop-blur-xl rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
                   <div className="flex items-center gap-4 min-w-0">
-                    <div className="relative size-12 shrink-0 rounded-xl overflow-hidden border border-border/40 bg-muted">
+                    <div 
+                      onClick={() => openFriendStats(f._id)}
+                      className="relative size-12 shrink-0 rounded-xl overflow-hidden border border-border/40 bg-muted cursor-pointer hover:opacity-85 transition-opacity"
+                    >
                       <Image
                         src={f.avatar}
                         alt=""
@@ -479,8 +460,11 @@ export default function FriendsPage() {
                         unoptimized
                       />
                     </div>
-                    <div className="min-w-0">
-                      <p className="font-black truncate text-foreground">
+                    <div 
+                      onClick={() => openFriendStats(f._id)}
+                      className="min-w-0 cursor-pointer group/friend"
+                    >
+                      <p className="font-black truncate text-foreground group-hover/friend:text-primary transition-colors">
                         {f.codeforcesHandle}
                       </p>
                       <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -495,13 +479,8 @@ export default function FriendsPage() {
                       size="sm"
                       className="rounded-xl font-black uppercase tracking-widest text-[9px] gap-1.5"
                       onClick={() => openFriendStats(f._id)}
-                      disabled={loadingStats && statsDialog.userId === f._id}
                     >
-                      {loadingStats && statsDialog.userId === f._id ? (
-                        <Loader2 className="size-3.5 animate-spin" />
-                      ) : (
-                        <BarChart2 className="size-3.5" />
-                      )}
+                      <BarChart2 className="size-3.5" />
                       View stats
                     </Button>
                     <Button
@@ -531,15 +510,14 @@ export default function FriendsPage() {
         )}
       </div>
 
-      <FriendStatsDialog
+      <UserProfileDialog
+        userId={statsDialog.userId}
         open={statsDialog.open}
         onOpenChange={(open) => {
           if (!open) {
             setStatsDialog({ open: false, userId: null });
-            setFriendStats(null);
           }
         }}
-        userStats={loadingStats ? null : friendStats}
       />
     </div>
   );

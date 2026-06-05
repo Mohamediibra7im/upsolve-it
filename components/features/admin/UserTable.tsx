@@ -80,22 +80,33 @@ export function UserTable({
                 {/* User Identity */}
                 <TableCell className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <Avatar className="size-10 rounded-lg border border-border shadow-sm">
+                    <Avatar 
+                      onClick={() => onFetchStats(user._id)}
+                      className="size-10 rounded-lg border border-border shadow-sm cursor-pointer hover:opacity-85 transition-opacity"
+                    >
                       <AvatarImage src={user.avatar} alt={user.codeforcesHandle} className="object-cover" />
                       <AvatarFallback className="bg-secondary text-muted-foreground font-bold text-xs uppercase">
                         {user.codeforcesHandle?.slice(0, 2) || '??'}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
-                      <a
-                        href={`https://codeforces.com/profile/${user.codeforcesHandle}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm font-bold text-foreground hover:text-primary transition-colors flex items-center gap-1.5"
-                      >
-                        {user.codeforcesHandle || "Anonymous"}
-                        <ExternalLink size={12} className="opacity-30" />
-                      </a>
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          onClick={() => onFetchStats(user._id)}
+                          className="text-sm font-bold text-foreground hover:text-primary transition-colors cursor-pointer"
+                        >
+                          {user.codeforcesHandle || "Anonymous"}
+                        </span>
+                        <a
+                          href={`https://codeforces.com/profile/${user.codeforcesHandle}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-muted-foreground hover:text-primary transition-colors opacity-30 hover:opacity-100"
+                          title="Open Codeforces Profile"
+                        >
+                          <ExternalLink size={12} />
+                        </a>
+                      </div>
                       <span className="text-[10px] font-medium text-muted-foreground font-mono">#{user._id.slice(-6).toUpperCase()}</span>
                     </div>
                   </div>
