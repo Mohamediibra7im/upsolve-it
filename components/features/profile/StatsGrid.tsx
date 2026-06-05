@@ -9,6 +9,7 @@ import {
   Clock,
   CheckCircle2,
   Sparkles,
+  Trophy,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,9 +33,17 @@ interface StatsGridProps {
     solvingRate: number;
   } | null;
   recentSessions: any[];
+  achievements?: Array<{
+    id: string;
+    name: string;
+    desc: string;
+    icon: any;
+    unlocked: boolean;
+    color: string;
+  }>;
 }
 
-export default function StatsGrid({ profileStats, trainingStats, recentSessions }: StatsGridProps) {
+export default function StatsGrid({ profileStats, trainingStats, recentSessions, achievements }: StatsGridProps) {
   return (
     <div className="xl:col-span-8 space-y-8">
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -101,6 +110,87 @@ export default function StatsGrid({ profileStats, trainingStats, recentSessions 
           </Card>
         </m.div>
       </div>
+
+      {achievements && achievements.length > 0 && (
+        <m.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.28 }}
+        >
+          <Card className="border-border/60 dark:border-border/40 bg-card/25 backdrop-blur-xl rounded-2xl p-5">
+            <div className="border-b border-border/30 pb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Trophy className="size-4 text-muted-foreground/60" />
+                <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/60">
+                  Unlockable Achievements
+                </span>
+              </div>
+              <span className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest">
+                {achievements.filter(a => a.unlocked).length} / {achievements.length} Unlocked
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-5">
+              {achievements.map((badge, idx) => {
+                const Icon = badge.icon;
+                return (
+                  <m.div
+                    key={badge.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 + idx * 0.05 }}
+                    className="h-full"
+                  >
+                    <div
+                      className={cn(
+                        "flex flex-col justify-between p-4 rounded-2xl border transition-all duration-300 relative overflow-hidden h-full min-h-[110px]",
+                        badge.unlocked
+                          ? cn("border-border/60 bg-card/45 hover:border-primary/30", badge.color.split(" ")[0])
+                          : "border-border/20 bg-muted/5 opacity-30 select-none border-dashed"
+                      )}
+                    >
+                      <div className="flex items-start justify-between w-full">
+                        {/* Unlock Icon */}
+                        <div className={cn(
+                          "p-2.5 rounded-xl shrink-0 border relative",
+                          badge.unlocked ? badge.color.split(" ").slice(1).join(" ") : "bg-muted/10 border-border/40"
+                        )}>
+                          <Icon className="size-4" />
+                          {badge.unlocked && (
+                            <span className="absolute -top-1 -right-1 flex size-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                              <span className="relative inline-flex rounded-full size-2 bg-emerald-500" />
+                            </span>
+                          )}
+                        </div>
+
+                        {!badge.unlocked ? (
+                          <span className="text-[7px] font-black text-muted-foreground/50 uppercase tracking-wider">
+                            Locked
+                          </span>
+                        ) : (
+                          <span className="text-[7px] font-black text-emerald-400 uppercase tracking-wider animate-pulse">
+                            Unlocked
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="mt-4">
+                        <h4 className="text-xs font-black uppercase tracking-wider text-foreground leading-none">
+                          {badge.name}
+                        </h4>
+                        <p className="text-[8.5px] text-muted-foreground mt-1.5 leading-tight font-medium">
+                          {badge.desc}
+                        </p>
+                      </div>
+                    </div>
+                  </m.div>
+                );
+              })}
+            </div>
+          </Card>
+        </m.div>
+      )}
 
       <m.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
         <Card className="border-border/60 dark:border-border/40 bg-card/25 backdrop-blur-xl rounded-2xl overflow-hidden">

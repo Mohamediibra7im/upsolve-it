@@ -1,6 +1,6 @@
 "use client";
 
-import { Trophy, Crown, Flame, Award, Target } from "lucide-react";
+import { Trophy, Crown, Flame, Award, Target, Zap, CheckCircle } from "lucide-react";
 import { useUser } from "@/hooks/auth";
 import { useRoadmapUserSummary } from "@/hooks/roadmap";
 import { useHistory, useUpsolvedProblems } from "@/hooks/data";
@@ -103,6 +103,45 @@ export default function ProfilePage() {
     { label: "Topics Completed", value: summary?.topicsCompleted || 0, sub: "Skills unlocked", icon: Target, tone: "text-purple-500" },
   ];
 
+  const upsolvedSolvedCount = _upsolvedProblems.filter(
+    (p) => p.solvedTime !== null && p.solvedTime !== undefined,
+  ).length;
+
+  const achievements = [
+    {
+      id: "gladiator",
+      name: "Gladiator",
+      desc: "Cleared 5+ Arena training runs",
+      icon: Trophy,
+      unlocked: (trainingStats?.totalSessions ?? 0) >= 5,
+      color: "text-amber-400 border-amber-400/20 bg-amber-400/5",
+    },
+    {
+      id: "marksman",
+      name: "Marksman",
+      desc: "Maintained a 70%+ solving accuracy",
+      icon: Target,
+      unlocked: (trainingStats?.solvingRate ?? 0) >= 70,
+      color: "text-primary border-primary/20 bg-primary/5",
+    },
+    {
+      id: "upsolve-elite",
+      name: "Upsolve Elite",
+      desc: "Successfully upsolved a target task",
+      icon: CheckCircle,
+      unlocked: upsolvedSolvedCount >= 1,
+      color: "text-emerald-400 border-emerald-400/20 bg-emerald-400/5",
+    },
+    {
+      id: "titan",
+      name: "Performance Titan",
+      desc: "Avg session score exceeds 1200",
+      icon: Zap,
+      unlocked: (trainingStats?.avgPerformance ?? 0) >= 1200,
+      color: "text-cyan-400 border-cyan-400/20 bg-cyan-400/5",
+    },
+  ];
+
   return (
     <div className="min-h-screen pb-20 pt-0">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 space-y-8 max-w-7xl">
@@ -122,6 +161,7 @@ export default function ProfilePage() {
             profileStats={profileStats}
             trainingStats={trainingStats}
             recentSessions={recentSessions}
+            achievements={achievements}
           />
         </div>
       </div>
