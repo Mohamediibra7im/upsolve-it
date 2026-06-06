@@ -16,7 +16,6 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useRoadmapLevels } from "@/hooks/roadmap/useRoadmap";
-import Loader from "@/components/shared/Loader";
 import { cn } from "@/lib/utils";
 
 const RoadmapPage = () => {
@@ -40,8 +39,6 @@ const RoadmapPage = () => {
       : 0;
     return { ...level, isUnlocked, isComplete, progressPct };
   }), [levels]);
-
-  if (isLoading) return <Loader message="Loading roadmap..." />;
 
   const overallPct = totals.totalTopics
     ? Math.round((totals.completedTopics / totals.totalTopics) * 100)
@@ -134,6 +131,13 @@ const RoadmapPage = () => {
 
         {/* ── LEVELS ── */}
         <div className="space-y-4">
+          {isLoading && (
+            <div className="space-y-4 animate-pulse">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="h-[120px] rounded-[1.75rem] bg-muted/30" />
+              ))}
+            </div>
+          )}
           {levelsWithStatus.map((level, index) => {
             const { isUnlocked, isComplete, progressPct } = level;
 

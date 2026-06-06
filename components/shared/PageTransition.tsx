@@ -14,14 +14,14 @@ export default function PageTransition({ children }: Readonly<{ children: React.
   const pathname = usePathname();
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="sync">
       <m.div
         key={pathname}
         initial={false}
         animate="enter"
         exit="exit"
         variants={variants}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
         className="w-full flex-grow flex flex-col min-h-0 relative"
       >
         {children}

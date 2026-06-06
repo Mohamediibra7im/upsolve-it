@@ -1,7 +1,6 @@
 "use client";
 
 import {useUser} from "@/hooks/auth";
-import Loader from "@/components/shared/Loader";
 import {
   HeroSection,
   FeaturesSection,
@@ -26,8 +25,6 @@ function GuestLandingPage({user}: {user: any}) {
 }
 
 export default function RootPage() {
-  const {user, isLoading} = useUser();
-  if (isLoading) return <Loader message="Loading..." />;
-
+  const {user} = useUser();
   return <GuestLandingPage user={user} />;
 }

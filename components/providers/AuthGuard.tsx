@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {useUser} from "@/hooks/auth";
 import Loader from "@/components/shared/Loader";
@@ -41,15 +42,20 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const isProtectedRoute = routeIsProtected(pathname);
   const isPublicRoute = routeIsPublic(pathname);
 
+  const shouldRedirect = !isLoading && !user && isProtectedRoute;
+
+  useEffect(() => {
+    if (shouldRedirect) router.push("/");
+  }, [shouldRedirect, router]);
+
   // Handle loading state
   if (isLoading && isProtectedRoute) {
     return <Loader />;
   }
 
-  // Redirect to home if not authenticated and trying to access protected route
-  if (!isLoading && !user && isProtectedRoute) {
-    router.push("/");
-    return null; // Return null during redirect
+  // Return null while redirect is pending
+  if (shouldRedirect) {
+    return null;
   }
 
   // Block unverified users from all pages (except public/login pages)

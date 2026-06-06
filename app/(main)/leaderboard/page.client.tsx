@@ -168,8 +168,10 @@ const LeaderboardPage = () => {
 
         {/* Content */}
         {isLoading ? (
-          <div className="mt-12 flex justify-center">
-            <Loader message="Fetching rankings..." />
+          <div className="mt-12 space-y-3 animate-pulse">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="h-16 rounded-2xl bg-muted/30" />
+            ))}
           </div>
         ) : leaderboard.length === 0 ? (
           <div className="mt-10 rounded-[2rem] border border-border/60 dark:border-border/30 bg-card/40 backdrop-blur-xl p-12 text-center space-y-4">

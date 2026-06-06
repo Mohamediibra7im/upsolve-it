@@ -163,7 +163,7 @@ export default function StatisticsPage() {
     });
   }, [history]);
 
-  if (isLoading || isUserLoading) return <Loader />;
+  if (isUserLoading) return <Loader />;
   if (!user) return <Loader />;
 
   const handleRetry = async () => {
@@ -304,7 +304,16 @@ export default function StatisticsPage() {
           </div>
         </m.div>
 
-        {history && history.length > 0 && stats ? (
+        {isLoading ? (
+          <div className="space-y-4 animate-pulse">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-28 rounded-[1.5rem] bg-muted/30" />
+              ))}
+            </div>
+            <div className="h-64 w-full rounded-[2rem] bg-muted/20" />
+          </div>
+        ) : history && history.length > 0 && stats ? (
           <div>
             <AnimatePresence mode="wait">
               {tab === "overview" ? (

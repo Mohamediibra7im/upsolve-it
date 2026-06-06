@@ -499,6 +499,8 @@ const useTraining = () => {
   return {
     problems,
     isLoading: isUserLoading || isProblemsLoading || !isClient,
+    isInitializing: isUserLoading || !isClient,
+    isProblemsLoading,
     isRefreshing,
     training,
     isTraining,

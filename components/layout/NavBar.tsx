@@ -45,11 +45,11 @@ const userLinks = [
   {href: "/dashboard", label: "Dashboard", icon: LayoutDashboard},
   {href: "/training", label: "Training", icon: Target},
   {href: "/roadmap", label: "Roadmap", icon: Compass},
-  {href: "/leaderboard", label: "Leaderboard", icon: Trophy},
+  {href: "/upsolve", label: "Upsolve", icon: Layers},
   {href: "/training/reviews", label: "Reviews", icon: ClipboardList},
   {href: "/statistics", label: "Statistics", icon: LineChart},
   {href: "/friends", label: "Friends", icon: Users},
-  {href: "/upsolve", label: "Upsolve", icon: Layers},
+  {href: "/leaderboard", label: "Leaderboard", icon: Trophy},
   {href: "/levels", label: "Levels", icon: Trophy},
 ];
 

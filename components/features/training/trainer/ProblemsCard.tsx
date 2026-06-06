@@ -33,6 +33,7 @@ interface ProblemsCardProps {
   showRatings: boolean;
   hideContestDetails?: boolean;
   onProblemOpen?: (problem: TrainingProblem) => void;
+  isPoolLoading?: boolean;
 }
 
 const ProblemsCard = ({
@@ -48,6 +49,7 @@ const ProblemsCard = ({
   showRatings,
   hideContestDetails,
   onProblemOpen,
+  isPoolLoading,
 }: ProblemsCardProps) => {
   return (
     <m.div variants={fadeUp} initial="hidden" animate="show">
@@ -157,9 +159,15 @@ const ProblemsCard = ({
                 <div className="flex flex-col sm:flex-row justify-center gap-4">
                   <Button
                     onClick={onGenerateProblems}
-                    className="flex-1 h-14 text-base font-black uppercase tracking-widest bg-background border-2 border-primary/20 hover:border-primary text-primary hover:bg-primary/5 transition-all shadow-xl hover:shadow-primary/5"
+                    disabled={isPoolLoading}
+                    className="flex-1 h-14 text-base font-black uppercase tracking-widest bg-background border-2 border-primary/20 hover:border-primary text-primary hover:bg-primary/5 transition-all shadow-xl hover:shadow-primary/5 disabled:opacity-60 disabled:cursor-wait"
                   >
-                    {problems && problems.length > 0 ? (
+                    {isPoolLoading ? (
+                      <>
+                        <RefreshCw className="size-5 mr-3 animate-spin" />
+                        Loading Problems…
+                      </>
+                    ) : problems && problems.length > 0 ? (
                       <>
                         <RefreshCw className="size-5 mr-3" />
                         Regenerate Set

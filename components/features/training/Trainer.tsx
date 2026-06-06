@@ -31,6 +31,7 @@ interface TrainerProps {
   submissionStatuses: SubmissionStatus[];
   display: TrainerDisplayOptions;
   onProblemOpen?: (problem: TrainingProblem) => void;
+  isPoolLoading?: boolean;
 }
 
 const Trainer = ({
@@ -45,6 +46,7 @@ const Trainer = ({
   submissionStatuses,
   display,
   onProblemOpen,
+  isPoolLoading,
 }: TrainerProps) => {
   const isTraining = status === "training" || status === "refreshing";
   const isRefreshing = status === "refreshing";
@@ -131,6 +133,7 @@ const Trainer = ({
           showRatings={showRatings}
           hideContestDetails={hideContestDetails}
           onProblemOpen={onProblemOpen}
+          isPoolLoading={isPoolLoading}
         />
 
         <TrainingControls

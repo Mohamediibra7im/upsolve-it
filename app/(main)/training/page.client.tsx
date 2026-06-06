@@ -37,6 +37,7 @@ export default function TrainingPage() {
     training,
     isTraining,
     isLoading,
+    isInitializing,
     isRefreshing,
     refreshProblemStatus,
     finishTraining,
@@ -187,8 +188,8 @@ export default function TrainingPage() {
     training?.trainingMode === "contest" ||
     (isTraining && selectedMode === "contest");
 
-  if (isLoading) return <Loader />;
-  if (!user) return <Loader />;
+  // Block only on auth/client init — problems fetch runs in background while UI renders.
+  if (isInitializing || !user) return <Loader />;
 
   if (isTraining) {
     return (
@@ -242,6 +243,7 @@ export default function TrainingPage() {
                 hideContestDetails: hideContestDetails,
               }}
               onProblemOpen={notifyProblemOpened}
+              isPoolLoading={isLoading}
             />
           </div>
         </div>
@@ -365,6 +367,7 @@ export default function TrainingPage() {
                 hideContestDetails: hideContestDetails,
               }}
               onProblemOpen={notifyProblemOpened}
+              isPoolLoading={isLoading}
             />
           </m.div>
         </div>
