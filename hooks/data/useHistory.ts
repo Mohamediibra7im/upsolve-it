@@ -12,7 +12,7 @@ const useHistory = () => {
     error,
     mutate,
   } = useSWR<Training[]>(
-    typeof window !== "undefined" && user ? "/api/trainings" : null,
+    user ? "/api/trainings" : null,
     swrFetcher,
     {
       revalidateOnFocus: false,

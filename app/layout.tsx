@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Inter, Host_Grotesk, JetBrains_Mono } from "next/font/google";
 import type React from "react";
+import Script from "next/script";
 import AuthGuard from "@/components/providers/AuthGuard";
 import ThemeProvider from "@/components/providers/ThemeProvider";
 import { ToastProvider } from "@/components/providers/Toast";
@@ -78,9 +79,6 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <script id="structured-data" type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
       </head>
       <body className="font-sans antialiased" suppressHydrationWarning>
         <ThemeProvider
@@ -112,6 +110,11 @@ export default function RootLayout({
         </ToastProvider>
       </ThemeProvider>
         <Analytics />
+        <Script
+          id="structured-data"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
       </body>
     </html>
   );

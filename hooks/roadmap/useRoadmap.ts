@@ -121,7 +121,7 @@ export const useRoadmapLeaderboard = (query?: { level?: string; period?: string;
 
 export const useRoadmapActivity = (enabled = true) => {
   const { data, error, isLoading } = useSWR<RoadmapActivity>(
-    typeof window !== "undefined" && enabled ? "/api/roadmap/user/activity" : null,
+    enabled ? "/api/roadmap/user/activity" : null,
     swrFetcher,
     {
       revalidateOnFocus: false,

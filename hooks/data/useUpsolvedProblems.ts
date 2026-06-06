@@ -20,7 +20,7 @@ const useUpsolvedProblems = () => {
   } = useSolvedProblems(user);
 
   // ── Active upsolve problems ────────────────────────────────────────
-  const swrKey = typeof window !== "undefined" && user ? "/api/upsolve" : null;
+  const swrKey = user ? "/api/upsolve" : null;
   const {data, isLoading, error, mutate} = useSWR<TrainingProblem[]>(
     swrKey,
     swrFetcher,
@@ -33,7 +33,7 @@ const useUpsolvedProblems = () => {
   );
 
   // ── Dismissed (deleted) problem IDs ────────────────────────────────
-  const dismissedSwrKey = typeof window !== "undefined" && user ? "/api/upsolve/dismissed" : null;
+  const dismissedSwrKey = user ? "/api/upsolve/dismissed" : null;
   const {
     data: dismissedData,
     isLoading: isDismissedLoading,
