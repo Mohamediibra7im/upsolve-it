@@ -9,7 +9,7 @@ export interface RoadmapActivity {
 
 export const useRoadmapLevels = () => {
   const { data, error, isLoading, mutate } = useSWR<{ levels: RoadmapLevel[] }>(
-    typeof window !== "undefined" ? "/api/roadmap/levels" : null,
+    "/api/roadmap/levels",
     swrFetcher,
     {
       revalidateOnFocus: false,
@@ -28,7 +28,7 @@ export const useRoadmapLevels = () => {
 
 export const useRoadmapLevel = (levelId?: string) => {
   const { data, error, isLoading, mutate } = useSWR<RoadmapLevelDetail>(
-    typeof window !== "undefined" && levelId ? `/api/roadmap/levels/${levelId}` : null,
+    levelId ? `/api/roadmap/levels/${levelId}` : null,
     swrFetcher,
     {
       revalidateOnFocus: false,
@@ -48,7 +48,7 @@ export const useRoadmapLevel = (levelId?: string) => {
 export const useRoadmapTopic = (levelId?: string, topicId?: string, language?: string) => {
   const langParam = language === "Arabic" || language === "English" ? language : undefined;
   const swrKey =
-    typeof window !== "undefined" && levelId && topicId
+    levelId && topicId
       ? `/api/roadmap/levels/${levelId}/topics/${topicId}${langParam ? `?language=${langParam}` : ""}`
       : null;
 
@@ -72,7 +72,7 @@ export const useRoadmapTopic = (levelId?: string, topicId?: string, language?: s
 
 export const useRoadmapUserSummary = (enabled = true) => {
   const { data, error, isLoading, mutate } = useSWR<UserRoadmapSummary>(
-    typeof window !== "undefined" && enabled ? "/api/roadmap/user/summary" : null,
+    enabled ? "/api/roadmap/user/summary" : null,
     swrFetcher,
     {
       revalidateOnFocus: false,
@@ -102,7 +102,7 @@ export const useRoadmapLeaderboard = (query?: { level?: string; period?: string;
   const url = queryString ? `/api/roadmap/leaderboard?${queryString}` : "/api/roadmap/leaderboard";
 
   const { data, error, isLoading, mutate } = useSWR<{ leaderboard: LeaderboardEntry[] }>(
-    typeof window !== "undefined" ? url : null,
+    url,
     swrFetcher,
     {
       revalidateOnFocus: false,
