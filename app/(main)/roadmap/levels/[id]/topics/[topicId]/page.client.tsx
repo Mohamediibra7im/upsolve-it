@@ -650,6 +650,9 @@ export default function TopicPage() {
                                     <ExternalLink size={9} className="shrink-0 opacity-0 group-hover:opacity-50 transition-opacity" />
                                   </a>
                                   <p className="text-[8px] text-muted-foreground/40 mt-0.5">{res.type}{res.weight === 0 ? " · Optional" : ""}</p>
+                                  {res.description && (
+                                    <p className="text-[10px] text-muted-foreground/55 mt-1 leading-relaxed line-clamp-2">{res.description}</p>
+                                  )}
                                 </div>
                                 <span className={cn("shrink-0 text-[8px] font-black px-1.5 py-0.5 rounded-full border", rProg.isCompleted ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : "text-amber-400 bg-amber-500/10 border-amber-500/20")}>
                                   +{res.xpReward}
@@ -709,6 +712,9 @@ export default function TopicPage() {
                                 <span className="text-[9px] text-muted-foreground/40">{res.type}</span>
                                 {res.weight === 0 && <span className="text-[8px] font-black text-muted-foreground/30 bg-muted/40 border border-border/30 px-1.5 py-0.5 rounded uppercase">Optional</span>}
                               </div>
+                              {res.description && (
+                                <p className="text-[10px] text-muted-foreground/55 mt-1 leading-relaxed line-clamp-2">{res.description}</p>
+                              )}
                             </div>
                             <span className={cn("shrink-0 text-[9px] font-black px-2 py-0.5 rounded-full border", rProg.isCompleted ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : "text-sky-400 bg-sky-500/10 border-sky-500/20")}>
                               +{res.xpReward} XP
