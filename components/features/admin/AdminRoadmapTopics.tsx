@@ -34,7 +34,6 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/providers/Toast";
 import type { RoadmapTopicSummary } from "@/types/Roadmap";
-import { cn } from "@/lib/utils";
 
 interface AdminRoadmapTopicsProps {
   levelId: string;

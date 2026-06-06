@@ -6,16 +6,13 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   BarChart,
   Target,
   Loader2,
   Zap,
-  Activity,
   Calendar,
   Clock,
   Shield,
@@ -110,7 +107,7 @@ interface SkillRingProps {
   glowColor: string;
 }
 
-function SkillRing({ percent, label, icon: Icon, colorClass, glowColor }: Readonly<SkillRingProps>) {
+function SkillRing({ percent, label, icon: Icon, colorClass }: Readonly<SkillRingProps>) {
   const radius = 32;
   const stroke = 6;
   const circumference = 2 * Math.PI * radius;
@@ -179,7 +176,7 @@ export function UserProfileDialog({
   const stats = userStats?.stats;
   const user = userStats?.user;
   const xp = user?.xp ?? 0;
-  const { level, nextLevelXp, progressPercent, title: xpTitle } = getXPLevel(xp);
+  const { level, progressPercent, title: xpTitle } = getXPLevel(xp);
   const aesthetic = getRankAesthetics(user?.rating ?? 0);
 
   // Compute Achievements (Gamified Badges)

@@ -139,7 +139,7 @@ export default function TopicPage() {
 
   const lastSentRef = useRef<Record<string, number>>({});
 
-  const arabicResources = useMemo(() => (data?.resources ?? []).filter((r) => r.language === "Arabic"), [data]);
+  const _arabicResources = useMemo(() => (data?.resources ?? []).filter((r) => r.language === "Arabic"), [data]);
   const englishResources = useMemo(() => (data?.resources ?? []).filter((r) => r.language === "English"), [data]);
   const videoResources = useMemo(() => (data?.resources ?? []).filter((r) => r.type === "Video" && r.language === "Arabic"), [data]);
   const arabicNonVideoResources = useMemo(() => (data?.resources ?? []).filter((r) => r.language === "Arabic" && r.type !== "Video"), [data]);

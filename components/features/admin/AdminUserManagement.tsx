@@ -14,9 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Crown, Shield, Search, ArrowUpDown, Loader2, Users, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, RefreshCw } from 'lucide-react';
 import { useToast } from '@/components/providers/Toast';
 import { useAdminUsers, updateUserRole, syncBatchUserRatings } from '@/hooks/admin/useAdminUsers';
-import { apiFetcher } from '@/lib/apiClient';
 import { User } from '@/types/User';
-import type { UserTrainingStatsView } from '@/types/userTrainingStats';
 
 // Import new modular components
 import { UserTable } from './UserTable';

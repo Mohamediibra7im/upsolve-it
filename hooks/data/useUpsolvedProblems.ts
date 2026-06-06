@@ -1,4 +1,4 @@
-import {useState, useCallback, useMemo, useEffect} from "react";
+import { useCallback, useMemo, useEffect } from "react";
 import useSWR from "swr";
 import { TrainingProblem } from "@/types/TrainingProblem";
 import { Training } from "@/types/Training";

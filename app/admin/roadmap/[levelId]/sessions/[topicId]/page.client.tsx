@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
-  Video,
   Target,
   Trash2,
   Award,
@@ -17,7 +16,6 @@ import {
   Plus,
   Globe,
   Settings,
-  HelpCircle,
   FileText,
   ChevronRight
 } from "lucide-react";
@@ -82,6 +80,153 @@ function extractCfProblemId(url: string): string {
     // Ignore
   }
   return "";
+}
+
+type ResourceTableProps = {
+  list: RoadmapResource[];
+  title: string;
+  description: string;
+  emptyMessage: string;
+  onAdd: () => void;
+  addButtonText: string;
+  badgeColor: string;
+  badgeText: string;
+  onEdit: (res: RoadmapResource) => void;
+  onDelete: (id: string) => void;
+};
+
+function ResourceTable({
+  list,
+  title,
+  description,
+  emptyMessage,
+  onAdd,
+  addButtonText,
+  badgeColor,
+  badgeText,
+  onEdit,
+  onDelete,
+}: ResourceTableProps) {
+  return (
+    <div className="rounded-[2rem] border border-border/40 bg-card/40 backdrop-blur-xl overflow-hidden">
+      <div className="flex flex-wrap items-center justify-between border-b border-border/40 px-8 py-5 gap-4">
+        <div className="flex items-center gap-3">
+          <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+            <BookOpen size={18} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-black text-foreground">{title}</h2>
+              <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider border", badgeColor)}>
+                {badgeText}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">{description}</p>
+          </div>
+        </div>
+        <Button
+          onClick={onAdd}
+          className="rounded-xl bg-primary text-xs font-black uppercase tracking-[0.1em] text-primary-foreground gap-2"
+        >
+          <Plus size={16} />
+          {addButtonText}
+        </Button>
+      </div>
+      {list.length === 0 ? (
+        <div className="p-12 text-center text-muted-foreground italic text-sm">
+          {emptyMessage}
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader className="bg-background/30">
+              <TableRow>
+                <TableHead className="px-6 py-4 w-12 text-[10px] font-black uppercase tracking-widest">#</TableHead>
+                <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest">Title</TableHead>
+                <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-center">Lang</TableHead>
+                <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-center">Type</TableHead>
+                <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-center">Weight</TableHead>
+                <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-center">XP</TableHead>
+                <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {list.map((res) => (
+                <TableRow key={res._id} className="hover:bg-card/30">
+                  <TableCell className="px-6 py-4 font-mono text-xs font-bold text-muted-foreground">
+                    {res.orderIndex}
+                  </TableCell>
+                  <TableCell className="px-6 py-4">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-foreground">{res.title}</span>
+                      <a
+                        href={res.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] text-primary hover:underline flex items-center gap-1 mt-1 truncate max-w-sm"
+                      >
+                        {res.url}
+                        <ExternalLink size={10} />
+                      </a>
+                      {res.description && (
+                        <span className="text-[10px] text-muted-foreground/60 mt-1 italic">{res.description}</span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-center">
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold border",
+                        res.language === "Arabic"
+                          ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                          : "bg-sky-500/10 text-sky-400 border-sky-500/20"
+                      )}
+                    >
+                      <Globe size={10} />
+                      {res.language}
+                    </span>
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-center">
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      {res.type}
+                    </span>
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-center">
+                    <span className={cn("text-xs font-bold", res.weight === 0 ? "text-muted-foreground/40" : "text-emerald-400")}>
+                      {res.weight === 0 ? "Optional" : `${res.weight} pts`}
+                    </span>
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-center text-xs font-bold text-primary">
+                    +{res.xpReward} XP
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onEdit(res)}
+                        className="h-8 w-8 rounded-lg hover:bg-secondary"
+                      >
+                        <Edit2 size={12} className="text-muted-foreground" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onDelete(res._id)}
+                        className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 size={12} />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function AdminSessionDetailClient() {
@@ -240,6 +385,31 @@ export default function AdminSessionDetailClient() {
     setEditingResource(null);
   };
 
+  const handleOpenEditResource = (res: RoadmapResource) => {
+    setEditingResource(res);
+    setResTitle(res.title);
+    setResDescription(res.description || "");
+    setResLanguage(res.language);
+    setResType(res.type);
+    setResUrl(res.url);
+    setResWeight(res.weight ?? 1);
+    setResXpReward(res.xpReward ?? 10);
+    setResVideoThreshold(res.videoCompletionThresholdPct ?? 80);
+    setResOrderIndex(res.orderIndex);
+    setIsResourceDialogOpen(true);
+  };
+
+  const handleDeleteResource = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this resource?")) return;
+    try {
+      await deleteResource(id);
+      toast({ title: "Deleted", description: "Resource deleted successfully", variant: "success" });
+      await loadTopicData();
+    } catch (_err: unknown) {
+      toast({ title: "Error", description: "Failed to delete resource", variant: "destructive" });
+    }
+  };
+
   const handleOpenCreateResource = (
     presetLang: "Arabic" | "English" = "Arabic",
     presetType: RoadmapResource["type"] = "Video",
@@ -251,19 +421,6 @@ export default function AdminSessionDetailClient() {
     setIsResourceDialogOpen(true);
   };
 
-  const handleOpenEditResource = (r: RoadmapResource) => {
-    setEditingResource(r);
-    setResTitle(r.title);
-    setResDescription(r.description || "");
-    setResLanguage(r.language);
-    setResType(r.type);
-    setResUrl(r.url);
-    setResWeight(r.weight ?? 0);
-    setResXpReward(r.xpReward ?? 10);
-    setResVideoThreshold(r.videoCompletionThresholdPct ?? 85);
-    setResOrderIndex(r.orderIndex);
-    setIsResourceDialogOpen(true);
-  };
 
   const handleResourceSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -299,16 +456,6 @@ export default function AdminSessionDetailClient() {
     }
   };
 
-  const handleDeleteResource = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this resource?")) return;
-    try {
-      await deleteResource(id);
-      toast({ title: "Deleted", description: "Resource deleted successfully", variant: "success" });
-      await loadTopicData();
-    } catch (err: any) {
-      toast({ title: "Error", description: "Failed to delete resource", variant: "destructive" });
-    }
-  };
 
   // Problem Form Helpers
   const resetProblemForm = () => {
@@ -320,10 +467,6 @@ export default function AdminSessionDetailClient() {
     setEditingProblem(null);
   };
 
-  const handleOpenCreateProblem = () => {
-    resetProblemForm();
-    setIsProblemDialogOpen(true);
-  };
 
   const handleOpenEditProblem = (p: RoadmapProblem) => {
     setEditingProblem(p);
@@ -371,7 +514,7 @@ export default function AdminSessionDetailClient() {
       await deleteProblem(id);
       toast({ title: "Deleted", description: "Problem deleted successfully", variant: "success" });
       await loadTopicData();
-    } catch (err: any) {
+    } catch (_err: unknown) {
       toast({ title: "Error", description: "Failed to delete problem", variant: "destructive" });
     }
   };
@@ -386,7 +529,7 @@ export default function AdminSessionDetailClient() {
       });
       toast({ title: "Saved", description: "Group settings updated successfully", variant: "success" });
       await loadTopicData();
-    } catch (err: any) {
+    } catch (_err: unknown) {
       toast({ title: "Error", description: "Failed to save group settings", variant: "destructive" });
     } finally {
       setIsSavingGroupSettings(false);
@@ -579,7 +722,10 @@ export default function AdminSessionDetailClient() {
     return list.reduce((sum: number, r: RoadmapResource) => sum + (r.weight ?? 0), 0);
   }, [topicData?.resources]);
 
-  const resourcesList: RoadmapResource[] = topicData?.resources ?? [];
+  const resourcesList: RoadmapResource[] = useMemo(
+    () => topicData?.resources ?? [],
+    [topicData?.resources],
+  );
   const arabicMainResources = useMemo(() => {
     return resourcesList.filter((r) => r.language === "Arabic" && r.type === "Video");
   }, [resourcesList]);
@@ -608,149 +754,6 @@ export default function AdminSessionDetailClient() {
       </div>
     );
   }
-
-  const ResourceTable = ({
-    list,
-    title,
-    description,
-    emptyMessage,
-    onAdd,
-    addButtonText,
-    badgeColor,
-    badgeText,
-  }: {
-    list: RoadmapResource[];
-    title: string;
-    description: string;
-    emptyMessage: string;
-    onAdd: () => void;
-    addButtonText: string;
-    badgeColor: string;
-    badgeText: string;
-  }) => {
-    return (
-      <div className="rounded-[2rem] border border-border/40 bg-card/40 backdrop-blur-xl overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between border-b border-border/40 px-8 py-5 gap-4">
-          <div className="flex items-center gap-3">
-            <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-              <BookOpen size={18} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-black text-foreground">{title}</h2>
-                <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider border", badgeColor)}>
-                  {badgeText}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">{description}</p>
-            </div>
-          </div>
-
-          <Button
-            onClick={onAdd}
-            className="rounded-xl bg-primary text-xs font-black uppercase tracking-[0.1em] text-primary-foreground gap-2"
-          >
-            <Plus size={16} />
-            {addButtonText}
-          </Button>
-        </div>
-
-        {list.length === 0 ? (
-          <div className="p-12 text-center text-muted-foreground italic text-sm">
-            {emptyMessage}
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader className="bg-background/30">
-                <TableRow>
-                  <TableHead className="px-6 py-4 w-12 text-[10px] font-black uppercase tracking-widest">#</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest">Title</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-center">Lang</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-center">Type</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-center">Weight</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-center">XP</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {list.map((res) => (
-                  <TableRow key={res._id} className="hover:bg-card/30">
-                    <TableCell className="px-6 py-4 font-mono text-xs font-bold text-muted-foreground">
-                      {res.orderIndex}
-                    </TableCell>
-                    <TableCell className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-bold text-foreground">{res.title}</span>
-                        <a
-                          href={res.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[11px] text-primary hover:underline flex items-center gap-1 mt-1 truncate max-w-sm"
-                        >
-                          {res.url}
-                          <ExternalLink size={10} />
-                        </a>
-                        {res.description && (
-                          <span className="text-[10px] text-muted-foreground/60 mt-1 italic">{res.description}</span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="px-6 py-4 text-center">
-                      <span
-                        className={cn(
-                          "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold border",
-                          res.language === "Arabic"
-                            ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                            : "bg-sky-500/10 text-sky-400 border-sky-500/20"
-                        )}
-                      >
-                        <Globe size={10} />
-                        {res.language}
-                      </span>
-                    </TableCell>
-                    <TableCell className="px-6 py-4 text-center">
-                      <span className="text-xs font-semibold text-muted-foreground">
-                        {res.type}
-                      </span>
-                    </TableCell>
-                    <TableCell className="px-6 py-4 text-center">
-                      <span className={cn("text-xs font-bold", res.weight === 0 ? "text-muted-foreground/40" : "text-emerald-400")}>
-                        {res.weight === 0 ? "Optional" : `${res.weight} pts`}
-                      </span>
-                    </TableCell>
-                    <TableCell className="px-6 py-4 text-center text-xs font-bold text-primary">
-                      +{res.xpReward} XP
-                    </TableCell>
-                    <TableCell className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleOpenEditResource(res)}
-                          className="h-8 w-8 rounded-lg hover:bg-secondary"
-                        >
-                          <Edit2 size={12} className="text-muted-foreground" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteResource(res._id)}
-                          className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10"
-                        >
-                          <Trash2 size={12} />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </div>
-    );
-  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-16">
@@ -851,6 +854,8 @@ export default function AdminSessionDetailClient() {
             addButtonText="Add Main Resource"
             badgeColor="bg-amber-500/10 text-amber-400 border-amber-500/20"
             badgeText="Arabic Video"
+            onEdit={handleOpenEditResource}
+            onDelete={handleDeleteResource}
           />
 
           <ResourceTable
@@ -862,6 +867,8 @@ export default function AdminSessionDetailClient() {
             addButtonText="Add General Resource"
             badgeColor="bg-amber-500/10 text-amber-400 border-amber-500/20"
             badgeText="Arabic General"
+            onEdit={handleOpenEditResource}
+            onDelete={handleDeleteResource}
           />
 
           <ResourceTable
@@ -873,6 +880,8 @@ export default function AdminSessionDetailClient() {
             addButtonText="Add English Resource"
             badgeColor="bg-sky-500/10 text-sky-400 border-sky-500/20"
             badgeText="English Path"
+            onEdit={handleOpenEditResource}
+            onDelete={handleDeleteResource}
           />
         </div>
       )}

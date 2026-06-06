@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useUser } from "@/hooks/auth";
 import { useFriendRequests } from "@/hooks/social";
-import Loader from "@/components/shared/Loader";
 import { useHistory } from "@/hooks/data";
 import { useUpsolvedProblems } from "@/hooks/data";
 import { useHeatmapData } from "@/hooks/data";

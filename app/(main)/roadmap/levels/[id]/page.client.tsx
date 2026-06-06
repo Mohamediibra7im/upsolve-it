@@ -9,7 +9,6 @@ import {
   Lock,
   Target,
   ArrowLeft,
-  Video,
   Award,
   Activity,
   Shield,
