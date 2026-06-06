@@ -151,10 +151,10 @@ function ResourceTable({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {list.map((res) => (
+              {list.map((res, i) => (
                 <TableRow key={res._id} className="hover:bg-card/30">
                   <TableCell className="px-6 py-4 font-mono text-xs font-bold text-muted-foreground">
-                    {res.orderIndex}
+                    {i + 1}
                   </TableCell>
                   <TableCell className="px-6 py-4">
                     <div className="flex flex-col">
@@ -381,7 +381,7 @@ export default function AdminSessionDetailClient() {
     const sameLangCount = lang
       ? resources.filter((r: RoadmapResource) => r.language === lang).length
       : resources.length;
-    setResOrderIndex(sameLangCount);
+    setResOrderIndex(sameLangCount + 1);
     setEditingResource(null);
   };
 

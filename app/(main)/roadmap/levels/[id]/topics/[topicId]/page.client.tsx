@@ -23,6 +23,7 @@ import {
   LayoutList,
   GraduationCap,
   Layers,
+  Loader2,
 } from "lucide-react";
 import Loader from "@/components/shared/Loader";
 import { useRoadmapTopic, useRoadmapLevel, useRoadmapUserSummary } from "@/hooks/roadmap/useRoadmap";
@@ -128,6 +129,7 @@ export default function TopicPage() {
   const [togglingProblemIds, setTogglingProblemIds] = useState<Set<string>>(new Set());
   const [isSwitchLangConfirmOpen, setIsSwitchLangConfirmOpen] = useState(false);
   const [pendingLangSwitch, setPendingLangSwitch] = useState<"Arabic" | "English" | null>(null);
+  const [isCompletingLearning, setIsCompletingLearning] = useState(false);
 
   const { data, isLoading, error, mutate } = useRoadmapTopic(levelId, topicId, selectedLanguage ?? undefined);
   const { mutateSummary } = useRoadmapUserSummary(!!user);
@@ -265,8 +267,33 @@ export default function TopicPage() {
     }
   }, [user, togglingProblemIds, selectedLanguage, mutate, mutateLevel, mutateSummary, toast]);
 
-  if (error && !data) {
-    return (
+  const handleCompleteLearning = useCallback(async () => {
+    if (!user || isCompletingLearning) return;
+    setIsCompletingLearning(true);
+    mutate((current) => {
+      if (!current) return current;
+      return { ...current, progress: { ...current.progress, learningPct: 100 } };
+    }, false);
+    try {
+      const res = await apiClient.post<{ ok: boolean; xpEarned: number; learningPct: number }>(
+        `/api/roadmap/topics/${topicId}/complete-learning${selectedLanguage ? `?language=${selectedLanguage}` : ""}`
+      );
+      const xp = res.xpEarned ?? 0;
+      toast({
+        title: "Learning Complete!",
+        description: xp > 0 ? `Earned +${xp} XP!` : "All resources marked as complete.",
+        variant: "success",
+      });
+      mutate(); mutateLevel(); mutateSummary();
+    } catch (err: any) {
+      mutate();
+      toast({ title: "Failed", description: err.message || "Could not complete learning.", variant: "destructive" });
+    } finally {
+      setIsCompletingLearning(false);
+    }
+  }, [user, isCompletingLearning, topicId, selectedLanguage, mutate, mutateLevel, mutateSummary, toast]);
+
+  if (error && !data) {    return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-3">
           <p className="text-sm font-bold text-destructive uppercase tracking-wider">Failed to load topic</p>
@@ -444,7 +471,7 @@ export default function TopicPage() {
                   <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-muted-foreground/50">
                     <span className="flex items-center gap-1"><BookOpen size={10} /> Learn</span>
                     <span className={cn(learningPct >= (data.topic.requiredLearningPct ?? 80) ? "text-emerald-400" : "text-primary")}>
-                      {Math.round(learningPct)}% / {data.topic.requiredLearningPct}%
+                      {Math.round(learningPct)}% / 100%
                     </span>
                   </div>
                   <div className="h-2 w-full rounded-full bg-background border border-border/40 overflow-hidden">
@@ -520,150 +547,200 @@ export default function TopicPage() {
 
               {/* ── ARABIC LEARNING ── */}
               {selectedLanguage === "Arabic" && (
-                <div className="grid lg:grid-cols-3 gap-5">
-                  {/* Video player — takes 2 cols */}
-                  <div className="lg:col-span-2 space-y-4">
-                    {activeVideo ? (
-                      <div className="rounded-[1.75rem] border border-border/60 dark:border-border/40 bg-card/50 dark:bg-card/20 backdrop-blur-xl overflow-hidden shadow-lg">
-                        {/* Player header */}
-                        <div className="flex items-center justify-between px-5 py-3.5 border-b border-border/40 bg-background/30">
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="size-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_6px_rgba(16,185,129,0.6)] shrink-0" />
-                            <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/70 truncate">
-                              {activeVideo.title}
-                            </span>
-                          </div>
-                          {activeVideoProgress?.isCompleted && (
-                            <span className="shrink-0 inline-flex items-center gap-1 text-[9px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
-                              <CheckCircle2 size={10} /> Watched
-                            </span>
-                          )}
-                        </div>
-                        <div className="overflow-hidden">
-                          <VideoPlayer
-                            youtubeUrl={activeVideo.url}
-                            initialSeekSeconds={activeVideoProgress?.lastPositionSec ?? 0}
-                            onProgress={(payload) => handleVideoProgress(activeVideo._id, payload)}
-                          />
-                        </div>
-                        {/* Watch progress */}
-                        <div className="px-5 py-3 border-t border-border/40 bg-background/20">
-                          <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-muted-foreground/40 mb-1.5">
-                            <span>Watch Progress</span>
-                            <span>{activeVideoProgress?.watchPct ?? 0}%</span>
-                          </div>
-                          <div className="h-1.5 w-full rounded-full bg-muted/60 overflow-hidden">
-                            <div className={cn("h-full rounded-full bg-gradient-to-r from-primary to-emerald-400 transition-all duration-300", progressWidthClass(activeVideoProgress?.watchPct ?? 0))} />
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="rounded-[1.75rem] border border-border/60 bg-card/50 backdrop-blur-xl p-12 text-center">
-                        <Video className="size-10 text-muted-foreground/20 mx-auto mb-3" />
-                        <p className="text-sm font-bold text-muted-foreground/50">No video available for this topic.</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Sidebar — video playlist + extra resources */}
-                  <div className="space-y-4">
-                    {/* Video playlist */}
-                    {videoResources.length > 1 && (
-                      <div className="rounded-[1.75rem] border border-border/60 dark:border-border/40 bg-card/50 dark:bg-card/20 backdrop-blur-xl overflow-hidden shadow-md">
-                        <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-border/40 bg-amber-500/5">
-                          <div className="size-7 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-                            <LayoutList size={12} className="text-amber-400" />
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-black uppercase tracking-wider text-amber-400">Playlist</p>
-                            <p className="text-[9px] text-muted-foreground/50">{videoResources.length} lectures</p>
-                          </div>
-                        </div>
-                        <div className="divide-y divide-border/30 max-h-64 overflow-y-auto">
-                          {videoResources.map((v, idx) => {
-                            const vProg = data.progress?.resourceProgress?.[v._id];
-                            const isActive = v._id === activeVideoId;
-                            return (
-                              <button
-                                key={v._id}
-                                type="button"
-                                onClick={() => setActiveVideoId(v._id)}
-                                className={cn(
-                                  "w-full flex items-center gap-3 px-4 py-3 text-left transition-all duration-150",
-                                  isActive ? "bg-primary/8 border-l-2 border-l-primary" : "hover:bg-background/60 border-l-2 border-l-transparent"
-                                )}
-                              >
-                                <span className={cn(
-                                  "shrink-0 size-6 rounded-full flex items-center justify-center text-[9px] font-black",
-                                  isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                                )}>
-                                  {vProg?.isCompleted ? <Check size={10} strokeWidth={3} /> : idx + 1}
-                                </span>
-                                <span className={cn(
-                                  "text-[10px] font-bold line-clamp-2 leading-tight flex-1",
-                                  isActive ? "text-primary" : "text-muted-foreground/80"
-                                )}>
-                                  {v.title}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Non-video Arabic resources */}
-                    {arabicNonVideoResources.length > 0 && (
-                      <div className="rounded-[1.75rem] border border-border/60 dark:border-border/40 bg-card/50 dark:bg-card/20 backdrop-blur-xl overflow-hidden shadow-md">
-                        <div className="flex items-center justify-between px-5 py-3.5 border-b border-border/40 bg-amber-500/5">
-                          <div className="flex items-center gap-2.5">
-                            <div className="size-7 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-                              <FileText size={12} className="text-amber-400" />
-                            </div>
-                            <div>
-                              <p className="text-[10px] font-black uppercase tracking-wider text-amber-400">Extra Materials</p>
-                              <p className="text-[9px] text-muted-foreground/50">
-                                {arabicNonVideoResources.filter(r => data.progress?.resourceProgress?.[r._id]?.isCompleted).length}/{arabicNonVideoResources.length} done
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="divide-y divide-border/30">
-                          {arabicNonVideoResources.map((res, idx) => {
-                            const rProg = data.progress?.resourceProgress?.[res._id] || { watchPct: 0, isCompleted: false };
-                            const isToggling = togglingResourceIds.has(res._id);
-                            return (
-                              <div key={res._id} className={cn("flex items-center gap-3 px-4 py-3 transition-all duration-150", rProg.isCompleted ? "bg-emerald-500/[0.04]" : "hover:bg-background/60")}>
-                                <span className="text-[9px] font-mono text-muted-foreground/25 w-4 shrink-0 text-center">{idx + 1}</span>
-                                <button
-                                  type="button"
-                                  disabled={isToggling || !user}
-                                  onClick={() => handleToggleResource(res._id, rProg.isCompleted)}
-                                  aria-label={`Mark ${res.title} as ${rProg.isCompleted ? "incomplete" : "complete"}`}
-                                  className={cn("shrink-0 size-5 rounded-md border flex items-center justify-center transition-all", isToggling && "opacity-50 cursor-wait animate-pulse", rProg.isCompleted ? "bg-emerald-500 border-emerald-500 text-white" : "border-muted-foreground/30 bg-background hover:border-amber-400/50")}
-                                >
-                                  {rProg.isCompleted && <Check size={10} strokeWidth={3} />}
-                                </button>
-                                <div className="flex-1 min-w-0">
-                                  <a href={res.url} target="_blank" rel="noopener noreferrer" className={cn("text-[10px] font-bold line-clamp-1 flex items-center gap-1 group transition-colors", rProg.isCompleted ? "text-muted-foreground/40 line-through" : "text-foreground hover:text-amber-400")}>
-                                    {res.title}
-                                    <ExternalLink size={9} className="shrink-0 opacity-0 group-hover:opacity-50 transition-opacity" />
-                                  </a>
-                                  <p className="text-[8px] text-muted-foreground/40 mt-0.5">{res.type}{res.weight === 0 ? " · Optional" : ""}</p>
-                                  {res.description && (
-                                    <p className="text-[10px] text-muted-foreground/55 mt-1 leading-relaxed line-clamp-2">{res.description}</p>
-                                  )}
-                                </div>
-                                <span className={cn("shrink-0 text-[8px] font-black px-1.5 py-0.5 rounded-full border", rProg.isCompleted ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : "text-amber-400 bg-amber-500/10 border-amber-500/20")}>
-                                  +{res.xpReward}
+                <div className="space-y-5">
+                  {videoResources.length > 1 ? (
+                    <div className="grid lg:grid-cols-3 gap-5">
+                      {/* Video player — takes 2 cols */}
+                      <div className="lg:col-span-2 space-y-4">
+                        {activeVideo ? (
+                          <div className="rounded-[1.75rem] border border-border/60 dark:border-border/40 bg-card/50 dark:bg-card/20 backdrop-blur-xl overflow-hidden shadow-lg">
+                            {/* Player header */}
+                            <div className="flex items-center justify-between px-5 py-3.5 border-b border-border/40 bg-background/30">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="size-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_6px_rgba(16,185,129,0.6)] shrink-0" />
+                                <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/70 truncate">
+                                  {activeVideo.title}
                                 </span>
                               </div>
-                            );
-                          })}
+                              {activeVideoProgress?.isCompleted && (
+                                <span className="shrink-0 inline-flex items-center gap-1 text-[9px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
+                                  <CheckCircle2 size={10} /> Watched
+                                </span>
+                              )}
+                            </div>
+                            <div className="overflow-hidden">
+                              <VideoPlayer
+                                youtubeUrl={activeVideo.url}
+                                initialSeekSeconds={activeVideoProgress?.lastPositionSec ?? 0}
+                                onProgress={(payload) => handleVideoProgress(activeVideo._id, payload)}
+                              />
+                            </div>
+                            {/* Watch progress */}
+                            <div className="px-5 py-3 border-t border-border/40 bg-background/20">
+                              <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-muted-foreground/40 mb-1.5">
+                                <span>Watch Progress</span>
+                                <span>{activeVideoProgress?.watchPct ?? 0}%</span>
+                              </div>
+                              <div className="h-1.5 w-full rounded-full bg-muted/60 overflow-hidden">
+                                <div className={cn("h-full rounded-full bg-gradient-to-r from-primary to-emerald-400 transition-all duration-300", progressWidthClass(activeVideoProgress?.watchPct ?? 0))} />
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="rounded-[1.75rem] border border-border/60 bg-card/50 backdrop-blur-xl p-12 text-center">
+                            <Video className="size-10 text-muted-foreground/20 mx-auto mb-3" />
+                            <p className="text-sm font-bold text-muted-foreground/50">No video available for this topic.</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Sidebar — video playlist */}
+                      <div className="space-y-4">
+                        <div className="rounded-[1.75rem] border border-border/60 dark:border-border/40 bg-card/50 dark:bg-card/20 backdrop-blur-xl overflow-hidden shadow-md">
+                          <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-border/40 bg-amber-500/5">
+                            <div className="size-7 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                              <LayoutList size={12} className="text-amber-400" />
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-black uppercase tracking-wider text-amber-400">Playlist</p>
+                              <p className="text-[9px] text-muted-foreground/50">{videoResources.length} lectures</p>
+                            </div>
+                          </div>
+                          <div className="divide-y divide-border/30 max-h-64 overflow-y-auto">
+                            {videoResources.map((v, idx) => {
+                              const vProg = data.progress?.resourceProgress?.[v._id];
+                              const isActive = v._id === activeVideoId;
+                              return (
+                                <button
+                                  key={v._id}
+                                  type="button"
+                                  onClick={() => setActiveVideoId(v._id)}
+                                  className={cn(
+                                    "w-full flex items-center gap-3 px-4 py-3 text-left transition-all duration-150",
+                                    isActive ? "bg-primary/8 border-l-2 border-l-primary" : "hover:bg-background/60 border-l-2 border-l-transparent"
+                                  )}
+                                >
+                                  <span className={cn(
+                                    "shrink-0 size-6 rounded-full flex items-center justify-center text-[9px] font-black",
+                                    isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                                  )}>
+                                    {vProg?.isCompleted ? <Check size={10} strokeWidth={3} /> : idx + 1}
+                                  </span>
+                                  <span className={cn(
+                                    "text-[10px] font-bold line-clamp-2 leading-tight flex-1",
+                                    isActive ? "text-primary" : "text-muted-foreground/80"
+                                  )}>
+                                    {v.title}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    /* Single video — full width, aligned with other cards */
+                    <div className="space-y-4">
+                      {activeVideo ? (
+                        <div className="rounded-[1.75rem] border border-border/60 dark:border-border/40 bg-card/50 dark:bg-card/20 backdrop-blur-xl overflow-hidden shadow-lg">
+                          <div className="flex items-center justify-between px-5 py-3.5 border-b border-border/40 bg-background/30">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="size-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_6px_rgba(16,185,129,0.6)] shrink-0" />
+                              <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/70 truncate">
+                                {activeVideo.title}
+                              </span>
+                            </div>
+                            {activeVideoProgress?.isCompleted && (
+                              <span className="shrink-0 inline-flex items-center gap-1 text-[9px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
+                                <CheckCircle2 size={10} /> Watched
+                              </span>
+                            )}
+                          </div>
+                          <div className="overflow-hidden">
+                            <VideoPlayer
+                              youtubeUrl={activeVideo.url}
+                              initialSeekSeconds={activeVideoProgress?.lastPositionSec ?? 0}
+                              onProgress={(payload) => handleVideoProgress(activeVideo._id, payload)}
+                            />
+                          </div>
+                          <div className="px-5 py-3 border-t border-border/40 bg-background/20">
+                            <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-muted-foreground/40 mb-1.5">
+                              <span>Watch Progress</span>
+                              <span>{activeVideoProgress?.watchPct ?? 0}%</span>
+                            </div>
+                            <div className="h-1.5 w-full rounded-full bg-muted/60 overflow-hidden">
+                              <div className={cn("h-full rounded-full bg-gradient-to-r from-primary to-emerald-400 transition-all duration-300", progressWidthClass(activeVideoProgress?.watchPct ?? 0))} />
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="rounded-[1.75rem] border border-border/60 bg-card/50 backdrop-blur-xl p-12 text-center">
+                          <Video className="size-10 text-muted-foreground/20 mx-auto mb-3" />
+                          <p className="text-sm font-bold text-muted-foreground/50">No video available for this topic.</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Extra Materials — full width below video */}
+                  {arabicNonVideoResources.length > 0 && (
+                    <div className="rounded-[1.75rem] border border-border/60 dark:border-border/40 bg-card/50 dark:bg-card/20 backdrop-blur-xl overflow-hidden shadow-lg">
+                      <div className="flex items-center justify-between px-6 py-4 border-b border-border/40 bg-amber-500/5">
+                        <div className="flex items-center gap-3">
+                          <div className="size-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                            <FileText size={15} className="text-amber-400" />
+                          </div>
+                          <div>
+                            <h3 className="text-[11px] font-black uppercase tracking-wider text-amber-400">Extra Materials</h3>
+                            <p className="text-[9px] text-muted-foreground/50 mt-0.5">{arabicNonVideoResources.length} resource{arabicNonVideoResources.length !== 1 ? "s" : ""} · check off each one as you go</p>
+                          </div>
+                        </div>
+                        <span className="text-[9px] font-black text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full">
+                          {arabicNonVideoResources.filter(r => data.progress?.resourceProgress?.[r._id]?.isCompleted).length}/{arabicNonVideoResources.length} done
+                        </span>
+                      </div>
+                      <div className="divide-y divide-border/30">
+                        {arabicNonVideoResources.map((res, idx) => {
+                          const rProg = data.progress?.resourceProgress?.[res._id] || { watchPct: 0, isCompleted: false };
+                          const isToggling = togglingResourceIds.has(res._id);
+                          return (
+                            <div key={res._id} className={cn("group flex items-center gap-4 px-6 py-4 transition-all duration-150", rProg.isCompleted ? "bg-emerald-500/[0.04]" : "hover:bg-background/50")}>
+                              <span className="text-[10px] font-mono text-muted-foreground/25 w-5 shrink-0 text-center">{idx + 1}</span>
+                              <div className="shrink-0 size-8 rounded-xl bg-background border border-border/40 flex items-center justify-center group-hover:border-amber-500/20 transition-colors">
+                                {resourceTypeIcon(res.type)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <a href={res.url} target="_blank" rel="noopener noreferrer" className={cn("text-xs font-bold transition-colors line-clamp-1 flex items-center gap-1.5 group/link", rProg.isCompleted ? "text-muted-foreground/40 line-through" : "text-foreground hover:text-amber-400")}>
+                                  {res.title}
+                                  <ExternalLink size={9} className="shrink-0 opacity-0 group-hover/link:opacity-50 transition-opacity" />
+                                </a>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className="text-[9px] text-muted-foreground/40">{res.type}</span>
+                                  {res.weight === 0 && <span className="text-[8px] font-black text-muted-foreground/30 bg-muted/40 border border-border/30 px-1.5 py-0.5 rounded uppercase">Optional</span>}
+                                </div>
+                                {res.description && (
+                                  <p className="text-[10px] text-muted-foreground/55 mt-1 leading-relaxed line-clamp-2">{res.description}</p>
+                                )}
+                              </div>
+                              <span className={cn("shrink-0 text-[9px] font-black px-2 py-0.5 rounded-full border", rProg.isCompleted ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : "text-amber-400 bg-amber-500/10 border-amber-500/20")}>
+                                +{res.xpReward} XP
+                              </span>
+                              <button
+                                type="button"
+                                disabled={isToggling || !user}
+                                onClick={() => handleToggleResource(res._id, rProg.isCompleted)}
+                                aria-label={`Mark ${res.title} as ${rProg.isCompleted ? "incomplete" : "complete"}`}
+                                className={cn("shrink-0 size-5 rounded-md border flex items-center justify-center transition-all", isToggling && "opacity-50 cursor-wait animate-pulse", rProg.isCompleted ? "bg-emerald-500 border-emerald-500 text-white" : "border-muted-foreground/25 bg-background hover:border-amber-400/50")}
+                              >
+                                {rProg.isCompleted && <Check size={11} strokeWidth={3} />}
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -744,20 +821,35 @@ export default function TopicPage() {
                     : <span>Reach <span className="font-black text-primary">{data.topic.requiredLearningPct}%</span> to unlock practice problems</span>
                   }
                 </div>
-                <Button
-                  type="button"
-                  onClick={() => { if (isProblemsUnlocked) setCurrentStep("problems"); }}
-                  disabled={!isProblemsUnlocked}
-                  className={cn(
-                    "h-9 px-6 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all",
-                    isProblemsUnlocked
-                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/15 hover:shadow-primary/30"
-                      : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                <div className="flex items-center gap-3">
+                  {isProblemsUnlocked && learningPct < 100 && selectedLanguage === "Arabic" && (
+                    <Button
+                      type="button"
+                      onClick={handleCompleteLearning}
+                      disabled={isCompletingLearning}
+                      className="h-9 px-5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-emerald-500 text-white hover:bg-emerald-600 shadow-md shadow-emerald-500/20 transition-all"
+                    >
+                      {isCompletingLearning
+                        ? <Loader2 size={12} className="animate-spin mr-1.5" />
+                        : <CheckCircle2 size={12} className="mr-1.5" />}
+                      Complete
+                    </Button>
                   )}
-                >
-                  {isProblemsUnlocked ? "Open Practice" : "Locked"}
-                  {isProblemsUnlocked ? <ChevronRight size={13} className="ml-1" /> : <Lock size={12} className="ml-1" />}
-                </Button>
+                  <Button
+                    type="button"
+                    onClick={() => { if (isProblemsUnlocked) setCurrentStep("problems"); }}
+                    disabled={!isProblemsUnlocked}
+                    className={cn(
+                      "h-9 px-6 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all",
+                      isProblemsUnlocked
+                        ? "bg-primary text-primary-foreground shadow-md shadow-primary/15 hover:shadow-primary/30"
+                        : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                    )}
+                  >
+                    {isProblemsUnlocked ? "Open Practice" : "Locked"}
+                    {isProblemsUnlocked ? <ChevronRight size={13} className="ml-1" /> : <Lock size={12} className="ml-1" />}
+                  </Button>
+                </div>
               </div>
             </motion.div>
 

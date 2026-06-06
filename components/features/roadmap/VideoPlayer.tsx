@@ -166,7 +166,7 @@ const VideoPlayer = ({
   }, [videoUrl, isLocked]);
 
   return (
-    <div className="relative w-full aspect-video flex items-center justify-center bg-zinc-950 overflow-hidden rounded-[2rem] border border-border/40 shadow-2xl">
+    <div className="relative w-full aspect-video flex items-center justify-center bg-zinc-950 overflow-hidden border border-border/40 shadow-2xl">
       {/* Loading State Overlay */}
       {!isReady && !isLocked && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 w-full gap-3 aspect-video z-10 pointer-events-none">
