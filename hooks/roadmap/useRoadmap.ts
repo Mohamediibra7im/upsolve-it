@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { swrFetcher } from "@/lib/apiClient";
 import type { RoadmapLevel, RoadmapLevelDetail, RoadmapTopicDetail, UserRoadmapSummary, LeaderboardEntry } from "@/types/Roadmap";
@@ -9,110 +8,88 @@ export interface RoadmapActivity {
 }
 
 export const useRoadmapLevels = () => {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   const { data, error, isLoading, mutate } = useSWR<{ levels: RoadmapLevel[] }>(
-    isClient ? "/api/roadmap/levels" : null,
+    typeof window !== "undefined" ? "/api/roadmap/levels" : null,
     swrFetcher,
     {
-      revalidateOnFocus: true,
+      revalidateOnFocus: false,
+      revalidateOnMount: true,
       dedupingInterval: 60_000,
     },
   );
 
   return {
     levels: data?.levels ?? [],
-    isLoading: !isClient || isLoading,
+    isLoading,
     error: error ? String(error) : null,
     mutateLevels: mutate,
   };
 };
 
 export const useRoadmapLevel = (levelId?: string) => {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   const { data, error, isLoading, mutate } = useSWR<RoadmapLevelDetail>(
-    isClient && levelId ? `/api/roadmap/levels/${levelId}` : null,
+    typeof window !== "undefined" && levelId ? `/api/roadmap/levels/${levelId}` : null,
     swrFetcher,
     {
       revalidateOnFocus: false,
+      revalidateOnMount: true,
       dedupingInterval: 30_000,
     },
   );
 
   return {
     data,
-    isLoading: !isClient || isLoading,
+    isLoading,
     error: error ? String(error) : null,
     mutate,
   };
 };
 
-export const useRoadmapTopic = (levelId?: string, topicId?: string) => {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+export const useRoadmapTopic = (levelId?: string, topicId?: string, language?: string) => {
+  const langParam = language === "Arabic" || language === "English" ? language : undefined;
+  const swrKey =
+    typeof window !== "undefined" && levelId && topicId
+      ? `/api/roadmap/levels/${levelId}/topics/${topicId}${langParam ? `?language=${langParam}` : ""}`
+      : null;
 
   const { data, error, isLoading, mutate } = useSWR<RoadmapTopicDetail>(
-    isClient && levelId && topicId
-      ? `/api/roadmap/levels/${levelId}/topics/${topicId}`
-      : null,
+    swrKey,
     swrFetcher,
     {
       revalidateOnFocus: false,
+      revalidateOnMount: true,
       dedupingInterval: 15_000,
     },
   );
 
   return {
     data,
-    isLoading: !isClient || isLoading,
+    isLoading,
     error: error ? String(error) : null,
     mutate,
   };
 };
 
 export const useRoadmapUserSummary = (enabled = true) => {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   const { data, error, isLoading, mutate } = useSWR<UserRoadmapSummary>(
-    isClient && enabled ? "/api/roadmap/user/summary" : null,
+    typeof window !== "undefined" && enabled ? "/api/roadmap/user/summary" : null,
     swrFetcher,
     {
-      revalidateOnFocus: true,
-      dedupingInterval: 15_000,
+      revalidateOnFocus: false,
+      revalidateOnMount: true,
+      dedupingInterval: 60_000,
     },
   );
 
   return {
     summary: data,
-    isLoading: !isClient || isLoading,
+    isLoading,
     error: error ? String(error) : null,
     mutateSummary: mutate,
   };
 };
 
 export const useRoadmapLeaderboard = (query?: { level?: string; period?: string; limit?: number }) => {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   const cleanQuery: Record<string, string> = {};
   if (query) {
     Object.entries(query).forEach(([key, val]) => {
@@ -124,42 +101,38 @@ export const useRoadmapLeaderboard = (query?: { level?: string; period?: string;
   const queryString = new URLSearchParams(cleanQuery).toString();
   const url = queryString ? `/api/roadmap/leaderboard?${queryString}` : "/api/roadmap/leaderboard";
 
-  const { data, error, isLoading, mutate } = useSWR<any>(
-    isClient ? url : null,
+  const { data, error, isLoading, mutate } = useSWR<{ leaderboard: LeaderboardEntry[] }>(
+    typeof window !== "undefined" ? url : null,
     swrFetcher,
     {
-      revalidateOnFocus: true,
-      dedupingInterval: 30_000,
+      revalidateOnFocus: false,
+      revalidateOnMount: true,
+      dedupingInterval: 60_000,
     },
   );
 
   return {
-    leaderboard: (Array.isArray(data) ? data : (data?.leaderboard ?? [])) as LeaderboardEntry[],
-    isLoading: !isClient || isLoading,
+    leaderboard: (data?.leaderboard ?? []) as LeaderboardEntry[],
+    isLoading,
     error: error ? String(error) : null,
     mutateLeaderboard: mutate,
   };
 };
 
 export const useRoadmapActivity = (enabled = true) => {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   const { data, error, isLoading } = useSWR<RoadmapActivity>(
-    isClient && enabled ? "/api/roadmap/user/activity" : null,
+    typeof window !== "undefined" && enabled ? "/api/roadmap/user/activity" : null,
     swrFetcher,
     {
-      revalidateOnFocus: true,
+      revalidateOnFocus: false,
+      revalidateOnMount: true,
       dedupingInterval: 60_000,
     },
   );
 
   return {
     activity: data ?? { problemDates: [], topicDates: [] },
-    isLoading: !isClient || isLoading,
+    isLoading,
     error: error ? String(error) : null,
   };
 };

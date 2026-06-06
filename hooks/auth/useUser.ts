@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import useSWR from "swr";
 import { User } from "@/types/User";
 import { Response, SuccessResponse, ErrorResponse } from "@/types/Response";
@@ -7,9 +7,8 @@ import { setRefreshCallback, clearRefreshCallback, setLogoutCallback, clearLogou
 const USER_CACHE_KEY = "codeforces-user";
 
 const useUser = () => {
-  const [isClient, setIsClient] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(true);
-  
+  const [isReady, setIsReady] = useState(false);
+
   const {
     data: user,
     mutate,
@@ -23,60 +22,33 @@ const useUser = () => {
     },
   );
 
+  // Single effect: read localStorage + register callbacks.
+  // React 18 batches mutate() + setIsReady() into one re-render, so
+  // this is 2 renders total (down from 3 in the original approach).
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    let parsed: User | null = null;
+    try {
+      const stored = localStorage.getItem("user");
+      parsed = stored ? (JSON.parse(stored) as User) : null;
+    } catch {
+      localStorage.removeItem("user");
+    }
+    mutate(parsed, false);
+    setIsReady(true);
 
-  // Initialize user from localStorage
-  useEffect(() => {
-    if (!isClient) return;
-
-    const initializeSession = async () => {
-      try {
-        const storedUser = localStorage.getItem("user");
-
-        if (storedUser) {
-          try {
-            const parsedUser = JSON.parse(storedUser);
-            await mutate(parsedUser, false);
-          } catch (e) {
-            console.error("Failed to parse stored user:", e);
-            localStorage.removeItem("user");
-            await mutate(null, false);
-          }
-        } else {
-          await mutate(null, false);
-        }
-      } finally {
-        // Ensure we mark initialization as complete regardless of outcome
-        setIsInitializing(false);
-      }
-    };
-
-    initializeSession();
-  }, [isClient, mutate]);
-
-  // Register refresh and logout callbacks
-  useEffect(() => {
-    if (!isClient) return;
-
-    const handleRefresh = (updatedUser: User) => {
+    setRefreshCallback((updatedUser: User) => {
       localStorage.setItem("user", JSON.stringify(updatedUser));
       mutate(updatedUser, false);
-    };
-
-    const handleLogout = () => {
+    });
+    setLogoutCallback(() => {
       mutate(null, false);
-    };
-
-    setRefreshCallback(handleRefresh);
-    setLogoutCallback(handleLogout);
+    });
 
     return () => {
       clearRefreshCallback();
       clearLogoutCallback();
     };
-  }, [isClient, mutate]);
+  }, [mutate]);
 
   const login = useCallback(
     async (codeforcesHandle: string, password: string): Promise<Response<User>> => {
@@ -91,11 +63,7 @@ const useUser = () => {
         if (!res.ok) {
           return ErrorResponse(data.message);
         }
-
-        if (isClient) {
-          localStorage.setItem("user", JSON.stringify(data.user));
-        }
-
+        localStorage.setItem("user", JSON.stringify(data.user));
         await mutate(data.user, false);
         return SuccessResponse(data.user);
       } catch (error) {
@@ -103,7 +71,7 @@ const useUser = () => {
         return ErrorResponse("Failed to connect to the server.");
       }
     },
-    [isClient, mutate],
+    [mutate],
   );
 
   const register = useCallback(
@@ -136,38 +104,31 @@ const useUser = () => {
     } catch (error) {
       console.error("Logout API call failed:", error);
     }
-
-    if (isClient) {
-      localStorage.removeItem("user");
-    }
+    localStorage.removeItem("user");
     mutate(null, false);
-  }, [isClient, mutate]);
+  }, [mutate]);
 
-  const resetPassword = async (
+  const resetPassword = useCallback(async (
     oldPassword: string,
     newPassword: string,
   ): Promise<Response<null>> => {
     try {
       const res = await fetch(resolveApiUrl("/api/auth/reset-pin"), {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ oldPassword, newPassword }),
       });
-
       const data = await res.json();
       if (!res.ok) {
         return ErrorResponse(data.message);
       }
-
       return SuccessResponse(null);
     } catch (error) {
       console.error("Password reset failed:", error);
       return ErrorResponse("Failed to connect to the server.");
     }
-  };
+  }, []);
 
   const syncProfile = useCallback(async (): Promise<Response<User>> => {
     try {
@@ -175,23 +136,20 @@ const useUser = () => {
         method: "POST",
         credentials: "include",
       });
-
       const data = await res.json();
       if (!res.ok) {
         return ErrorResponse(data.message);
       }
-
-      if (isClient && data.user) {
+      if (data.user) {
         localStorage.setItem("user", JSON.stringify(data.user));
         await mutate(data.user, false);
       }
-
       return SuccessResponse(data.user);
     } catch (error) {
       console.error("Profile sync failed:", error);
       return ErrorResponse("Failed to sync profile");
     }
-  }, [isClient, mutate]);
+  }, [mutate]);
 
   const generateVerificationCode = useCallback(async (): Promise<Response<{ code: string; expiresAt: number }>> => {
     try {
@@ -199,12 +157,10 @@ const useUser = () => {
         method: "POST",
         credentials: "include",
       });
-
       const data = await res.json();
       if (!res.ok) {
         return ErrorResponse(data.message);
       }
-
       return SuccessResponse({ code: data.code, expiresAt: data.expiresAt });
     } catch (error) {
       console.error("Generate verification code failed:", error);
@@ -218,28 +174,23 @@ const useUser = () => {
         method: "POST",
         credentials: "include",
       });
-
       const data = await res.json();
       if (!res.ok) {
         return ErrorResponse(data.message);
       }
-
-      if (isClient && user) {
-        const updatedUser = { ...user, isVerified: true };
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-        await mutate(updatedUser, false);
-      }
-
+      const updatedUser = { ...user, isVerified: true };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      await mutate((current) => current ? { ...current, isVerified: true } : current, false);
       return SuccessResponse({ xpEarned: data.xpEarned ?? 50 });
     } catch (error) {
       console.error("Verify Codeforces profile failed:", error);
       return ErrorResponse("Failed to verify profile");
     }
-  }, [isClient, user, mutate]);
+  }, [mutate, user]);
 
   return {
-    user,
-    isLoading: isInitializing || !isClient,
+    user: user ?? null,
+    isLoading: !isReady,
     error,
     register,
     login,

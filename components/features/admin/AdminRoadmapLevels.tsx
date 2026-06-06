@@ -30,10 +30,7 @@ export default function AdminRoadmapLevelsComponent() {
   const [visibility, setVisibility] = useState<"all" | "specific_users">("all");
   const [allowedUserIds, setAllowedUserIds] = useState<string[]>([]);
   const [userSearch, setUserSearch] = useState("");
-  const [videoUnlockSheetPct, setVideoUnlockSheetPct] = useState(80);
-  const [sheetUnlockTopicPct, setSheetUnlockTopicPct] = useState(60);
-  const [levelCompletionPct, setLevelCompletionPct] = useState(80);
-  const [xpPerAcceptedProblem, setXpPerAcceptedProblem] = useState(50);
+  const [levelBonusXp, setLevelBonusXp] = useState(500);
 
   const filteredUsers = useMemo(() => {
     const list = Array.isArray(users) ? users : [];
@@ -59,10 +56,7 @@ export default function AdminRoadmapLevelsComponent() {
     setVisibility("all");
     setAllowedUserIds([]);
     setUserSearch("");
-    setVideoUnlockSheetPct(80);
-    setSheetUnlockTopicPct(60);
-    setLevelCompletionPct(80);
-    setXpPerAcceptedProblem(50);
+    setLevelBonusXp(500);
     setEditingLevel(null);
   };
 
@@ -80,10 +74,7 @@ export default function AdminRoadmapLevelsComponent() {
     setVisibility(lvl.visibility || "all");
     setAllowedUserIds(lvl.allowedUserIds || []);
     setUserSearch("");
-    setVideoUnlockSheetPct(lvl.videoUnlockSheetPct);
-    setSheetUnlockTopicPct(lvl.sheetUnlockTopicPct);
-    setLevelCompletionPct(lvl.levelCompletionPct);
-    setXpPerAcceptedProblem(lvl.xpPerAcceptedProblem);
+    setLevelBonusXp(lvl.levelBonusXp ?? 500);
     setIsOpen(true);
   };
 
@@ -107,10 +98,7 @@ export default function AdminRoadmapLevelsComponent() {
       isPublished,
       visibility,
       allowedUserIds: visibility === "specific_users" ? allowedUserIds : [],
-      videoUnlockSheetPct: Number(videoUnlockSheetPct),
-      sheetUnlockTopicPct: Number(sheetUnlockTopicPct),
-      levelCompletionPct: Number(levelCompletionPct),
-      xpPerAcceptedProblem: Number(xpPerAcceptedProblem),
+      levelBonusXp: Number(levelBonusXp),
     };
 
     try {
@@ -154,7 +142,7 @@ export default function AdminRoadmapLevelsComponent() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Overview/Threshold dashboard */}
-      <div className="grid gap-6 sm:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-2xl border border-border/40 bg-card p-5">
           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Total Levels</span>
           <p className="text-3xl font-heading font-black text-foreground mt-2">{levels.length}</p>
@@ -163,21 +151,48 @@ export default function AdminRoadmapLevelsComponent() {
           </p>
         </div>
         <div className="rounded-2xl border border-border/40 bg-card p-5">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Avg Video Unlock</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Total Sessions</span>
+          <p className="text-3xl font-heading font-black text-foreground mt-2">
+            {levels.reduce((sum, l) => sum + (l.topicsCount ?? 0), 0)}
+          </p>
+          <p className="text-[10px] text-muted-foreground mt-1">
+            Across all levels
+          </p>
+        </div>
+        <div className="rounded-2xl border border-border/40 bg-card p-5">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Total Bonus XP Pool</span>
           <p className="text-3xl font-heading font-black text-primary mt-2">
-            {levels.length > 0 ? Math.round(levels.reduce((sum, l) => sum + l.videoUnlockSheetPct, 0) / levels.length) : 0}%
+            {levels.reduce((sum, l) => sum + (l.levelBonusXp ?? 0), 0).toLocaleString()} XP
+          </p>
+          <p className="text-[10px] text-muted-foreground mt-1">
+            Sum of all level bonuses
           </p>
         </div>
         <div className="rounded-2xl border border-border/40 bg-card p-5">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Avg Sheet Unlock</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Avg Level Bonus XP</span>
+          <p className="text-3xl font-heading font-black text-primary mt-2">
+            {levels.length > 0 ? Math.round(levels.reduce((sum, l) => sum + (l.levelBonusXp ?? 0), 0) / levels.length) : 0} XP
+          </p>
+          <p className="text-[10px] text-muted-foreground mt-1">
+            Per level average
+          </p>
+        </div>
+        <div className="rounded-2xl border border-border/40 bg-card p-5">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Restricted Levels</span>
+          <p className="text-3xl font-heading font-black text-purple-400 mt-2">
+            {levels.filter((l) => l.visibility === "specific_users").length}
+          </p>
+          <p className="text-[10px] text-muted-foreground mt-1">
+            {levels.filter((l) => l.visibility === "all").length} open to all users
+          </p>
+        </div>
+        <div className="rounded-2xl border border-border/40 bg-card p-5">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Published Rate</span>
           <p className="text-3xl font-heading font-black text-emerald-400 mt-2">
-            {levels.length > 0 ? Math.round(levels.reduce((sum, l) => sum + l.sheetUnlockTopicPct, 0) / levels.length) : 0}%
+            {levels.length > 0 ? Math.round((levels.filter((l) => l.isPublished).length / levels.length) * 100) : 0}%
           </p>
-        </div>
-        <div className="rounded-2xl border border-border/40 bg-card p-5">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Avg Completion</span>
-          <p className="text-3xl font-heading font-black text-amber-500 mt-2">
-            {levels.length > 0 ? Math.round(levels.reduce((sum, l) => sum + l.levelCompletionPct, 0) / levels.length) : 0}%
+          <p className="text-[10px] text-muted-foreground mt-1">
+            {levels.filter((l) => l.isPublished).length} of {levels.length} levels live
           </p>
         </div>
       </div>
@@ -228,20 +243,8 @@ export default function AdminRoadmapLevelsComponent() {
                     <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="col-span-2 rounded-xl" placeholder="Brief outline of the level targets" />
                   </div>
                   <div className="grid grid-cols-3 items-center gap-4">
-                    <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">XP Per Problem</label>
-                    <Input type="number" value={xpPerAcceptedProblem} onChange={(e) => setXpPerAcceptedProblem(Number(e.target.value))} className="col-span-2 rounded-xl" required />
-                  </div>
-                  <div className="grid grid-cols-3 items-center gap-4">
-                    <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Video Watch %</label>
-                    <Input type="number" value={videoUnlockSheetPct} onChange={(e) => setVideoUnlockSheetPct(Number(e.target.value))} className="col-span-2 rounded-xl" required />
-                  </div>
-                  <div className="grid grid-cols-3 items-center gap-4">
-                    <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Sheet Solve %</label>
-                    <Input type="number" value={sheetUnlockTopicPct} onChange={(e) => setSheetUnlockTopicPct(Number(e.target.value))} className="col-span-2 rounded-xl" required />
-                  </div>
-                  <div className="grid grid-cols-3 items-center gap-4">
-                    <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Completion %</label>
-                    <Input type="number" value={levelCompletionPct} onChange={(e) => setLevelCompletionPct(Number(e.target.value))} className="col-span-2 rounded-xl" required />
+                    <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Level Bonus XP</label>
+                    <Input type="number" value={levelBonusXp} onChange={(e) => setLevelBonusXp(Number(e.target.value))} className="col-span-2 rounded-xl" required />
                   </div>
                   <div className="grid grid-cols-3 items-center gap-4">
                     <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Status</label>
@@ -349,10 +352,7 @@ export default function AdminRoadmapLevelsComponent() {
                 <tr className="border-b border-border/30">
                   <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 w-16">Order</th>
                   <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Title</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center">Video %</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center">Sheet %</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center">Complete %</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center">XP</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center">Bonus XP</th>
                   <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center">Visibility</th>
                   <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center">Status</th>
                   <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-right">Actions</th>
@@ -373,16 +373,7 @@ export default function AdminRoadmapLevelsComponent() {
                       </div>
                     </td>
                     <td className="px-6 py-5 text-center">
-                      <span className="text-xs font-bold text-muted-foreground/80">{lvl.videoUnlockSheetPct}%</span>
-                    </td>
-                    <td className="px-6 py-5 text-center">
-                      <span className="text-xs font-bold text-muted-foreground/80">{lvl.sheetUnlockTopicPct}%</span>
-                    </td>
-                    <td className="px-6 py-5 text-center">
-                      <span className="text-xs font-bold text-muted-foreground/80">{lvl.levelCompletionPct}%</span>
-                    </td>
-                    <td className="px-6 py-5 text-center">
-                      <span className="text-sm font-black text-primary">+{lvl.xpPerAcceptedProblem} XP</span>
+                      <span className="text-sm font-black text-primary">+{lvl.levelBonusXp ?? 0} XP</span>
                     </td>
                     <td className="px-6 py-5 text-center">
                       {lvl.visibility === "specific_users" ? (

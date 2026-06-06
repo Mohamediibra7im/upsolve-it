@@ -64,14 +64,18 @@ export default function AdminRoadmapTopicsComponent({
   const [description, setDescription] = useState("");
   const [orderIndex, setOrderIndex] = useState(0);
   const [subtopicsRaw, setSubtopicsRaw] = useState("");
-  const [xpVideoReward, setXpVideoReward] = useState(100);
+  const [requiredLearningPct, setRequiredLearningPct] = useState(80);
+  const [requiredProblemPct, setRequiredProblemPct] = useState(60);
+  const [topicXpReward, setTopicXpReward] = useState(100);
 
   const resetTopicForm = () => {
     setTitle("");
     setDescription("");
     setOrderIndex(topics.length);
     setSubtopicsRaw("");
-    setXpVideoReward(100);
+    setRequiredLearningPct(80);
+    setRequiredProblemPct(60);
+    setTopicXpReward(100);
   };
 
   const handleOpenCreateTopic = () => {
@@ -86,7 +90,9 @@ export default function AdminRoadmapTopicsComponent({
     setDescription(t.description || "");
     setOrderIndex(t.orderIndex);
     setSubtopicsRaw(t.subtopics?.join(", ") ?? "");
-    setXpVideoReward(t.xpVideoReward);
+    setRequiredLearningPct(t.requiredLearningPct ?? 80);
+    setRequiredProblemPct(t.requiredProblemPct ?? 60);
+    setTopicXpReward(t.topicXpReward ?? 100);
     setIsTopicDialogOpen(true);
   };
 
@@ -102,7 +108,9 @@ export default function AdminRoadmapTopicsComponent({
             .map((s) => s.trim())
             .filter(Boolean)
         : [],
-      xpVideoReward: Number(xpVideoReward),
+      requiredLearningPct: Number(requiredLearningPct),
+      requiredProblemPct: Number(requiredProblemPct),
+      topicXpReward: Number(topicXpReward),
     };
 
     try {
@@ -136,7 +144,7 @@ export default function AdminRoadmapTopicsComponent({
   const handleTopicDelete = async (id: string) => {
     if (
       !confirm(
-        "Are you sure you want to delete this session, including its video, sheet, and problems?"
+        "Are you sure you want to delete this session, including its resources and problems?"
       )
     )
       return;
@@ -181,7 +189,7 @@ export default function AdminRoadmapTopicsComponent({
                 Level Sessions
               </h2>
               <p className="text-xs text-muted-foreground">
-                Click on a session to manage its video and problem sheet.
+                Click on a session to manage its resources and problems.
               </p>
             </div>
           </div>
@@ -205,15 +213,15 @@ export default function AdminRoadmapTopicsComponent({
                 Create Session
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md bg-card border-border text-foreground">
+            <DialogContent className="max-w-md bg-card border-border text-foreground max-h-[90vh] overflow-y-auto">
               <form onSubmit={handleTopicSubmit}>
                 <DialogHeader>
                   <DialogTitle>
                     {editingTopic ? "Edit Session" : "Create Session"}
                   </DialogTitle>
                   <DialogDescription>
-                    Setup lecture reward weight, session focus, and target
-                    areas.
+                    Configure session details, progression gates, and XP
+                    rewards.
                   </DialogDescription>
                 </DialogHeader>
 
@@ -246,13 +254,13 @@ export default function AdminRoadmapTopicsComponent({
                   </div>
                   <div className="grid grid-cols-3 items-center gap-4">
                     <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">
-                      Briefing Description
+                      Description
                     </label>
                     <Textarea
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       className="col-span-2 rounded-xl"
-                      placeholder="Brief outline of the lecture video"
+                      placeholder="Brief outline of the session"
                     />
                   </div>
                   <div className="grid grid-cols-3 items-center gap-4">
@@ -266,19 +274,57 @@ export default function AdminRoadmapTopicsComponent({
                       placeholder="e.g. Lower Bound, Upper Bound"
                     />
                   </div>
-                  <div className="grid grid-cols-3 items-center gap-4">
-                    <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">
-                      XP Video Reward
-                    </label>
-                    <Input
-                      type="number"
-                      value={xpVideoReward}
-                      onChange={(e) =>
-                        setXpVideoReward(Number(e.target.value))
-                      }
-                      className="col-span-2 rounded-xl"
-                      required
-                    />
+
+                  <div className="border-t border-border/40 pt-4 space-y-4">
+                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                      Progression Gates
+                    </div>
+                    <div className="grid grid-cols-3 items-center gap-4">
+                      <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">
+                        Req. Learning %
+                      </label>
+                      <Input
+                        type="number"
+                        value={requiredLearningPct}
+                        onChange={(e) =>
+                          setRequiredLearningPct(Number(e.target.value))
+                        }
+                        className="col-span-2 rounded-xl"
+                        min={0}
+                        max={100}
+                        required
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 items-center gap-4">
+                      <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">
+                        Req. Problem %
+                      </label>
+                      <Input
+                        type="number"
+                        value={requiredProblemPct}
+                        onChange={(e) =>
+                          setRequiredProblemPct(Number(e.target.value))
+                        }
+                        className="col-span-2 rounded-xl"
+                        min={0}
+                        max={100}
+                        required
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 items-center gap-4">
+                      <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">
+                        Topic XP Reward
+                      </label>
+                      <Input
+                        type="number"
+                        value={topicXpReward}
+                        onChange={(e) =>
+                          setTopicXpReward(Number(e.target.value))
+                        }
+                        className="col-span-2 rounded-xl"
+                        required
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -318,13 +364,19 @@ export default function AdminRoadmapTopicsComponent({
                 <TableHead className="px-6 py-4">#</TableHead>
                 <TableHead className="px-6 py-4">Session Title</TableHead>
                 <TableHead className="px-6 py-4 text-center">
-                  Video
-                </TableHead>
-                <TableHead className="px-6 py-4 text-center">
-                  Sheet
+                  Resources
                 </TableHead>
                 <TableHead className="px-6 py-4 text-center">
                   Problems
+                </TableHead>
+                <TableHead className="px-6 py-4 text-center">
+                  Learn %
+                </TableHead>
+                <TableHead className="px-6 py-4 text-center">
+                  Problem %
+                </TableHead>
+                <TableHead className="px-6 py-4 text-center">
+                  XP
                 </TableHead>
                 <TableHead className="px-6 py-4 text-right">
                   Actions
@@ -362,32 +414,26 @@ export default function AdminRoadmapTopicsComponent({
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="px-6 py-4 text-center">
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.1em]",
-                        t.hasVideo
-                          ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
-                          : "bg-zinc-500/10 text-zinc-500"
-                      )}
-                    >
-                      {t.hasVideo ? "YES" : "NO"}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-6 py-4 text-center">
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.1em]",
-                        t.hasSheet
-                          ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
-                          : "bg-zinc-500/10 text-zinc-500"
-                      )}
-                    >
-                      {t.hasSheet ? "YES" : "NO"}
-                    </span>
+                  <TableCell className="px-6 py-4 text-center font-mono text-xs font-black">
+                    {t.resourcesCount ?? 0}
                   </TableCell>
                   <TableCell className="px-6 py-4 text-center font-mono text-xs font-black">
-                    {t.problemsCount}
+                    {t.problemsCount ?? 0}
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-center">
+                    <span className="text-xs font-bold text-muted-foreground/80">
+                      {t.requiredLearningPct ?? 80}%
+                    </span>
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-center">
+                    <span className="text-xs font-bold text-muted-foreground/80">
+                      {t.requiredProblemPct ?? 60}%
+                    </span>
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-center">
+                    <span className="text-sm font-black text-primary">
+                      +{t.topicXpReward ?? 100}
+                    </span>
                   </TableCell>
                   <TableCell className="px-6 py-4 text-right">
                     <div

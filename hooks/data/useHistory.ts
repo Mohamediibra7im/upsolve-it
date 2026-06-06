@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import useSWR from "swr";
 import { Training } from "@/types/Training";
 import { getAccuratePerformance } from "@/utils/getPerformance";
@@ -6,14 +6,13 @@ import useUser from "@/hooks/auth/useUser";
 import { apiFetcher, swrFetcher } from "@/lib/apiClient";
 
 const useHistory = () => {
-  const [isClient, setIsClient] = useState(false);
   const { user } = useUser();
   const {
     data: history,
     error,
     mutate,
   } = useSWR<Training[]>(
-    isClient && user ? "/api/trainings" : null,
+    typeof window !== "undefined" && user ? "/api/trainings" : null,
     swrFetcher,
     {
       revalidateOnFocus: false,
@@ -24,13 +23,9 @@ const useHistory = () => {
     }
   );
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   const addTraining = useCallback(
     async (training: Training) => {
-      if (!isClient) return;
+      if (typeof window === "undefined") return;
 
       // Use the user's current rating for accurate performance calculation
       const userRating = user?.rating || 1500; // Default to 1500 if rating not available
@@ -51,7 +46,7 @@ const useHistory = () => {
         console.error(error);
       }
     },
-    [isClient, mutate, user?.rating],
+    [mutate, user?.rating],
   );
 
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
@@ -86,7 +81,7 @@ const useHistory = () => {
 
   return {
     history: history || [],
-    isLoading: !isClient || (!!user && !error && !history),
+    isLoading: !!user && !error && !history,
     error,
     addTraining,
     deleteTraining,

@@ -1,11 +1,7 @@
 import { redirect } from "next/navigation";
-import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Admin | Upsolve.it",
-  description: "Admin console for Upsolve.it platform management.",
-};
-
+// This redirect is also configured in next.config.js for client-side navigation.
+// The server component redirect here is a fallback for direct server-side rendering.
 export default function AdminPage() {
   redirect("/admin/dashboard");
 }

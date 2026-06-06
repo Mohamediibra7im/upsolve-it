@@ -41,7 +41,7 @@ export const useLevels = () => {
     TRAINING_LEVELS_SWR_KEY,
     fetchTrainingLevelsFromApi,
     {
-      revalidateOnFocus: true,
+      revalidateOnFocus: false,
       dedupingInterval: 60_000,
       shouldRetryOnError: true,
     },

@@ -6,10 +6,7 @@ export type RoadmapLevel = {
   isPublished: boolean;
   visibility: 'all' | 'specific_users';
   allowedUserIds: string[];
-  videoUnlockSheetPct: number;
-  sheetUnlockTopicPct: number;
-  levelCompletionPct: number;
-  xpPerAcceptedProblem: number;
+  levelBonusXp: number;
   topicsCount: number;
   topicsUnlockedCount: number;
 };
@@ -21,47 +18,46 @@ export type RoadmapTopicBase = {
   description: string;
   orderIndex: number;
   subtopics: string[];
-  xpVideoReward: number;
+  requiredLearningPct: number;
+  requiredProblemPct: number;
+  topicXpReward: number;
+  groupLinks?: string | Array<string | { link: string }>;
+  groupNote?: string;
 };
 
 export type RoadmapTopicSummary = RoadmapTopicBase & {
-  hasVideo: boolean;
-  hasSheet: boolean;
+  resourcesCount: number;
   problemsCount: number;
   progress: {
-    videoPct: number;
-    sheetUnlocked: boolean;
-    lastPositionSec: number;
-    sheetPct: number;
+    learningPct: number;
+    problemPct: number;
     isLocked: boolean;
     isComplete: boolean;
   };
 };
 
-export type RoadmapVideo = {
+export type RoadmapResource = {
   _id: string;
   topicId: string;
   title: string;
-  youtubeUrl: string;
-  durationSec: number | null;
-};
-
-export type RoadmapSheet = {
-  _id: string;
-  topicId: string;
-  title: string;
-  cfGroupUrl: string;
-  groupNote: string;
+  description: string;
+  language: 'Arabic' | 'English';
+  type: 'Video' | 'Article' | 'Documentation' | 'Tutorial' | 'Course' | 'PDF' | 'Website';
+  url: string;
+  weight: number;
+  xpReward: number;
+  videoCompletionThresholdPct: number;
+  orderIndex: number;
 };
 
 export type RoadmapProblem = {
   _id: string;
-  sheetId: string;
-  cfProblemId: string;
-  title: string;
-  difficulty: string;
+  topicId: string;
+  name: string;
+  url: string;
   orderIndex: number;
   xpReward: number;
+  cfProblemId?: string;
 };
 
 export type RoadmapLevelDetail = {
@@ -72,13 +68,13 @@ export type RoadmapLevelDetail = {
 export type RoadmapTopicDetail = {
   level: RoadmapLevel;
   topic: RoadmapTopicBase;
-  video: RoadmapVideo | null;
-  sheet: RoadmapSheet | null;
+  resources: RoadmapResource[];
   problems: RoadmapProblem[];
   progress: {
-    videoPct: number;
-    sheetUnlocked: boolean;
-    lastPositionSec: number;
+    learningPct: number;
+    problemPct: number;
+    isTopicComplete: boolean;
+    resourceProgress: Record<string, { watchPct: number; isCompleted: boolean; lastPositionSec: number }>;
     problemProgress: Record<string, boolean>;
   };
 };
@@ -86,18 +82,16 @@ export type RoadmapTopicDetail = {
 export type SyncResult = {
   newlySolved: string[];
   xpEarned: number;
-  sheetPct: number;
+  problemPct: number;
   problemsSolved: number;
   totalProblems: number;
-  topicProgress?: any;
-  levelProgress?: any;
 };
 
 export type ToggleProblemResult = {
   problemId: string;
   isSolved: boolean;
   xpDelta: number;
-  sheetPct: number;
+  problemPct: number;
   problemsSolved: number;
   totalProblems: number;
 };

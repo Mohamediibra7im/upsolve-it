@@ -1,6 +1,6 @@
 import useSWR from "swr";
 import { swrFetcher, apiClient } from "@/lib/apiClient";
-import type { RoadmapLevel, RoadmapTopicSummary, RoadmapVideo, RoadmapSheet, RoadmapProblem } from "@/types/Roadmap";
+import type { RoadmapLevel, RoadmapTopicSummary, RoadmapResource, RoadmapProblem } from "@/types/Roadmap";
 
 export const useAdminRoadmapLevels = () => {
   const { data, error, isLoading, mutate } = useSWR<{ levels: RoadmapLevel[] }>(
@@ -60,36 +60,50 @@ export const useAdminRoadmapTopics = (levelId?: string) => {
     await mutate();
   };
 
-  const upsertVideo = async (topicId: string, body: Partial<RoadmapVideo>) => {
-    const res = await apiClient.post<{ video: RoadmapVideo }>(`/api/admin/roadmap/topics/${topicId}/video`, body);
+  // === RESOURCE ENDPOINTS ===
+  const addResource = async (topicId: string, body: Partial<RoadmapResource>) => {
+    const res = await apiClient.post<{ resource: RoadmapResource }>(`/api/admin/roadmap/topics/${topicId}/resources`, body);
     await mutate();
-    return res.video;
+    return res.resource;
   };
 
-  const deleteVideo = async (topicId: string) => {
-    await apiClient.delete(`/api/admin/roadmap/topics/${topicId}/video`);
+  const updateResource = async (resourceId: string, body: Partial<RoadmapResource>) => {
+    const res = await apiClient.patch<{ resource: RoadmapResource }>(`/api/admin/roadmap/resources/${resourceId}`, body);
+    await mutate();
+    return res.resource;
+  };
+
+  const deleteResource = async (resourceId: string) => {
+    await apiClient.delete(`/api/admin/roadmap/resources/${resourceId}`);
     await mutate();
   };
 
-  const upsertSheet = async (topicId: string, body: Partial<RoadmapSheet>) => {
-    const res = await apiClient.post<{ sheet: RoadmapSheet }>(`/api/admin/roadmap/topics/${topicId}/sheet`, body);
+  const reorderResource = async (resourceId: string, orderIndex: number) => {
+    const res = await apiClient.patch<{ resource: RoadmapResource }>(`/api/admin/roadmap/resources/${resourceId}/reorder`, { orderIndex });
     await mutate();
-    return res.sheet;
+    return res.resource;
   };
 
-  const addProblem = async (sheetId: string, body: Partial<RoadmapProblem>) => {
-    const res = await apiClient.post<{ problem: RoadmapProblem }>(`/api/admin/roadmap/sheets/${sheetId}/problems`, body);
+  // === PROBLEM ENDPOINTS ===
+  const addProblem = async (topicId: string, body: Partial<RoadmapProblem>) => {
+    const res = await apiClient.post<{ problem: RoadmapProblem }>(`/api/admin/roadmap/topics/${topicId}/problems`, body);
     await mutate();
     return res.problem;
   };
 
-  const addProblems = async (sheetId: string, problems: Array<{ cfProblemId: string; title?: string; xpReward?: number }>) => {
+  const addProblems = async (topicId: string, problems: Array<{ cfProblemId: string; name: string; xpReward: number; url: string }>) => {
     const res = await apiClient.post<{ inserted: number; skipped: number }>(
-      `/api/admin/roadmap/sheets/${sheetId}/problems/bulk`,
-      { problems },
+      `/api/admin/roadmap/topics/${topicId}/problems/bulk`,
+      { problems }
     );
     await mutate();
     return res;
+  };
+
+  const updateProblem = async (problemId: string, body: Partial<RoadmapProblem>) => {
+    const res = await apiClient.patch<{ problem: RoadmapProblem }>(`/api/admin/roadmap/problems/${problemId}`, body);
+    await mutate();
+    return res.problem;
   };
 
   const deleteProblem = async (problemId: string) => {
@@ -105,8 +119,14 @@ export const useAdminRoadmapTopics = (levelId?: string) => {
     await mutate();
   };
 
-  const importProblems = async (sheetId: string, body: { contestId?: number; force?: boolean }) => {
-    const res = await apiClient.post(`/api/admin/roadmap/sheets/${sheetId}/import`, body);
+  const reorderProblem = async (problemId: string, orderIndex: number) => {
+    const res = await apiClient.patch<{ problem: RoadmapProblem }>(`/api/admin/roadmap/problems/${problemId}/reorder`, { orderIndex });
+    await mutate();
+    return res.problem;
+  };
+
+  const importProblems = async (topicId: string, body: { contestId?: number; force?: boolean }) => {
+    const res = await apiClient.post(`/api/admin/roadmap/topics/${topicId}/import`, body);
     await mutate();
     return res;
   };
@@ -119,13 +139,17 @@ export const useAdminRoadmapTopics = (levelId?: string) => {
     createTopic,
     updateTopic,
     deleteTopic,
-    upsertVideo,
-    deleteVideo,
-    upsertSheet,
+    addResource,
+    updateResource,
+    deleteResource,
+    reorderResource,
     addProblem,
     addProblems,
+    updateProblem,
     deleteProblem,
     deleteProblems,
+    reorderProblem,
     importProblems,
   };
 };
+

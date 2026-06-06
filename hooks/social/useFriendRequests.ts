@@ -9,7 +9,7 @@ export function useFriendRequests(enabled = true) {
   const { data, error, isLoading: _isLoading, mutate } = useSWR<FriendRequestsResponse>(
     enabled ? "/api/friends/requests" : null,
     swrFetcher,
-    { revalidateOnFocus: true },
+    { revalidateOnFocus: false, dedupingInterval: 30_000 },
   );
 
   return {

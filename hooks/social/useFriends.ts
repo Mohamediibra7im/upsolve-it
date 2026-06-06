@@ -6,7 +6,7 @@ export function useFriends(enabled = true) {
   const { data, error, isLoading: _isLoading, mutate } = useSWR<FriendsListResponse>(
     enabled ? "/api/friends" : null,
     swrFetcher,
-    { revalidateOnFocus: true },
+    { revalidateOnFocus: false, dedupingInterval: 30_000 },
   );
 
   return {

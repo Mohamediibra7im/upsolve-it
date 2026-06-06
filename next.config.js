@@ -1,10 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Gzip compress responses (reduces ~3MB CF problem payload significantly)
   compress: true,
   reactStrictMode: true,
   poweredByHeader: false,
+  // Turbopack is the default in Next.js 16; empty config silences the webpack-without-turbopack warning
   turbopack: {},
+  async redirects() {
+    return [
+      {
+        source: '/admin',
+        destination: '/admin/dashboard',
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {
@@ -14,16 +23,16 @@ const nextConfig = {
     ],
   },
   webpack: (config, { isServer }) => {
-    // Ignore optional drizzle-orm dependency in rate-limiter-flexible
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
       };
+      // Ignore optional drizzle-orm dependency pulled in by rate-limiter-flexible
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'drizzle-orm': false,
+      };
     }
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      'drizzle-orm': false,
-    };
     return config;
   },
 };

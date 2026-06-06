@@ -96,11 +96,10 @@ export function useAdminStats() {
     "/api/admin/stats",
     fetcher,
     {
-      // Optimize for dashboard
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-      dedupingInterval: 30000, // 30 seconds
-      refreshInterval: 120000, // 2 minutes
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 60_000,
+      refreshInterval: 120_000,
     },
   );
 

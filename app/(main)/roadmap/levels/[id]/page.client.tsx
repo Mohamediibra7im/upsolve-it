@@ -3,7 +3,7 @@
 import Link from "next/link";
 import {useMemo} from "react";
 import {useParams} from "next/navigation";
-import {m} from "framer-motion";
+import {m as motion} from "framer-motion";
 import {
   ChevronRight,
   Lock,
@@ -15,25 +15,57 @@ import {
   Shield,
   Play,
   CheckCircle2,
+  BookOpen,
 } from "lucide-react";
 import Loader from "@/components/shared/Loader";
-import {useRoadmapLevel} from "@/hooks/roadmap";
+import {useRoadmapLevel} from "@/hooks/roadmap/useRoadmap";
 import {cn} from "@/lib/utils";
+import {progressWidthClass} from "@/components/features/roadmap";
 
 const Orb = ({className}: {className?: string}) => (
   <div
     className={cn(
       "absolute rounded-full pointer-events-none blur-[120px]",
-      className
+      className,
     )}
   />
 );
 
 const getLevelNodeTier = (orderIndex: number) => {
-  if (orderIndex === 1) return { name: "Recruit Node", color: "text-slate-500", border: "border-slate-500/20", bg: "bg-slate-500/10" };
-  if (orderIndex === 2) return { name: "Gladiator Node", color: "text-cyan-500", border: "border-cyan-500/20", bg: "bg-cyan-500/10" };
-  if (orderIndex === 3) return { name: "Elite Node", color: "text-amber-500", border: "border-amber-500/20", bg: "bg-amber-500/10" };
-  return { name: "Grandmaster Node", color: "text-primary", border: "border-primary/20", bg: "bg-primary/10" };
+  if (orderIndex === 0)
+    return {
+      name: "Beginner Node",
+      color: "text-slate-400",
+      border: "border-slate-500/20",
+      bg: "bg-slate-500/10",
+    };
+  if (orderIndex === 1)
+    return {
+      name: "Recruit Node",
+      color: "text-blue-400",
+      border: "border-blue-500/20",
+      bg: "bg-blue-500/10",
+    };
+  if (orderIndex === 2)
+    return {
+      name: "Gladiator Node",
+      color: "text-cyan-400",
+      border: "border-cyan-500/20",
+      bg: "bg-cyan-500/10",
+    };
+  if (orderIndex === 3)
+    return {
+      name: "Elite Node",
+      color: "text-amber-400",
+      border: "border-amber-500/20",
+      bg: "bg-amber-500/10",
+    };
+  return {
+    name: "Grandmaster Node",
+    color: "text-primary",
+    border: "border-primary/20",
+    bg: "bg-primary/10",
+  };
 };
 
 const LevelPage = () => {
@@ -55,18 +87,16 @@ const LevelPage = () => {
     return <Loader message="Loading curriculum level..." />;
   }
 
-  const levelIndex = data.level.orderIndex || 1;
+  const levelIndex = data.level.orderIndex ?? 0;
   const tier = getLevelNodeTier(levelIndex);
 
   return (
     <div className="min-h-screen pb-20 pt-0 relative overflow-hidden bg-[linear-gradient(to_right,rgba(var(--primary),0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(var(--primary),0.02)_1px,transparent_1px)] bg-[size:32px_32px]">
-      
       {/* Ambient background glows */}
-      <Orb className="size-[500px] bg-primary/6 dark:bg-primary/4 top-10 left-1/4 animate-pulse [animation-duration:7s]" />
-      <Orb className="size-[400px] bg-emerald-500/6 dark:bg-emerald-500/4 bottom-10 right-1/4 animate-pulse [animation-duration:9s]" />
+      <Orb className="size-[500px] bg-primary/5 dark:bg-primary/4 top-10 left-1/4 animate-pulse [animation-duration:7s]" />
+      <Orb className="size-[400px] bg-emerald-500/5 dark:bg-emerald-500/4 bottom-10 right-1/4 animate-pulse [animation-duration:9s]" />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 max-w-7xl">
-        
         {/* Navigation & Header */}
         <div className="pb-6">
           <Link
@@ -79,7 +109,7 @@ const LevelPage = () => {
         </div>
 
         {/* Level Hero Header */}
-        <m.section
+        <motion.section
           initial={{opacity: 0, y: 20}}
           animate={{opacity: 1, y: 0}}
           transition={{duration: 0.6}}
@@ -91,27 +121,31 @@ const LevelPage = () => {
           </div>
 
           <div className="relative z-10 grid gap-8 lg:grid-cols-12 items-center">
-            
             {/* Left Description Briefing */}
             <div className="lg:col-span-8 space-y-5">
               <div className="flex flex-wrap gap-2">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.2em]">
                   <Target size={11} /> Level Briefing
                 </span>
-                <span className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-[0.2em]",
-                  tier.color, tier.bg, tier.border
-                )}>
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-[0.2em]",
+                    tier.color,
+                    tier.bg,
+                    tier.border,
+                  )}
+                >
                   <Shield size={11} /> {tier.name} (Lvl {levelIndex})
                 </span>
               </div>
-              
+
               <div className="space-y-2">
                 <h1 className="text-3xl md:text-5xl font-[1000] tracking-tighter uppercase text-foreground leading-none">
                   {data.level.title}
                 </h1>
-                <p className="text-sm text-muted-foreground/90 max-w-3xl leading-relaxed font-medium">
-                  {data.level.description || "No curriculum description formulated yet for this level."}
+                <p className="text-sm text-muted-foreground/80 max-w-3xl leading-relaxed font-medium">
+                  {data.level.description ||
+                    "No curriculum description formulated yet for this level."}
                 </p>
               </div>
             </div>
@@ -119,15 +153,16 @@ const LevelPage = () => {
             {/* Right progress indicator */}
             <div className="lg:col-span-4 rounded-2xl border border-border/60 dark:border-border/40 bg-background/50 p-5 space-y-4 shadow-md">
               <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-muted-foreground/60">
-                <span>Missions Solved</span>
+                <span>Missions Completed</span>
                 <span className="text-primary font-bold">
-                  {data.level.topicsUnlockedCount} / {data.level.topicsCount} ({progressPct}%)
+                  {data.level.topicsUnlockedCount} / {data.level.topicsCount} (
+                  {progressPct}% Completed)
                 </span>
               </div>
 
               {/* Progress Bar */}
               <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden border border-border/40">
-                <m.div
+                <motion.div
                   initial={{width: 0}}
                   animate={{width: `${progressPct}%`}}
                   transition={{duration: 0.8}}
@@ -135,13 +170,15 @@ const LevelPage = () => {
                 />
               </div>
 
-              <div className="pt-3 border-t border-border/30 flex items-center justify-between text-[9px] font-bold text-muted-foreground/50 uppercase">
-                <span>Lecture Unlock: {data.level.videoUnlockSheetPct}%</span>
-                <span>Practical Unlock: {data.level.sheetUnlockTopicPct}%</span>
+              <div className="pt-3 border-t border-border/30 flex items-center justify-between text-[10px] font-bold text-muted-foreground/60 uppercase">
+                <span className="flex items-center gap-1 text-primary">
+                  <Award size={14} /> Level Bonus: +
+                  {data.level.levelBonusXp ?? 500} XP
+                </span>
               </div>
             </div>
           </div>
-        </m.section>
+        </motion.section>
 
         {/* Sessions Grid */}
         <section className="mt-14 space-y-8">
@@ -154,7 +191,8 @@ const LevelPage = () => {
                 Missions & Practical Labs
               </h2>
               <p className="text-xs text-muted-foreground/80 font-medium">
-                Finish watching lecture modules to unlock practical programming sheets.
+                Finish watching lecture modules & optional materials to unlock
+                practical programming sheets.
               </p>
             </div>
           </div>
@@ -164,28 +202,30 @@ const LevelPage = () => {
             {data.topics.map((topic, idx) => {
               const isLocked = topic.progress?.isLocked;
               const isComplete = topic.progress?.isComplete;
-              const videoPct = Math.round(topic.progress?.videoPct ?? 0);
-              const sheetPct = Math.round(topic.progress?.sheetPct ?? 0);
-              const sheetUnlocked = topic.progress?.sheetUnlocked;
+              const learningPct = Math.round(topic.progress?.learningPct ?? 0);
+              const problemPct = Math.round(topic.progress?.problemPct ?? 0);
+              const isProblemsUnlocked =
+                learningPct >= (topic.requiredLearningPct ?? 80);
+
               const status = isLocked
                 ? "Locked"
                 : isComplete
                   ? "Completed"
-                  : sheetUnlocked
+                  : isProblemsUnlocked
                     ? "Practice Open"
-                    : videoPct > 0
-                      ? "Lecture Active"
-                      : "Lecture Unwatched";
+                    : learningPct > 0
+                      ? "Learning Active"
+                      : "Unstarted";
 
               return (
-                <m.div
+                <motion.div
                   key={topic._id}
                   initial={{opacity: 0, y: 15}}
                   animate={{opacity: 1, y: 0}}
                   transition={{duration: 0.4, delay: idx * 0.04}}
                   className={cn(
                     "group relative flex flex-col justify-between rounded-3xl border p-5 bg-card/45 dark:bg-card/15 hover:bg-card/65 transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-1 hover:border-primary/30",
-                    isLocked && "opacity-90"
+                    isLocked && "opacity-90",
                   )}
                 >
                   {/* Glassmorphic Lock Overlay */}
@@ -198,16 +238,16 @@ const LevelPage = () => {
                         Mission Locked
                       </h4>
                       <p className="text-[10px] text-muted-foreground/75 mt-1.5 max-w-[220px] leading-relaxed font-medium">
-                        Complete the previous topic first:
+                        Complete previous sessions first:
                       </p>
                       <div className="mt-2.5 space-y-1.5">
                         <span className="flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-primary">
-                          <Video className="size-3" />
-                          Watch {data.level.videoUnlockSheetPct}% of lecture
+                          <BookOpen className="size-3" />
+                          Learn {topic.requiredLearningPct}%
                         </span>
                         <span className="flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-emerald-500">
                           <CheckCircle2 className="size-3" />
-                          Solve {data.level.sheetUnlockTopicPct}% of problems
+                          Solve {topic.requiredProblemPct}%
                         </span>
                       </div>
                     </div>
@@ -220,7 +260,7 @@ const LevelPage = () => {
                         <span className="text-[9px] font-black uppercase tracking-[0.25em] text-muted-foreground/60 block group-hover:text-primary transition-colors">
                           Mission {topic.orderIndex}
                         </span>
-                        <h3 className="text-lg font-black text-foreground mt-1">
+                        <h3 className="text-base font-black text-foreground mt-1">
                           {topic.title}
                         </h3>
                       </div>
@@ -231,19 +271,18 @@ const LevelPage = () => {
                             ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 shadow-sm"
                             : status === "Practice Open"
                               ? "bg-teal-500/10 border-teal-500/20 text-teal-500"
-                              : status === "Lecture Active"
+                              : status === "Learning Active"
                                 ? "bg-amber-500/5 border-amber-500/10 text-amber-500"
-                                : status === "Lecture Unwatched"
-                                  ? "bg-muted border-border/80 text-foreground"
-                                  : "bg-muted border-border/40 text-muted-foreground/50"
+                                : "bg-muted border-border/80 text-foreground",
                         )}
                       >
                         {status}
                       </span>
                     </div>
 
-                    <p className="text-xs text-muted-foreground/80 leading-relaxed font-medium line-clamp-3">
-                      {topic.description || "No session detail formulations recorded."}
+                    <p className="text-xs text-muted-foreground/70 leading-relaxed font-medium line-clamp-3">
+                      {topic.description ||
+                        "No session detail formulations recorded."}
                     </p>
 
                     {/* Subtopics tag list */}
@@ -267,21 +306,20 @@ const LevelPage = () => {
                   </div>
 
                   <div className="mt-5 pt-4 border-t border-border/40 dark:border-border/20 space-y-4">
-                    {/* Video Progress Bar */}
+                    {/* Learning Progress Bar */}
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-muted-foreground/50">
                         <span className="flex items-center gap-1">
-                          <Video className="size-3" />
-                          Lecture Progress
+                          <BookOpen className="size-3" />
+                          Learning progress
                         </span>
                         <span className="text-foreground font-bold">
-                          {videoPct}%
+                          {learningPct}%
                         </span>
                       </div>
-                      <div className="h-1.5 w-full rounded-full bg-background border border-border/40">
+                      <div className="h-1.5 w-full rounded-full bg-background border border-border/40 overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-gradient-to-r from-primary to-blue-400 transition-all duration-300"
-                          style={{width: `${videoPct}%`}}
+                          className={cn("h-full rounded-full bg-gradient-to-r from-primary to-blue-400 transition-all duration-300", progressWidthClass(learningPct))}
                         />
                       </div>
                     </div>
@@ -291,20 +329,23 @@ const LevelPage = () => {
                       <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-muted-foreground/50">
                         <span className="flex items-center gap-1">
                           <CheckCircle2 className="size-3" />
-                          Problems Solved
+                          Practice solved
                         </span>
-                        <span className={cn(
-                          "font-bold",
-                          sheetUnlocked ? "text-foreground" : "text-muted-foreground/30"
-                        )}>
-                          {sheetUnlocked ? `${sheetPct}%` : "Locked"}
+                        <span
+                          className={cn(
+                            "font-bold",
+                            isProblemsUnlocked
+                              ? "text-foreground"
+                              : "text-muted-foreground/30",
+                          )}
+                        >
+                          {isProblemsUnlocked ? `${problemPct}%` : "Locked"}
                         </span>
                       </div>
-                      <div className="h-1.5 w-full rounded-full bg-background border border-border/40">
-                        {sheetUnlocked ? (
+                      <div className="h-1.5 w-full rounded-full bg-background border border-border/40 overflow-hidden">
+                        {isProblemsUnlocked ? (
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300"
-                            style={{width: `${sheetPct}%`}}
+                            className={cn("h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300", progressWidthClass(problemPct))}
                           />
                         ) : (
                           <div className="h-full rounded-full bg-muted/50 w-full" />
@@ -312,29 +353,30 @@ const LevelPage = () => {
                       </div>
                     </div>
 
+                    {/* Footer Stats */}
                     <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground/60">
                       <span className="inline-flex items-center gap-1">
                         <Target className="size-3.5" />
-                        {topic.problemsCount} problems
+                        {topic.problemsCount ?? 0} problems
                       </span>
                       <span className="inline-flex items-center gap-1 text-primary">
-                        <Award className="size-3.5" />
-                        +{topic.xpVideoReward} XP
+                        <Award className="size-3.5" />+
+                        {topic.topicXpReward ?? 100} XP
                       </span>
                     </div>
 
                     <Link
-                      href={`/roadmap/levels/${data.level._id}/topics/${topic._id}`}
+                      href={`/roadmap/levels/${levelId}/topics/${topic._id}`}
                       className={cn(
                         "w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-border/80 hover:border-primary/40 bg-background/50 py-3 text-xs font-black uppercase tracking-[0.15em] text-foreground hover:text-primary hover:bg-primary/5 transition-all duration-300 group",
-                        isLocked && "pointer-events-none opacity-50"
+                        isLocked && "pointer-events-none opacity-50",
                       )}
                     >
                       <Play size={10} className="fill-current" /> Enter Mission
                       <ChevronRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
                     </Link>
                   </div>
-                </m.div>
+                </motion.div>
               );
             })}
           </div>
