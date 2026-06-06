@@ -30,15 +30,23 @@ const RoadmapPage = () => {
     ).length,
   }), [levels]);
 
-  const levelsWithStatus = useMemo(() => levels.map((level, index) => {
-    const prev = index > 0 ? levels[index - 1] : null;
-    const isUnlocked = index === 0 || (prev ? prev.topicsUnlockedCount === prev.topicsCount : false);
-    const isComplete = level.topicsCount > 0 && level.topicsUnlockedCount === level.topicsCount;
-    const progressPct = level.topicsCount
-      ? Math.min(100, Math.round((level.topicsUnlockedCount / level.topicsCount) * 100))
-      : 0;
-    return { ...level, isUnlocked, isComplete, progressPct };
-  }), [levels]);
+  const levelsWithStatus = useMemo(() => {
+    const result: (typeof levels[number] & { isUnlocked: boolean; isComplete: boolean; progressPct: number })[] = [];
+    for (let index = 0; index < levels.length; index++) {
+      const level = levels[index];
+      const prev = index > 0 ? result[index - 1] : null;
+      const prevComplete = prev
+        ? prev.isUnlocked && prev.topicsCount > 0 && prev.topicsUnlockedCount === prev.topicsCount
+        : true;
+      const isUnlocked = index === 0 || prevComplete;
+      const isComplete = level.topicsCount > 0 && level.topicsUnlockedCount === level.topicsCount;
+      const progressPct = level.topicsCount
+        ? Math.min(100, Math.round((level.topicsUnlockedCount / level.topicsCount) * 100))
+        : 0;
+      result.push({ ...level, isUnlocked, isComplete, progressPct });
+    }
+    return result;
+  }, [levels]);
 
   const overallPct = totals.totalTopics
     ? Math.round((totals.completedTopics / totals.totalTopics) * 100)
