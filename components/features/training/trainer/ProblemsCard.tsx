@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as const } },
 };
 
 const listStagger: Variants = {
@@ -95,7 +95,7 @@ const ProblemsCard = ({
                 className="h-full rounded-full bg-gradient-to-r from-primary to-emerald-500"
                 initial={{ width: 0 }}
                 animate={{ width: `${progressPercent}%` }}
-                transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+                transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] as const }}
               />
             </div>
           </div>
