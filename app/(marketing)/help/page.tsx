@@ -2,8 +2,8 @@ import { Metadata } from 'next';
 import { HelpCenter } from '@/components/features/help';
 
 export const metadata: Metadata = {
-  title: 'Help Center - CF Training Tracker',
-  description: 'Get help and learn how to use CF Training Tracker effectively. Find tutorials, FAQs, and support resources.',
+  title: 'Help Center | Upsolve.it',
+  description: 'Get help and learn how to use Upsolve.it effectively. Find tutorials, FAQs, and support resources.',
 };
 
 export default function HelpPage() {
