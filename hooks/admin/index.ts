@@ -17,3 +17,11 @@ export {
   deleteWhatsNewEntry,
 } from "./useWhatsNew";
 export type { WhatsNewEntry } from "./useWhatsNew";
+export {
+  useSuggestions,
+  useSuggestionsAdmin,
+  createSuggestion,
+  updateSuggestion,
+  deleteSuggestion,
+} from "./useSuggestions";
+export type { Suggestion } from "./useSuggestions";
