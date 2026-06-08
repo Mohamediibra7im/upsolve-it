@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import {m} from "framer-motion";
-import {Users, BookOpen, Trophy, Heart, ArrowRight, Github, Facebook, Linkedin} from "lucide-react";
+import {Users, BookOpen, Trophy, Heart, ArrowRight, Github, Facebook} from "lucide-react";
 import Counter from "./Counter";
 
 const values = [
