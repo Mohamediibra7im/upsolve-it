@@ -25,8 +25,8 @@ const values = [
 
 const CommunitySection = () => (
   <section className="py-32 relative overflow-hidden">
-    <div className="absolute rounded-full pointer-events-none blur-[120px] size-[400px] bg-primary/5 -top-[10%] right-[10%]" />
-    <div className="absolute rounded-full pointer-events-none blur-[120px] size-[350px] bg-emerald-500/5 -bottom-[10%] left-[10%]" />
+    <div className="absolute rounded-full pointer-events-none blur-[120px] size-[400px] -top-[10%] right-[10%]" />
+    <div className="absolute rounded-full pointer-events-none blur-[120px] size-[350px] -bottom-[10%] left-[10%]" />
 
     <div className="container mx-auto px-6 relative z-10">
 
@@ -140,7 +140,7 @@ const CommunitySection = () => (
           className="p-8 rounded-3xl bg-card/30 backdrop-blur-md border border-border/30 hover:border-primary/20 transition-all duration-500 flex flex-col justify-center"
         >
           <div className="space-y-5">
-            {values.map((v, idx) => (
+            {values.map((v) => (
               <div key={v.label} className="flex items-start gap-4">
                 <div className="size-10 rounded-xl bg-primary/[0.06] flex items-center justify-center text-primary shrink-0 mt-0.5">
                   <v.icon size={18} />
