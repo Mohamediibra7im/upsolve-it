@@ -5,7 +5,6 @@ import { Training } from "@/types/Training";
 import { useState, useEffect, useMemo } from "react";
 import { SubmissionStatus } from "@/services/codeforces/getTrainingSubmissionStatus";
 
-// Sub-components
 import StopTrainingDialog from "./trainer/StopTrainingDialog";
 import FinishTrainingDialog from "./trainer/FinishTrainingDialog";
 import ProblemsCard from "./trainer/ProblemsCard";
@@ -55,22 +54,17 @@ const Trainer = ({
 
   useEffect(() => {
     if (!isTraining || !training?.startTime) return;
-
-    const interval = setInterval(() => {
-      setCurrentTime(Date.now());
-    }, 1000);
-
+    const interval = setInterval(() => setCurrentTime(Date.now()), 1000);
     return () => clearInterval(interval);
   }, [isTraining, training?.startTime]);
 
   const isPreContestPeriod = useMemo(() => {
-    return (
-      isTraining && !!training?.startTime && currentTime < training.startTime
-    );
+    return isTraining && !!training?.startTime && currentTime < training.startTime;
   }, [isTraining, training?.startTime, currentTime]);
 
   const [isFinishDialogOpen, setIsFinishDialogOpen] = useState(false);
   const [isStopDialogOpen, setIsStopDialogOpen] = useState(false);
+  const [showTags, setShowTags] = useState(true);
 
   const confirmFinish = () => {
     setIsFinishDialogOpen(false);
@@ -101,7 +95,7 @@ const Trainer = ({
   const totalCount = currentProblems?.length ?? 0;
 
   return (
-    <div className={isTraining ? "pb-28 lg:pb-0" : undefined}>
+    <div className={cn(isTraining ? "pb-28 lg:pb-0" : undefined)}>
       <StopTrainingDialog
         isOpen={isStopDialogOpen}
         onCancel={() => setIsStopDialogOpen(false)}
@@ -116,8 +110,8 @@ const Trainer = ({
 
       <div
         className={cn(
-          "grid gap-4 lg:gap-6",
-          isTraining ? "lg:grid-cols-[minmax(0,1fr)_360px]" : "grid-cols-1",
+          "gap-6",
+          isTraining ? "lg:grid lg:grid-cols-[1fr_340px] lg:gap-8" : "grid-cols-1",
         )}
       >
         <ProblemsCard
@@ -134,6 +128,8 @@ const Trainer = ({
           hideContestDetails={hideContestDetails}
           onProblemOpen={onProblemOpen}
           isPoolLoading={isPoolLoading}
+          showTags={showTags}
+          onToggleTags={() => setShowTags(!showTags)}
         />
 
         <TrainingControls

@@ -6,8 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@/hooks/auth";
 import Loader from "@/components/shared/Loader";
-import UpsolveReminder from "@/components/shared/UpsolveReminder";
 import { Flame } from "lucide-react";
+import UpsolveReminder from "@/components/shared/UpsolveReminder";
 import { m } from "framer-motion";
 import type { TrainingMode } from "@/types/TrainingMode";
 import {
@@ -192,42 +192,50 @@ export default function TrainingPage() {
   if (isInitializing || !user) return <Loader />;
 
   if (isTraining) {
+    const modeLabel =
+      training?.trainingMode === "contest"
+        ? "Contest Simulation"
+        : training?.trainingMode === "speed"
+          ? "Speed Round"
+          : training?.trainingMode === "endurance"
+            ? "Endurance Mode"
+            : training?.trainingMode === "weakness"
+              ? "Weakness Training"
+              : "Ladder Training";
+
     return (
-      <section className="min-h-screen relative overflow-hidden py-12 sm:py-20 lg:py-24">
+      <section className="min-h-screen relative overflow-hidden">
         <div className="absolute inset-0 -z-10">
-          <div className="absolute inset-0 bg-grid-pattern opacity-[0.03]" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[800px] bg-primary/5 rounded-full blur-[140px] animate-pulse" />
-          <div className="absolute top-0 left-0 size-full bg-gradient-to-b from-background via-background/95 to-background" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-primary/[0.03] via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-emerald-500/[0.02] via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-grid-pattern opacity-[0.012]" />
         </div>
 
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 space-y-12 lg:space-y-16">
-          <UpsolveReminder />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7 lg:py-10">
+          <div className="max-w-[1400px] mx-auto">
+            <m.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="mb-6 lg:mb-8"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-md" />
+                    <div className="relative flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                      <div className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">Live</span>
+                    </div>
+                  </div>
+                  <h1 className="text-lg font-semibold text-foreground">{modeLabel}</h1>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Focus and solve each problem with precision
+                </p>
+              </div>
+            </m.div>
 
-          <m.div
-            className="text-center space-y-6 max-w-3xl mx-auto"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-md">
-              <div className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500">
-                Active Session
-              </span>
-            </div>
-
-            <div className="space-y-4">
-              <h1 className="text-5xl sm:text-7xl font-black tracking-tighter text-foreground leading-none">
-                Master the <span className="text-primary italic">Grind</span>
-              </h1>
-              <p className="text-lg text-muted-foreground font-medium leading-relaxed max-w-xl mx-auto opacity-80">
-                You are in focused mode. Eliminate distractions, analyze each
-                problem carefully, and break your limits.
-              </p>
-            </div>
-          </m.div>
-
-          <div className="max-w-6xl mx-auto">
             <Trainer
               status={isRefreshing ? "refreshing" : isTraining ? "training" : "idle"}
               training={training}

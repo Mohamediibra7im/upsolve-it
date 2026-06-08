@@ -1,16 +1,15 @@
 "use client";
 
 import { m, AnimatePresence, Variants } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Trophy, XCircle } from "lucide-react";
+import { RefreshCw, Trophy, XCircle, Clock, Target, Square } from "lucide-react";
 import CountDown from "../CountDown";
 import { Training } from "@/types/Training";
 import { cn } from "@/lib/utils";
 
 const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 10 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] } },
 };
 
 interface TrainingControlsProps {
@@ -39,16 +38,18 @@ const TrainingControls = ({
   if (!training) return null;
 
   const renderActionButtons = (isMobile = false) => {
-    const buttonClass = isMobile ? "h-12 flex-1 text-[10px] font-black uppercase tracking-widest" : "w-full h-12 text-xs font-black uppercase tracking-widest";
-    
+    const buttonClass = isMobile
+      ? "h-11 flex-1 text-[10px] font-bold uppercase tracking-wider"
+      : "w-full h-11 text-[11px] font-bold uppercase tracking-wider";
+
     if (isTraining && isPreContestPeriod) {
       return (
         <Button
           variant="destructive"
           onClick={onStopTraining}
-          className={cn(buttonClass, "bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white border-rose-500/20 transition-all")}
+          className={cn(buttonClass, "bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white border border-rose-500/20")}
         >
-          <XCircle className="size-4 mr-2" />
+          <XCircle className="size-3.5 mr-2" />
           Cancel Session
         </Button>
       );
@@ -56,35 +57,42 @@ const TrainingControls = ({
 
     if (isTraining) {
       return (
-        <div className={cn("space-y-3", isMobile && "flex items-center gap-2 space-y-0")}>
+        <div className={cn("space-y-2.5", isMobile && "flex items-center gap-2 space-y-0")}>
           <Button
             variant="outline"
             onClick={refreshProblemStatus}
-            className={cn(buttonClass, "bg-background/50 border-primary/20 hover:border-primary/40 hover:bg-primary/5 text-primary")}
+            className={cn(buttonClass, "bg-white/[0.03] border-white/[0.06] hover:bg-white/[0.06] hover:border-white/[0.1] text-foreground")}
             disabled={isRefreshing}
           >
-            <RefreshCw
-              className={cn("size-4 mr-2", isRefreshing ? "animate-spin" : "")}
-            />
+            <RefreshCw className={cn("size-3.5 mr-2", isRefreshing ? "animate-spin" : "")} />
             {isRefreshing ? "Refreshing..." : "Refresh Status"}
           </Button>
-          
+
+          {!isMobile && (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/[0.04] border border-primary/10">
+              <RefreshCw className="size-3 text-primary/60 shrink-0" />
+              <p className="text-[10px] text-primary/70 leading-relaxed">
+                Click after each submit to update status
+              </p>
+            </div>
+          )}
+
           <Button
             onClick={onFinishTraining}
-            className={cn(buttonClass, "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20")}
+            className={cn(buttonClass, "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_-4px_rgba(var(--primary),0.4)]")}
           >
-            <Trophy className="size-4 mr-2" />
+            <Trophy className="size-3.5 mr-2" />
             Finish Session
           </Button>
-          
+
           {!isMobile && (
-            <Button
-              variant="ghost"
+            <button
               onClick={onStopTraining}
-              className="w-full h-10 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-rose-500 hover:bg-rose-500/5 transition-colors"
+              className="w-full py-2.5 text-[10px] font-medium text-muted-foreground/50 hover:text-rose-400 transition-colors flex items-center justify-center gap-1.5"
             >
+              <Square className="size-2.5" />
               Stop Training
-            </Button>
+            </button>
           )}
         </div>
       );
@@ -97,60 +105,58 @@ const TrainingControls = ({
     <>
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
-        <div className="sticky top-24 space-y-6 max-h-[calc(100vh-8rem)] overflow-y-auto pr-1 custom-scrollbar">
+        <div className="sticky top-6 space-y-4">
           <m.div variants={fadeUp} initial="hidden" animate="show">
-            <Card className="relative overflow-hidden border-border/40 bg-card/60 backdrop-blur-2xl shadow-2xl rounded-[2rem]">
-              <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/10 via-transparent to-accent/5 opacity-40" />
-              
-              <CardContent className="p-8 space-y-8">
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="size-2 rounded-full bg-primary animate-[pulse_2s_infinite]" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">
-                        {isPreContestPeriod ? "Starts In" : "Time Remaining"}
-                      </span>
+            <div className="rounded-3xl border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-white/[0.01] backdrop-blur-2xl overflow-hidden shadow-[0_0_40px_-10px_rgba(0,0,0,0.3)]">
+              <div className="p-6 space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10">
+                      <Clock className="size-4 text-primary" />
                     </div>
+                    <span className="text-xs font-semibold text-foreground">
+                      {isPreContestPeriod ? "Starting In" : "Time Remaining"}
+                    </span>
                   </div>
-                  
-                  <div className="relative px-1">
-                    <CountDown
-                      startTime={training.startTime}
-                      endTime={training.endTime}
-                    />
-                  </div>
-                  
-                  {isTraining && (
-                    <div className="flex items-center justify-between px-2">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Progress</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-black text-foreground">{solvedCount}</span>
-                        <span className="text-xs font-medium text-muted-foreground">/ {totalCount} Solved</span>
-                      </div>
-                    </div>
-                  )}
+                  <CountDown
+                    startTime={training.startTime}
+                    endTime={training.endTime}
+                  />
                 </div>
 
-                <div className="space-y-4">
-                  {renderActionButtons()}
+                <div className="h-px bg-white/[0.04]" />
+
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10">
+                      <Target className="size-4 text-primary" />
+                    </div>
+                    <span className="text-xs font-semibold text-foreground">
+                      Progress
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-foreground tabular-nums">{solvedCount}</span>
+                    <span className="text-sm text-muted-foreground/60">/ {totalCount} solved</span>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+
+                <div className="h-px bg-white/[0.04]" />
+
+                {renderActionButtons()}
+              </div>
+            </div>
           </m.div>
-          
-          {/* Pro Tip Card */}
-          <m.div 
-            variants={fadeUp} 
-            initial="hidden" 
+
+          <m.div
+            variants={fadeUp}
+            initial="hidden"
             animate="show"
             transition={{ delay: 0.1 }}
           >
-            <div className="p-6 rounded-[1.5rem] border border-border/30 bg-muted/10 backdrop-blur-sm relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-4 text-primary/10 group-hover:text-primary/20 transition-colors">
-                <Trophy size={40} />
-              </div>
-              <p className="text-xs leading-relaxed text-muted-foreground font-medium italic relative z-10">
-                "Precision and speed are the keys to victory. Stay focused and keep pushing."
+            <div className="rounded-2xl border border-white/[0.04] bg-white/[0.02] p-5">
+              <p className="text-[11px] leading-relaxed text-muted-foreground/50 italic">
+                &quot;Precision and speed are the keys to victory. Stay focused and keep pushing.&quot;
               </p>
             </div>
           </m.div>
@@ -167,32 +173,34 @@ const TrainingControls = ({
             exit={{ y: 100 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
           >
-            <div className="mx-4 mb-4 overflow-hidden rounded-[2rem] border border-border/60 bg-background/80 backdrop-blur-2xl shadow-2xl shadow-black/20">
-              <div className="px-6 py-4 space-y-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">
-                      {isPreContestPeriod ? "Starts In" : "Session Ends In"}
+            <div className="mx-3 mb-3 rounded-2xl border border-white/[0.08] bg-black/80 backdrop-blur-2xl shadow-[0_-4px_30px_-4px_rgba(0,0,0,0.5)]">
+              <div className="px-4 py-3">
+                <div className="flex items-center gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/50 mb-1.5">
+                      {isPreContestPeriod ? "Starting In" : "Time Left"}
                     </div>
-                    <div className="min-w-0">
-                      <CountDown
-                        startTime={training.startTime}
-                        endTime={training.endTime}
-                        compact
-                      />
-                    </div>
+                    <CountDown
+                      startTime={training.startTime}
+                      endTime={training.endTime}
+                      compact
+                    />
                   </div>
-                  
-                  <div className="text-right">
-                    <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">Progress</div>
-                    <div className="text-sm font-black text-foreground">
-                      {solvedCount} <span className="text-muted-foreground font-medium">/ {totalCount}</span>
-                    </div>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-3">
-                  {renderActionButtons(true)}
+                  <div className="h-12 w-px bg-white/[0.06]" />
+
+                  <div className="text-center shrink-0">
+                    <div className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/50 mb-1.5">Solved</div>
+                    <div className="text-xl font-black text-foreground tabular-nums">
+                      {solvedCount}<span className="text-sm font-medium text-muted-foreground/40">/{totalCount}</span>
+                    </div>
+                  </div>
+
+                  <div className="h-12 w-px bg-white/[0.06]" />
+
+                  <div className="shrink-0">
+                    {renderActionButtons(true)}
+                  </div>
                 </div>
               </div>
             </div>
@@ -204,10 +212,3 @@ const TrainingControls = ({
 };
 
 export default TrainingControls;
-
-
-
-
-
-
-

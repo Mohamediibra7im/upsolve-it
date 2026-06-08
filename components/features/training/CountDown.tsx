@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 type CountDownProps = {
   startTime: number;
   endTime: number;
-  /** Tighter layout for the mobile session bar */
   compact?: boolean;
 };
 
@@ -22,25 +21,25 @@ function Segment({
   return (
     <div
       className={cn(
-        "relative flex flex-col items-center justify-center rounded-2xl border bg-card/40 backdrop-blur-sm transition-colors duration-300",
-        compact ? "min-w-[3.25rem] px-2 py-2" : "min-w-[4.5rem] px-3 py-4 sm:min-w-[5.25rem] sm:px-4 sm:py-5",
+        "flex flex-col items-center justify-center rounded-xl border transition-all duration-500",
+        compact ? "min-w-[2.75rem] px-2 py-2" : "min-w-[3.75rem] px-3 py-3 sm:min-w-[4.25rem] sm:px-4 sm:py-3.5",
         urgent
-          ? "border-amber-500/35 shadow-[0_0_20px_rgba(245,158,11,0.12)]"
-          : "border-primary/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]",
+          ? "border-amber-500/30 bg-amber-500/[0.06] shadow-[0_0_20px_-4px_rgba(245,158,11,0.15)]"
+          : "border-white/[0.04] bg-white/[0.02]",
       )}
     >
       <span
         className={cn(
-          "font-black tabular-nums leading-none tracking-tight text-foreground",
-          compact ? "text-xl" : "text-3xl sm:text-4xl",
+          "font-black tabular-nums leading-none text-foreground/90",
+          compact ? "text-lg" : "text-2xl sm:text-3xl",
         )}
       >
         {value}
       </span>
       <span
         className={cn(
-          "mt-1.5 font-bold uppercase tracking-[0.2em] text-muted-foreground/90",
-          compact ? "text-[8px]" : "text-[10px]",
+          "mt-1.5 font-bold uppercase tracking-widest text-muted-foreground/40",
+          compact ? "text-[7px]" : "text-[9px]",
         )}
       >
         {label}
@@ -49,12 +48,12 @@ function Segment({
   );
 }
 
-function Colon({ compact }: { compact?: boolean }) {
+function Separator({ compact }: { compact?: boolean }) {
   return (
     <span
       className={cn(
-        "flex shrink-0 items-center justify-center self-center font-light text-primary/35 select-none",
-        compact ? "pb-5 text-lg" : "pb-8 text-2xl sm:text-3xl",
+        "flex shrink-0 items-center justify-center text-muted-foreground/20 select-none",
+        compact ? "pb-4 text-base" : "pb-6 text-xl sm:text-2xl",
       )}
       aria-hidden
     >
@@ -73,17 +72,12 @@ const CountDown = ({ startTime, endTime, compact }: CountDownProps) => {
 
   useEffect(() => {
     if (!mounted) return;
-
     const now = Date.now();
     if (now >= endTime) return;
 
     const timer = setInterval(() => {
-      const currentNow = Date.now();
       setTick((t) => t + 1);
-
-      if (currentNow >= endTime) {
-        clearInterval(timer);
-      }
+      if (Date.now() >= endTime) clearInterval(timer);
     }, 1000);
 
     return () => clearInterval(timer);
@@ -92,12 +86,8 @@ const CountDown = ({ startTime, endTime, compact }: CountDownProps) => {
   const getTimerState = () => {
     if (!mounted) return { isStarted: false, timeLeft: 0 };
     const now = Date.now();
-    if (now < startTime) {
-      return { isStarted: false, timeLeft: startTime - now };
-    }
-    if (now < endTime) {
-      return { isStarted: true, timeLeft: endTime - now };
-    }
+    if (now < startTime) return { isStarted: false, timeLeft: startTime - now };
+    if (now < endTime) return { isStarted: true, timeLeft: endTime - now };
     return { isStarted: true, timeLeft: 0 };
   };
 
@@ -107,12 +97,12 @@ const CountDown = ({ startTime, endTime, compact }: CountDownProps) => {
     return (
       <div
         className={cn(
-          "flex items-center justify-center gap-2 rounded-2xl border border-border/50 bg-muted/20",
-          compact ? "h-16 px-3" : "h-28 px-4",
+          "flex items-center justify-center gap-2 rounded-xl border border-white/[0.04] bg-white/[0.02]",
+          compact ? "h-12 px-3" : "h-20 px-4",
         )}
       >
-        <div className="size-2 animate-pulse rounded-full bg-primary/50" />
-        <span className="text-xs font-medium text-muted-foreground">Syncing…</span>
+        <div className="size-1 animate-pulse rounded-full bg-primary/50" />
+        <span className="text-[10px] font-medium text-muted-foreground/40">Syncing...</span>
       </div>
     );
   }
@@ -120,34 +110,22 @@ const CountDown = ({ startTime, endTime, compact }: CountDownProps) => {
   const hours = Math.floor(timeLeft / (1000 * 60 * 60));
   const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-  const urgent =
-    isStarted && timeLeft > 0 && timeLeft < 5 * 60 * 1000;
+  const urgent = isStarted && timeLeft > 0 && timeLeft < 5 * 60 * 1000;
 
   if (timeLeft === 0) {
     return (
       <div
         className={cn(
-          "rounded-2xl border border-border/40 bg-muted/10 text-center",
-          compact ? "px-3 py-2" : "px-4 py-5",
+          "rounded-xl border border-white/[0.04] bg-white/[0.02] text-center",
+          compact ? "px-3 py-2.5" : "px-4 py-4",
         )}
       >
         {isStarted ? (
-          <p
-            className={cn(
-              "font-semibold text-rose-500 dark:text-rose-400",
-              compact ? "text-sm" : "text-base",
-            )}
-          >
-            Session time is up
+          <p className={cn("font-semibold text-rose-400", compact ? "text-xs" : "text-sm")}>
+            Time&apos;s up
           </p>
         ) : (
-          <p
-            className={cn(
-              "font-medium text-sky-600 dark:text-sky-400",
-              compact ? "text-sm" : "text-base",
-            )}
-          >
+          <p className={cn("font-medium text-sky-400", compact ? "text-xs" : "text-sm")}>
             Starting soon
           </p>
         )}
@@ -158,14 +136,14 @@ const CountDown = ({ startTime, endTime, compact }: CountDownProps) => {
   return (
     <div className="w-full">
       {!isStarted && !compact && (
-        <p className="mb-3 text-center text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground">
-          Countdown to start
+        <p className="mb-2.5 text-center text-[8px] font-bold uppercase tracking-[0.2em] text-muted-foreground/30">
+          Starting in
         </p>
       )}
       <div
         className={cn(
           "flex w-full items-stretch justify-center",
-          compact ? "gap-0.5" : "gap-1 sm:gap-2",
+          compact ? "gap-1" : "gap-1.5 sm:gap-2",
         )}
       >
         <Segment
@@ -174,14 +152,14 @@ const CountDown = ({ startTime, endTime, compact }: CountDownProps) => {
           compact={compact}
           urgent={urgent}
         />
-        <Colon compact={compact} />
+        <Separator compact={compact} />
         <Segment
           value={minutes.toString().padStart(2, "0")}
           label="Min"
           compact={compact}
           urgent={urgent}
         />
-        <Colon compact={compact} />
+        <Separator compact={compact} />
         <Segment
           value={seconds.toString().padStart(2, "0")}
           label="Sec"

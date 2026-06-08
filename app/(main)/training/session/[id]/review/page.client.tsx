@@ -4,12 +4,24 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/apiClient";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import {
+  ChevronLeft,
+  Trophy,
+  Clock,
+  Target,
+  Zap,
+  CheckCircle2,
+  XCircle,
+  ArrowRight,
+  TrendingUp,
+  BookOpen,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import Loader from "@/components/shared/Loader";
 import { useUpsolvedProblems } from "@/hooks/data";
 import type { TrainingProblem } from "@/types/TrainingProblem";
+import { m } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 type ReviewProblem = {
   problemId: string;
@@ -40,6 +52,16 @@ type ReviewPayload = {
     durationMinutes?: number;
   };
   problems: ReviewProblem[];
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] } },
+};
+
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06 } },
 };
 
 export default function SessionReviewPage() {
@@ -90,15 +112,17 @@ export default function SessionReviewPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-16 text-center space-y-4">
-        <p className="text-muted-foreground">{error}</p>
-        <div className="flex flex-wrap justify-center gap-2">
-          <Button asChild variant="outline">
-            <Link href="/training/reviews">All session reviews</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/training">Training</Link>
-          </Button>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-muted-foreground">{error}</p>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Button asChild variant="outline" className="rounded-xl">
+              <Link href="/training/reviews">All Reviews</Link>
+            </Button>
+            <Button asChild variant="outline" className="rounded-xl">
+              <Link href="/training">Training</Link>
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -107,176 +131,306 @@ export default function SessionReviewPage() {
   if (!data) return <Loader message="Loading review..." />;
 
   const { summary, problems } = data;
-  // Header must match cards even if an older API mixed solvedCount with per-row flags.
   const solvedFromRows = problems.filter((p) => p.solved).length;
   const totalProblems = summary.totalProblems ?? problems.length;
   const solvedDisplay = solvedFromRows;
+  const solveRate = totalProblems > 0 ? Math.round((solvedDisplay / totalProblems) * 100) : 0;
+
+  const modeLabel =
+    summary.trainingMode === "contest"
+      ? "Contest Simulation"
+      : summary.trainingMode === "speed"
+        ? "Speed Round"
+        : summary.trainingMode === "endurance"
+          ? "Endurance Mode"
+          : summary.trainingMode === "weakness"
+            ? "Weakness Training"
+            : "Ladder Training";
 
   return (
-    <div className="container mx-auto px-4 py-12 space-y-12 max-w-4xl">
-      <Link
-        href="/training/reviews"
-        className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors"
-      >
-        <ChevronLeft className="size-4" />
-        All session reviews
-      </Link>
-      <div className="space-y-2">
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-          Session review
-        </p>
-        <h1 className="text-4xl font-black tracking-tight">Performance recap</h1>
-        <p className="text-muted-foreground">
-          Honest stats and next steps based on your solves.
-        </p>
+    <section className="min-h-screen relative overflow-hidden">
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-primary/[0.03] via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-emerald-500/[0.02] via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-grid-pattern opacity-[0.012]" />
       </div>
 
-      <Card className="border-border/50 bg-card/30 backdrop-blur-md rounded-3xl">
-        <CardContent className="p-8 space-y-6">
-          <h2 className="text-lg font-black uppercase tracking-widest">
-            Session summary
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div>
-              <p className="text-[10px] font-bold uppercase text-muted-foreground">
-                Solved
-              </p>
-              <p className="text-2xl font-black">
-                {solvedDisplay}/{totalProblems}
-              </p>
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase text-muted-foreground">
-                Performance
-              </p>
-              <p className="text-2xl font-black">{summary.performanceScore}</p>
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase text-muted-foreground">
-                Total time
-              </p>
-              <p className="text-2xl font-black">
-                {Math.round(summary.totalTimeSpent / 60)}m
-              </p>
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase text-muted-foreground">
-                Avg / solved
-              </p>
-              <p className="text-2xl font-black">
-                {summary.averageTimePerProblem}s
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="space-y-4">
-        <h2 className="text-lg font-black uppercase tracking-widest">
-          Problem breakdown
-        </h2>
-        <div className="grid gap-4">
-          {problems.map((p) => (
-            <Card
-              key={p.problemId}
-              className="border-border/50 bg-card/20 backdrop-blur-sm rounded-2xl"
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="max-w-4xl mx-auto space-y-8">
+          <m.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Link
+              href="/training/reviews"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors mb-6"
             >
-              <CardContent className="p-6 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                  <div>
-                    <h3 className="font-bold text-lg">{p.name}</h3>
-                    <p className="text-xs text-muted-foreground font-mono">
-                      {p.contestId}
-                      {p.index} · rating {p.rating}
-                    </p>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {p.tags.slice(0, 4).map((t) => (
-                        <span
-                          key={t}
-                          className="text-[10px] px-2 py-0.5 rounded-full bg-muted/40 border border-border/40"
-                        >
-                          {t}
-                        </span>
-                      ))}
+              <ChevronLeft className="size-3.5" />
+              All Reviews
+            </Link>
+
+            <div className="space-y-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
+                Session Review
+              </p>
+              <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+                Performance Recap
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {modeLabel} session completed
+              </p>
+            </div>
+          </m.div>
+
+          <m.div
+            initial="hidden"
+            animate="show"
+            variants={fadeUp}
+            className="rounded-3xl border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-white/[0.01] backdrop-blur-2xl overflow-hidden shadow-[0_0_40px_-10px_rgba(0,0,0,0.3)]"
+          >
+            <div className="px-6 py-5 sm:px-8 sm:py-6 border-b border-white/[0.04]">
+              <h2 className="text-lg font-bold text-foreground">Session Summary</h2>
+            </div>
+            <div className="p-6 sm:px-8 sm:pb-8">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Target className="size-4 text-primary" />
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button size="sm" variant="outline" asChild>
-                      <a
-                        href={`https://codeforces.com/contest/${p.contestId}/problem/${p.index}`}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Open on CF
-                      </a>
-                    </Button>
-                    {!p.solved ? (
-                      isInUpsolveQueue(p) ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          disabled
-                          className="cursor-default border-0 bg-emerald-600 font-black uppercase tracking-widest text-[10px] text-white opacity-100 shadow-sm hover:bg-emerald-600"
-                        >
-                          Added
-                        </Button>
-                      ) : (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => void addOneUpsolve(p)}
-                        >
-                          Add to upsolve
-                        </Button>
-                      )
-                    ) : null}
+                  <p className="text-2xl font-bold text-foreground tabular-nums">
+                    {solvedDisplay}/{totalProblems}
+                  </p>
+                  <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider mt-1">
+                    Solved
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="size-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                      <TrendingUp className="size-4 text-emerald-400" />
+                    </div>
                   </div>
-                </div>
-                <div className="text-sm space-y-2 border-t border-border/40 pt-4">
-                  <p className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">Status: </span>
-                    {p.solved ? p.speedStatus : "unsolved"} · attempts{" "}
-                    {p.attempts} · time {p.timeSpentSeconds}s / expected{" "}
-                    {p.expectedTimeSeconds}s
+                  <p className="text-2xl font-bold text-foreground tabular-nums">
+                    {summary.performanceScore}
                   </p>
-                  <p className="leading-relaxed">{p.insightMessage}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {p.recommendation}
+                  <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider mt-1">
+                    Performance
                   </p>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+
+                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="size-8 rounded-lg bg-sky-500/10 flex items-center justify-center">
+                      <Clock className="size-4 text-sky-400" />
+                    </div>
+                  </div>
+                  <p className="text-2xl font-bold text-foreground tabular-nums">
+                    {Math.round(summary.totalTimeSpent / 60)}m
+                  </p>
+                  <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider mt-1">
+                    Total Time
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="size-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                      <Zap className="size-4 text-amber-400" />
+                    </div>
+                  </div>
+                  <p className="text-2xl font-bold text-foreground tabular-nums">
+                    {solveRate}%
+                  </p>
+                  <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider mt-1">
+                    Solve Rate
+                  </p>
+                </div>
+              </div>
+            </div>
+          </m.div>
+
+          <m.div
+            initial="hidden"
+            animate="show"
+            variants={stagger}
+            className="space-y-4"
+          >
+            <h2 className="text-lg font-bold text-foreground">Problem Breakdown</h2>
+            <div className="grid gap-3">
+              {problems.map((p) => (
+                <m.div
+                  key={p.problemId}
+                  variants={fadeUp}
+                  className={cn(
+                    "rounded-2xl border transition-all duration-300 overflow-hidden",
+                    p.solved
+                      ? "border-emerald-500/10 bg-emerald-500/[0.02]"
+                      : "border-white/[0.04] bg-white/[0.02]",
+                  )}
+                >
+                  <div className="p-5 sm:p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div
+                            className={cn(
+                              "flex size-8 shrink-0 items-center justify-center rounded-lg font-bold text-sm",
+                              p.solved
+                                ? "bg-emerald-500/10 text-emerald-400"
+                                : "bg-white/[0.04] text-muted-foreground",
+                            )}
+                          >
+                            {p.index}
+                          </div>
+                          <div className="min-w-0">
+                            <h3 className="text-sm font-semibold text-foreground truncate">
+                              {p.name}
+                            </h3>
+                            <p className="text-[11px] text-muted-foreground/60">
+                              #{p.contestId} · Rating {p.rating}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-1.5 mt-3">
+                          {p.tags.slice(0, 3).map((t) => (
+                            <span
+                              key={t}
+                              className="px-2 py-0.5 rounded-md text-[9px] font-medium text-muted-foreground/60 bg-white/[0.03] border border-white/[0.04] uppercase tracking-wider"
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <a
+                          href={`https://codeforces.com/contest/${p.contestId}/problem/${p.index}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold text-muted-foreground bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] transition-colors"
+                        >
+                          Open on CF
+                          <ArrowRight className="size-3" />
+                        </a>
+                        {!p.solved &&
+                          (isInUpsolveQueue(p) ? (
+                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+                              <CheckCircle2 className="size-3" />
+                              In Queue
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => void addOneUpsolve(p)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors"
+                            >
+                              + Upsolve
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t border-white/[0.04] space-y-3">
+                      <div className="flex items-center gap-4 text-[11px]">
+                        <div className="flex items-center gap-1.5">
+                          {p.solved ? (
+                            <CheckCircle2 className="size-3 text-emerald-400" />
+                          ) : (
+                            <XCircle className="size-3 text-rose-400" />
+                          )}
+                          <span className={p.solved ? "text-emerald-400" : "text-rose-400"}>
+                            {p.solved ? "Accepted" : "Unsolved"}
+                          </span>
+                        </div>
+                        <span className="text-muted-foreground/40">·</span>
+                        <span className="text-muted-foreground/60">{p.attempts} attempt{p.attempts !== 1 ? "s" : ""}</span>
+                        <span className="text-muted-foreground/40">·</span>
+                        <span className="text-muted-foreground/60">
+                          {Math.round(p.timeSpentSeconds / 60)}m / {Math.round(p.expectedTimeSeconds / 60)}m expected
+                        </span>
+                        {p.speedStatus && (
+                          <>
+                            <span className="text-muted-foreground/40">·</span>
+                            <span className={cn(
+                              "font-medium",
+                              p.speedStatus === "fast" ? "text-emerald-400" :
+                              p.speedStatus === "slow" ? "text-amber-400" :
+                              "text-muted-foreground/60"
+                            )}>
+                              {p.speedStatus}
+                            </span>
+                          </>
+                        )}
+                      </div>
+
+                      <p className="text-[12px] text-foreground/80 leading-relaxed">
+                        {p.insightMessage}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground/50">
+                        {p.recommendation}
+                      </p>
+                    </div>
+                  </div>
+                </m.div>
+              ))}
+            </div>
+          </m.div>
+
+          <m.div
+            initial="hidden"
+            animate="show"
+            variants={fadeUp}
+            className="rounded-3xl border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-white/[0.01] backdrop-blur-2xl overflow-hidden shadow-[0_0_40px_-10px_rgba(0,0,0,0.3)]"
+          >
+            <div className="p-6 sm:p-8 space-y-5">
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <BookOpen className="size-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">What&apos;s Next</h2>
+                  <p className="text-xs text-muted-foreground">Keep the momentum going</p>
+                </div>
+              </div>
+
+              <p className="text-sm text-muted-foreground/80 leading-relaxed">
+                Lock in one upsolve block for misses, then schedule the next session while patterns are fresh.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  asChild
+                  className="h-11 px-6 text-[11px] font-bold uppercase tracking-wider rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  <Link href="/training">
+                    <Trophy className="size-3.5 mr-2" />
+                    Start Next Session
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-11 px-6 text-[11px] font-bold uppercase tracking-wider rounded-xl bg-white/[0.03] border-white/[0.06] hover:bg-white/[0.06]"
+                >
+                  <Link href="/upsolve">Upsolve Queue</Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="h-11 px-6 text-[11px] font-bold uppercase tracking-wider rounded-xl text-muted-foreground hover:text-foreground"
+                  onClick={() => router.push("/dashboard")}
+                >
+                  Dashboard
+                </Button>
+              </div>
+            </div>
+          </m.div>
         </div>
       </div>
-
-      <Card className="border-border/50 bg-primary/5 rounded-3xl">
-        <CardContent className="p-8 space-y-4">
-          <h2 className="text-lg font-black uppercase tracking-widest">
-            What to do next
-          </h2>
-          <p className="text-muted-foreground text-sm leading-relaxed">
-            Lock in one upsolve block for misses, then schedule the next session
-            while patterns are fresh.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button asChild className="font-black uppercase tracking-widest text-[10px]">
-              <Link href="/training">Start next session</Link>
-            </Button>
-            <Button asChild variant="outline" className="font-black uppercase tracking-widest text-[10px]">
-              <Link href="/upsolve">Go to Upsolve Queue</Link>
-            </Button>
-            <Button
-              variant="ghost"
-              className="font-black uppercase tracking-widest text-[10px]"
-              onClick={() => router.push("/dashboard")}
-            >
-              Dashboard
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    </section>
   );
 }
