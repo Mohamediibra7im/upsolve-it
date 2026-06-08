@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
  */
 export default function WhatsNewFab() {
   const pathname = usePathname();
-  if (pathname.startsWith("/admin") || pathname === "/help") return null;
+  if (pathname.startsWith("/admin")) return null;
 
   const showSuggestions = pathname !== "/suggestions";
   const showWhatsNew = pathname !== "/whats-new";
