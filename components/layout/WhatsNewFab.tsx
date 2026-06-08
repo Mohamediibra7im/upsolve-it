@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { m } from "framer-motion";
-import { Sparkles, Globe } from "lucide-react";
+import { Sparkles, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -49,7 +49,7 @@ export default function WhatsNewFab() {
             className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-sky-400/20 group-hover:ring-sky-400/40"
             aria-hidden
           />
-          <Globe
+          <Lightbulb
             className="relative z-10 size-6 shrink-0 drop-shadow-[0_0_12px_rgba(56,189,248,0.4)] transition-transform duration-300 group-hover:scale-110"
             strokeWidth={1.65}
           />
