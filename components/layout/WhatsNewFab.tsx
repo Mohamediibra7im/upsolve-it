@@ -17,15 +17,19 @@ export default function WhatsNewFab() {
 
   const showSuggestions = pathname !== "/suggestions";
   const showWhatsNew = pathname !== "/whats-new";
+  const isHelpPage = pathname === "/help";
 
   if (!showSuggestions && !showWhatsNew) return null;
 
-  // Positioning logic: fill gaps when a button is hidden
-  // Both visible: suggestions=10.5rem, whatsnew=5.5rem
-  // Only suggestions: suggestions=5.5rem (moves down to fill Bell's spot)
-  // Only whatsnew: whatsnew=5.5rem (stays)
-  const suggestionsBottom = showWhatsNew ? "10.5rem" : "5.5rem";
+  // HelpFab sits at 1.25rem on all pages except /help
+  // When on /help, HelpFab hides, so FABs shift down by 4.25rem to fill the gap
+  // Positions: HelpFab=1.25rem, Bell=5.5rem, Lightbulb=10.5rem
+  const bothVisible = showSuggestions && showWhatsNew;
+  const suggestionsBottom = bothVisible ? "10.5rem" : "5.5rem";
   const whatsNewBottom = "5.5rem";
+
+  // On /help, HelpFab is hidden, shift all FABs down by 4.25rem to fill the gap
+  const helpShift = isHelpPage ? " - 4.25rem" : "";
 
   return (
     <>
@@ -33,7 +37,7 @@ export default function WhatsNewFab() {
       {showSuggestions && (
         <m.div
           className="pointer-events-none fixed right-[max(1.25rem,env(safe-area-inset-right))] z-40 md:right-8"
-          style={{ bottom: `calc(max(1.25rem,env(safe-area-inset-bottom)) + ${suggestionsBottom})` }}
+          style={{ bottom: `calc(max(1.25rem,env(safe-area-inset-bottom)) + ${suggestionsBottom}${helpShift})` }}
           initial={{ opacity: 0, scale: 0.88, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.88, y: 16 }}
@@ -78,7 +82,7 @@ export default function WhatsNewFab() {
       {showWhatsNew && (
         <m.div
           className="pointer-events-none fixed right-[max(1.25rem,env(safe-area-inset-right))] z-40 md:right-8"
-          style={{ bottom: `calc(max(1.25rem,env(safe-area-inset-bottom)) + ${whatsNewBottom})` }}
+          style={{ bottom: `calc(max(1.25rem,env(safe-area-inset-bottom)) + ${whatsNewBottom}${helpShift})` }}
           initial={{ opacity: 0, scale: 0.88, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.88, y: 16 }}
