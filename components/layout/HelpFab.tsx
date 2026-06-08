@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
  */
 export default function HelpFab() {
   const pathname = usePathname();
-  if (pathname === "/help" || pathname.startsWith("/admin")) return null;
+  if (pathname.startsWith("/admin")) return null;
 
   return (
     <m.div
