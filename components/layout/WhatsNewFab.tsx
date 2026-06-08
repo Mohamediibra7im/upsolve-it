@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { m } from "framer-motion";
-import { Sparkles, Lightbulb } from "lucide-react";
+import { Bell, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -92,7 +92,7 @@ export default function WhatsNewFab() {
             className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-amber-400/20 group-hover:ring-amber-400/40"
             aria-hidden
           />
-          <Sparkles
+          <Bell
             className="relative z-10 size-7 shrink-0 drop-shadow-[0_0_14px_rgba(251,191,36,0.45)] transition-transform duration-300 group-hover:scale-110 md:h-8 md:w-8"
             strokeWidth={1.65}
           />
