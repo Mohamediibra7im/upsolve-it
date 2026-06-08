@@ -10,7 +10,6 @@ import {
   CheckCircle,
   ShieldCheck,
   Zap,
-  Globe,
   Radio,
   Sparkles,
   Terminal
@@ -49,16 +48,7 @@ const supportOptions = [
     link: 'mailto:fcsithnucommunty@gmail.com',
     color: 'emerald',
   },
-  {
-    id: 'community',
-    title: 'Neural Hub',
-    subtitle: 'Community Docs',
-    description: 'Access the collective intelligence of the HNU ICPC community via our documentation.',
-    icon: Globe,
-    action: 'Access Docs',
-    link: 'https://docs.hnuicpc.tech',
-    color: 'amber',
-  },
+
 ];
 
 interface ContactResponse {

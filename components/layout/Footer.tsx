@@ -8,7 +8,6 @@ import {
   Github,
   Linkedin,
   Facebook,
-  Globe,
   ShieldAlert
 } from "lucide-react";
 import {useUser} from "@/hooks/auth";
@@ -43,7 +42,6 @@ const footerLinks = {
   resources: [
     { label: "Community", href: "/community" },
     { label: "Bug Report", href: "/report" },
-    { label: "Documentation", href: "https://docs.hnuicpc.tech" },
   ],
   legal: [
     { label: "Privacy Policy", href: "/privacy" },
@@ -108,9 +106,6 @@ const Footer = () => {
               </a>
               <a href="https://www.linkedin.com/company/hnu-fcsit-icpc-community" target="_blank" rel="noopener noreferrer" className="size-10 rounded-xl bg-card/40 border border-border/40 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 transition-all">
                 <Linkedin size={18} />
-              </a>
-              <a href="https://docs.hnuicpc.tech" target="_blank" rel="noopener noreferrer" className="size-10 rounded-xl bg-card/40 border border-border/40 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 transition-all">
-                <Globe size={18} />
               </a>
             </div>
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import {m} from "framer-motion";
-import {ArrowUpRight, BookOpen, Globe} from "lucide-react";
+import {ArrowUpRight, Globe} from "lucide-react";
 import Counter from "./Counter";
 
 const CommunitySection = () => (
@@ -32,72 +32,9 @@ const CommunitySection = () => (
       </m.div>
 
       {/* Bento-style Asymmetric Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         
-        {/* Card 1: Beginner Portal (Docs Link) - Colspan 2 */}
-        <m.a
-          href="https://docs.hnuicpc.tech"
-          target="_blank"
-          rel="noopener noreferrer"
-          initial={{opacity: 0, y: 20}}
-          whileInView={{opacity: 1, y: 0}}
-          viewport={{once: true}}
-          transition={{duration: 0.5}}
-          className="p-6 md:p-8 rounded-3xl bg-card/40 backdrop-blur-md border border-border/40 hover:border-primary/30 hover:bg-primary/[0.01] hover:-translate-y-1 transition-all duration-500 ease-out group relative overflow-hidden md:col-span-2 flex flex-col sm:flex-row justify-between gap-6 min-h-[350px]"
-        >
-          <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] pointer-events-none" />
-          <div className="absolute top-6 right-6 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-500">
-            <ArrowUpRight size={22} />
-          </div>
-
-          <div className="flex flex-col justify-between flex-1 space-y-6">
-            <div className="space-y-4">
-              <div className="size-12 rounded-2xl bg-primary/[0.06] flex items-center justify-center text-primary group-hover:bg-primary/[0.12] group-hover:scale-110 transition-all duration-500">
-                <BookOpen size={22} />
-              </div>
-              <h3 className="text-2xl font-black tracking-tight uppercase group-hover:text-primary transition-colors">
-                Beginner Portal
-              </h3>
-              <p className="text-sm text-muted-foreground font-medium leading-relaxed max-w-sm">
-                Step-by-step learning guides, syllabus notes, and reference documentations from basics to master levels.
-              </p>
-            </div>
-            
-            <div className="text-xs font-bold text-primary group-hover:underline">
-              Explore Documentation &rarr;
-            </div>
-          </div>
-
-          {/* Right part: Interactive learning structure mockup */}
-          <div className="flex flex-col justify-center min-w-[200px] sm:min-w-[240px]">
-            <div className="p-4 bg-background/50 border border-border/40 rounded-2xl font-mono text-[9px] text-muted-foreground/80 space-y-2">
-              <div className="flex justify-between items-center text-[8px] border-b border-border/40 pb-2 mb-2 font-bold uppercase tracking-wider text-muted-foreground/40">
-                <span>hnu-icpc-docs/</span>
-                <span className="text-emerald-500">Active</span>
-              </div>
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-emerald-500 font-bold">✓</span>
-                  <span className="font-bold text-foreground">basics-introduction/</span>
-                </div>
-                <div className="flex items-center gap-1.5 pl-3 border-l border-border/60">
-                  <span className="text-primary">&bull;</span>
-                  <span>cpp-basics.md</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-primary font-bold">▶</span>
-                  <span className="font-bold text-foreground">data-structures/</span>
-                </div>
-                <div className="flex items-center gap-1.5 pl-3 border-l border-border/60">
-                  <span className="text-muted-foreground/40">&bull;</span>
-                  <span className="text-muted-foreground/60">segment-tree.md</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </m.a>
-
-        {/* Card 2: Join Community (FB Group) - Colspan 1 */}
+        {/* Card 1: Join Community (FB Group) - Colspan 1 */}
         <m.a
           href="https://www.facebook.com/fcsit.hnu.icpc"
           target="_blank"
@@ -143,7 +80,7 @@ const CommunitySection = () => (
           whileInView={{opacity: 1, y: 0}}
           viewport={{once: true}}
           transition={{duration: 0.5, delay: 0.2}}
-          className="p-6 md:p-8 rounded-3xl bg-card/40 backdrop-blur-md border border-border/40 hover:border-primary/30 hover:bg-primary/[0.01] transition-all duration-500 ease-out group relative overflow-hidden md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-6 items-center text-center divide-y md:divide-y-0 md:divide-x divide-border/20"
+          className="p-6 md:p-8 rounded-3xl bg-card/40 backdrop-blur-md border border-border/40 hover:border-primary/30 hover:bg-primary/[0.01] transition-all duration-500 ease-out group relative overflow-hidden grid grid-cols-2 md:grid-cols-4 gap-6 items-center text-center divide-y md:divide-y-0 md:divide-x divide-border/20"
         >
           <div className="absolute inset-0 bg-grid-pattern opacity-[0.01] pointer-events-none" />
           
