@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 /**
  * Floating action buttons for Suggestions and What's New.
  * Each button hides on its own page and on admin routes.
+ * Remaining buttons reposition to fill gaps.
  */
 export default function WhatsNewFab() {
   const pathname = usePathname();
@@ -19,12 +20,20 @@ export default function WhatsNewFab() {
 
   if (!showSuggestions && !showWhatsNew) return null;
 
+  // Positioning logic: fill gaps when a button is hidden
+  // Both visible: suggestions=9rem, whatsnew=4.5rem
+  // Only suggestions: suggestions=4.5rem (moves down)
+  // Only whatsnew: whatsnew=4.5rem (stays)
+  const suggestionsBottom = showWhatsNew ? "9rem" : "4.5rem";
+  const whatsNewBottom = "4.5rem";
+
   return (
     <>
-      {/* Suggestions FAB - positioned higher */}
+      {/* Suggestions FAB */}
       {showSuggestions && (
         <m.div
-          className="pointer-events-none fixed bottom-[calc(max(1.25rem,env(safe-area-inset-bottom))+9rem)] right-[max(1.25rem,env(safe-area-inset-right))] z-40 md:bottom-[calc(2rem+10rem)] md:right-8"
+          className="pointer-events-none fixed right-[max(1.25rem,env(safe-area-inset-right))] z-40 md:right-8"
+          style={{ bottom: `calc(max(1.25rem,env(safe-area-inset-bottom)) + ${suggestionsBottom})` }}
           initial={{ opacity: 0, scale: 0.88, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.88, y: 16 }}
@@ -65,10 +74,11 @@ export default function WhatsNewFab() {
         </m.div>
       )}
 
-      {/* What's New FAB - positioned below Suggestions */}
+      {/* What's New FAB */}
       {showWhatsNew && (
         <m.div
-          className="pointer-events-none fixed bottom-[calc(max(1.25rem,env(safe-area-inset-bottom))+4.5rem)] right-[max(1.25rem,env(safe-area-inset-right))] z-40 md:bottom-[calc(2rem+5rem)] md:right-8"
+          className="pointer-events-none fixed right-[max(1.25rem,env(safe-area-inset-right))] z-40 md:right-8"
+          style={{ bottom: `calc(max(1.25rem,env(safe-area-inset-bottom)) + ${whatsNewBottom})` }}
           initial={{ opacity: 0, scale: 0.88, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.88, y: 16 }}
