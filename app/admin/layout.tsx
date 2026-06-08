@@ -19,7 +19,8 @@ import {
   X,
   ChevronLeft,
   Compass,
-  Sparkles
+  Sparkles,
+  Lightbulb
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -37,6 +38,7 @@ const navItems = [
   { id: "levels", href: "/admin/levels", label: "Level Distribution", icon: Layers, desc: "Target Configuration" },
   { id: "roadmap", href: "/admin/roadmap", label: "Roadmap", icon: Compass, desc: "Levels & Sessions" },
   { id: "whats-new", href: "/admin/whats-new", label: "What's New", icon: Sparkles, desc: "Changelog Entries" },
+  { id: "suggestions", href: "/admin/suggestions", label: "Suggestions", icon: Lightbulb, desc: "Useful Websites" },
   { id: "logs", href: "/admin/logs", label: "Audit Logs", icon: Database, desc: "Security Records" },
 ];
 
