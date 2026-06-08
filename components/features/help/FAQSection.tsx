@@ -26,7 +26,7 @@ const faqs: FAQ[] = [
   {
     id: '1',
     question: 'How do I create an account?',
-    answer: 'To create an account, enter your Codeforces handle on the homepage and create a secure password. The system will automatically fetch your profile data from Codeforces and create your account.',
+    answer: 'To create an account, enter your Codeforces handle on the homepage and create a secure PIN. The system will automatically fetch your profile data from Codeforces and create your account.',
     category: 'Account',
     tags: ['registration', 'account', 'setup'],
     popular: true,
@@ -34,7 +34,7 @@ const faqs: FAQ[] = [
   {
     id: '1.5',
     question: 'Do I need a Codeforces account to use this platform?',
-    answer: 'Yes, you need an active Codeforces account to use CF Training Tracker. The platform fetches your profile data, solved problems, and submissions from Codeforces. If you don\'t have one, you can create a free account at codeforces.com/register.',
+    answer: 'Yes, you need an active Codeforces account to use Upsolve.it. The platform fetches your profile data, solved problems, and submissions from Codeforces. If you don\'t have one, you can create a free account at codeforces.com/register.',
     category: 'Account',
     tags: ['codeforces', 'account', 'requirement', 'registration'],
     popular: true,
@@ -74,7 +74,7 @@ const faqs: FAQ[] = [
   {
     id: '6',
     question: 'What are notifications and how do I manage them?',
-    answer: 'Notifications keep you updated with announcements, new features, maintenance, and alerts. Click the bell icon to view your notification center. You can mark notifications as read or delete them individually. Only admins can create notifications.',
+    answer: 'Notifications keep you updated with announcements, new features, maintenance, and alerts. Click the bell icon to view your notification center. You can mark notifications as read or delete them individually.',
     category: 'Notifications',
     tags: ['notifications', 'bell', 'admin'],
     popular: false,
@@ -161,7 +161,7 @@ export default function FAQSection({ onBack }: Readonly<FAQSectionProps>) {
           </Button>
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Knowledge Retrieval</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">FAQ</span>
               <div className="h-[1px] w-6 bg-primary/30" />
             </div>
             <h1 className="text-4xl font-black text-foreground tracking-tight">Frequently Asked Questions</h1>
@@ -174,7 +174,7 @@ export default function FAQSection({ onBack }: Readonly<FAQSectionProps>) {
         <div className="relative group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <Input
-            placeholder="Search the intelligence database..."
+            placeholder="Search questions..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="h-14 pl-12 bg-card/20 border-border/40 rounded-2xl focus:ring-primary/20 focus:border-primary/40 transition-all font-medium"
@@ -204,10 +204,10 @@ export default function FAQSection({ onBack }: Readonly<FAQSectionProps>) {
       <div className="space-y-4">
         <div className="flex items-center justify-between px-2">
           <h2 className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-            {searchQuery || selectedCategory !== 'All' ? 'Search Results' : 'General Protocols'}
+            {searchQuery || selectedCategory !== 'All' ? 'Search Results' : 'All Questions'}
           </h2>
           <Badge variant="outline" className="rounded-lg border-border/40 bg-white/5 font-black">
-            {filteredFAQs.length} ENTRIES
+            {filteredFAQs.length} RESULTS
           </Badge>
         </div>
 
@@ -218,9 +218,9 @@ export default function FAQSection({ onBack }: Readonly<FAQSectionProps>) {
                 <HelpCircle size={32} />
               </div>
               <div className="space-y-1">
-                <h3 className="text-xl font-black text-foreground">No matches found.</h3>
+                <h3 className="text-xl font-black text-foreground">No results found.</h3>
                 <p className="text-muted-foreground font-medium max-w-xs mx-auto">
-                  The query yielded no results in our current knowledge base.
+                  Try a different search term or browse all questions.
                 </p>
               </div>
             </CardContent>
@@ -301,10 +301,3 @@ export default function FAQSection({ onBack }: Readonly<FAQSectionProps>) {
     </div>
   );
 }
-
-
-
-
-
-
-

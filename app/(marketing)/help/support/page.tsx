@@ -2,7 +2,7 @@ import ClientPage from "./page.client";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Signal Support | Upsolve.it",
+  title: "Contact Support | Upsolve.it",
   description: "Contact support for any issues or feedback regarding the platform.",
 };
 

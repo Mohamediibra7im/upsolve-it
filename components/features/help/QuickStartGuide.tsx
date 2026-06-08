@@ -14,7 +14,7 @@ const quickStartSteps = [
   {
     id: 1,
     title: 'Create Your Account',
-    description: 'Sign up with your Codeforces handle and create a secure PIN',
+    description: 'Sign up with your Codeforces handle and create a secure PIN.',
     icon: User,
     time: '2 minutes',
     steps: [
@@ -33,7 +33,7 @@ const quickStartSteps = [
   {
     id: 2,
     title: 'Set Up Your Profile',
-    description: 'Sync your Codeforces data and configure your preferences',
+    description: 'Sync your Codeforces data and configure your preferences.',
     icon: Settings,
     time: '3 minutes',
     steps: [
@@ -52,7 +52,7 @@ const quickStartSteps = [
   {
     id: 3,
     title: 'Start Your First Practice Session',
-    description: 'Generate problems and begin practicing with customized difficulty',
+    description: 'Generate problems and begin practicing with customized difficulty.',
     icon: Play,
     time: '5 minutes',
     steps: [
@@ -72,7 +72,7 @@ const quickStartSteps = [
   {
     id: 4,
     title: 'Track Your Progress',
-    description: 'Monitor your performance and analyze your improvement',
+    description: 'Monitor your performance and analyze your improvement.',
     icon: BarChart,
     time: '2 minutes',
     steps: [
@@ -105,21 +105,21 @@ export default function QuickStartGuide({ onBack }: Readonly<QuickStartGuideProp
           </Button>
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Onboarding Protocol</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Getting Started</span>
               <div className="h-[1px] w-6 bg-primary/30" />
             </div>
-            <h1 className="text-4xl font-black text-foreground tracking-tight">Mission Directive</h1>
+            <h1 className="text-4xl font-black text-foreground tracking-tight">Quick Start Guide</h1>
           </div>
         </div>
       </div>
 
-      {/* Progress Overview Card */}
+      {/* Overview Card */}
       <Card className="relative overflow-hidden border-border/40 bg-primary/5 backdrop-blur-xl rounded-[2.5rem] border-dashed">
         <CardContent className="p-10 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="space-y-2 text-center md:text-left">
-            <h3 className="text-2xl font-black text-foreground tracking-tight uppercase">Operational Readiness</h3>
+            <h3 className="text-2xl font-black text-foreground tracking-tight uppercase">Overview</h3>
             <p className="text-muted-foreground font-medium max-w-md">
-              Complete these 4 tactical steps to achieve full synchronization with the Training Tracker network.
+              Complete these 4 simple steps to get started with Upsolve.it.
             </p>
           </div>
           <div className="flex items-center gap-6">
@@ -130,13 +130,13 @@ export default function QuickStartGuide({ onBack }: Readonly<QuickStartGuideProp
             <div className="h-10 w-[1px] bg-border/40" />
             <div className="text-center">
               <div className="text-4xl font-black text-foreground leading-none">04</div>
-              <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mt-1">Stages</div>
+              <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mt-1">Steps</div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Vertical Timeline Steps */}
+      {/* Steps Timeline */}
       <div className="relative space-y-8 before:absolute before:left-8 before:top-10 before:bottom-10 before:w-[1px] before:bg-gradient-to-b before:from-primary/40 before:via-border/40 before:to-transparent">
         {quickStartSteps.map((step, index) => {
           const Icon = step.icon;
@@ -161,7 +161,7 @@ export default function QuickStartGuide({ onBack }: Readonly<QuickStartGuideProp
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-1">
                       <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Stage 0{step.id}</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Step {step.id}</span>
                         <Badge variant="outline" className="rounded-lg bg-white/5 border-border/40 text-[9px] font-black tracking-widest px-2 py-0.5 opacity-60">
                           {step.time.toUpperCase()}
                         </Badge>
@@ -174,7 +174,7 @@ export default function QuickStartGuide({ onBack }: Readonly<QuickStartGuideProp
 
                   <div className="grid md:grid-cols-2 gap-10 pt-6 border-t border-border/20">
                     <div className="space-y-4">
-                      <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">Mission Checklist</h4>
+                      <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">Steps</h4>
                       <div className="space-y-3">
                         {step.steps.map((s) => (
                           <div key={`step-${step.id}-${s}`} className="flex items-start gap-3">
@@ -188,12 +188,12 @@ export default function QuickStartGuide({ onBack }: Readonly<QuickStartGuideProp
                     </div>
 
                     <div className="space-y-4 p-6 rounded-2xl bg-white/5 border border-border/40">
-                      <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500/80">Intelligence Brief</h4>
+                      <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500/80">Tips</h4>
                       <div className="space-y-3">
                         {step.tips.map((tip) => (
                           <div key={`tip-${step.id}-${tip}`} className="flex items-start gap-3">
                             <div className="mt-2 size-1 rounded-full bg-amber-500/40 shrink-0" />
-                            <span className="text-xs text-muted-foreground/80 font-medium leading-relaxed italic">"{tip}"</span>
+                            <span className="text-xs text-muted-foreground/80 font-medium leading-relaxed">{tip}</span>
                           </div>
                         ))}
                       </div>
@@ -206,7 +206,7 @@ export default function QuickStartGuide({ onBack }: Readonly<QuickStartGuideProp
         })}
       </div>
 
-      {/* Final Call to Action */}
+      {/* Final CTA */}
       <m.div
         initial={{ opacity: 0, scale: 0.95 }}
         whileInView={{ opacity: 1, scale: 1 }}
@@ -219,9 +219,9 @@ export default function QuickStartGuide({ onBack }: Readonly<QuickStartGuideProp
               <CheckCircle size={40} />
             </div>
             <div className="space-y-2">
-              <h2 className="text-4xl font-black text-foreground tracking-tight">Operational!</h2>
+              <h2 className="text-4xl font-black text-foreground tracking-tight">You're All Set!</h2>
               <p className="text-muted-foreground font-medium max-w-sm mx-auto opacity-80">
-                Onboarding protocol complete. You are now authorized to initiate high-performance practice sessions.
+                You're ready to start training. Let's begin your competitive programming journey.
               </p>
             </div>
           </div>
@@ -232,7 +232,7 @@ export default function QuickStartGuide({ onBack }: Readonly<QuickStartGuideProp
               className="w-full sm:w-auto h-14 px-10 rounded-2xl font-black uppercase tracking-widest text-xs bg-primary text-primary-foreground shadow-2xl shadow-primary/20 hover:-translate-y-1 transition-all"
               onClick={() => globalThis.location.href = '/training'}
             >
-              Initiate Training
+              Start Training
             </Button>
             <Button 
               variant="outline"
@@ -240,7 +240,7 @@ export default function QuickStartGuide({ onBack }: Readonly<QuickStartGuideProp
               className="w-full sm:w-auto h-14 px-10 rounded-2xl font-black uppercase tracking-widest text-xs border-border/40 bg-white/5 hover:bg-white/10 transition-all"
               onClick={() => globalThis.location.href = '/statistics'}
             >
-              System Analytics
+              View Statistics
             </Button>
           </div>
         </Card>
@@ -248,10 +248,3 @@ export default function QuickStartGuide({ onBack }: Readonly<QuickStartGuideProp
     </div>
   );
 }
-
-
-
-
-
-
-
