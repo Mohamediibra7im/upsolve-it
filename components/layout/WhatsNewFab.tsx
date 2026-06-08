@@ -21,11 +21,11 @@ export default function WhatsNewFab() {
   if (!showSuggestions && !showWhatsNew) return null;
 
   // Positioning logic: fill gaps when a button is hidden
-  // Both visible: suggestions=9rem, whatsnew=4.5rem
-  // Only suggestions: suggestions=4.5rem (moves down)
-  // Only whatsnew: whatsnew=4.5rem (stays)
-  const suggestionsBottom = showWhatsNew ? "9rem" : "4.5rem";
-  const whatsNewBottom = "4.5rem";
+  // Both visible: suggestions=10.5rem, whatsnew=5.5rem
+  // Only suggestions: suggestions=5.5rem (moves down to fill Bell's spot)
+  // Only whatsnew: whatsnew=5.5rem (stays)
+  const suggestionsBottom = showWhatsNew ? "10.5rem" : "5.5rem";
+  const whatsNewBottom = "5.5rem";
 
   return (
     <>
