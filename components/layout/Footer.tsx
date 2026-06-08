@@ -35,12 +35,13 @@ const footerLinks = {
   ],
   support: [
     { label: "Help Center", href: "/help" },
-    { label: "Mission Briefing", href: "/help/quick-start" },
-    { label: "Knowledge Base", href: "/help/faq" },
-    { label: "Signal Support", href: "/help/support" },
+    { label: "Quick Start Guide", href: "/help/quick-start" },
+    { label: "FAQ", href: "/help/faq" },
+    { label: "Contact Support", href: "/help/support" },
   ],
   resources: [
-    { label: "Community", href: "/community" },
+    { label: "What's New", href: "/whats-new" },
+    { label: "Suggestions", href: "/suggestions" },
     { label: "Bug Report", href: "/report" },
   ],
   legal: [
@@ -76,7 +77,7 @@ const Footer = () => {
       </div>
 
       <div className="container mx-auto px-4 md:px-8 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-12 mb-16">
           {/* Brand Section */}
           <div className="lg:col-span-2 space-y-6">
             <Link href="/" className="group flex flex-col items-start overflow-visible">
@@ -179,6 +180,19 @@ const Footer = () => {
             <h4 className="text-xs font-black uppercase tracking-[0.2em] text-foreground">Support</h4>
             <ul className="space-y-3">
               {footerLinks.support.map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="space-y-6">
+            <h4 className="text-xs font-black uppercase tracking-[0.2em] text-foreground">Resources</h4>
+            <ul className="space-y-3">
+              {footerLinks.resources.map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">
                     {link.label}
