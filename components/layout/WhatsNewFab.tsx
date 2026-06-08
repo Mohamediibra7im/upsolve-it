@@ -16,8 +16,10 @@ export default function WhatsNewFab() {
   if (pathname === "/whats-new" || pathname === "/suggestions" || pathname.startsWith("/admin")) return null;
 
   return (
-    <div className="pointer-events-none fixed bottom-[calc(max(1.25rem,env(safe-area-inset-bottom))+4.5rem)] right-[max(1.25rem,env(safe-area-inset-right))] z-40 flex flex-col items-center gap-2 md:bottom-[calc(2rem+5rem)] md:right-8">
+    <>
+      {/* Suggestions FAB - positioned higher */}
       <m.div
+        className="pointer-events-none fixed bottom-[calc(max(1.25rem,env(safe-area-inset-bottom))+9rem)] right-[max(1.25rem,env(safe-area-inset-right))] z-40 md:bottom-[calc(2rem+10rem)] md:right-8"
         initial={{ opacity: 0, scale: 0.88, y: 16 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: "spring", bounce: 0.32, duration: 0.55, delay: 0.05 }}
@@ -26,7 +28,7 @@ export default function WhatsNewFab() {
           href="/suggestions"
           aria-label="Suggested websites"
           className={cn(
-            "pointer-events-auto group relative flex size-12 items-center justify-center rounded-2xl md:h-[3.25rem] md:w-[3.25rem]",
+            "pointer-events-auto group relative flex size-14 items-center justify-center rounded-2xl md:h-[3.75rem] md:w-[3.75rem]",
             "bg-background/85 backdrop-blur-xl",
             "border border-sky-400/35 text-sky-500",
             "shadow-[0_0_0_1px_rgba(56,189,248,0.12),0_10px_40px_-10px_rgba(56,189,248,0.25),0_8px_24px_-8px_rgba(0,0,0,0.55)]",
@@ -50,13 +52,15 @@ export default function WhatsNewFab() {
             aria-hidden
           />
           <Lightbulb
-            className="relative z-10 size-6 shrink-0 drop-shadow-[0_0_12px_rgba(56,189,248,0.4)] transition-transform duration-300 group-hover:scale-110"
+            className="relative z-10 size-7 shrink-0 drop-shadow-[0_0_12px_rgba(56,189,248,0.4)] transition-transform duration-300 group-hover:scale-110 md:h-8 md:w-8"
             strokeWidth={1.65}
           />
         </Link>
       </m.div>
 
+      {/* What's New FAB - positioned below Suggestions */}
       <m.div
+        className="pointer-events-none fixed bottom-[calc(max(1.25rem,env(safe-area-inset-bottom))+4.5rem)] right-[max(1.25rem,env(safe-area-inset-right))] z-40 md:bottom-[calc(2rem+5rem)] md:right-8"
         initial={{ opacity: 0, scale: 0.88, y: 16 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: "spring", bounce: 0.32, duration: 0.55, delay: 0.1 }}
@@ -94,6 +98,6 @@ export default function WhatsNewFab() {
           />
         </Link>
       </m.div>
-    </div>
+    </>
   );
 }
