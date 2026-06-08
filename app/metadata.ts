@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: {
-    default: "Upsolve.it - Practice, Track and Dominate",
-  },
+  title: "Upsolve.it - Practice, Track and Dominate",
   description:
     "The ultimate command center for competitive programmers. Master Codeforces with intelligent practice sessions, track your evolution, and dominate the competitive programming ladder.",
   metadataBase: new URL("https://upsolve-it.hnuicpc.tech"),
