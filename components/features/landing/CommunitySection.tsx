@@ -1,23 +1,41 @@
 "use client";
 
+import Link from "next/link";
 import {m} from "framer-motion";
-import {ArrowUpRight, Globe} from "lucide-react";
+import {Users, BookOpen, Trophy, Heart, ArrowRight, Github, Facebook, Linkedin} from "lucide-react";
 import Counter from "./Counter";
+
+const values = [
+  {
+    icon: Github,
+    label: "Open Source",
+    desc: "Fully transparent codebase built in public.",
+  },
+  {
+    icon: Heart,
+    label: "100% Free",
+    desc: "No paywalls. Every feature is free forever.",
+  },
+  {
+    icon: Users,
+    label: "Community-Driven",
+    desc: "Shaped by competitors, for competitors.",
+  },
+];
 
 const CommunitySection = () => (
   <section className="py-32 relative overflow-hidden">
-    {/* Decorative blur elements */}
     <div className="absolute rounded-full pointer-events-none blur-[120px] size-[400px] bg-primary/5 -top-[10%] right-[10%]" />
     <div className="absolute rounded-full pointer-events-none blur-[120px] size-[350px] bg-emerald-500/5 -bottom-[10%] left-[10%]" />
 
     <div className="container mx-auto px-6 relative z-10">
-      
-      {/* Centered Section Title */}
+
+      {/* Section Title */}
       <m.div
         initial={{opacity: 0, y: 16}}
         whileInView={{opacity: 1, y: 0}}
         viewport={{once: true}}
-        className="text-center max-w-2xl mx-auto mb-24 space-y-4"
+        className="text-center max-w-2xl mx-auto mb-20 space-y-4"
       >
         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
           Community Product
@@ -31,97 +49,132 @@ const CommunitySection = () => (
         </p>
       </m.div>
 
-      {/* Bento-style Asymmetric Grid */}
-      <div className="grid grid-cols-1 gap-6">
-        
-        {/* Card 1: Join Community (FB Group) - Colspan 1 */}
-        <m.a
-          href="https://www.facebook.com/fcsit.hnu.icpc"
-          target="_blank"
-          rel="noopener noreferrer"
+      {/* Stats Row */}
+      <m.div
+        initial={{opacity: 0, y: 20}}
+        whileInView={{opacity: 1, y: 0}}
+        viewport={{once: true}}
+        transition={{duration: 0.5}}
+        className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16"
+      >
+        {[
+          {value: <Counter to={500} suffix="+" />, label: "Members", icon: Users},
+          {value: <Counter to={10} suffix="k+" />, label: "Problems Solved", icon: Trophy},
+          {value: "5+", label: "Training Levels", icon: BookOpen},
+          {value: "100%", label: "Free & Open", icon: Heart},
+        ].map((stat, idx) => (
+          <m.div
+            key={stat.label}
+            initial={{opacity: 0, y: 16}}
+            whileInView={{opacity: 1, y: 0}}
+            viewport={{once: true}}
+            transition={{delay: idx * 0.08}}
+            className="text-center p-6 rounded-2xl bg-card/30 backdrop-blur-md border border-border/30 hover:border-primary/20 transition-all duration-500"
+          >
+            <stat.icon size={18} className="mx-auto mb-3 text-primary/60" />
+            <span className="block text-3xl md:text-4xl font-[1000] tracking-tighter text-primary">
+              {stat.value}
+            </span>
+            <span className="block text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mt-1">
+              {stat.label}
+            </span>
+          </m.div>
+        ))}
+      </m.div>
+
+      {/* Avatar Row + Values */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+
+        {/* Community Avatars */}
+        <m.div
           initial={{opacity: 0, y: 20}}
           whileInView={{opacity: 1, y: 0}}
           viewport={{once: true}}
           transition={{duration: 0.5, delay: 0.1}}
-          className="p-6 md:p-8 rounded-3xl bg-card/40 backdrop-blur-md border border-border/40 hover:border-primary/30 hover:bg-primary/[0.01] hover:-translate-y-1 transition-all duration-500 ease-out group relative overflow-hidden flex flex-col justify-between min-h-[350px]"
+          className="p-8 rounded-3xl bg-card/30 backdrop-blur-md border border-border/30 hover:border-primary/20 transition-all duration-500 flex flex-col items-center justify-center text-center space-y-6"
         >
-          <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] pointer-events-none" />
-          <div className="absolute top-6 right-6 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-500">
-            <ArrowUpRight size={22} />
-          </div>
-
-          <div className="space-y-4">
-            <div className="size-12 rounded-2xl bg-primary/[0.06] flex items-center justify-center text-primary group-hover:bg-primary/[0.12] group-hover:scale-110 transition-all duration-500">
-              <Globe size={22} />
+          <div className="flex -space-x-3">
+            {[
+              {bg: "bg-primary/20", text: "text-primary", border: "border-primary/20", label: "JD"},
+              {bg: "bg-emerald-500/10", text: "text-emerald-500", border: "border-emerald-500/20", label: "AM"},
+              {bg: "bg-primary/10", text: "text-primary", border: "border-primary/20", label: "KS"},
+              {bg: "bg-amber-500/10", text: "text-amber-500", border: "border-amber-500/20", label: "RW"},
+              {bg: "bg-blue-500/10", text: "text-blue-500", border: "border-blue-500/20", label: "SL"},
+            ].map((a, i) => (
+              <div
+                key={i}
+                className={`size-10 rounded-full ring-2 ring-background ${a.bg} text-[10px] font-black flex items-center justify-center border ${a.border} ${a.text}`}
+              >
+                {a.label}
+              </div>
+            ))}
+            <div className="size-10 rounded-full ring-2 ring-background bg-muted border border-border text-[10px] font-bold flex items-center justify-center text-muted-foreground/70">
+              +500
             </div>
-            <h3 className="text-2xl font-black tracking-tight uppercase group-hover:text-primary transition-colors">
-              Social Hub
-            </h3>
-            <p className="text-sm text-muted-foreground font-medium leading-relaxed">
-              Connect with fellow competitors, coordinate training sessions, and share success.
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-black text-foreground uppercase tracking-tight">
+              500+ Competitors and Growing
+            </p>
+            <p className="text-xs text-muted-foreground font-medium">
+              Join the HNU ICPC Community on Facebook
             </p>
           </div>
+          <a
+            href="https://www.facebook.com/fcsit.hnu.icpc"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs font-black uppercase tracking-wider hover:bg-primary/20 transition-all"
+          >
+            <Facebook size={14} />
+            Join the Group
+          </a>
+        </m.div>
 
-          {/* Micro UI: Community Avatar Group */}
-          <div className="flex items-center justify-between p-3.5 bg-background/50 border border-border/40 rounded-2xl text-[10px]">
-            <div className="flex -space-x-2.5 overflow-hidden">
-              <div className="size-6 rounded-full ring-2 ring-background bg-primary/20 text-[8px] font-black flex items-center justify-center border border-primary/20">JD</div>
-              <div className="size-6 rounded-full ring-2 ring-background bg-primary/10 text-[8px] font-black flex items-center justify-center border border-primary/20">AM</div>
-              <div className="size-6 rounded-full ring-2 ring-background bg-emerald-500/10 text-[8px] font-black flex items-center justify-center border border-emerald-500/20 text-emerald-500">KS</div>
-              <div className="size-6 rounded-full ring-2 ring-background bg-muted border border-border text-[8px] font-bold flex items-center justify-center text-muted-foreground/70">+500</div>
-            </div>
-            <span className="font-black text-primary uppercase text-[8px] tracking-wider bg-primary/10 px-2 py-1 rounded-md border border-primary/25">Join Hub</span>
-          </div>
-        </m.a>
-
-        {/* Card 3: Platform Stats Bar - Colspan 3 */}
+        {/* Community Values */}
         <m.div
           initial={{opacity: 0, y: 20}}
           whileInView={{opacity: 1, y: 0}}
           viewport={{once: true}}
           transition={{duration: 0.5, delay: 0.2}}
-          className="p-6 md:p-8 rounded-3xl bg-card/40 backdrop-blur-md border border-border/40 hover:border-primary/30 hover:bg-primary/[0.01] transition-all duration-500 ease-out group relative overflow-hidden grid grid-cols-2 md:grid-cols-4 gap-6 items-center text-center divide-y md:divide-y-0 md:divide-x divide-border/20"
+          className="p-8 rounded-3xl bg-card/30 backdrop-blur-md border border-border/30 hover:border-primary/20 transition-all duration-500 flex flex-col justify-center"
         >
-          <div className="absolute inset-0 bg-grid-pattern opacity-[0.01] pointer-events-none" />
-          
-          <div className="space-y-1">
-            <span className="block text-4xl font-[1000] tracking-tighter text-primary group-hover:scale-105 transition-transform duration-300">
-              <Counter to={500} suffix="+" />
-            </span>
-            <span className="block text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-              Members
-            </span>
-          </div>
-          
-          <div className="space-y-1 pt-6 md:pt-0">
-            <span className="block text-4xl font-[1000] tracking-tighter text-primary group-hover:scale-105 transition-transform duration-300">
-              <Counter to={10} suffix="k+" />
-            </span>
-            <span className="block text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-              Problems Solved
-            </span>
-          </div>
-          
-          <div className="space-y-1 pt-6 md:pt-0">
-            <span className="block text-4xl font-[1000] tracking-tighter text-primary group-hover:scale-105 transition-transform duration-300">
-              5+
-            </span>
-            <span className="block text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-              Training Levels
-            </span>
-          </div>
-          
-          <div className="space-y-1 pt-6 md:pt-0">
-            <span className="block text-4xl font-[1000] tracking-tighter text-primary group-hover:scale-105 transition-transform duration-300">
-              100%
-            </span>
-            <span className="block text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-              Free &amp; Community-Driven
-            </span>
+          <div className="space-y-5">
+            {values.map((v, idx) => (
+              <div key={v.label} className="flex items-start gap-4">
+                <div className="size-10 rounded-xl bg-primary/[0.06] flex items-center justify-center text-primary shrink-0 mt-0.5">
+                  <v.icon size={18} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-black uppercase tracking-tight text-foreground">
+                    {v.label}
+                  </h4>
+                  <p className="text-xs text-muted-foreground font-medium leading-relaxed mt-0.5">
+                    {v.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </m.div>
-
       </div>
+
+      {/* CTA */}
+      <m.div
+        initial={{opacity: 0, y: 20}}
+        whileInView={{opacity: 1, y: 0}}
+        viewport={{once: true}}
+        transition={{duration: 0.5, delay: 0.3}}
+        className="text-center"
+      >
+        <Link
+          href="/signup"
+          className="inline-flex items-center gap-3 px-10 py-4 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs shadow-[0_8px_40px_hsl(var(--primary)/0.35)] hover:shadow-[0_14px_50px_hsl(var(--primary)/0.5)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300"
+        >
+          Join the Community
+          <ArrowRight size={16} />
+        </Link>
+      </m.div>
     </div>
   </section>
 );
