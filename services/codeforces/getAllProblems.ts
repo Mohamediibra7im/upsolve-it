@@ -105,7 +105,7 @@ const getAllProblems = async (): Promise<Response<CodeforcesProblem[]>> => {
 
     const data = await res.json();
     if (data.status !== "OK") {
-      return ErrorResponse("Failed to fetch problems");
+      return ErrorResponse("Codeforces API is currently unavailable. Please try again later.");
     }
 
     // Apply comprehensive filtering to ensure only solvable, standard
@@ -114,7 +114,10 @@ const getAllProblems = async (): Promise<Response<CodeforcesProblem[]>> => {
 
     return SuccessResponse(problems);
   } catch (error) {
-    return ErrorResponse((error as Error).message);
+    if (error instanceof Error && error.name === "AbortError") {
+      return ErrorResponse("Codeforces API request timed out. Try again.");
+    }
+    return ErrorResponse("Unable to reach Codeforces. Please try again later.");
   }
 };
 

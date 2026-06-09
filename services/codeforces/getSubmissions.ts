@@ -25,7 +25,11 @@ const getSubmissions = async (
 
     const data = await res.json();
     if (data.status !== "OK") {
-      return ErrorResponse("Failed to fetch submissions");
+      const comment: string = data?.comment ?? "";
+      if (comment.includes("not found") || comment.includes("handle")) {
+        return ErrorResponse("User not found on Codeforces");
+      }
+      return ErrorResponse("Codeforces API is currently unavailable. Please try again later.");
     }
     return SuccessResponse(data.result);
   } catch (error) {
