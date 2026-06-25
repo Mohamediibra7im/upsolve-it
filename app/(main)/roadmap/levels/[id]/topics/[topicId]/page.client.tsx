@@ -1000,19 +1000,31 @@ export default function TopicPage() {
                     </div>
                   )}
 
-                  {/* Next topic */}
+                  {/* Next topic — gated by both learning + problem progress */}
                   {levelData?.topics && (() => {
                     const idx = levelData.topics.findIndex((t) => t._id === topicId);
                     const next = idx !== -1 ? levelData.topics[idx + 1] : null;
                     if (!next) return null;
+                    const reqLearning = data.topic.requiredLearningPct ?? 80;
+                    const reqProblem = data.topic.requiredProblemPct ?? 60;
+                    const canProceed = learningPct >= reqLearning && problemPct >= reqProblem;
                     return (
                       <div className="flex justify-end px-6 py-4 border-t border-border/40 bg-background/10">
-                        <Link
-                          href={`/roadmap/levels/${levelId}/topics/${next._id}`}
-                          className="inline-flex items-center gap-2 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/15 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-primary transition-all duration-200"
-                        >
-                          Next: {next.title} <ChevronRight size={12} />
-                        </Link>
+                        {canProceed ? (
+                          <Link
+                            href={`/roadmap/levels/${levelId}/topics/${next._id}`}
+                            className="inline-flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/15 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-emerald-400 transition-all duration-200"
+                          >
+                            Next: {next.title} <ChevronRight size={12} />
+                          </Link>
+                        ) : (
+                          <span
+                            className="inline-flex items-center gap-2 rounded-xl bg-muted/50 border border-border/40 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-muted-foreground/40 cursor-not-allowed"
+                            title={`Need ${reqLearning}% learning and ${reqProblem}% problem progress`}
+                          >
+                            <Lock size={10} /> {Math.round(learningPct)}/{reqLearning}% + {Math.round(problemPct)}/{reqProblem}%
+                          </span>
+                        )}
                       </div>
                     );
                   })()}
