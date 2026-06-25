@@ -38,7 +38,7 @@ const RoadmapPage = () => {
       const prevComplete = prev
         ? prev.isUnlocked && prev.topicsCount > 0 && prev.topicsUnlockedCount === prev.topicsCount
         : true;
-      const isUnlocked = index === 0 || prevComplete;
+      const isUnlocked = index === 0 || prevComplete || (level.isGranted ?? false);
       const isComplete = level.topicsCount > 0 && level.topicsUnlockedCount === level.topicsCount;
       const progressPct = level.topicsCount
         ? Math.min(100, Math.round((level.topicsUnlockedCount / level.topicsCount) * 100))

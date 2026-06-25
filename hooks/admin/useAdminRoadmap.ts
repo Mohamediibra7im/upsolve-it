@@ -25,6 +25,24 @@ export const useAdminRoadmapLevels = () => {
     await mutate();
   };
 
+  const grantLevelAccess = async (levelId: string, userIds: string[]) => {
+    const res = await apiClient.post<{ level: RoadmapLevel }>(
+      `/api/admin/roadmap/levels/${levelId}/grant`,
+      { userIds },
+    );
+    await mutate();
+    return res.level;
+  };
+
+  const revokeLevelAccess = async (levelId: string, userIds: string[]) => {
+    const res = await apiClient.post<{ level: RoadmapLevel }>(
+      `/api/admin/roadmap/levels/${levelId}/revoke`,
+      { userIds },
+    );
+    await mutate();
+    return res.level;
+  };
+
   return {
     levels: data?.levels ?? [],
     isLoading,
@@ -33,6 +51,8 @@ export const useAdminRoadmapLevels = () => {
     createLevel,
     updateLevel,
     deleteLevel,
+    grantLevelAccess,
+    revokeLevelAccess,
   };
 };
 

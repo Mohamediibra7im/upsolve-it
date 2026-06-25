@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Plus, Edit2, Trash2, Layers, Check, X, ArrowRight, Search, Users, Eye, EyeOff } from "lucide-react";
+import { Plus, Edit2, Trash2, Layers, Check, X, ArrowRight, Search, Users, Eye, EyeOff, KeyRound } from "lucide-react";
 import { useAdminRoadmapLevels } from "@/hooks/admin/useAdminRoadmap";
 import { useAdminUsers } from "@/hooks/admin/useAdminUsers";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import type { RoadmapLevel } from "@/types/Roadmap";
 
 export default function AdminRoadmapLevelsComponent() {
-  const { levels, isLoading, createLevel, updateLevel, deleteLevel } = useAdminRoadmapLevels();
+  const { levels, isLoading, createLevel, updateLevel, deleteLevel, grantLevelAccess, revokeLevelAccess } = useAdminRoadmapLevels();
   const adminUsers = useAdminUsers();
   const users = useMemo(() => adminUsers?.users ?? [], [adminUsers?.users]);
   const { toast } = useToast();
@@ -32,6 +32,12 @@ export default function AdminRoadmapLevelsComponent() {
   const [userSearch, setUserSearch] = useState("");
   const [levelBonusXp, setLevelBonusXp] = useState(500);
 
+  // Grant dialog state
+  const [grantDialogOpen, setGrantDialogOpen] = useState(false);
+  const [grantLevel, setGrantLevel] = useState<RoadmapLevel | null>(null);
+  const [grantUserSearch, setGrantUserSearch] = useState("");
+  const [grantSelectedIds, setGrantSelectedIds] = useState<string[]>([]);
+
   const filteredUsers = useMemo(() => {
     const list = Array.isArray(users) ? users : [];
     if (!userSearch.trim()) return list;
@@ -42,6 +48,22 @@ export default function AdminRoadmapLevelsComponent() {
         u._id?.toLowerCase().includes(q)
     );
   }, [users, userSearch]);
+
+  const grantFilteredUsers = useMemo(() => {
+    const list = Array.isArray(users) ? users : [];
+    if (!grantUserSearch.trim()) return list;
+    const q = grantUserSearch.toLowerCase();
+    return list.filter(
+      (u) =>
+        u.codeforcesHandle?.toLowerCase().includes(q) ||
+        u._id?.toLowerCase().includes(q)
+    );
+  }, [users, grantUserSearch]);
+
+  const grantSelectedUsers = useMemo(() => {
+    const list = Array.isArray(users) ? users : [];
+    return list.filter((u) => grantSelectedIds.includes(u._id));
+  }, [users, grantSelectedIds]);
 
   const selectedUsers = useMemo(() => {
     const list = Array.isArray(users) ? users : [];
@@ -58,6 +80,12 @@ export default function AdminRoadmapLevelsComponent() {
     setUserSearch("");
     setLevelBonusXp(500);
     setEditingLevel(null);
+  };
+
+  const resetGrantDialog = () => {
+    setGrantLevel(null);
+    setGrantSelectedIds([]);
+    setGrantUserSearch("");
   };
 
   const handleOpenCreate = () => {
@@ -123,6 +151,55 @@ export default function AdminRoadmapLevelsComponent() {
       toast({ title: "Success", description: "Level deleted successfully", variant: "success" });
     } catch (err: any) {
       toast({ title: "Error", description: err.message || "Failed to delete level", variant: "destructive" });
+    }
+  };
+
+  const handleOpenGrant = (lvl: RoadmapLevel) => {
+    setGrantLevel(lvl);
+    setGrantSelectedIds(lvl.allowedUserIds ? [...lvl.allowedUserIds] : []);
+    setGrantUserSearch("");
+    setGrantDialogOpen(true);
+  };
+
+  const handleGrantToggleUser = (userId: string) => {
+    setGrantSelectedIds((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+    );
+  };
+
+  const handleSaveGrant = async () => {
+    if (!grantLevel) return;
+    const lvl = grantLevel;
+    const oldIds = lvl.allowedUserIds ?? [];
+    const toGrant = grantSelectedIds.filter((id) => !oldIds.includes(id));
+    const toRevoke = oldIds.filter((id) => !grantSelectedIds.includes(id));
+
+    if (toGrant.length === 0 && toRevoke.length === 0) {
+      setGrantDialogOpen(false);
+      resetGrantDialog();
+      return;
+    }
+
+    try {
+      if (toGrant.length > 0) {
+        await grantLevelAccess(lvl._id, toGrant);
+      }
+      if (toRevoke.length > 0) {
+        try {
+          await revokeLevelAccess(lvl._id, toRevoke);
+        } catch (revokeErr) {
+          // rollback grant if revoke fails
+          if (toGrant.length > 0) {
+            await revokeLevelAccess(lvl._id, toGrant).catch(() => {});
+          }
+          throw new Error("Revoke failed. Grant was rolled back.");
+        }
+      }
+      toast({ title: "Success", description: "Level access updated", variant: "success" });
+      setGrantDialogOpen(false);
+      resetGrantDialog();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Failed to update access", variant: "destructive" });
     }
   };
 
@@ -412,6 +489,14 @@ export default function AdminRoadmapLevelsComponent() {
                           <ArrowRight size={12} />
                         </Link>
                         <button
+                          onClick={() => handleOpenGrant(lvl)}
+                          aria-label={`Grant access to ${lvl.title}`}
+                          className="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-purple-400 hover:bg-purple-500/10 transition-all"
+                          title="Grant/Revoke User Access"
+                        >
+                          <KeyRound size={14} />
+                        </button>
+                        <button
                           onClick={() => handleOpenEdit(lvl)}
                           aria-label={`Edit ${lvl.title}`}
                           className="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
@@ -434,6 +519,112 @@ export default function AdminRoadmapLevelsComponent() {
           </div>
         )}
       </div>
+
+      {/* Grant Access Dialog */}
+      <Dialog open={grantDialogOpen} onOpenChange={(open) => {
+        setGrantDialogOpen(open);
+        if (!open) resetGrantDialog();
+      }}>
+        <DialogContent className="max-w-lg bg-card border-border text-foreground max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Manage Level Access</DialogTitle>
+            <DialogDescription>
+              {grantLevel ? `Grant or revoke access to "${grantLevel.title}"` : "Select users who can access this level"}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4 space-y-4 text-left">
+            {/* Selected users chips */}
+            {grantSelectedUsers.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {grantSelectedUsers.map((u) => (
+                  <span
+                    key={u._id}
+                    className="inline-flex items-center gap-1 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-1 text-[10px] font-bold text-primary"
+                  >
+                    {u.codeforcesHandle}
+                    <button
+                      type="button"
+                      onClick={() => handleGrantToggleUser(u._id)}
+                      aria-label={`Remove ${u.codeforcesHandle}`}
+                      className="ml-0.5 rounded-full hover:bg-primary/20 p-0.5"
+                    >
+                      <X size={10} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Search input */}
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={grantUserSearch}
+                onChange={(e) => setGrantUserSearch(e.target.value)}
+                placeholder="Search users by Codeforces handle..."
+                className="pl-9 rounded-xl text-xs"
+              />
+            </div>
+
+            {/* User list for selection */}
+            {grantUserSearch.trim() && grantFilteredUsers.length > 0 && (
+              <div className="max-h-40 overflow-y-auto rounded-xl border border-border/40 bg-background/80 divide-y divide-border/20">
+                {grantFilteredUsers.slice(0, 15).map((u) => {
+                  const isSelected = grantSelectedIds.includes(u._id);
+                  return (
+                    <button
+                      key={u._id}
+                      type="button"
+                      onClick={() => handleGrantToggleUser(u._id)}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-3 py-2 text-left text-xs transition-colors",
+                        isSelected ? "bg-primary/10" : "hover:bg-primary/5"
+                      )}
+                    >
+                      <div className={cn(
+                        "size-4 rounded border flex items-center justify-center",
+                        isSelected ? "bg-primary border-primary" : "border-border"
+                      )}>
+                        {isSelected && <Check size={10} className="text-primary-foreground" />}
+                      </div>
+                      <span className="font-bold text-foreground">{u.codeforcesHandle}</span>
+                      <span className="text-muted-foreground">#{u.rank}</span>
+                      <span className="ml-auto text-muted-foreground">{u.rating}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {grantUserSearch.trim() && grantFilteredUsers.length === 0 && (
+              <p className="text-[10px] text-muted-foreground text-center py-2">No users found matching &quot;{grantUserSearch}&quot;</p>
+            )}
+
+            {!grantUserSearch.trim() && (
+              <p className="text-[10px] text-muted-foreground text-center py-2">
+                {grantSelectedIds.length > 0
+                  ? `${grantSelectedIds.length} user(s) currently granted access. Search to add or remove users.`
+                  : "No users granted access. Search to add users."}
+              </p>
+            )}
+          </div>
+
+          <DialogFooter className="flex items-center justify-between">
+            <span className="text-[10px] text-muted-foreground">
+              {grantSelectedIds.length} user(s) selected
+            </span>
+            <div className="flex gap-2">
+              <Button type="button" variant="ghost" onClick={() => { setGrantDialogOpen(false); resetGrantDialog(); }} className="rounded-xl">
+                Cancel
+              </Button>
+              <Button onClick={handleSaveGrant} className="rounded-xl bg-primary text-primary-foreground">
+                Save Access
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

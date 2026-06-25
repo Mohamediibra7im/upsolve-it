@@ -9,6 +9,7 @@ export type RoadmapLevel = {
   levelBonusXp: number;
   topicsCount: number;
   topicsUnlockedCount: number;
+  isGranted?: boolean;
 };
 
 export type RoadmapTopicBase = {
