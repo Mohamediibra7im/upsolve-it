@@ -1,6 +1,6 @@
 import useSWR from "swr";
 import { swrFetcher } from "@/lib/apiClient";
-import type { RoadmapLevel, RoadmapLevelDetail, RoadmapTopicDetail, UserRoadmapSummary, LeaderboardEntry } from "@/types/Roadmap";
+import type { RoadmapLevel, RoadmapLevelDetail, RoadmapTopicDetail, UserRoadmapSummary, LeaderboardEntry, LeaderboardResponse } from "@/types/Roadmap";
 
 export interface RoadmapActivity {
   problemDates: string[];
@@ -89,7 +89,12 @@ export const useRoadmapUserSummary = (enabled = true) => {
   };
 };
 
-export const useRoadmapLeaderboard = (query?: { level?: string; period?: string; limit?: number }) => {
+export const useRoadmapLeaderboard = (query?: {
+  level?: string;
+  period?: string;
+  limit?: number;
+  page?: number;
+}) => {
   const cleanQuery: Record<string, string> = {};
   if (query) {
     Object.entries(query).forEach(([key, val]) => {
@@ -101,7 +106,7 @@ export const useRoadmapLeaderboard = (query?: { level?: string; period?: string;
   const queryString = new URLSearchParams(cleanQuery).toString();
   const url = queryString ? `/api/roadmap/leaderboard?${queryString}` : "/api/roadmap/leaderboard";
 
-  const { data, error, isLoading, mutate } = useSWR<{ leaderboard: LeaderboardEntry[] }>(
+  const { data, error, isLoading, mutate } = useSWR<LeaderboardResponse>(
     url,
     swrFetcher,
     {
@@ -113,6 +118,12 @@ export const useRoadmapLeaderboard = (query?: { level?: string; period?: string;
 
   return {
     leaderboard: (data?.leaderboard ?? []) as LeaderboardEntry[],
+    top3: (data?.top3 ?? []) as LeaderboardEntry[],
+    total: data?.total ?? 0,
+    page: data?.page ?? 1,
+    pageSize: data?.pageSize ?? 20,
+    totalPages: data?.totalPages ?? 0,
+    myRank: data?.myRank ?? null,
     isLoading,
     error: error ? String(error) : null,
     mutateLeaderboard: mutate,

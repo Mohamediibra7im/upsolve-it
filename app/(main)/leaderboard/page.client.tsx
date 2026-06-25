@@ -10,6 +10,9 @@ import {
   Crown,
   Medal,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Navigation,
 } from "lucide-react";
 import { useRoadmapLeaderboard, useRoadmapLevels } from "@/hooks/roadmap";
 import { useUser } from "@/hooks/auth";
@@ -38,17 +41,26 @@ const LeaderboardPage = () => {
   const [period, setPeriod] = useState<"all" | "weekly" | "monthly">("all");
   const [selectedLevelId, setSelectedLevelId] = useState<string>("");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
-  const { leaderboard, isLoading: boardLoading } = useRoadmapLeaderboard({
+  const {
+    leaderboard,
+    top3,
+    totalPages,
+    total,
+    pageSize,
+    myRank,
+    isLoading: boardLoading,
+  } = useRoadmapLeaderboard({
     level: selectedLevelId || undefined,
     period,
+    page,
   });
 
   const isLoading = levelsLoading || boardLoading;
 
-  const podium = leaderboard.slice(0, 3);
-
-  const currentUserRank = user
+  // Current user entry on the current page
+  const currentUserEntry = user
     ? leaderboard.find((e) => String(e.userId) === String(user._id))
     : null;
 
@@ -99,7 +111,7 @@ const LeaderboardPage = () => {
           </div>
 
           {/* User rank badge */}
-          {currentUserRank && (
+          {myRank && (
             <m.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -117,9 +129,9 @@ const LeaderboardPage = () => {
               <div className="text-left">
                 <p className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-400">Your Rank</p>
                 <p className="text-sm font-black text-foreground">
-                  #{currentUserRank.rank}{" "}
+                  #{myRank}{" "}
                   <span className="text-muted-foreground font-bold">
-                    &middot; {currentUserRank.totalXp.toLocaleString()} XP
+                    &middot; {currentUserEntry?.totalXp?.toLocaleString() ?? "—"} XP
                   </span>
                 </p>
               </div>
@@ -134,7 +146,7 @@ const LeaderboardPage = () => {
             {(["all", "weekly", "monthly"] as const).map((p) => (
               <button
                 key={p}
-                onClick={() => setPeriod(p)}
+                onClick={() => { setPeriod(p); setPage(1); }}
                 className={cn(
                   "rounded-xl px-4 py-2 text-xs font-black uppercase tracking-[0.15em] transition-all duration-300",
                   period === p
@@ -151,7 +163,7 @@ const LeaderboardPage = () => {
           <div className="relative">
             <select
               value={selectedLevelId}
-              onChange={(e) => setSelectedLevelId(e.target.value)}
+              onChange={(e) => { setSelectedLevelId(e.target.value); setPage(1); }}
               title="Filter leaderboard by level"
               className="appearance-none rounded-2xl border border-border/60 dark:border-border/30 bg-card/50 dark:bg-card/20 backdrop-blur-xl px-4 py-2.5 pr-10 text-xs font-black uppercase tracking-[0.1em] text-foreground focus:outline-none focus:border-primary/50 transition-colors cursor-pointer"
             >
@@ -188,23 +200,23 @@ const LeaderboardPage = () => {
         ) : (
           <>
             {/* Podium — Top 3 */}
-            {podium.length > 0 && (
+            {top3.length > 0 && (
               <div className="mt-14 flex items-end justify-center gap-3 sm:gap-5 md:gap-8 max-w-3xl mx-auto px-2">
                 {/* 2nd Place */}
-                {podium[1] && (
+                {top3[1] && (
                   <m.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.1 }}
-                    onClick={() => setSelectedUserId(podium[1].userId)}
+                    onClick={() => setSelectedUserId(top3[1].userId)}
                     className="flex-1 flex flex-col items-center min-w-0 cursor-pointer group"
                   >
                     <div className="relative mb-3 shrink-0">
                       <div className="rounded-full p-[2px] bg-gradient-to-br from-zinc-300 to-zinc-400 shadow-lg shadow-zinc-400/10">
                         <Avatar className="size-16 sm: sm:size-20 border-[3px] border-background dark:border-zinc-900 group-hover:scale-105 transition-transform duration-300">
-                          <AvatarImage src={podium[1].avatar ?? ""} />
+                          <AvatarImage src={top3[1].avatar ?? ""} />
                           <AvatarFallback className="bg-secondary text-muted-foreground text-sm font-black">
-                            {podium[1].handle.substring(0, 2).toUpperCase()}
+                            {top3[1].handle.substring(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                       </div>
@@ -213,14 +225,14 @@ const LeaderboardPage = () => {
                       </div>
                     </div>
                     <span className="font-heading font-black text-xs sm:text-sm text-foreground truncate max-w-full text-center px-1 group-hover:text-primary transition-colors">
-                      {podium[1].handle}
+                      {top3[1].handle}
                     </span>
                     <span className="text-[10px] sm:text-xs font-bold text-zinc-400 mt-0.5 flex items-center gap-0.5">
                       <Zap className="size-3.5 fill-current text-primary" />
-                      {podium[1].totalXp.toLocaleString()} XP
+                      {top3[1].totalXp.toLocaleString()} XP
                     </span>
                     <span className="text-[9px] text-muted-foreground/70 font-medium mt-0.5">
-                      {podium[1].problemsSolved} solved
+                      {top3[1].problemsSolved} solved
                     </span>
 
                     {/* Column */}
@@ -234,20 +246,20 @@ const LeaderboardPage = () => {
                 )}
 
                 {/* 1st Place */}
-                {podium[0] && (
+                {top3[0] && (
                   <m.div
                     initial={{ opacity: 0, y: 45 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.7 }}
-                    onClick={() => setSelectedUserId(podium[0].userId)}
+                    onClick={() => setSelectedUserId(top3[0].userId)}
                     className="flex-[1.15] flex flex-col items-center min-w-0 z-10 cursor-pointer group"
                   >
                     <div className="relative mb-3 shrink-0">
                       <div className="rounded-full p-[3px] bg-gradient-to-br from-amber-300 to-amber-500 shadow-xl shadow-amber-400/20">
                         <Avatar className="size-20 sm: sm:size-24 border-[4px] border-background dark:border-zinc-900 group-hover:scale-105 transition-transform duration-300">
-                          <AvatarImage src={podium[0].avatar ?? ""} />
+                          <AvatarImage src={top3[0].avatar ?? ""} />
                           <AvatarFallback className="bg-secondary text-amber-500 text-base font-black">
-                            {podium[0].handle.substring(0, 2).toUpperCase()}
+                            {top3[0].handle.substring(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                       </div>
@@ -256,14 +268,14 @@ const LeaderboardPage = () => {
                       </div>
                     </div>
                     <span className="font-heading font-black text-sm sm:text-base text-foreground truncate max-w-full text-center px-1 group-hover:text-primary transition-colors">
-                      {podium[0].handle}
+                      {top3[0].handle}
                     </span>
                     <span className="text-xs sm:text-sm font-black text-amber-400 mt-0.5 flex items-center gap-0.5">
                       <Zap className="size-4 fill-current text-amber-400" />
-                      {podium[0].totalXp.toLocaleString()} XP
+                      {top3[0].totalXp.toLocaleString()} XP
                     </span>
                     <span className="text-[10px] text-amber-500/70 font-bold uppercase tracking-wider mt-0.5">
-                      {podium[0].problemsSolved} solved
+                      {top3[0].problemsSolved} solved
                     </span>
 
                     {/* Column */}
@@ -277,20 +289,20 @@ const LeaderboardPage = () => {
                 )}
 
                 {/* 3rd Place */}
-                {podium[2] && (
+                {top3[2] && (
                   <m.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.2 }}
-                    onClick={() => setSelectedUserId(podium[2].userId)}
+                    onClick={() => setSelectedUserId(top3[2].userId)}
                     className="flex-1 flex flex-col items-center min-w-0 cursor-pointer group"
                   >
                     <div className="relative mb-3 shrink-0">
                       <div className="rounded-full p-[2px] bg-gradient-to-br from-amber-600 to-amber-700 shadow-lg shadow-amber-700/10">
                         <Avatar className="size-14 sm: sm:size-16 border-[3px] border-background dark:border-zinc-900 group-hover:scale-105 transition-transform duration-300">
-                          <AvatarImage src={podium[2].avatar ?? ""} />
+                          <AvatarImage src={top3[2].avatar ?? ""} />
                           <AvatarFallback className="bg-secondary text-amber-700 text-xs font-black">
-                            {podium[2].handle.substring(0, 2).toUpperCase()}
+                            {top3[2].handle.substring(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                       </div>
@@ -299,14 +311,14 @@ const LeaderboardPage = () => {
                       </div>
                     </div>
                     <span className="font-heading font-black text-xs sm:text-sm text-foreground truncate max-w-full text-center px-1 group-hover:text-primary transition-colors">
-                      {podium[2].handle}
+                      {top3[2].handle}
                     </span>
                     <span className="text-[10px] sm:text-xs font-bold text-amber-700 mt-0.5 flex items-center gap-0.5">
                       <Zap className="size-3.5 fill-current text-primary" />
-                      {podium[2].totalXp.toLocaleString()} XP
+                      {top3[2].totalXp.toLocaleString()} XP
                     </span>
                     <span className="text-[9px] text-muted-foreground/70 font-medium mt-0.5">
-                      {podium[2].problemsSolved} solved
+                      {top3[2].problemsSolved} solved
                     </span>
 
                     {/* Column */}
@@ -456,6 +468,53 @@ const LeaderboardPage = () => {
                   </m.div>
                 );
               })}
+            </div>
+
+            {/* Pagination */}
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-xl border px-4 py-2 text-xs font-black uppercase tracking-[0.1em] transition-all duration-200",
+                    page <= 1
+                      ? "border-border/30 text-muted-foreground/40 cursor-not-allowed"
+                      : "border-border/60 text-muted-foreground hover:border-primary/40 hover:text-primary bg-card/40"
+                  )}
+                >
+                  <ChevronLeft className="size-4" />
+                  Prev
+                </button>
+
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-xl border px-4 py-2 text-xs font-black uppercase tracking-[0.1em] transition-all duration-200",
+                    page >= totalPages
+                      ? "border-border/30 text-muted-foreground/40 cursor-not-allowed"
+                      : "border-border/60 text-muted-foreground hover:border-primary/40 hover:text-primary bg-card/40"
+                  )}
+                >
+                  Next
+                  <ChevronRight className="size-4" />
+                </button>
+              </div>
+
+              <span className="text-xs font-bold text-muted-foreground/70 font-mono tabular-nums">
+                Page {page} of {totalPages}
+              </span>
+
+              {myRank && !currentUserEntry && (
+                <button
+                  onClick={() => setPage(Math.ceil(myRank / pageSize))}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/25 bg-emerald-500/5 px-4 py-2 text-xs font-black uppercase tracking-[0.1em] text-emerald-400 transition-all duration-200 hover:border-emerald-500/40 hover:bg-emerald-500/10"
+                >
+                  <Navigation className="size-4" />
+                  Go to my rank (#{myRank})
+                </button>
+              )}
             </div>
 
             <UserProfileDialog

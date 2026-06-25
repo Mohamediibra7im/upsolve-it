@@ -117,3 +117,13 @@ export type LeaderboardEntry = {
   problemsSolved: number;
   rank: number;
 };
+
+export type LeaderboardResponse = {
+  leaderboard: LeaderboardEntry[];
+  top3: LeaderboardEntry[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  myRank: number | null;
+};
