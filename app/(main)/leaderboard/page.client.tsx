@@ -506,7 +506,7 @@ const LeaderboardPage = () => {
                 Page {page} of {totalPages}
               </span>
 
-              {myRank && !currentUserEntry && (
+              {myRank && (
                 <button
                   onClick={() => setPage(Math.ceil(myRank / pageSize))}
                   className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/25 bg-emerald-500/5 px-4 py-2 text-xs font-black uppercase tracking-[0.1em] text-emerald-400 transition-all duration-200 hover:border-emerald-500/40 hover:bg-emerald-500/10"
