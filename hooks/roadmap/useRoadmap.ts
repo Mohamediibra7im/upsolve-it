@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { swrFetcher } from "@/lib/apiClient";
+import { swrFetcher, proactiveSwrFetcher } from "@/lib/apiClient";
 import type { RoadmapLevel, RoadmapLevelDetail, RoadmapTopicDetail, UserRoadmapSummary, LeaderboardEntry, LeaderboardResponse } from "@/types/Roadmap";
 
 export interface RoadmapActivity {
@@ -108,7 +108,7 @@ export const useRoadmapLeaderboard = (query?: {
 
   const { data, error, isLoading, mutate } = useSWR<LeaderboardResponse>(
     url,
-    swrFetcher,
+    proactiveSwrFetcher,
     {
       revalidateOnFocus: false,
       revalidateOnMount: true,

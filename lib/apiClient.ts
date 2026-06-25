@@ -201,6 +201,18 @@ export async function apiFetcher<T = unknown>(url: string, options: RequestInit 
 export const swrFetcher = (url: string) => apiFetcher<any>(url);
 
 /**
+ * SWR fetcher that proactively refreshes the auth token before fetching.
+ * Use for endpoints that gracefully degrade instead of returning 401
+ * (e.g. leaderboard returns myRank:null instead of Unauthorized).
+ * Without this, the accessToken cookie can expire and the auto-refresh
+ * never fires because there's no 401 to trigger it.
+ */
+export const proactiveSwrFetcher = async (url: string) => {
+  await refreshToken().catch(() => { /* noop — endpoint works without auth */ });
+  return apiFetcher<any>(url);
+};
+
+/**
  * Convenience object for API calls
  */
 export const apiClient = {
