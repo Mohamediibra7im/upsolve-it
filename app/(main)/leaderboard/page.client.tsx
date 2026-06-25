@@ -500,21 +500,21 @@ const LeaderboardPage = () => {
                   Next
                   <ChevronRight className="size-4" />
                 </button>
+
+                {myRank && (
+                  <button
+                    onClick={() => setPage(Math.ceil(myRank / pageSize))}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/25 bg-emerald-500/5 px-4 py-2 text-xs font-black uppercase tracking-[0.1em] text-emerald-400 transition-all duration-200 hover:border-emerald-500/40 hover:bg-emerald-500/10"
+                  >
+                    <Navigation className="size-4" />
+                    Go to my rank (#{myRank})
+                  </button>
+                )}
               </div>
 
               <span className="text-xs font-bold text-muted-foreground/70 font-mono tabular-nums">
                 Page {page} of {totalPages}
               </span>
-
-              {myRank && (
-                <button
-                  onClick={() => setPage(Math.ceil(myRank / pageSize))}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/25 bg-emerald-500/5 px-4 py-2 text-xs font-black uppercase tracking-[0.1em] text-emerald-400 transition-all duration-200 hover:border-emerald-500/40 hover:bg-emerald-500/10"
-                >
-                  <Navigation className="size-4" />
-                  Go to my rank (#{myRank})
-                </button>
-              )}
             </div>
 
             <UserProfileDialog
