@@ -7,18 +7,35 @@ import { Badge } from '@/components/ui/badge';
 import {
   useAdminContactMessages,
   markAsRead,
+  replyMessage,
   type ContactMessage,
 } from '@/hooks/admin/useAdminContactMessages';
-import { Mail, MailOpen, ChevronDown, ChevronUp } from 'lucide-react';
+import { Mail, MailOpen, ChevronDown, ChevronUp, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function AdminContactMessages() {
   const { messages, isLoading, mutate } = useAdminContactMessages();
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [sending, setSending] = useState(false);
 
   const handleMarkRead = async (id: string) => {
     await markAsRead(id);
     await mutate();
+  };
+
+  const handleReply = async (id: string) => {
+    if (!replyText.trim()) return;
+    setSending(true);
+    try {
+      await replyMessage(id, replyText.trim());
+      setReplyText('');
+      setReplyingTo(null);
+      await mutate();
+    } finally {
+      setSending(false);
+    }
   };
 
   if (isLoading) {
@@ -134,16 +151,45 @@ export default function AdminContactMessages() {
                     <p className="text-sm mt-1 leading-relaxed whitespace-pre-wrap">{msg.message}</p>
                   </div>
                   <div className="flex gap-2 pt-1">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => window.open(`mailto:${msg.email}?subject=Re: ${msg.subject}`, '_blank')}
-                    >
-                      Reply via Email
-                    </Button>
                     {!msg.read && (
                       <Button size="sm" variant="secondary" onClick={() => void handleMarkRead(msg._id)}>
                         Mark as Read
+                      </Button>
+                    )}
+                    {replyingTo === msg._id ? (
+                      <div className="w-full space-y-2">
+                        <textarea
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          placeholder="Type your reply..."
+                          className="w-full rounded-lg border border-border/40 bg-background/50 p-3 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-primary/40"
+                          rows={3}
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => void handleReply(msg._id)}
+                            disabled={!replyText.trim() || sending}
+                          >
+                            <Send className="size-3 mr-1" />
+                            {sending ? 'Sending...' : 'Send Reply'}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => { setReplyingTo(null); setReplyText(''); }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => { setReplyingTo(msg._id); setReplyText(''); }}
+                      >
+                        Reply
                       </Button>
                     )}
                   </div>

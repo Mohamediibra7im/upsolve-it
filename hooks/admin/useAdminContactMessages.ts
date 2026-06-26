@@ -30,3 +30,11 @@ export function useAdminContactMessages() {
 export async function markAsRead(id: string): Promise<void> {
   await apiFetcher(`/api/admin/contact/${id}/read`, { method: 'PATCH' });
 }
+
+export async function replyMessage(id: string, body: string): Promise<void> {
+  await apiFetcher(`/api/admin/contact/${id}/reply`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: body }),
+  });
+}
