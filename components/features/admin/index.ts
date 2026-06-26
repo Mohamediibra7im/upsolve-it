@@ -10,3 +10,4 @@ export { UserMobileCards } from "./UserMobileCards";
 export { UserStatsDialog } from "./UserStatsDialog";
 export { UserTable } from "./UserTable";
 export { default as AdminWhatsNew } from "./AdminWhatsNew";
+export { default as AdminContactMessages } from "./AdminContactMessages";

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Bell, Users, Shield, Settings, Home } from 'lucide-react';
+import { Crown, Bell, Users, Shield, Settings, Home, MailQuestion } from 'lucide-react';
 import {useUser} from '@/hooks/auth';
 import Loader from '@/components/shared/Loader';
 
@@ -16,6 +16,12 @@ const adminPages = [
     label: 'Notifications',
     icon: Bell,
     description: 'Manage system notifications'
+  },
+  {
+    href: '/admin/contact',
+    label: 'Contact Messages',
+    icon: MailQuestion,
+    description: 'View and manage support messages'
   },
   {
     href: '/admin/users',
