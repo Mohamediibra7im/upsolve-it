@@ -20,7 +20,8 @@ import {
   ChevronLeft,
   Compass,
   Sparkles,
-  Lightbulb
+  Lightbulb,
+  MailQuestion
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -39,6 +40,7 @@ const navItems = [
   { id: "roadmap", href: "/admin/roadmap", label: "Roadmap", icon: Compass, desc: "Levels & Sessions" },
   { id: "whats-new", href: "/admin/whats-new", label: "What's New", icon: Sparkles, desc: "Changelog Entries" },
   { id: "suggestions", href: "/admin/suggestions", label: "Suggestions", icon: Lightbulb, desc: "Useful Websites" },
+  { id: "contact", href: "/admin/contact", label: "Contact Messages", icon: MailQuestion, desc: "Support Messages" },
   { id: "logs", href: "/admin/logs", label: "Audit Logs", icon: Database, desc: "Security Records" },
 ];
 
