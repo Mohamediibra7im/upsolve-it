@@ -43,7 +43,7 @@ const supportOptions = [
     description: 'Send us a message directly and we\'ll get back to you.',
     icon: Mail,
     action: 'Send Email',
-    link: 'mailto:fcsithnucommunty@gmail.com',
+    link: 'mailto:upsolve.it.1@gmail.com',
     color: 'emerald',
   },
 ];
