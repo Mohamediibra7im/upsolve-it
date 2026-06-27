@@ -69,8 +69,10 @@ const VideoPlayer = ({
       if (!containerRef.current || !window.YT || !window.YT.Player) return;
 
       // Ensure container is empty before initializing
-      containerRef.current.innerHTML = '<div class="absolute inset-0 w-full h-full"></div>';
-      const playerDiv = containerRef.current.firstElementChild;
+      containerRef.current.replaceChildren();
+      const playerDiv = document.createElement('div');
+      playerDiv.className = 'absolute inset-0 w-full h-full';
+      containerRef.current.appendChild(playerDiv);
 
       player = new window.YT.Player(playerDiv, {
         videoId: videoId,

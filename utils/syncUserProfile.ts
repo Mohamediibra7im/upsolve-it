@@ -31,13 +31,13 @@ export async function syncUserProfile(
     const currentRating = cfUser.rating ?? 0;
     const currentRank =
       cfUser.rank ??
-      (currentRating === 0 ? "Unrated" : getRankFromRating(currentRating));
+      getRankFromRating(currentRating);
 
     // Handle rating and rank for max stats
     const maxRating = cfUser.maxRating ?? 0;
     const maxRank =
       cfUser.maxRank ??
-      (maxRating === 0 ? "Unrated" : getRankFromRating(maxRating));
+      getRankFromRating(maxRating);
 
     return {
       rating: currentRating,

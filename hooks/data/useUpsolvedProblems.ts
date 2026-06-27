@@ -121,7 +121,7 @@ const useUpsolvedProblems = () => {
         });
         mutate();
       } catch (error) {
-        console.error(error);
+        console.error('Failed to fetch upsolved problems:', error);
         mutate();
       }
     },
@@ -157,7 +157,7 @@ const useUpsolvedProblems = () => {
         });
         mutateDismissed();
       } catch (error) {
-        console.error(error);
+        console.error('Failed to dismiss problem:', error);
         mutate();
         mutateDismissed();
       }
@@ -185,7 +185,6 @@ const useUpsolvedProblems = () => {
     });
 
     if (missingProblems.length > 0) {
-      console.log(`[UpsolveSync] Found ${missingProblems.length} missing problems in history. Syncing...`);
       await addUpsolvedProblems(missingProblems);
     }
   }, [upsolvedProblems, dismissedIds, addUpsolvedProblems]);

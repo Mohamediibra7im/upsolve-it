@@ -43,7 +43,7 @@ const useHistory = () => {
         // Revalidate the SWR cache to show the new training
         mutate();
       } catch (error) {
-        console.error(error);
+        console.error('Failed to load training history:', error);
       }
     },
     [mutate, user?.rating],
