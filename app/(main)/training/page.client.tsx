@@ -45,6 +45,7 @@ export default function TrainingPage() {
     generateProblemsFromRatings,
     submissionStatuses,
     notifyProblemOpened,
+    extendEndTime,
   } = useTraining();
 
   const [customRatings, setCustomRatings] = useState<{
@@ -184,9 +185,8 @@ export default function TrainingPage() {
   const effectiveShowRatings =
     selectedMode === "contest" ? false : showRatings;
 
-  const hideContestDetails =
-    training?.trainingMode === "contest" ||
-    (isTraining && selectedMode === "contest");
+  // ponytail: use session's authoritative mode, not picker state
+  const hideContestDetails = training?.trainingMode === "contest";
 
   // Block only on auth/client init — problems fetch runs in background while UI renders.
   if (isInitializing || !user) return <Loader />;
@@ -252,6 +252,7 @@ export default function TrainingPage() {
               }}
               onProblemOpen={notifyProblemOpened}
               isPoolLoading={isLoading}
+              onExtendEndTime={extendEndTime}
             />
           </div>
         </div>
@@ -376,6 +377,7 @@ export default function TrainingPage() {
               }}
               onProblemOpen={notifyProblemOpened}
               isPoolLoading={isLoading}
+              onExtendEndTime={extendEndTime}
             />
           </m.div>
         </div>

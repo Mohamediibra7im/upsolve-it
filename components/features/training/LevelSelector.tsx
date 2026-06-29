@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { m } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -132,6 +132,18 @@ const LevelSelector = ({
   };
 
   const currentLevel = sortedLevels.find((level) => level.id === activeLevelId);
+
+  // ponytail: sync parent customRatings on mount when levels finish loading
+  useEffect(() => {
+    if (!currentLevel) return;
+    onLevelChange({
+      P1: Number.parseInt(currentLevel.P1, 10),
+      P2: Number.parseInt(currentLevel.P2, 10),
+      P3: Number.parseInt(currentLevel.P3, 10),
+      P4: Number.parseInt(currentLevel.P4, 10),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sync once on mount, stabilizes after
+  }, [currentLevel]);
 
   if (isLoading) {
     return (

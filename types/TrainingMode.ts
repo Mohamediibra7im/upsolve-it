@@ -5,11 +5,4 @@ export type TrainingMode =
   | "contest"
   | "endurance";
 
-export type ModeConfig = {
-  mode: TrainingMode;
-  /** Problems count */
-  problemCount: number;
-  durationMinutes: number;
-  showRatings: boolean;
-  hideProblemDetailsDuringSession: boolean;
-};
+

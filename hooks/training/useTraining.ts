@@ -496,6 +496,19 @@ const useTraining = () => {
     [training?.serverSessionId],
   );
 
+  // ponytail: break = extend endTime, no separate state needed
+  const extendEndTime = useCallback(
+    (minutes: number) => {
+      setTraining((prev) => {
+        if (!prev) return null;
+        const next = { ...prev, endTime: prev.endTime + minutes * 60000 };
+        if (isClient) localStorage.setItem(TRAINING_STORAGE_KEY, JSON.stringify(next));
+        return next;
+      });
+    },
+    [isClient],
+  );
+
   return {
     problems,
     isLoading: isUserLoading || isProblemsLoading || !isClient,
@@ -512,6 +525,7 @@ const useTraining = () => {
     refreshProblemStatus,
     finishTraining,
     notifyProblemOpened,
+    extendEndTime,
   };
 };
 

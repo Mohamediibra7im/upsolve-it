@@ -3,7 +3,7 @@
 import { m, Variants } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Sparkles, Play, Eye, EyeOff, CheckCircle2 } from "lucide-react";
+import { RefreshCw, Sparkles, Play, Eye, EyeOff, CheckCircle2, Info } from "lucide-react";
 import { TrainingProblem } from "@/types/TrainingProblem";
 import { SubmissionStatus } from "@/services/codeforces/getTrainingSubmissionStatus";
 import ProblemRow from "./ProblemRow";
@@ -36,6 +36,7 @@ interface ProblemsCardProps {
   isPoolLoading?: boolean;
   showTags?: boolean;
   onToggleTags?: () => void;
+  weaknessFallback?: boolean;
 }
 
 const ProblemsCard = ({
@@ -54,6 +55,7 @@ const ProblemsCard = ({
   isPoolLoading,
   showTags,
   onToggleTags,
+  weaknessFallback,
 }: ProblemsCardProps) => {
   const progressPercent = totalCount > 0 ? (solvedCount / totalCount) * 100 : 0;
 
@@ -84,6 +86,14 @@ const ProblemsCard = ({
               </button>
             </div>
           </div>
+
+          {/* ponytail: weakness fallback indicator — single div, no new component */}
+          {weaknessFallback && (
+            <div className="mx-6 mt-4 sm:mx-8 flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-2.5 text-xs text-amber-400">
+              <Info className="size-3.5 shrink-0" />
+              <span>Not enough weakness data — using ladder problems instead.</span>
+            </div>
+          )}
 
           <div className="px-6 sm:px-8 pt-5">
             <div className="flex items-center justify-between mb-2">

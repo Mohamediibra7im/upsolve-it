@@ -31,6 +31,7 @@ interface TrainerProps {
   display: TrainerDisplayOptions;
   onProblemOpen?: (problem: TrainingProblem) => void;
   isPoolLoading?: boolean;
+  onExtendEndTime?: (minutes: number) => void;
 }
 
 const Trainer = ({
@@ -46,6 +47,7 @@ const Trainer = ({
   display,
   onProblemOpen,
   isPoolLoading,
+  onExtendEndTime,
 }: TrainerProps) => {
   const isTraining = status === "training" || status === "refreshing";
   const isRefreshing = status === "refreshing";
@@ -64,7 +66,7 @@ const Trainer = ({
 
   const [isFinishDialogOpen, setIsFinishDialogOpen] = useState(false);
   const [isStopDialogOpen, setIsStopDialogOpen] = useState(false);
-  const [showTags, setShowTags] = useState(true);
+  const [showTags, setShowTags] = useState(false);
 
   const confirmFinish = () => {
     setIsFinishDialogOpen(false);
@@ -130,6 +132,7 @@ const Trainer = ({
           isPoolLoading={isPoolLoading}
           showTags={showTags}
           onToggleTags={() => setShowTags(!showTags)}
+          weaknessFallback={isTraining && !!training?.weaknessFallback}
         />
 
         <TrainingControls
@@ -142,6 +145,7 @@ const Trainer = ({
           refreshProblemStatus={refreshProblemStatus}
           onFinishTraining={() => setIsFinishDialogOpen(true)}
           onStopTraining={() => setIsStopDialogOpen(true)}
+          onExtendEndTime={onExtendEndTime}
         />
       </div>
     </div>

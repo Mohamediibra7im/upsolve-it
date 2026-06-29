@@ -97,10 +97,16 @@ export function buildRatingsForMode(
         hideDetails: true,
       };
     case "endurance": {
-      const spread = [-250, -150, -50, 0, 50, 150, 250];
+      // ponytail: randomize 6-8 problems, scale time 3-4h proportionally
+      const count = 6 + Math.floor(Math.random() * 3);
+      const spreads: Record<number, number[]> = {
+        6: [-250, -150, -50, 50, 150, 250],
+        7: [-250, -150, -50, 0, 50, 150, 250],
+        8: [-250, -200, -100, -50, 50, 100, 200, 250],
+      };
       return {
-        ratings: spread.map((d) => clamp(u + d)),
-        durationMinutes: 210,
+        ratings: spreads[count].map((d) => clamp(u + d)),
+        durationMinutes: 180 + (count - 6) * 30, // 6→180min, 7→210min, 8→240min
         showRatings: true,
         hideDetails: false,
       };

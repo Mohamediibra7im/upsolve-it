@@ -124,7 +124,7 @@ const ProblemRow = ({
       </div>
 
       <div className="min-w-0 flex-1">
-        {(isPreContestPeriod || (hideContestDetails && isTraining) || (!isTraining && !showRatings)) ? (
+        {isPreContestPeriod || (hideContestDetails && isTraining) ? (
           <div className="space-y-2">
             <div className="h-4 w-32 rounded-lg bg-white/[0.03] animate-pulse" />
             <div className="h-3 w-20 rounded-lg bg-white/[0.02] animate-pulse" />
