@@ -11,7 +11,8 @@ const fetcher = (url: string) => apiFetcher<AdminUsersResponse>(url);
 const EMPTY_USERS: User[] = [];
 
 export function useAdminUsers() {
-  const { data, error, mutate } = useSWR<AdminUsersResponse>("/api/admin/users", fetcher, {
+  // ponytail: limit=0 returns all docs — frontend does client-side pagination/filtering
+  const { data, error, mutate } = useSWR<AdminUsersResponse>("/api/admin/users?limit=0", fetcher, {
     // Optimize for fast loading
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
