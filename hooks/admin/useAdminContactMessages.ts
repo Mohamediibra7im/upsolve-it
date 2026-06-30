@@ -38,3 +38,7 @@ export async function replyMessage(id: string, body: string): Promise<void> {
     body: JSON.stringify({ message: body }),
   });
 }
+
+export async function deleteMessage(id: string): Promise<void> {
+  await apiFetcher(`/api/admin/contact/${id}`, { method: 'DELETE' });
+}

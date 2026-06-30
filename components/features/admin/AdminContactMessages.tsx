@@ -8,9 +8,11 @@ import {
   useAdminContactMessages,
   markAsRead,
   replyMessage,
+  deleteMessage,
   type ContactMessage,
 } from '@/hooks/admin/useAdminContactMessages';
-import { Mail, MailOpen, ChevronDown, ChevronUp, Send } from 'lucide-react';
+import { Mail, MailOpen, ChevronDown, ChevronUp, Send, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
 export default function AdminContactMessages() {
@@ -19,6 +21,8 @@ export default function AdminContactMessages() {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
   const [sending, setSending] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const handleMarkRead = async (id: string) => {
     await markAsRead(id);
@@ -35,6 +39,18 @@ export default function AdminContactMessages() {
       await mutate();
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    setDeleting(true);
+    try {
+      await deleteMessage(id);
+      setDeletingId(null);
+      if (expanded === id) setExpanded(null);
+      await mutate();
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -192,6 +208,14 @@ export default function AdminContactMessages() {
                         Reply
                       </Button>
                     )}
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => setDeletingId(msg._id)}
+                    >
+                      <Trash2 className="size-3 mr-1" />
+                      Delete
+                    </Button>
                   </div>
                 </m.div>
               )}
@@ -199,6 +223,26 @@ export default function AdminContactMessages() {
           ))}
         </AnimatePresence>
       </div>
+      {deletingId && (
+        <Dialog open onOpenChange={() => !deleting && setDeletingId(null)}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Delete Message</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this contact message? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex gap-2 justify-end pt-4">
+              <Button variant="outline" onClick={() => setDeletingId(null)} disabled={deleting}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={() => void handleDelete(deletingId)} disabled={deleting}>
+                {deleting ? 'Deleting...' : 'Delete'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
