@@ -1,6 +1,16 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
+function esc(s: string): string {
+  if (typeof s !== 'string') return '';
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export async function POST(req: Request) {
   try {
     const { name, email, subject, category, message } = await req.json();
@@ -13,29 +23,45 @@ export async function POST(req: Request) {
       );
     }
 
+    const emailUser = process.env.EMAIL_USER;
+    const emailPass = process.env.EMAIL_PASS;
+
+    if (!emailUser || !emailPass) {
+      console.error('SMTP credentials are not configured in environment variables');
+      return NextResponse.json(
+        { success: false, error: 'Email service is not configured.' },
+        { status: 500 }
+      );
+    }
+
+    const escName = esc(name);
+    const escEmail = esc(email);
+    const escSubject = esc(subject);
+    const escCategory = esc(category ?? 'general');
+    const escMessage = esc(message);
+
     // Configure your SMTP transporter
-    // NOTE: You should set these in your .env file
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.EMAIL_USER || 'mohamed.ibra7im011@gmail.com', // Your email
-        pass: process.env.EMAIL_PASS, // Your App Password (not your regular password)
+        user: emailUser,
+        pass: emailPass,
       },
     });
 
     // Professional Email Template for the Admin (You)
     const adminMailOptions = {
-      from: `"Upsolve.it Support" <${process.env.EMAIL_USER || 'mohamed.ibra7im011@gmail.com'}>`,
-      to: 'mohamed.ibra7im011@gmail.com',
-      subject: `[Support Inquiry] ${subject} (${category.toUpperCase()})`,
+      from: `"Upsolve.it Support" <${emailUser}>`,
+      to: emailUser,
+      subject: `[Support Inquiry] ${escSubject} (${escCategory.toUpperCase()})`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
           <h2 style="color: #007F5F;">New Support Transmission</h2>
-          <p><strong>From:</strong> ${name} (${email})</p>
-          <p><strong>Category:</strong> ${category}</p>
-          <p><strong>Subject:</strong> ${subject}</p>
+          <p><strong>From:</strong> ${escName} (${escEmail})</p>
+          <p><strong>Category:</strong> ${escCategory}</p>
+          <p><strong>Subject:</strong> ${escSubject}</p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-          <p style="white-space: pre-wrap;">${message}</p>
+          <p style="white-space: pre-wrap;">${escMessage}</p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
           <p style="font-size: 12px; color: #888;">Transmitted from Upsolve.it Signal Support</p>
         </div>
