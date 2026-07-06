@@ -57,7 +57,7 @@ const LeaderboardPage = () => {
     page,
   });
 
-  const isLoading = levelsLoading || boardLoading;
+  const isLoading = boardLoading;
 
   // Current user entry on the current page
   const currentUserEntry = user
