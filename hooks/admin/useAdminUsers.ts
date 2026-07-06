@@ -18,6 +18,7 @@ export function useAdminUsers() {
     revalidateOnReconnect: true,
     dedupingInterval: 60000, // 1 minute
     refreshInterval: 300000, // 5 minutes
+    refreshWhenHidden: false,
   });
 
   return {

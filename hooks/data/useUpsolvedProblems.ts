@@ -1,117 +1,63 @@
-import { useCallback, useMemo, useEffect } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { TrainingProblem } from "@/types/TrainingProblem";
 import { Training } from "@/types/Training";
 import useUser from "@/hooks/auth/useUser";
 import useSolvedProblems from "./useSolvedProblems";
-import { useToast } from "@/components/providers/Toast";
 import { apiFetcher, swrFetcher } from "@/lib/apiClient";
 
 /** Shape of a dismissed-problem record returned by the API */
 type DismissedProblemId = { contestId: number; index: string };
 
+/** Combined response shape from GET /api/upsolve */
+interface UpsolveResponse {
+  items: TrainingProblem[];
+  dismissed: DismissedProblemId[];
+}
+
 const useUpsolvedProblems = () => {
-  const {user} = useUser();
-  const {toast} = useToast();
+  const { user } = useUser();
   const {
     isLoading: isProblemsLoading,
     refreshSolvedProblems,
     solvedProblems,
   } = useSolvedProblems(user);
 
-  // ── Active upsolve problems ────────────────────────────────────────
+  // ── Single SWR hook fetching combined { items, dismissed } ──────────
   const swrKey = user ? "/api/upsolve" : null;
-  const {data, isLoading, error, mutate} = useSWR<TrainingProblem[]>(
+  const { data, isLoading, error, mutate } = useSWR<UpsolveResponse>(
     swrKey,
     swrFetcher,
     {
       revalidateOnFocus: false,
       errorRetryCount: 2,
       errorRetryInterval: 3000,
-      dedupingInterval: 5000,
+      dedupingInterval: 60_000,
     }
   );
 
-  // ── Dismissed (deleted) problem IDs ────────────────────────────────
-  const dismissedSwrKey = user ? "/api/upsolve/dismissed" : null;
-  const {
-    data: dismissedData,
-    isLoading: isDismissedLoading,
-    mutate: mutateDismissed,
-  } = useSWR<DismissedProblemId[]>(
-    dismissedSwrKey,
-    swrFetcher,
-    {
-      revalidateOnFocus: false,
-      errorRetryCount: 1,
-      dedupingInterval: 10000,
-    }
-  );
+  const upsolvedProblems = useMemo(() => data?.items ?? [], [data]);
+
+  const dismissedProblems = useMemo(() => data?.dismissed ?? [], [data?.dismissed]);
 
   const dismissedIds = useMemo(() => {
     const set = new Set<string>();
-    (dismissedData ?? []).forEach((d) => set.add(`${d.contestId}_${d.index}`));
+    (data?.dismissed ?? []).forEach((d) => set.add(`${d.contestId}_${d.index}`));
     return set;
-  }, [dismissedData]);
+  }, [data?.dismissed]);
 
-  const upsolvedProblems = useMemo(() => data ?? [], [data]);
-
-  const refreshUpsolvedProblems = useCallback(async () => {
-    if (upsolvedProblems.length === 0 || solvedProblems.length === 0) {
-      return;
-    }
-
-    const newlySolved = upsolvedProblems
-      .filter((p) => !p.solvedTime)
-      .filter((p) =>
-        solvedProblems.some(
-          (sp) => sp.contestId === p.contestId && sp.index === p.index
-        )
-      )
-      .map((p) => ({...p, solvedTime: Date.now()}));
-
-    if (newlySolved.length === 0) return;
-
-    mutate(
-      upsolvedProblems.map(
-        (p) =>
-          newlySolved.find(
-            (ns) => ns.contestId === p.contestId && ns.index === p.index
-          ) || p
-      ),
-      false
-    );
-
-    try {
-      await apiFetcher("/api/upsolve", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newlySolved),
-      });
-      const count = newlySolved.length;
-      toast({
-        title: "Upsolve progress",
-        description: `Great job! Marked ${count} problem${count > 1 ? "s" : ""} as upsolved.`,
-        variant: "success",
-      });
-      mutate();
-    } catch (error) {
-      console.error("Failed to update solved status:", error);
-      mutate();
-    }
-  }, [upsolvedProblems, solvedProblems, mutate, toast]);
-
-  useEffect(() => {
-    if (solvedProblems?.length > 0) {
-      refreshUpsolvedProblems();
-    }
-  }, [solvedProblems, refreshUpsolvedProblems]);
-
+  // ── Add problems to upsolve queue ──────────────────────────────────
   const addUpsolvedProblems = useCallback(
     async (problems: TrainingProblem[]) => {
       if (problems.length === 0) return;
 
-      mutate((currentData = []) => [...currentData, ...problems], false);
+      mutate(
+        (currentData) => ({
+          items: [...(currentData?.items ?? []), ...problems],
+          dismissed: currentData?.dismissed ?? [],
+        }),
+        false
+      );
 
       try {
         await apiFetcher("/api/upsolve", {
@@ -121,28 +67,26 @@ const useUpsolvedProblems = () => {
         });
         mutate();
       } catch (error) {
-        console.error('Failed to fetch upsolved problems:', error);
+        console.error("Failed to fetch upsolved problems:", error);
         mutate();
       }
     },
     [mutate]
   );
 
+  // ── Dismiss (delete) a problem from upsolve queue ──────────────────
   const deleteUpsolvedProblem = useCallback(
     async (problem: TrainingProblem) => {
       mutate(
-        (currentData = []) =>
-          currentData.filter(
+        (currentData) => ({
+          items: (currentData?.items ?? []).filter(
             (p) => p.contestId !== problem.contestId || p.index !== problem.index
           ),
-        false
-      );
-
-      mutateDismissed(
-        (current = []) => [
-          ...current,
-          { contestId: problem.contestId, index: problem.index },
-        ],
+          dismissed: [
+            ...(currentData?.dismissed ?? []),
+            { contestId: problem.contestId, index: problem.index },
+          ],
+        }),
         false
       );
 
@@ -155,55 +99,64 @@ const useUpsolvedProblems = () => {
             index: problem.index,
           }),
         });
-        mutateDismissed();
-      } catch (error) {
-        console.error('Failed to dismiss problem:', error);
         mutate();
-        mutateDismissed();
+      } catch (error) {
+        console.error("Failed to dismiss problem:", error);
+        mutate();
       }
     },
-    [mutate, mutateDismissed]
+    [mutate]
   );
 
-  const syncWithHistory = useCallback(async (history: Training[]) => {
-    if (!history || history.length === 0) return;
+  // ── Sync unsolved problems from training history ───────────────────
+  const syncWithHistory = useCallback(
+    async (history: Training[]) => {
+      if (!history || history.length === 0) return;
 
-    const allUnsolved = history.reduce((acc: TrainingProblem[], session) => {
-      const unsolvedInSession = session.problems.filter((p) => !p.solvedTime);
-      return [...acc, ...unsolvedInSession];
-    }, []);
+      const allUnsolved = history.reduce((acc: TrainingProblem[], session) => {
+        const unsolvedInSession = session.problems.filter((p) => !p.solvedTime);
+        return [...acc, ...unsolvedInSession];
+      }, []);
 
-    if (allUnsolved.length === 0) return;
+      if (allUnsolved.length === 0) return;
 
-    const existingIds = new Set(
-      upsolvedProblems.map((p) => `${p.contestId}_${p.index}`)
-    );
+      const existingIds = new Set(
+        upsolvedProblems.map((p) => `${p.contestId}_${p.index}`)
+      );
 
-    const missingProblems = allUnsolved.filter((p) => {
-      const key = `${p.contestId}_${p.index}`;
-      return !existingIds.has(key) && !dismissedIds.has(key);
-    });
+      const missingProblems = allUnsolved.filter((p) => {
+        const key = `${p.contestId}_${p.index}`;
+        return !existingIds.has(key) && !dismissedIds.has(key);
+      });
 
-    if (missingProblems.length > 0) {
-      await addUpsolvedProblems(missingProblems);
-    }
-  }, [upsolvedProblems, dismissedIds, addUpsolvedProblems]);
+      if (missingProblems.length > 0) {
+        await addUpsolvedProblems(missingProblems);
+      }
+    },
+    [upsolvedProblems, dismissedIds, addUpsolvedProblems]
+  );
 
-  const onRefreshUpsolvedProblems = useCallback(async (history?: Training[]) => {
-    refreshSolvedProblems();
-    if (history) {
-      await syncWithHistory(history);
-    }
-  }, [refreshSolvedProblems, syncWithHistory]);
+  // ── Manual refresh: re-fetch solved + sync history ─────────────────
+  const onRefreshUpsolvedProblems = useCallback(
+    async (history?: Training[]) => {
+      refreshSolvedProblems();
+      if (history) {
+        await syncWithHistory(history);
+      }
+    },
+    [refreshSolvedProblems, syncWithHistory]
+  );
 
   return {
     upsolvedProblems,
-    isLoading: isLoading || isProblemsLoading || isDismissedLoading,
+    dismissedProblems,
+    isLoading: isLoading || isProblemsLoading,
     error,
     deleteUpsolvedProblem,
     addUpsolvedProblems,
     onRefreshUpsolvedProblems,
     syncWithHistory,
+    refreshUpsolvedProblems: mutate,
   };
 };
 

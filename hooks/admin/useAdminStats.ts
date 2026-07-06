@@ -100,6 +100,7 @@ export function useAdminStats() {
       revalidateOnReconnect: false,
       dedupingInterval: 60_000,
       refreshInterval: 120_000,
+      refreshWhenHidden: false,
     },
   );
 
