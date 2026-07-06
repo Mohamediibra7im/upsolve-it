@@ -4,6 +4,7 @@ import { User } from "@/types/User";
 
 interface AdminUsersResponse {
   users: User[];
+  total: number;
 }
 
 const fetcher = (url: string) => apiFetcher<AdminUsersResponse>(url);
@@ -11,8 +12,8 @@ const fetcher = (url: string) => apiFetcher<AdminUsersResponse>(url);
 const EMPTY_USERS: User[] = [];
 
 export function useAdminUsers() {
-  // ponytail: limit=0 returns all docs — frontend does client-side pagination/filtering
-  const { data, error, mutate } = useSWR<AdminUsersResponse>("/api/admin/users?limit=0", fetcher, {
+  // ponytail: no limit param — backend defaults to 500
+  const { data, error, mutate } = useSWR<AdminUsersResponse>("/api/admin/users", fetcher, {
     // Optimize for fast loading
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
@@ -23,7 +24,7 @@ export function useAdminUsers() {
 
   return {
     users: data?.users || EMPTY_USERS,
-    totalUsers: data?.users?.length || 0,
+    totalUsers: data?.total ?? data?.users?.length ?? 0,
     isLoading: !error && !data,
     isError: error,
     mutate,
