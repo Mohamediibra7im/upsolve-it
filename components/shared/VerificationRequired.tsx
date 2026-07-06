@@ -30,12 +30,12 @@ const VerificationRequired = ({
     return <>{children}</>;
   }
 
+  // ponytail: don't mount children behind overlay — they fire API calls that 401 → logout
   return (
     <>
       <div className="relative">
-        {/* Blurred content behind */}
         <div className="pointer-events-none select-none blur-[6px] opacity-30">
-          {children}
+          <div className="min-h-screen" />
         </div>
 
         {/* Overlay */}
