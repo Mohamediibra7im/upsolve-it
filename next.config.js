@@ -3,8 +3,10 @@ const nextConfig = {
   compress: true,
   reactStrictMode: true,
   poweredByHeader: false,
-  // Turbopack is the default in Next.js 16; empty config silences the webpack-without-turbopack warning
-  turbopack: {},
+  // ponytail: silences "inferred workspace root" warning from orphaned parent lockfile
+  turbopack: {
+    root: __dirname,
+  },
   async redirects() {
     return [
       {

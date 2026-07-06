@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
-
-export const runtime = 'edge';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 export const alt = 'Upsolve.it - The ultimate command center for competitive programmers';
 export const size = {
@@ -10,10 +10,10 @@ export const size = {
 
 export const contentType = 'image/png';
 
-export default async function Image() {
-  const montserratBold = await fetch(
-    new URL('./fonts/Montserrat-Bold.ttf', import.meta.url)
-  ).then((res) => res.arrayBuffer());
+export default function Image() {
+  const montserratBold = readFileSync(
+    join(process.cwd(), 'app/fonts/Montserrat-Bold.ttf')
+  );
 
   return new ImageResponse(
     (

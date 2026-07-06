@@ -98,7 +98,7 @@ const HeroSection = ({user}: {user: any}) => {
                 <Button
                   asChild
                   size="lg"
-                  className="h-16 w-full sm:w-auto px-14 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs shadow-[0_8px_40px_hsl(var(--primary)/0.35)] hover:shadow-[0_14px_50px_hsl(var(--primary)/0.5)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300"
+                  className="h-16 w-full sm:w-auto px-10 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs shadow-[0_8px_40px_hsl(var(--primary)/0.35)] hover:shadow-[0_14px_50px_hsl(var(--primary)/0.5)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300"
                 >
                   <Link href="/profile" className="flex items-center gap-3">
                     Profile <ArrowRight size={18} />
@@ -108,9 +108,17 @@ const HeroSection = ({user}: {user: any}) => {
                   asChild
                   variant="outline"
                   size="lg"
-                  className="h-16 w-full sm:w-auto px-14 rounded-2xl border-2 border-border/40 font-black uppercase tracking-widest text-xs hover:border-primary/40 hover:bg-primary/5 hover:text-primary transition-all duration-300 backdrop-blur-xl"
+                  className="h-16 w-full sm:w-auto px-10 rounded-2xl border-2 border-border/40 font-black uppercase tracking-widest text-xs hover:border-primary/40 hover:bg-primary/5 hover:text-primary transition-all duration-300 backdrop-blur-xl"
                 >
                   <Link href="/dashboard">Dashboard</Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  className="h-16 w-full sm:w-auto px-10 rounded-2xl border-2 border-border/40 font-black uppercase tracking-widest text-xs hover:border-primary/40 hover:bg-primary/5 hover:text-primary transition-all duration-300 backdrop-blur-xl"
+                >
+                  <Link href="/docs">Documentation</Link>
                 </Button>
               </>
             ) : (
@@ -118,7 +126,7 @@ const HeroSection = ({user}: {user: any}) => {
                 <Button
                   asChild
                   size="lg"
-                  className="h-16 w-full sm:w-auto px-14 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs shadow-[0_8px_40px_hsl(var(--primary)/0.35)] hover:shadow-[0_14px_50px_hsl(var(--primary)/0.5)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300"
+                  className="h-16 w-full sm:w-auto px-10 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs shadow-[0_8px_40px_hsl(var(--primary)/0.35)] hover:shadow-[0_14px_50px_hsl(var(--primary)/0.5)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300"
                 >
                   <Link href="/signup" className="flex items-center gap-3">
                     Get Started Free <ArrowRight size={18} />
@@ -128,9 +136,17 @@ const HeroSection = ({user}: {user: any}) => {
                   asChild
                   variant="outline"
                   size="lg"
-                  className="h-16 w-full sm:w-auto px-14 rounded-2xl border-2 border-border/40 font-black uppercase tracking-widest text-xs hover:border-primary/40 hover:bg-primary/5 hover:text-primary transition-all duration-300 backdrop-blur-xl"
+                  className="h-16 w-full sm:w-auto px-10 rounded-2xl border-2 border-border/40 font-black uppercase tracking-widest text-xs hover:border-primary/40 hover:bg-primary/5 hover:text-primary transition-all duration-300 backdrop-blur-xl"
                 >
                   <Link href="/login">Sign In</Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  className="h-16 w-full sm:w-auto px-10 rounded-2xl border-2 border-border/40 font-black uppercase tracking-widest text-xs hover:border-primary/40 hover:bg-primary/5 hover:text-primary transition-all duration-300 backdrop-blur-xl"
+                >
+                  <Link href="/docs">Documentation</Link>
                 </Button>
               </>
             )}

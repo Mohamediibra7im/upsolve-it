@@ -1,417 +1,200 @@
-# 📘 Comprehensive Usage Guide
+# Comprehensive Usage Guide
 
-Welcome to the CF Training Tracker usage guide! This document provides detailed instructions on how to use all features of the application effectively.
+Welcome to the Upsolve.it manual. This document provides detailed operating instructions and design explanations for all systems and protocols within the platform.
 
-## 📑 Table of Contents
+## Table of Contents
 
-1. [🚀 Getting Started](#getting-started)
-
+1. [Getting Started](#getting-started)
    - [Creating an Account](#creating-an-account)
-   - [Logging In](#logging-in)
-   - [Syncing Your Codeforces Profile](#syncing-your-codeforces-profile)
-   - [Password Management](#password-management)
-
-2. [🔔 Notification System](#notification-system)
-
-   - [Understanding Notifications](#understanding-notifications)
-   - [Notification Center](#notification-center)
-   - [Managing Your Notifications](#managing-your-notifications)
-   - [Admin Notification Management](#admin-notification-management)
-
-3. [🏋️ Training Sessions](#training-sessions)
-
-   - [Setting Up a Training Session](#setting-up-a-training-session)
-   - [Difficulty Levels](#difficulty-levels)
-   - [Tag Selection](#tag-selection)
-   - [Problem Generation Algorithm](#problem-generation-algorithm)
-   - [Working Through Problems](#working-through-problems)
-   - [Submitting Solutions](#submitting-solutions)
+   - [Codeforces Verification](#codeforces-verification)
+   - [Syncing Profile](#syncing-profile)
+2. [Core Training Engine](#training-engine)
+   - [Training Modes](#training-modes)
+   - [Solving Problems](#solving-problems)
    - [Session Results](#session-results)
-
-4. [📊 Statistics and Analytics](#statistics-and-analytics)
-
-   - [Performance Overview](#performance-overview)
-   - [Rating Progression](#rating-progression)
-   - [Activity Heatmap](#activity-heatmap)
-   - [Problem Tags Distribution](#problem-tags-distribution)
-   - [Interpreting Your Performance Data](#interpreting-your-performance-data)
-
-5. [🔍 Upsolving](#upsolving)
-
-   - [What is Upsolving?](#what-is-upsolving)
-   - [Managing Your Upsolve List](#managing-your-upsolve-list)
-   - [Tracking Upsolve Progress](#tracking-upsolve-progress)
-
-6. [⚙️ Account Settings](#account-settings)
-
-   - [Changing Your Password](#changing-your-password)
-   - [Resetting a Forgotten Password](#resetting-a-forgotten-password)
-   - [Theme Settings](#theme-settings)
-
-7. [📱 Mobile Usage](#mobile-usage)
-
-   - [Responsive Design Features](#responsive-design-features)
-   - [Touch Interaction Tips](#touch-interaction-tips)
-
-8. [❓ Troubleshooting](#troubleshooting)
-   - [Common Issues](#common-issues)
-   - [Contact Support](#contact-support)
+3. [Upsolve Challenge](#upsolve-challenge)
+   - [Upsolving Arena](#upsolving-arena)
+   - [Tracking Progress](#tracking-progress)
+4. [Learning Trail](#learning-trail)
+   - [Roadmap Structure](#roadmap-structure)
+   - [Level Unlock Gates](#level-gates)
+5. [Gamification & Progress](#progression-system)
+   - [XP and Levels](#xp-levels)
+   - [Leaderboards](#leaderboards)
+   - [Tactical Levels](#tactical-levels)
+6. [Social & Identity](#social-features)
+   - [Friends System](#friends-system)
+   - [Profile Portals](#profile-portals)
+7. [Support & Console](#support-console)
+   - [Signal Support Console](#signal-support)
+   - [System Notifications](#system-notifications)
 
 ---
 
-## 🚀 Getting Started <a name="getting-started"></a>
+## Getting Started <a name="getting-started"></a>
 
 ### Creating an Account <a name="creating-an-account"></a>
 
-1. Navigate to the CF Training Tracker homepage
-2. Enter your Codeforces handle in the input field
-3. Create a strong password that you'll use for future logins
-4. Click "Register" to create your account
-5. The application will fetch your Codeforces profile data and submission history
+To create an identity on Upsolve.it:
 
-> **Note**: Your Codeforces handle must be valid and active for registration to succeed.
+1. Navigate to the register section on the home page.
+2. Enter your Codeforces handle. The handle must match your active Codeforces ID.
+3. Choose a secure password for account authentication.
+4. Complete the sign-up process. The system will create your dashboard profile shell.
 
-### Logging In <a name="logging-in"></a>
+### Codeforces Verification <a name="codeforces-verification"></a>
 
-1. On the homepage, enter your Codeforces handle
-2. Enter your password
-3. Click "Login" to access your account
+Before you can access protected training sectors, you must verify your identity to ensure profile ownership:
 
-### Syncing Your Codeforces Profile <a name="syncing-your-codeforces-profile"></a>
+1. Start the Codeforces Verification Quest.
+2. The platform will output a temporary timed verification code.
+3. Open your Codeforces profile settings, and paste this verification code into the **First Name** field.
+4. Click verify. The system scans the Codeforces API, confirms the code matches the First Name on your profile, verifies your handle, and awards you 50 XP and a Verified Badge.
 
-Your profile is automatically synced upon login, but you can manually sync at any time:
+### Syncing Profile <a name="syncing-profile"></a>
 
-1. Click on your profile avatar in the navigation bar
-2. Select "Sync Profile" from the dropdown menu
-3. Wait for the sync process to complete
+Your rating, solved problems, and submission history are automatically synced at session initialization. You can manually request a sync at any time:
 
-The sync process updates:
-
-- Your current Codeforces rating and rank
-- Recent submissions
-- Solved problems list
-
-### Password Management <a name="password-management"></a>
-
-Your password is your secure credential for accessing CF Training Tracker. Keep it safe and do not share it with others.
+1. Click on your profile avatar in the navigation bar.
+2. Click Sync Profile.
+3. The platform will fetch your latest contest ratings, active rank, and submission histories directly from Codeforces to update your dashboard dashboards.
 
 ---
 
-## 🔔 Notification System <a name="notification-system"></a>
+## Core Training Engine <a name="training-engine"></a>
 
-The CF Training Tracker includes a comprehensive notification system to keep you updated with important announcements, new features, system maintenance, and other updates.
+The training engine is the tactical execution center of Upsolve.it. It allows you to run customized training sessions.
 
-### Understanding Notifications <a name="understanding-notifications"></a>
+### Training Modes <a name="training-modes"></a>
 
-The notification system supports five types of notifications:
+Upsolve.it supports five tactical training modes:
 
-- **📢 Announcements**: Important platform news and updates
-- **✨ New Features**: Information about newly released features
-- **🔧 Maintenance**: System maintenance and downtime notifications
-- **📥 Updates**: General system updates and improvements
-- **⚠️ Alerts**: Critical information requiring immediate attention
+- **Ladder Mode**: Classic rating-based training. Best for steady progress. Curated blocks where the difficulty index increases as you solve them.
+- **Weakness Mode**: Targets specific tags where your historical stats show lower success rates, forcing you to patch tactical gaps.
+- **Speed Mode**: Solve lower-rated problems under strict countdown timers to train your quick-coding reflexes under pressure.
+- **Contest Simulation**: Simulates standard contest situations with hidden problem ratings, strict timers, and final review only.
+- **Endurance Mode**: Longer sessions with more problems, designed for deep weekend practice over long training intervals.
 
-### Notification Center <a name="notification-center"></a>
+### Solving Problems <a name="solving-problems"></a>
 
-#### Accessing the Notification Center
+During an active session:
 
-1. Look for the bell icon (🔔) in the top navigation bar
-2. The bell shows a red badge with the count of unread notifications
-3. Click the bell icon to open the notification center panel
-
-#### Notification Center Features
-
-The notification center provides:
-
-- **Real-time Updates**: New notifications appear instantly
-- **Visual Indicators**: Different icons for each notification type
-- **Read/Unread Status**: Clear visual distinction between read and unread notifications
-- **Timestamps**: When each notification was created
-- **Priority Display**: Notifications are ordered by creation date (newest first)
-
-### Managing Your Notifications <a name="managing-your-notifications"></a>
-
-#### Marking Notifications as Read
-
-1. **Individual**: Click the green checkmark (✓) button next to any notification
-2. **Automatic**: Notifications are marked as read when you click the main notification area
-
-#### Deleting Notifications
-
-1. Click the red X button next to any notification
-2. Confirm deletion in the popup dialog
-3. **Note**: Deleting a notification only removes it from your view - other users will still see it
-
-#### Notification States
-
-- **Unread**: White background with bold text
-- **Read**: Gray background with normal text
-- **Hidden**: Removed from your notification list (delete action)
-
-### Admin Notification Management <a name="admin-notification-management"></a>
-
-> **Admin Access Required**: This section applies only to users with admin privileges.
-
-## 🏋️ Training Sessions <a name="training-sessions"></a>
-
-### Setting Up a Training Session <a name="setting-up-a-training-session"></a>
-
-1. Navigate to the "Training" page from the main navigation
-2. Configure your training session:
-   - Select difficulty level or custom rating range
-   - Choose problem tags to focus on
-   - Set the number of problems for the session
-3. Click "Generate Problems" to start your training session
-
-### Difficulty Levels <a name="difficulty-levels"></a>
-
-CF Training Tracker offers predefined difficulty levels:
-
-| Level  | Rating Range | Description               |
-| ------ | ------------ | ------------------------- |
-| Easy   | 800-1200     | Suitable for beginners    |
-| Medium | 1200-1600    | Intermediate difficulty   |
-| Hard   | 1600-2000    | Advanced problems         |
-| Expert | 2000-2400    | Expert-level challenges   |
-| Custom | User-defined | Set your own rating range |
-
-Choose a level slightly above your current rating for optimal learning.
-
-### Tag Selection <a name="tag-selection"></a>
-
-Tags allow you to focus on specific algorithm types or problem categories:
-
-1. Click on the tag selector dropdown
-2. Check the boxes for tags you want to include
-3. Common tags include:
-   - Dynamic Programming
-   - Graph Theory
-   - Data Structures
-   - Greedy Algorithms
-   - Math
-   - Implementation
-
-### Problem Generation Algorithm <a name="problem-generation-algorithm"></a>
-
-The problem generation system considers:
-
-- Your selected difficulty level
-- Chosen tags
-- Your solving history (to avoid repeating problems)
-- Problem quality (based on Codeforces ratings)
-
-### Working Through Problems <a name="working-through-problems"></a>
-
-During a training session:
-
-1. Problems are displayed one at a time
-2. Each problem includes:
-   - Problem title and ID
-   - Difficulty rating
-   - Tags
-   - Link to the problem on Codeforces
-3. A timer tracks how long you spend on each problem
-4. Indicate whether you solved the problem successfully
-
-### Submitting Solutions <a name="submitting-solutions"></a>
-
-1. Click the "Open Problem" button to access the problem on Codeforces
-2. Solve the problem in your preferred programming environment
-3. Submit your solution on Codeforces
-4. Return to CF Training Tracker and mark the problem as:
-   - Solved: If your solution passed all test cases
-   - Attempted: If you tried but couldn't solve it correctly
+1. The platform generates problems matching your selected training parameters.
+2. Each problem includes a link to the corresponding Codeforces task, rating level, tag classifications, and a session timer.
+3. Click Open Problem to open and solve it inside your local IDE environment.
+4. Submit your code on Codeforces.
+5. Return to the Upsolve.it console. The platform automatically queries the Codeforces API in real-time, monitoring your submission history to automatically update the problem status to "Accepted" or "Wrong Answer" / "Judging" without requiring manual inputs.
 
 ### Session Results <a name="session-results"></a>
 
-After completing a session:
+Completing a session logs your results to database telemetry:
 
-1. View a summary of your performance
-2. See statistics on:
-   - Problems solved/attempted
-   - Average solving time
-   - Success rate
-   - Rating change (estimated)
-3. Unsolved problems are automatically added to your "Upsolve" list
+- Solved problems accrue XP rewards relative to difficulty.
+- Attempted but unsolved problems are automatically compiled and transferred into your Upsolve Arena list.
+- Mode performance stats (average time, success rate, points) are recalculated and plotted on your statistics dashboard.
 
 ---
 
-## 📊 Statistics and Analytics <a name="statistics-and-analytics"></a>
+## Upsolve Challenge <a name="upsolve-challenge"></a>
 
-### Performance Overview <a name="performance-overview"></a>
+### Upsolving Arena <a name="upsolving-arena"></a>
 
-The Statistics page provides a comprehensive overview of your competitive programming journey:
+The Upsolve Arena is a dedicated sector focused on conquering problems you previously failed to solve:
 
-1. Navigate to the "Statistics" page
-2. View your overall performance metrics:
-   - Total problems solved
-   - Average success rate
-   - Average solving time
-   - Rating progression
+- Problems are automatically pushed here from failed training runs.
+- The arena organizes tasks by difficulty and category tags.
+- Focus on resolving these tasks to continuously break rating plateaus.
 
-### Rating Progression <a name="rating-progression"></a>
+### Tracking Progress <a name="tracking-progress"></a>
 
-Track how your problem-solving ability has improved over time:
-
-1. The rating chart shows your estimated CF Training Tracker rating
-2. Compare it with your actual Codeforces rating
-3. Identify trends and periods of improvement
-
-### Activity Heatmap <a name="activity-heatmap"></a>
-
-The activity heatmap visualizes your training consistency:
-
-1. Each cell represents a day
-2. Color intensity indicates activity level
-3. Hover over cells to see exact problem counts
-4. Use this to maintain a consistent practice schedule
-
-### Problem Tags Distribution <a name="problem-tags-distribution"></a>
-
-Analyze your strengths and weaknesses across different problem categories:
-
-1. The tags distribution chart shows your performance by tag
-2. Identify tags with:
-   - High success rates (your strengths)
-   - Low success rates (areas needing improvement)
-   - Low attempt counts (topics to explore)
-
-### Interpreting Your Performance Data <a name="interpreting-your-performance-data"></a>
-
-Use analytics to guide your training:
-
-1. Focus on tags with lower success rates
-2. Gradually increase difficulty as success rates improve
-3. Maintain consistent practice schedules (visible in the heatmap)
-4. Track rating progression to validate improvement
+1. Click Solve Now on any problem in your list.
+2. After passing the problem on Codeforces, click Verify Solve.
+3. The system queries your submission history. If successful, the problem is cleared from the list and bonus XP is awarded to your profile.
 
 ---
 
-## 🔍 Upsolving <a name="upsolving"></a>
+## Learning Trail <a name="learning-trail"></a>
 
-### What is Upsolving? <a name="what-is-upsolving"></a>
+### Roadmap Structure <a name="roadmap-structure"></a>
 
-Upsolving is the practice of revisiting problems you couldn't solve during contests or training sessions. It's a critical skill for improvement in competitive programming.
+The Roadmap is a curated curriculum designed to transition competitive programmers from beginners to masters:
 
-### Managing Your Upsolve List <a name="managing-your-upsolve-list"></a>
+- Topic levels are structured as a sequence of topic nodes (e.g., Graph Theory, Dynamic Programming, Mathematics).
+- Each node includes tutorial material, reference templates, and a targeted set of training problems.
+- Earn significant XP gains by completing all problems in a node.
 
-1. Navigate to the "Upsolve" page
-2. View your list of unsolved problems from previous training sessions
-3. Problems are sorted by:
-   - Recently added (default)
-   - Difficulty rating
-   - Problem tags
+### Level Unlock Gates <a name="level-gates"></a>
 
-### Tracking Upsolve Progress <a name="tracking-upsolve-progress"></a>
+Progress is gated by sequential checkpoints:
 
-For each problem in your upsolve list:
-
-1. Click "Solve Now" to open the problem on Codeforces
-2. After solving, mark it as "Solved" in CF Training Tracker
-3. Optionally, remove problems you no longer wish to attempt
-4. View statistics on your upsolving performance
-
-> **Tip**: Set a goal to upsolve at least one problem each day to steadily improve your skills.
+- Advanced levels are accessible immediately once published by administrators (certain levels can be restricted by admins to specific users).
+- Within each level, topic nodes are unlocked sequentially: completing the curriculum problems inside a topic unlocks the next topic node.
 
 ---
 
-## ⚙️ Account Settings <a name="account-settings"></a>
+## Gamification & Progress <a name="progression-system"></a>
 
-### Changing Your Password <a name="changing-your-password"></a>
+### XP and Levels <a name="xp-levels"></a>
 
-1. Click on your profile avatar in the navigation bar
-2. Select "Settings" from the dropdown menu
-3. Enter your current password and create a new strong password
-4. Confirm your new password
-5. Click "Change Password" to update your password
+Almost all operations on the console yield experience points:
 
-### Resetting a Forgotten Password <a name="resetting-a-forgotten-password"></a>
+- Solving problems: Earn XP based on Codeforces rating levels.
+- Verification quests: Bonus XP.
+- Roadmap node completion: Significant XP blocks.
+- Levelling up increases your rank classification visible on your profile header.
 
-If you forget your password:
+### Leaderboards <a name="leaderboards"></a>
 
-1. Click "Forgot Password?" on the login page
-2. Enter your Codeforces handle
-3. Follow the verification process:
-   - Submit a compilation error to problem 4A on Codeforces
-   - Verify the submission
-4. Once verified, create a new strong password
+The Leaderboard logs overall community performance metrics:
 
-### Theme Settings <a name="theme-settings"></a>
+- Compare your level, rating, and solved problems counts against the community.
+- View leaderboards filtered by weekly, monthly, or all-time XP gains.
 
-CF Training Tracker supports both light and dark themes:
+### Tactical Levels <a name="tactical-levels"></a>
 
-1. Click the theme toggle button in the navigation bar
-2. Switch between light and dark mode
-3. Your preference is saved for future sessions
+Your performance is mapped to specific CP ranks:
+
+- Easy (800-1200): Recruit level.
+- Medium (1200-1600): Specialist level.
+- Hard (1600-2000): Expert level.
+- Expert (2000-2400): Candidate Master level.
 
 ---
 
-## 📱 Mobile Usage <a name="mobile-usage"></a>
+## Social & Identity <a name="social-features"></a>
 
-### Responsive Design Features <a name="responsive-design-features"></a>
+### Friends System <a name="friends-system"></a>
 
-CF Training Tracker is fully responsive and works on all device sizes:
+- Send and accept friend requests by handle.
+- View your friends' active dashboard charts, stats summaries, and progress.
+- Monitor active training sessions and upsolve metrics of fellow operators.
 
-1. Navigation transforms into a hamburger menu on small screens
-2. Charts and visualizations adapt to the screen width
-3. Touch-friendly interface elements
+### Profile Portals <a name="profile-portals"></a>
 
-### Touch Interaction Tips <a name="touch-interaction-tips"></a>
-
-For optimal mobile experience:
-
-1. Use landscape mode for better visualization of charts
-2. Tap on chart elements to see detailed information
-3. Use the pull-to-refresh gesture to update your data
+Your public profile is your operator card. It displays:
+- Level progression and rank status.
+- Activity heatmap showing daily practice consistency and total solved counts.
+- Codeforces rating milestones.
+- Active friend connections.
 
 ---
 
-## ❓ Troubleshooting <a name="troubleshooting"></a>
+## Support & Console <a name="support-console"></a>
 
-### Common Issues <a name="common-issues"></a>
+### Signal Support Console <a name="signal-support"></a>
 
-**Problem**: Cannot log in with correct handle and PIN
+For technical diagnostics, bugs, or system feedback, use the Signal Support Console:
 
-- Verify your Codeforces handle is entered exactly as it appears on Codeforces
-- Try resetting your PIN if you continue to have issues
+- Compose contact requests directly from the help center.
+- Requests are dispatched directly to admin mailboxes.
+- Once resolved, admin responses are dispatched directly to your registered email address.
 
-**Problem**: Profile sync not working
+### System Notifications <a name="system-notifications"></a>
 
-- Check your internet connection
-- Try again after a few minutes
+The notification center broadcasts targeted alerts:
 
-**Problem**: Problems not generating for training
-
-- Try selecting different tags or difficulty levels
-- Clear any active filters that might be limiting results
-
-**Problem**: Performance statistics not updating
-
-- Ensure you're marking problems correctly as solved/attempted
-- Allow time for the Codeforces API to update with your submissions
-
-### Contact Support <a name="contact-support"></a>
-
-If you encounter persistent issues:
-
-1. Check the [GitHub repository](https://github.com/Mohamediibra7im/cf-training-tracker) for known issues
-2. Create a new issue with:
-   - Detailed description of the problem
-   - Steps to reproduce
-   - Screenshots if applicable
-   - Your browser and device information
-
----
-
-## 🔄 Regular Updates
-
-CF Training Tracker is actively maintained and regularly updated with new features and improvements. Check the GitHub repository for the latest updates and changelog.
-
-Happy coding and improving your competitive programming skills with CF Training Tracker!
-
----
-
-<div align="center">
-  <p>📝 This usage guide is a living document and may be updated as new features are added.</p>
-  <p>Last updated: September 4, 2025</p>
-</div>
+- Click the floating action bell icon (or navigate to /whats-new) to open the notification board.
+- View platform announcements.
+- Version logs and new feature drops.
+- Scheduled maintenance outages.
+- Direct messages from admin operators.

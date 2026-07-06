@@ -80,7 +80,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className="font-sans antialiased" suppressHydrationWarning>
+      <body className="font-sans antialiased overflow-x-hidden" suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -89,7 +89,7 @@ export default function RootLayout({
           <ToastProvider>
             <LazyMotion features={domMax} strict>
               <MotionConfig reducedMotion="user">
-              <div className="relative flex min-h-screen flex-col bg-background overflow-x-hidden">
+              <div className="relative flex min-h-screen flex-col bg-background">
                 {/* Site-wide background */}
                 <div className="fixed inset-0 -z-10 pointer-events-none" aria-hidden="true">
                   <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.018)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.018)_1px,transparent_1px)] bg-[size:56px_56px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,black_20%,transparent_100%)]" />

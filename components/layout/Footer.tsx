@@ -35,6 +35,7 @@ const footerLinks = {
   ],
   support: [
     { label: "Help Center", href: "/help" },
+    { label: "Documentation", href: "/docs" },
     { label: "Quick Start Guide", href: "/help/quick-start" },
     { label: "FAQ", href: "/help/faq" },
     { label: "Contact Support", href: "/help/support" },

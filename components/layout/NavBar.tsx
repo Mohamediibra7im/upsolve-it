@@ -24,6 +24,7 @@ import {
   Moon,
   Zap,
   Trophy,
+  BookOpen,
 } from "lucide-react";
 import ClientOnly from "@/components/shared/ClientOnly";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
@@ -39,7 +40,9 @@ import {
 import {cn} from "@/lib/utils";
 import {useTheme} from "next-themes";
 
-const guestLinks: typeof userLinks = [];
+const guestLinks = [
+  {href: "/docs", label: "Docs", icon: BookOpen},
+];
 
 const userLinks = [
   {href: "/dashboard", label: "Dashboard", icon: LayoutDashboard},
@@ -51,6 +54,7 @@ const userLinks = [
   {href: "/friends", label: "Friends", icon: Users},
   {href: "/leaderboard", label: "Leaderboard", icon: Trophy},
   {href: "/levels", label: "Levels", icon: Trophy},
+  {href: "/docs", label: "Docs", icon: BookOpen},
 ];
 
 const NavBar = () => {
