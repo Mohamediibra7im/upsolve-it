@@ -1,7 +1,5 @@
 import type { TrainingMode } from "@/types/TrainingMode";
 
-const clamp = (r: number) => Math.max(800, Math.min(3500, Math.round(r)));
-
 /** CF-style 100-point bands for ladder targets and derived P1–P4 (admin UI uses the same step). */
 export const LADDER_RATING_BAND_STEP = 100;
 
@@ -74,11 +72,12 @@ export function buildRatingsForMode(
         hideDetails: false,
       };
     case "speed": {
+      // ponytail: step is always 100, snap to CF bands
       const lo = u - 400;
       const hi = u - 100;
       const step = (hi - lo) / 3;
       return {
-        ratings: [0, 1, 2, 3].map((i) => clamp(lo + step * i)),
+        ratings: [0, 1, 2, 3].map((i) => roundRatingBand(lo + step * i)),
         durationMinutes: 52,
         showRatings: true,
         hideDetails: false,
@@ -87,25 +86,25 @@ export function buildRatingsForMode(
     case "contest":
       return {
         ratings: [
-          clamp(u - 200),
-          clamp(u),
-          clamp(u + 100),
-          clamp(u + 200),
+          roundRatingBand(u - 200),
+          roundRatingBand(u),
+          roundRatingBand(u + 100),
+          roundRatingBand(u + 200),
         ],
         durationMinutes: 120,
         showRatings: false,
         hideDetails: true,
       };
     case "endurance": {
-      // ponytail: randomize 6-8 problems, scale time 3-4h proportionally
+      // ponytail: randomize 6-8 problems, CF ratings are 100-point bands only
       const count = 6 + Math.floor(Math.random() * 3);
       const spreads: Record<number, number[]> = {
-        6: [-250, -150, -50, 50, 150, 250],
-        7: [-250, -150, -50, 0, 50, 150, 250],
-        8: [-250, -200, -100, -50, 50, 100, 200, 250],
+        6: [-100, 0, 0, 0, 100, 100],
+        7: [-100, 0, 0, 0, 0, 100, 100],
+        8: [-100, -100, 0, 0, 0, 0, 100, 100],
       };
       return {
-        ratings: spreads[count].map((d) => clamp(u + d)),
+        ratings: spreads[count].map((d) => roundRatingBand(u + d)),
         durationMinutes: 180 + (count - 6) * 30, // 6→180min, 7→210min, 8→240min
         showRatings: true,
         hideDetails: false,
