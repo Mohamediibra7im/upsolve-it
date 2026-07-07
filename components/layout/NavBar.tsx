@@ -138,7 +138,7 @@ const NavBar = () => {
         )}
       >
         {/* ─── Single Row ─── */}
-        <div className="flex items-center justify-between h-14 px-5 md:px-6">
+        <div className="flex items-center justify-between h-14 pl-8 pr-7 md:pl-10 md:pr-8">
           {/* Logo */}
           <div className="flex-none flex items-center">
             <Link href="/" className="overflow-visible select-none">
