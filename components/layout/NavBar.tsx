@@ -224,17 +224,12 @@ const NavBar = () => {
                     )}
 
                     {/* Active Bottom Line */}
-                    {isActive && (
-                      <m.div
-                        layoutId="nav-active-line"
-                        className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary to-emerald-500 shadow-[0_1px_5px_rgba(16,185,129,0.4)]"
-                        transition={{
-                          type: "spring",
-                          bounce: 0.1,
-                          duration: 0.38,
-                        }}
-                      />
-                    )}
+                    <span
+                      className={cn(
+                        "absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary to-emerald-500 shadow-[0_1px_5px_rgba(16,185,129,0.4)] transition-all duration-300 origin-center",
+                        isActive ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
+                      )}
+                    />
 
                     {/* Hover Backdrop Pill */}
                     {hoveredTab === link.href && !isActive && (
@@ -275,17 +270,13 @@ const NavBar = () => {
                       )}
                     />
 
-                    {(isSecondaryActive || moreMenuOpen) && (
-                      <m.div
-                        layoutId="nav-active-line"
-                        className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary to-emerald-500 shadow-[0_1px_5px_rgba(16,185,129,0.4)]"
-                        transition={{
-                          type: "spring",
-                          bounce: 0.1,
-                          duration: 0.38,
-                        }}
-                      />
-                    )}
+                    {/* Active Bottom Line */}
+                    <span
+                      className={cn(
+                        "absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary to-emerald-500 shadow-[0_1px_5px_rgba(16,185,129,0.4)] transition-all duration-300 origin-center",
+                        isSecondaryActive || moreMenuOpen ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
+                      )}
+                    />
 
                     {hoveredTab === "more" && !(isSecondaryActive || moreMenuOpen) && (
                       <m.div
