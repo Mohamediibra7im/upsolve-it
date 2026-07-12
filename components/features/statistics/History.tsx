@@ -2,35 +2,24 @@ import { useState } from "react";
 import Link from "next/link";
 import { Training } from "@/types/Training";
 import { TrainingProblem } from "@/types/TrainingProblem";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {useUpsolvedProblems} from "@/hooks/data";
+import { useUpsolvedProblems } from "@/hooks/data";
 import { isTrainingProblemCountedSolved } from "@/services/training/problemCountedSolved";
 import {
   formatTrainingModeLabel,
   normalizeTrainingMode,
 } from "@/services/training/trainingModeLabel";
 import { averageEffectiveProblemRatingForSession } from "@/services/training/effectiveProblemRating";
-import { CheckCircle2, XCircle, BadgeCheck, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2 } from "lucide-react";
 
-const Problem = ({
+const modeToExe: Record<string, string> = {
+  ladder: "LADDER.EXE",
+  speed: "SPEED.COM",
+  contest: "CONTEST.BAT",
+  weakness: "WEAKNESS.SYS",
+  endurance: "ENDURE.BAT",
+};
+
+const ProblemStatus = ({
   problem,
   startTime,
   postSolvedTime,
@@ -43,45 +32,43 @@ const Problem = ({
     if (isTrainingProblemCountedSolved(problem) && problem.solvedTime) {
       const solvedMinutes = Math.floor((problem.solvedTime - startTime) / 60000);
       return (
-        <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-500">
-          <CheckCircle2 className="size-4" />
-          <span>{solvedMinutes}m</span>
+        <span className="text-emerald-400 font-bold" title={`Solved in ${solvedMinutes}m`}>
+          [✓ {solvedMinutes}M]
         </span>
       );
     }
 
     if (isTrainingProblemCountedSolved(problem)) {
       return (
-        <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-500">
-          <CheckCircle2 className="size-4" />
-          <span>Solved</span>
+        <span className="text-emerald-400 font-bold">
+          [✓]
         </span>
       );
     }
 
     if (postSolvedTime) {
       return (
-        <span className="inline-flex items-center gap-1 text-yellow-600 dark:text-yellow-500" title="Upsolved after session">
-          <BadgeCheck className="size-4" />
+        <span className="text-amber-400 font-bold" title="Upsolved after session">
+          [+]
         </span>
       );
     }
 
     return (
-      <span className="inline-flex items-center gap-1 text-red-600 dark:text-red-500">
-        <XCircle className="size-4" />
+      <span className="text-emerald-500/20">
+        [ ]
       </span>
     );
   };
 
   return (
     <Link
-      className="text-primary hover:underline duration-300 font-medium text-sm flex items-center gap-1 whitespace-nowrap"
+      className="hover:text-emerald-300 transition-colors font-bold text-xs flex items-center gap-1.5 whitespace-nowrap"
       href={problem.url}
       target="_blank"
     >
-      <span className="text-base">{renderStatus()}</span>
-      <span className="truncate">
+      {renderStatus()}
+      <span className="text-[10px] text-emerald-500/50 hover:text-emerald-300">
         {problem.contestId}-{problem.index}
       </span>
     </Link>
@@ -118,243 +105,218 @@ const History = ({
     );
     return found?.solvedTime ?? null;
   };
+
   const onDelete = (trainingId: string) => {
-    if (confirm("Are you sure you want to delete this practice session?")) {
+    if (confirm("Are you sure you want to purge this session run database record?")) {
       deleteTraining(trainingId);
     }
   };
 
   const calculateAverageRating = (training: Training) => {
-    if (!training.problems?.length) return "-";
+    if (!training.problems?.length) return "—";
     const avg = averageEffectiveProblemRatingForSession(training);
-    if (!Number.isFinite(avg)) return "-";
+    if (!Number.isFinite(avg)) return "—";
     return Math.round(avg);
   };
 
   if (!history || history.length === 0) {
     return (
-      <div className="text-center py-4 text-muted-foreground">
-        No training history found.
+      <div className="text-center py-8 text-emerald-500/25 font-mono text-xs">
+        [SYS.ERR // NO TRAINING SESSION LOGS FOUND]
       </div>
     );
   }
 
+  // Count max problems in any session in the current view
+  const maxProblemsCount = Math.max(...paginatedHistory.map((h) => h.problems?.length ?? 0), 0);
+
   return (
-    <>
-      {/* Desktop Table View */}
-      <div className="hidden lg:block w-full overflow-x-auto rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Mode</TableHead>
-              <TableHead>Avg Rating</TableHead>
-              {history[0].problems.map((p, index) => (
-                <TableHead key={`${p.contestId}-${p.index}`}>P{index + 1}</TableHead>
-              ))}
-              <TableHead>Performance</TableHead>
-              <TableHead className="text-right">Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody className="relative">
-            {paginatedHistory.map((training) => (
-              <TableRow key={training._id ?? training.startTime}>
-                <TableCell>
+    <div className="font-mono text-emerald-400 w-full space-y-4">
+      {/* Desktop Grid Layout */}
+      <div className="hidden md:block w-full overflow-x-auto">
+        <div className="min-w-[800px] divide-y divide-emerald-500/[0.07]">
+          {/* Header row */}
+          <div className="grid grid-flow-col auto-cols-fr items-center px-2 py-2.5 text-[8px] font-bold uppercase tracking-widest text-emerald-500/25 border-b border-emerald-500/10">
+            <span>TIMESTAMP</span>
+            <span>RUN_BINARY</span>
+            <span>AVG.RATING</span>
+            {Array.from({ length: maxProblemsCount }).map((_, idx) => (
+              <span key={idx}>P{String(idx + 1).padStart(2, "0")}</span>
+            ))}
+            <span>PERF.SCORE</span>
+            <span className="text-right pr-2">PURGE</span>
+          </div>
+
+          {/* Data rows */}
+          {paginatedHistory.map((training) => {
+            const mode = normalizeTrainingMode(training.trainingMode);
+            const modeLabel = modeToExe[mode] ?? formatTrainingModeLabel(mode).toUpperCase();
+
+            return (
+              <div
+                key={training._id ?? training.startTime}
+                className="grid grid-flow-col auto-cols-fr items-center px-2 py-3 hover:bg-emerald-950/5 transition-all duration-200"
+              >
+                {/* Date */}
+                <span className="text-[10px] text-emerald-500/40 tabular-nums">
                   {new Date(training.startTime).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <Badge variant="secondary" className="font-medium">
-                    {formatTrainingModeLabel(
-                      normalizeTrainingMode(training.trainingMode),
-                    )}
-                  </Badge>
-                </TableCell>
-                <TableCell>{calculateAverageRating(training)}</TableCell>
-                {training.problems.map((p) => (
-                  <TableCell key={p.contestId}>
-                    <Problem
+                </span>
+
+                {/* Mode executable */}
+                <span className="text-[10px] font-bold text-emerald-400">
+                  {modeLabel}
+                </span>
+
+                {/* Avg Rating */}
+                <span className="text-[10px] text-emerald-500/40 tabular-nums">
+                  {calculateAverageRating(training)}
+                </span>
+
+                {/* Problems */}
+                {Array.from({ length: maxProblemsCount }).map((_, idx) => {
+                  const p = training.problems?.[idx];
+                  return (
+                    <div key={idx}>
+                      {p ? (
+                        <ProblemStatus
+                          problem={p}
+                          startTime={training.startTime}
+                          postSolvedTime={findPostSolvedTime(p)}
+                        />
+                      ) : (
+                        <span className="text-emerald-500/10">—</span>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Performance */}
+                <span className="text-[10px] font-bold text-emerald-300 tabular-nums">
+                  {training.performance}
+                </span>
+
+                {/* Action */}
+                <div className="flex items-center justify-end pr-2">
+                  <button
+                    onClick={() => onDelete(training._id!)}
+                    disabled={isDeleting === training._id}
+                    className="flex items-center justify-center size-7 rounded text-emerald-500/30 hover:text-red-400 hover:bg-red-500/10 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Mobile Card-less List Layout */}
+      <div className="md:hidden space-y-4 divide-y divide-emerald-500/[0.07]">
+        {paginatedHistory.map((training) => {
+          const mode = normalizeTrainingMode(training.trainingMode);
+          const modeLabel = modeToExe[mode] ?? formatTrainingModeLabel(mode).toUpperCase();
+
+          return (
+            <div
+              key={training._id ?? training.startTime}
+              className="pt-4 first:pt-0 space-y-2.5"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold text-emerald-400">
+                    {modeLabel}
+                  </span>
+                  <div className="text-[9px] text-emerald-500/30 tabular-nums mt-0.5">
+                    {new Date(training.startTime).toLocaleDateString()} · AVG: {calculateAverageRating(training)} · PERF: {training.performance}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => onDelete(training._id!)}
+                  disabled={isDeleting === training._id}
+                  className="flex items-center justify-center size-7 rounded text-emerald-500/30 hover:text-red-400 hover:bg-red-500/10 transition-all shrink-0"
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
+
+              {/* Problems horizontal scrolling or grid */}
+              <div className="flex flex-wrap gap-x-4 gap-y-2 py-1">
+                {training.problems.map((p, idx) => (
+                  <div key={p.contestId} className="flex items-center gap-1">
+                    <span className="text-[9px] text-emerald-500/25">P{idx + 1}:</span>
+                    <ProblemStatus
                       problem={p}
                       startTime={training.startTime}
                       postSolvedTime={findPostSolvedTime(p)}
                     />
-                  </TableCell>
+                  </div>
                 ))}
-                <TableCell>{training.performance}</TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onDelete(training._id!)}
-                    disabled={isDeleting === training._id}
-                  >
-                    <Trash2 className="size-4" />
-                    <span className="sr-only">Delete</span>
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Mobile & Tablet Card View */}
-      <div className="lg:hidden relative space-y-4">
-        {paginatedHistory.map((training) => (
-          <Card
-            key={training._id ?? training.startTime}
-            className="shadow-sm border-border/60 hover:shadow-md transition-shadow"
-          >
-            <CardContent className="p-5 sm:p-6">
-              <div className="space-y-4">
-                {/* Header with date and delete button */}
-                <div className="flex justify-between items-center gap-2">
-                  <div className="flex flex-wrap items-center gap-2 min-w-0">
-                    <h3 className="text-lg sm:text-xl font-semibold text-foreground">
-                      {new Date(training.startTime).toLocaleDateString("en-US", {
-                        month: "numeric",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </h3>
-                    <Badge variant="secondary" className="text-[10px] font-semibold uppercase tracking-wide">
-                      {formatTrainingModeLabel(
-                      normalizeTrainingMode(training.trainingMode),
-                    )}
-                    </Badge>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onDelete(training._id!)}
-                    disabled={isDeleting === training._id}
-                    className="flex-shrink-0 size-8 p-0 hover:bg-destructive/10 hover:text-destructive"
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </div>
-
-                {/* Stats section */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm font-medium">Avg Rating:</span>
-                    <span className="text-sm font-semibold text-foreground">
-                      {calculateAverageRating(training)}
-                    </span>
-                  </div>
-                  <span className="hidden sm:inline text-muted-foreground/60">
-                    •
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm font-medium">Performance:</span>
-                    <span className="text-sm font-semibold text-foreground">
-                      {training.performance}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Problems section */}
-                <div className="pt-2 border-t border-border/50">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {training.problems.map((p, index) => (
-                      <div
-                        key={p.contestId}
-                        className="flex items-center gap-2 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
-                      >
-                        <span className="text-sm font-semibold text-muted-foreground min-w-[2rem]">
-                          P{index + 1}:
-                        </span>
-                        <div className="flex-1 min-w-0">
-                          <Problem
-                            problem={p}
-                            startTime={training.startTime}
-                            postSolvedTime={findPostSolvedTime(p)}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
+            </div>
+          );
+        })}
       </div>
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-border/20 bg-muted/5 mt-4 rounded-3xl">
-          {/* Page Size Selector */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-emerald-500/10">
+          {/* Rows per page selector */}
           <div className="flex items-center gap-3">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Rows per page</span>
-            <Select value={String(pageSize)} onValueChange={(value) => { setPageSize(Number(value)); setCurrentPage(1); }}>
-              <SelectTrigger className="h-9 w-20 bg-background/50 border-border/40 rounded-xl text-xs font-bold focus:ring-primary/20">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border/40 rounded-xl">
-                {[5, 10, 25, 50].map((size) => (
-                  <SelectItem key={size} value={String(size)} className="text-xs font-bold">
-                    {size}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/30">ROWS_PER_PAGE:</span>
+            <select
+              value={String(pageSize)}
+              onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
+              className="h-8 px-2 rounded border border-emerald-500/20 bg-transparent text-[10px] font-bold text-emerald-400 focus:outline-none focus:border-emerald-500/40 appearance-none cursor-pointer font-mono"
+            >
+              {[5, 10, 25, 50].map((size) => (
+                <option key={size} value={String(size)} className="bg-[#060a08] text-emerald-400">
+                  {size}
+                </option>
+              ))}
+            </select>
           </div>
 
-          {/* Page Info & Navigation */}
+          {/* Navigation */}
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mr-2">
-              Page {currentPage} of {totalPages}
+            <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/30 mr-2 tabular-nums">
+              PAGE {currentPage}/{totalPages}
             </span>
-            
-            <Button
-              variant="ghost"
-              size="icon"
+
+            <button
               onClick={() => goToPage(1)}
               disabled={currentPage === 1}
-              className="size-9 rounded-lg bg-secondary/50 border border-border/40 hover:bg-secondary disabled:opacity-30"
+              className="flex items-center justify-center size-7 rounded border border-emerald-500/15 text-emerald-500/40 hover:text-emerald-300 hover:border-emerald-500/40 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
             >
-              <ChevronsLeft size={14} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
+              <ChevronsLeft size={12} />
+            </button>
+            <button
               onClick={() => goToPage(currentPage - 1)}
               disabled={currentPage === 1}
-              className="size-9 rounded-lg bg-secondary/50 border border-border/40 hover:bg-secondary disabled:opacity-30"
+              className="flex items-center justify-center size-7 rounded border border-emerald-500/15 text-emerald-500/40 hover:text-emerald-300 hover:border-emerald-500/40 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
             >
-              <ChevronLeft size={14} />
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="icon"
+              <ChevronLeft size={12} />
+            </button>
+            <button
               onClick={() => goToPage(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="size-9 rounded-lg bg-secondary/50 border border-border/40 hover:bg-secondary disabled:opacity-30"
+              className="flex items-center justify-center size-7 rounded border border-emerald-500/15 text-emerald-500/40 hover:text-emerald-300 hover:border-emerald-500/40 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
             >
-              <ChevronRight size={14} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
+              <ChevronRight size={12} />
+            </button>
+            <button
               onClick={() => goToPage(totalPages)}
               disabled={currentPage === totalPages}
-              className="size-9 rounded-lg bg-secondary/50 border border-border/40 hover:bg-secondary disabled:opacity-30"
+              className="flex items-center justify-center size-7 rounded border border-emerald-500/15 text-emerald-500/40 hover:text-emerald-300 hover:border-emerald-500/40 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
             >
-              <ChevronsRight size={14} />
-            </Button>
+              <ChevronsRight size={12} />
+            </button>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 
 export default History;
-
-
-
-
-
-
-

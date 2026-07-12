@@ -3,45 +3,15 @@
 import { useState } from "react";
 import { TrainingProblem } from "@/types/TrainingProblem";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Trash2,
-  CheckCircle2,
   ExternalLink,
-  Clock,
   ChevronRight,
   ChevronLeft,
   ChevronsLeft,
-  ChevronsRight
+  ChevronsRight,
 } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-
-const getDifficultyColor = (rating: number) => {
-  if (rating >= 2400) return "bg-rose-500/10 text-rose-500 border-rose-500/20";
-  if (rating >= 2100) return "bg-orange-500/10 text-orange-500 border-orange-500/20";
-  if (rating >= 1900) return "bg-purple-500/10 text-purple-500 border-purple-500/20";
-  if (rating >= 1600) return "bg-sky-500/10 text-sky-500 border-sky-500/20";
-  if (rating >= 1400) return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
-  if (rating >= 1200) return "bg-slate-500/10 text-slate-500 border-slate-500/20";
-  return "bg-muted/10 text-muted-foreground border-muted/20";
-};
 
 const UpsolvedProblemsList = ({
   upsolvedProblems,
@@ -53,7 +23,6 @@ const UpsolvedProblemsList = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState<number>(20);
 
-  // Pagination calculations
   const totalItems = upsolvedProblems.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const startIndex = (currentPage - 1) * pageSize;
@@ -65,246 +34,152 @@ const UpsolvedProblemsList = ({
   };
 
   return (
-    <>
-      {/* Desktop Table View */}
-      <div className="hidden lg:block w-full">
-        <Card className="border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden rounded-[2rem] shadow-2xl">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-border/40 hover:bg-transparent bg-muted/20">
-                  <TableHead className="py-6 px-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">
-                    Problem Details
-                  </TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">
-                    Difficulty
-                  </TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">
-                    Status
-                  </TableHead>
-                  <TableHead className="text-right px-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">
-                    Action
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody className="relative">
-                {paginatedProblems.map((problem, idx) => {
-                  const index = startIndex + idx;
-                  return (
-                    <TableRow
-                      key={problem.contestId + problem.index}
-                      className="border-border/40 hover:bg-primary/5 transition-all duration-300 group"
-                    >
-                      <TableCell className="py-6 px-8">
-                        <Link
-                          className="flex items-center gap-4 group/link"
-                          href={problem.url}
-                          target="_blank"
-                        >
-                          <div className="flex-shrink-0 size-10 rounded-xl bg-primary/10 flex items-center justify-center text-sm font-black text-primary border border-primary/20 transition-transform group-hover/link:scale-110">
-                            {index + 1}
-                          </div>
-                          <div className="space-y-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-foreground group-hover/link:text-primary transition-colors truncate">
-                                {problem.name}
-                              </span>
-                              <ExternalLink className="size-3 opacity-0 group-hover/link:opacity-100 transition-all -translate-x-2 group-hover/link:translate-x-0" />
-                            </div>
-                            <div className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">
-                              {problem.contestId}-{problem.index}
-                            </div>
-                          </div>
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={cn("px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border", getDifficultyColor(problem.rating || 0))}
-                        >
-                          {problem.rating || "Unrated"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {problem.solvedTime ? (
-                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 w-fit">
-                            <CheckCircle2 className="size-3.5 text-emerald-500" />
-                            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Conquered</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 w-fit">
-                            <Clock className="size-3.5 text-amber-500" />
-                            <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">In Queue</span>
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right px-8">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onDelete(problem)}
-                          className="size-10 rounded-xl hover:bg-rose-500/10 hover:text-rose-500 text-muted-foreground/40 transition-all"
-                        >
-                          <Trash2 className="size-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        </Card>
+    <div className="font-mono text-emerald-400">
+      {/* Desktop: Table-style header */}
+      <div className="hidden lg:grid grid-cols-[40px_1fr_80px_100px_60px] items-center px-2 py-2 text-[9px] font-bold uppercase tracking-widest text-emerald-500/30 border-b border-emerald-500/10">
+        <span>#</span>
+        <span>PROBLEM_NODE</span>
+        <span className="text-center">RATING</span>
+        <span className="text-center">STATUS</span>
+        <span className="text-right">ACT</span>
       </div>
 
-      {/* Mobile Card View */}
-      <div className="lg:hidden relative space-y-4">
+      {/* Problem rows */}
+      <div className="divide-y divide-emerald-500/[0.07]">
         {paginatedProblems.map((problem, idx) => {
           const index = startIndex + idx;
+          const isSolved = !!problem.solvedTime;
+
           return (
-            <Card
+            <div
               key={problem.contestId + problem.index}
-              className="border-border/40 bg-card/30 backdrop-blur-xl overflow-hidden rounded-[1.5rem] shadow-xl hover:-translate-y-1 transition-all duration-300"
+              className={cn(
+                "group grid grid-cols-[40px_1fr_auto] lg:grid-cols-[40px_1fr_80px_100px_60px] items-center gap-3 lg:gap-0 py-3 px-2 hover:bg-emerald-950/5 transition-all duration-200",
+                isSolved && "text-emerald-300"
+              )}
             >
-              <CardContent className="p-6 space-y-6">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-4">
-                    <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-sm font-black text-primary border border-primary/20">
-                      {index + 1}
-                    </div>
-                    <div className="space-y-1">
-                      <div className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">Problem {index + 1}</div>
-                      <Badge
-                        variant="outline"
-                        className={cn("px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border", getDifficultyColor(problem.rating || 0))}
-                      >
-                        {problem.rating || "Unrated"}
-                      </Badge>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onDelete(problem)}
-                    className="size-9 rounded-lg hover:bg-rose-500/10 hover:text-rose-500 text-muted-foreground/40"
-                  >
-                    <Trash2 className="size-3.5" />
-                  </Button>
-                </div>
+              {/* Index */}
+              <span className="text-[10px] font-bold text-emerald-500/40 tabular-nums">
+                {String(index + 1).padStart(2, "0")}
+              </span>
 
-                <Link
-                  className="group block space-y-3"
-                  href={problem.url}
-                  target="_blank"
-                >
-                  <div className="p-4 rounded-2xl bg-muted/20 border border-border/20 group-hover:bg-primary/5 group-hover:border-primary/20 transition-all">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                        {problem.name}
-                      </span>
-                      <ChevronRight className="size-4 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
-                    </div>
+              {/* Problem name + ID */}
+              <Link
+                href={problem.url}
+                target="_blank"
+                className="group/link flex items-center gap-2 min-w-0"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold truncate group-hover/link:text-emerald-300 transition-colors">
+                      {problem.name}
+                    </span>
+                    <ExternalLink size={10} className="opacity-0 group-hover/link:opacity-60 transition-opacity shrink-0" />
                   </div>
-                </Link>
-
-                <div className="flex items-center justify-between pt-2">
-                  {problem.solvedTime ? (
-                    <div className="flex items-center gap-2 text-emerald-500">
-                      <CheckCircle2 className="size-4" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.1em]">Conquered</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 text-amber-500">
-                      <Clock className="size-4" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.1em]">In Queue</span>
-                    </div>
-                  )}
-                  
-                  <div className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">
+                  <span className="text-[9px] text-emerald-500/30 uppercase tracking-wider">
                     {problem.contestId}-{problem.index}
-                  </div>
+                  </span>
                 </div>
-              </CardContent>
-            </Card>
+              </Link>
+
+              {/* Rating (desktop) */}
+              <div className="hidden lg:flex items-center justify-center">
+                <span className="text-[10px] font-bold text-emerald-500/50 tabular-nums">
+                  {problem.rating || "—"}
+                </span>
+              </div>
+
+              {/* Status (desktop) */}
+              <div className="hidden lg:flex items-center justify-center">
+                {isSolved ? (
+                  <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">[RESOLVED]</span>
+                ) : (
+                  <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wider">[PENDING]</span>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-1">
+                {/* Mobile status */}
+                <span className="lg:hidden text-[8px] font-bold uppercase tracking-wider mr-1">
+                  {isSolved ? (
+                    <span className="text-emerald-400">[✓]</span>
+                  ) : (
+                    <span className="text-amber-400">[…]</span>
+                  )}
+                </span>
+                {/* Mobile rating */}
+                <span className="lg:hidden text-[9px] text-emerald-500/40 tabular-nums mr-2">
+                  {problem.rating || "—"}
+                </span>
+                <button
+                  onClick={() => onDelete(problem)}
+                  className="flex items-center justify-center size-7 rounded text-emerald-500/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
+            </div>
           );
         })}
       </div>
 
-      {/* Pagination Controls */}
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-border/20 bg-muted/5 mt-4 rounded-3xl">
-          {/* Page Size Selector */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 mt-4 border-t border-emerald-500/10">
           <div className="flex items-center gap-3">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Rows per page</span>
-            <Select value={String(pageSize)} onValueChange={(value) => { setPageSize(Number(value)); setCurrentPage(1); }}>
-              <SelectTrigger className="h-9 w-20 bg-background/50 border-border/40 rounded-xl text-xs font-bold focus:ring-primary/20">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border/40 rounded-xl">
-                {[10, 20, 50, 100].map((size) => (
-                  <SelectItem key={size} value={String(size)} className="text-xs font-bold">
-                    {size}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/30">ROWS_PER_PAGE:</span>
+            <select
+              value={String(pageSize)}
+              onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
+              className="h-8 px-2 rounded border border-emerald-500/20 bg-transparent text-[10px] font-bold text-emerald-400 focus:outline-none focus:border-emerald-500/40 appearance-none cursor-pointer font-mono"
+            >
+              {[10, 20, 50, 100].map((size) => (
+                <option key={size} value={String(size)} className="bg-[#060a08] text-emerald-400">
+                  {size}
+                </option>
+              ))}
+            </select>
           </div>
 
-          {/* Page Info & Navigation */}
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mr-2">
-              Page {currentPage} of {totalPages}
+            <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/30 mr-2 tabular-nums">
+              PAGE {currentPage}/{totalPages}
             </span>
-            
-            <Button
-              variant="ghost"
-              size="icon"
+
+            <button
               onClick={() => goToPage(1)}
               disabled={currentPage === 1}
-              className="size-9 rounded-lg bg-secondary/50 border border-border/40 hover:bg-secondary disabled:opacity-30"
+              className="flex items-center justify-center size-7 rounded border border-emerald-500/15 text-emerald-500/40 hover:text-emerald-300 hover:border-emerald-500/40 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
             >
-              <ChevronsLeft size={14} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
+              <ChevronsLeft size={12} />
+            </button>
+            <button
               onClick={() => goToPage(currentPage - 1)}
               disabled={currentPage === 1}
-              className="size-9 rounded-lg bg-secondary/50 border border-border/40 hover:bg-secondary disabled:opacity-30"
+              className="flex items-center justify-center size-7 rounded border border-emerald-500/15 text-emerald-500/40 hover:text-emerald-300 hover:border-emerald-500/40 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
             >
-              <ChevronLeft size={14} />
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="icon"
+              <ChevronLeft size={12} />
+            </button>
+            <button
               onClick={() => goToPage(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="size-9 rounded-lg bg-secondary/50 border border-border/40 hover:bg-secondary disabled:opacity-30"
+              className="flex items-center justify-center size-7 rounded border border-emerald-500/15 text-emerald-500/40 hover:text-emerald-300 hover:border-emerald-500/40 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
             >
-              <ChevronRight size={14} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
+              <ChevronRight size={12} />
+            </button>
+            <button
               onClick={() => goToPage(totalPages)}
               disabled={currentPage === totalPages}
-              className="size-9 rounded-lg bg-secondary/50 border border-border/40 hover:bg-secondary disabled:opacity-30"
+              className="flex items-center justify-center size-7 rounded border border-emerald-500/15 text-emerald-500/40 hover:text-emerald-300 hover:border-emerald-500/40 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
             >
-              <ChevronsRight size={14} />
-            </Button>
+              <ChevronsRight size={12} />
+            </button>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 
 export default UpsolvedProblemsList;
-
-
-
-
-
-
-

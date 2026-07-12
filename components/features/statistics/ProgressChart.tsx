@@ -8,9 +8,6 @@ import {
   Area,
   AreaChart,
 } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 function formatCalendarDay(ts: number): string {
   return new Date(ts).toLocaleDateString("en-US", {
@@ -35,6 +32,7 @@ function formatAxisLabel(
       return `${dateStr} ${d.toLocaleTimeString("en-US", {
         hour: "numeric",
         minute: "2-digit",
+        hour12: false,
       })}`;
     }
   }
@@ -65,143 +63,54 @@ const ProgressChart = ({ history }: { history: Training[] }) => {
     Math.min(4000, Math.ceil(maxPerf + pad)),
   ];
 
-  /**
-   * Badges match the line: same sessions, same performance values.
-   * (Solve-only filtering hid peaks when the highest session had no counted AC.)
-   */
-  const performances = chartData.map((d) => d.performance ?? 0);
-  const bestPerformance =
-    chartData.length > 0 ? Math.max(...performances) : null;
-  const averagePerformance =
-    chartData.length > 0
-      ? Math.round(
-          performances.reduce((sum, p) => sum + p, 0) / chartData.length,
-        )
-      : null;
-
-  const getTrend = () => {
-    if (chartData.length < 2)
-      return { direction: "neutral" as const, value: 0 };
-
-    const recent = chartData.slice(-3);
-    const older = chartData.slice(-6, -3);
-
-    if (older.length === 0)
-      return { direction: "neutral" as const, value: 0 };
-
-    const recentAvg =
-      recent.reduce((sum, item) => sum + (item.performance ?? 0), 0) /
-      recent.length;
-    const olderAvg =
-      older.reduce((sum, item) => sum + (item.performance ?? 0), 0) /
-      older.length;
-
-    const difference = recentAvg - olderAvg;
-
-    if (difference > 5)
-      return { direction: "up" as const, value: difference };
-    if (difference < -5)
-      return {
-        direction: "down" as const,
-        value: Math.abs(difference),
-      };
-    return { direction: "neutral" as const, value: 0 };
-  };
-
-  const trend = getTrend();
-
-  const summaryDisplay = (v: number | null) =>
-    v == null || Number.isNaN(v) ? "-" : String(v);
-
   return (
-    <Card className="w-full bg-gradient-to-br from-card via-card to-muted/10 border-border/50 shadow-lg">
-      <CardHeader className="pb-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
-              Performance Trends
-              {trend.direction === "up" && (
-                <TrendingUp className="size-5 text-green-500" aria-hidden />
-              )}
-              {trend.direction === "down" && (
-                <TrendingDown className="size-5 text-red-500" aria-hidden />
-              )}
-            </CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">
-              Best is the highest point on this line; average is the mean of every
-              session plotted (including sessions with no solves, which can still
-              move the curve).
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2 shrink-0">
-            <Badge variant="outline" className="text-xs tabular-nums">
-              Best: {summaryDisplay(bestPerformance)}
-            </Badge>
-            <Badge variant="secondary" className="text-xs tabular-nums">
-              Avg: {summaryDisplay(averagePerformance)}
-            </Badge>
-            {trend.direction !== "neutral" && (
-              <Badge
-                variant={trend.direction === "up" ? "default" : "destructive"}
-                className="text-xs tabular-nums"
-              >
-                {trend.direction === "up" ? "↗" : "↘"}{" "}
-                {Math.round(trend.value)}
-              </Badge>
-            )}
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="px-3 sm:px-6">
+    <div className="w-full font-mono text-emerald-400">
+      <div className="relative overflow-hidden rounded-lg border border-emerald-500/15 bg-[#060a08]/30 p-4">
+        {/* Scanlines overlay */}
+        <div className="absolute inset-0 pointer-events-none z-20 bg-terminal-scanlines opacity-[0.04]" />
+        
         <ResponsiveContainer
           width="100%"
-          height={250}
-          className="sm:h-[300px] lg:h-[350px]"
+          height={260}
+          className="sm:h-[300px]"
         >
           <AreaChart
             data={chartData}
             margin={{
               top: 10,
-              right: 20,
-              left: 10,
-              bottom: 10,
+              right: 10,
+              left: -10,
+              bottom: 5,
             }}
           >
             <defs>
               <linearGradient id="performanceGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.05} />
-              </linearGradient>
-              <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="hsl(var(--primary))" />
-                <stop offset="50%" stopColor="hsl(var(--accent))" />
-                <stop offset="100%" stopColor="hsl(var(--primary))" />
+                <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
+                <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
               </linearGradient>
             </defs>
             <CartesianGrid
               strokeDasharray="3 3"
-              className="stroke-muted/30"
+              stroke="rgba(16,185,129,0.08)"
               vertical={false}
             />
             <XAxis
               dataKey="formattedDate"
-              className="text-muted-foreground text-xs sm:text-sm"
-              tick={{ fontSize: 11 }}
+              tick={{ fill: "rgba(16,185,129,0.4)", fontSize: 9, fontFamily: "monospace" }}
               tickLine={false}
               axisLine={false}
               interval={chartData.length <= 16 ? 0 : "preserveStartEnd"}
               angle={chartData.length > 6 ? -32 : 0}
               textAnchor={chartData.length > 6 ? "end" : "middle"}
-              height={chartData.length > 6 ? 52 : 28}
+              height={chartData.length > 6 ? 48 : 24}
             />
             <YAxis
               domain={yDomain}
               tickFormatter={(value) => `${value}`}
-              className="text-muted-foreground text-xs sm:text-sm"
-              tick={{ fontSize: 12 }}
+              tick={{ fill: "rgba(16,185,129,0.4)", fontSize: 9, fontFamily: "monospace" }}
               tickLine={false}
               axisLine={false}
-              width={40}
+              width={35}
             />
             <Tooltip
               labelFormatter={(_, payload) => {
@@ -212,47 +121,47 @@ const ProgressChart = ({ history }: { history: Training[] }) => {
                     })
                   | undefined;
                 if (!row) return "";
-                return `Session ${row.sessionNumber} (${formatCalendarDay(row.startTime)})`;
+                return `RUN #${String(row.sessionNumber).padStart(2, "0")} (${formatCalendarDay(row.startTime)})`;
               }}
-              formatter={(value: any) => [`${value}`, "Performance"]}
+              formatter={(value: any) => [`${value} pts`, "PERF"]}
               contentStyle={{
-                backgroundColor: "hsl(var(--card))",
-                borderColor: "hsl(var(--border))",
-                borderRadius: "12px",
-                fontSize: "14px",
-                boxShadow:
-                  "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05)",
-                border: "1px solid hsl(var(--border))",
+                backgroundColor: "#060a08",
+                borderColor: "rgba(16,185,129,0.3)",
+                borderRadius: "4px",
+                fontSize: "10px",
+                fontFamily: "monospace",
+                color: "#10b981",
+                boxShadow: "0 0 10px rgba(16,185,129,0.1)",
               }}
               labelStyle={{
-                color: "hsl(var(--foreground))",
-                fontWeight: "600",
+                color: "#a7f3d0",
+                fontWeight: "bold",
+                marginBottom: "4px",
               }}
             />
             <Area
               type="monotone"
               dataKey="performance"
-              stroke="url(#lineGradient)"
-              strokeWidth={3}
+              stroke="#10b981"
+              strokeWidth={2}
               fill="url(#performanceGradient)"
               dot={{
-                fill: "hsl(var(--primary))",
-                strokeWidth: 2,
-                r: 4,
-                stroke: "hsl(var(--background))",
+                fill: "#10b981",
+                strokeWidth: 1.5,
+                r: 3,
+                stroke: "#060a08",
               }}
               activeDot={{
-                r: 7,
-                strokeWidth: 3,
-                stroke: "hsl(var(--primary))",
-                fill: "hsl(var(--background))",
-                className: "drop-shadow-lg",
+                r: 5,
+                strokeWidth: 2,
+                stroke: "#10b981",
+                fill: "#060a08",
               }}
             />
           </AreaChart>
         </ResponsiveContainer>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

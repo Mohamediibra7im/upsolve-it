@@ -5,13 +5,10 @@ import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/apiClient";
 import Link from "next/link";
 import {
-  ChevronLeft,
   Trophy,
   Clock,
   Target,
-  Zap,
   CheckCircle2,
-  XCircle,
   ArrowRight,
   TrendingUp,
   BookOpen,
@@ -55,13 +52,13 @@ type ReviewPayload = {
 };
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as const } },
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
 };
 
 const stagger = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.06 } },
+  show: { transition: { staggerChildren: 0.05 } },
 };
 
 export default function SessionReviewPage() {
@@ -112,15 +109,15 @@ export default function SessionReviewPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center font-mono text-emerald-400">
         <div className="text-center space-y-4">
-          <p className="text-muted-foreground">{error}</p>
+          <p className="text-[11px] text-red-400">[SYS.ERR] {error}</p>
           <div className="flex flex-wrap justify-center gap-2">
-            <Button asChild variant="outline" className="rounded-xl">
-              <Link href="/training/reviews">All Reviews</Link>
+            <Button asChild variant="outline" className="h-9 rounded border border-emerald-500/25 bg-transparent text-emerald-400 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-500/10 font-mono">
+              <Link href="/training/reviews">[ ALL_REVIEWS.SH ]</Link>
             </Button>
-            <Button asChild variant="outline" className="rounded-xl">
-              <Link href="/training">Training</Link>
+            <Button asChild variant="outline" className="h-9 rounded border border-emerald-500/25 bg-transparent text-emerald-400 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-500/10 font-mono">
+              <Link href="/training">[ TRAINING.SH ]</Link>
             </Button>
           </div>
         </div>
@@ -136,297 +133,240 @@ export default function SessionReviewPage() {
   const solvedDisplay = solvedFromRows;
   const solveRate = totalProblems > 0 ? Math.round((solvedDisplay / totalProblems) * 100) : 0;
 
-  const modeLabel =
+  const modeExe =
     summary.trainingMode === "contest"
-      ? "Contest Simulation"
+      ? "CONTEST_SIM.BAT"
       : summary.trainingMode === "speed"
-        ? "Speed Round"
+        ? "SPEED_BURST.COM"
         : summary.trainingMode === "endurance"
-          ? "Endurance Mode"
+          ? "ENDURANCE_TEST.BAT"
           : summary.trainingMode === "weakness"
-            ? "Weakness Training"
-            : "Ladder Training";
+            ? "WEAKNESS_CORRECT.SYS"
+            : "LADDER_TRAINING.EXE";
+
+  // Progress bar
+  const totalBlocks = 20;
+  const filledBlocks = Math.min(totalBlocks, Math.round((solveRate / 100) * totalBlocks));
+  const progressBar = "█".repeat(filledBlocks) + "░".repeat(totalBlocks - filledBlocks);
 
   return (
-    <section className="min-h-screen relative overflow-hidden">
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-primary/[0.03] via-transparent to-transparent" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-emerald-500/[0.02] via-transparent to-transparent" />
-        <div className="absolute inset-0 bg-grid-pattern opacity-[0.012]" />
+    <section className="min-h-screen relative overflow-hidden font-mono text-emerald-400">
+      <div className="absolute inset-0 -z-10 bg-[#040604]">
+        <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.04]" />
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="max-w-4xl mx-auto space-y-8">
+          {/* Back + Header */}
           <m.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
           >
-            <Link
-              href="/training/reviews"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors mb-6"
-            >
-              <ChevronLeft className="size-3.5" />
-              All Reviews
-            </Link>
 
-            <div className="space-y-2">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
-                Session Review
-              </p>
-              <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
-                Performance Recap
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40">
+                <TrendingUp size={12} className="text-emerald-400" />
+                <span>SESSION_REVIEW // PERFORMANCE_AUDIT</span>
+                <span className="flex-1 border-b border-emerald-500/10" />
+                <span className="text-emerald-500/25">{modeExe}</span>
+              </div>
+
+              <h1 className="text-xl sm:text-2xl font-bold text-emerald-300 uppercase tracking-wider">
+                Performance Audit
               </h1>
-              <p className="text-sm text-muted-foreground">
-                {modeLabel} session completed
-              </p>
             </div>
           </m.div>
 
+          {/* Summary Telemetry */}
           <m.div
             initial="hidden"
             animate="show"
             variants={fadeUp}
-            className="rounded-3xl border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-white/[0.01] backdrop-blur-2xl overflow-hidden shadow-[0_0_40px_-10px_rgba(0,0,0,0.3)]"
+            className="grid grid-cols-2 md:grid-cols-4 gap-4"
           >
-            <div className="px-6 py-5 sm:px-8 sm:py-6 border-b border-white/[0.04]">
-              <h2 className="text-lg font-bold text-foreground">Session Summary</h2>
+            <div className="py-3 px-4 border-b border-emerald-500/10">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/40">SOLVED.COUNT</span>
+              <div className="flex items-baseline gap-2 mt-1">
+                <span className="text-2xl font-bold text-emerald-300 tabular-nums">{solvedDisplay}/{totalProblems}</span>
+                <Target size={12} className="text-emerald-500/40" />
+              </div>
             </div>
-            <div className="p-6 sm:px-8 sm:pb-8">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Target className="size-4 text-primary" />
-                    </div>
-                  </div>
-                  <p className="text-2xl font-bold text-foreground tabular-nums">
-                    {solvedDisplay}/{totalProblems}
-                  </p>
-                  <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider mt-1">
-                    Solved
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="size-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                      <TrendingUp className="size-4 text-emerald-400" />
-                    </div>
-                  </div>
-                  <p className="text-2xl font-bold text-foreground tabular-nums">
-                    {summary.performanceScore}
-                  </p>
-                  <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider mt-1">
-                    Performance
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="size-8 rounded-lg bg-sky-500/10 flex items-center justify-center">
-                      <Clock className="size-4 text-sky-400" />
-                    </div>
-                  </div>
-                  <p className="text-2xl font-bold text-foreground tabular-nums">
-                    {Math.round(summary.totalTimeSpent / 60)}m
-                  </p>
-                  <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider mt-1">
-                    Total Time
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="size-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                      <Zap className="size-4 text-amber-400" />
-                    </div>
-                  </div>
-                  <p className="text-2xl font-bold text-foreground tabular-nums">
-                    {solveRate}%
-                  </p>
-                  <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider mt-1">
-                    Solve Rate
-                  </p>
-                </div>
+            <div className="py-3 px-4 border-b border-emerald-500/10">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/40">PERFORMANCE.SCORE</span>
+              <div className="flex items-baseline gap-2 mt-1">
+                <span className="text-2xl font-bold text-emerald-300 tabular-nums">{summary.performanceScore}</span>
+                <TrendingUp size={12} className="text-emerald-500/40" />
+              </div>
+            </div>
+            <div className="py-3 px-4 border-b border-emerald-500/10">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/40">TOTAL.TIME</span>
+              <div className="flex items-baseline gap-2 mt-1">
+                <span className="text-2xl font-bold text-emerald-300 tabular-nums">{Math.round(summary.totalTimeSpent / 60)}m</span>
+                <Clock size={12} className="text-emerald-500/40" />
+              </div>
+            </div>
+            <div className="py-3 px-4 border-b border-emerald-500/10">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/40">SOLVE.RATE</span>
+              <div className="flex items-center gap-3 mt-1">
+                <span className="text-xl font-bold text-emerald-300 tabular-nums">{solveRate}%</span>
+                <span className="text-[9px] text-emerald-500/25 hidden sm:inline">[{progressBar}]</span>
               </div>
             </div>
           </m.div>
 
+          {/* Problem Breakdown Header */}
+          <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40 pt-4">
+            <Target size={12} className="text-emerald-400" />
+            <span>PROBLEM_BREAKDOWN // DIAGNOSTIC_OUTPUT</span>
+            <span className="flex-1 border-b border-emerald-500/10" />
+          </div>
+
+          {/* Problem List */}
           <m.div
             initial="hidden"
             animate="show"
             variants={stagger}
-            className="space-y-4"
+            className="divide-y divide-emerald-500/[0.07]"
           >
-            <h2 className="text-lg font-bold text-foreground">Problem Breakdown</h2>
-            <div className="grid gap-3">
-              {problems.map((p) => (
-                <m.div
-                  key={p.problemId}
-                  variants={fadeUp}
-                  className={cn(
-                    "rounded-2xl border transition-all duration-300 overflow-hidden",
-                    p.solved
-                      ? "border-emerald-500/10 bg-emerald-500/[0.02]"
-                      : "border-white/[0.04] bg-white/[0.02]",
-                  )}
-                >
-                  <div className="p-5 sm:p-6">
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <div
-                            className={cn(
-                              "flex size-8 shrink-0 items-center justify-center rounded-lg font-bold text-sm",
-                              p.solved
-                                ? "bg-emerald-500/10 text-emerald-400"
-                                : "bg-white/[0.04] text-muted-foreground",
-                            )}
-                          >
-                            {p.index}
-                          </div>
-                          <div className="min-w-0">
-                            <h3 className="text-sm font-semibold text-foreground truncate">
-                              {p.name}
-                            </h3>
-                            <p className="text-[11px] text-muted-foreground/60">
-                              #{p.contestId} · Rating {p.rating}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap gap-1.5 mt-3">
-                          {p.tags.slice(0, 3).map((t) => (
-                            <span
-                              key={t}
-                              className="px-2 py-0.5 rounded-md text-[9px] font-medium text-muted-foreground/60 bg-white/[0.03] border border-white/[0.04] uppercase tracking-wider"
-                            >
-                              {t}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 shrink-0">
-                        <a
-                          href={`https://codeforces.com/contest/${p.contestId}/problem/${p.index}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold text-muted-foreground bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] transition-colors"
-                        >
-                          Open on CF
-                          <ArrowRight className="size-3" />
-                        </a>
-                        {!p.solved &&
-                          (isInUpsolveQueue(p) ? (
-                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
-                              <CheckCircle2 className="size-3" />
-                              In Queue
-                            </span>
-                          ) : (
-                            <button
-                              onClick={() => void addOneUpsolve(p)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors"
-                            >
-                              + Upsolve
-                            </button>
-                          ))}
-                      </div>
+            {problems.map((p) => (
+              <m.div
+                key={p.problemId}
+                variants={fadeUp}
+                className="py-4 px-2 hover:bg-emerald-950/5 transition-all duration-200"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className={cn(
+                        "text-xs font-bold",
+                        p.solved ? "text-emerald-300" : "text-emerald-500/60"
+                      )}>
+                        [{p.index}]
+                      </span>
+                      <span className="text-xs font-bold text-emerald-300 truncate">{p.name}</span>
+                      <span className="text-[9px] text-emerald-500/30 tabular-nums">#{p.contestId}</span>
+                      <span className="text-[9px] text-emerald-500/25 tabular-nums">R:{p.rating}</span>
                     </div>
 
-                    <div className="mt-4 pt-4 border-t border-white/[0.04] space-y-3">
-                      <div className="flex items-center gap-4 text-[11px]">
-                        <div className="flex items-center gap-1.5">
-                          {p.solved ? (
-                            <CheckCircle2 className="size-3 text-emerald-400" />
-                          ) : (
-                            <XCircle className="size-3 text-rose-400" />
-                          )}
-                          <span className={p.solved ? "text-emerald-400" : "text-rose-400"}>
-                            {p.solved ? "Accepted" : "Unsolved"}
-                          </span>
-                        </div>
-                        <span className="text-muted-foreground/40">·</span>
-                        <span className="text-muted-foreground/60">{p.attempts} attempt{p.attempts !== 1 ? "s" : ""}</span>
-                        <span className="text-muted-foreground/40">·</span>
-                        <span className="text-muted-foreground/60">
-                          {Math.round(p.timeSpentSeconds / 60)}m / {Math.round(p.expectedTimeSeconds / 60)}m expected
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {p.tags.slice(0, 4).map((t) => (
+                        <span key={t} className="text-[8px] font-bold text-emerald-500/25 uppercase tracking-wider">
+                          [{t}]
                         </span>
-                        {p.speedStatus && (
-                          <>
-                            <span className="text-muted-foreground/40">·</span>
-                            <span className={cn(
-                              "font-medium",
-                              p.speedStatus === "fast" ? "text-emerald-400" :
-                              p.speedStatus === "slow" ? "text-amber-400" :
-                              "text-muted-foreground/60"
-                            )}>
-                              {p.speedStatus}
-                            </span>
-                          </>
-                        )}
-                      </div>
-
-                      <p className="text-[12px] text-foreground/80 leading-relaxed">
-                        {p.insightMessage}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground/50">
-                        {p.recommendation}
-                      </p>
+                      ))}
                     </div>
+
+                    {/* Stats row */}
+                    <div className="flex flex-wrap items-center gap-3 text-[10px]">
+                      <span className={p.solved ? "text-emerald-400" : "text-red-400"}>
+                        {p.solved ? "[ACCEPTED]" : "[UNSOLVED]"}
+                      </span>
+                      <span className="text-emerald-500/20">|</span>
+                      <span className="text-emerald-500/40">{p.attempts} attempt{p.attempts !== 1 ? "s" : ""}</span>
+                      <span className="text-emerald-500/20">|</span>
+                      <span className="text-emerald-500/40">
+                        {Math.round(p.timeSpentSeconds / 60)}m / {Math.round(p.expectedTimeSeconds / 60)}m expected
+                      </span>
+                      {p.speedStatus && (
+                        <>
+                          <span className="text-emerald-500/20">|</span>
+                          <span className={cn(
+                            "font-bold uppercase",
+                            p.speedStatus === "fast" ? "text-emerald-400" :
+                            p.speedStatus === "slow" ? "text-amber-400" :
+                            "text-emerald-500/40"
+                          )}>
+                            [{p.speedStatus}]
+                          </span>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Insight + Recommendation */}
+                    {p.insightMessage && (
+                      <p className="text-[11px] text-emerald-500/50 mt-2 leading-relaxed">
+                        → {p.insightMessage}
+                      </p>
+                    )}
+                    {p.recommendation && (
+                      <p className="text-[10px] text-emerald-500/30 mt-1">
+                        {"// "}{p.recommendation}
+                      </p>
+                    )}
                   </div>
-                </m.div>
-              ))}
-            </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <a
+                      href={`https://codeforces.com/contest/${p.contestId}/problem/${p.index}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="h-8 px-3 rounded border border-emerald-500/20 bg-transparent text-emerald-500/50 font-bold uppercase tracking-widest text-[8px] hover:bg-emerald-500/10 hover:text-emerald-300 transition-all inline-flex items-center gap-1.5"
+                    >
+                      [ OPEN_CF ]
+                      <ArrowRight size={9} />
+                    </a>
+                    {!p.solved &&
+                      (isInUpsolveQueue(p) ? (
+                        <span className="h-8 px-3 rounded border border-emerald-500/20 text-emerald-400 text-[8px] font-bold uppercase tracking-widest inline-flex items-center gap-1.5">
+                          <CheckCircle2 size={9} />
+                          [QUEUED]
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => void addOneUpsolve(p)}
+                          className="h-8 px-3 rounded border border-amber-500/25 bg-transparent text-amber-400 font-bold uppercase tracking-widest text-[8px] hover:bg-amber-500/10 hover:text-amber-300 transition-all inline-flex items-center gap-1.5"
+                        >
+                          [ +UPSOLVE ]
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              </m.div>
+            ))}
           </m.div>
 
+          {/* What's Next */}
           <m.div
             initial="hidden"
             animate="show"
             variants={fadeUp}
-            className="rounded-3xl border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-white/[0.01] backdrop-blur-2xl overflow-hidden shadow-[0_0_40px_-10px_rgba(0,0,0,0.3)]"
+            className="pt-6 border-t border-emerald-500/10 space-y-4"
           >
-            <div className="p-6 sm:p-8 space-y-5">
-              <div className="flex items-center gap-3">
-                <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <BookOpen className="size-5 text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-foreground">What&apos;s Next</h2>
-                  <p className="text-xs text-muted-foreground">Keep the momentum going</p>
-                </div>
-              </div>
+            <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40">
+              <BookOpen size={12} className="text-emerald-400" />
+              <span>NEXT_ACTIONS // CONTINUATION_PROMPT</span>
+            </div>
 
-              <p className="text-sm text-muted-foreground/80 leading-relaxed">
-                Lock in one upsolve block for misses, then schedule the next session while patterns are fresh.
-              </p>
+            <p className="text-[11px] text-emerald-500/40 leading-relaxed">
+              Lock in one upsolve block for missed problems, then compile a new session while patterns are fresh.
+            </p>
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button
-                  asChild
-                  className="h-11 px-6 text-[11px] font-bold uppercase tracking-wider rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  <Link href="/training">
-                    <Trophy className="size-3.5 mr-2" />
-                    Start Next Session
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="h-11 px-6 text-[11px] font-bold uppercase tracking-wider rounded-xl bg-white/[0.03] border-white/[0.06] hover:bg-white/[0.06]"
-                >
-                  <Link href="/upsolve">Upsolve Queue</Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="h-11 px-6 text-[11px] font-bold uppercase tracking-wider rounded-xl text-muted-foreground hover:text-foreground"
-                  onClick={() => router.push("/dashboard")}
-                >
-                  Dashboard
-                </Button>
-              </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                asChild
+                className="h-10 rounded bg-emerald-500 text-emerald-950 font-bold uppercase tracking-widest text-[9px] shadow-[0_0_15px_rgba(16,185,129,0.25)] hover:bg-emerald-400 transition-all font-mono"
+              >
+                <Link href="/training">
+                  <Trophy size={12} className="mr-2" />
+                  [ NEXT_SESSION.EXE ]
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="h-10 rounded border border-emerald-500/25 bg-transparent text-emerald-400 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-500/10 transition-all font-mono"
+              >
+                <Link href="/upsolve">[ UPSOLVE_QUEUE.SH ]</Link>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-10 rounded border border-emerald-500/15 bg-transparent text-emerald-500/40 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-500/10 hover:text-emerald-300 transition-all font-mono"
+                onClick={() => router.push("/dashboard")}
+              >
+                [ DASHBOARD.SH ]
+              </Button>
             </div>
           </m.div>
         </div>
