@@ -1,4 +1,4 @@
 export { default as ProfileHeader } from "./ProfileHeader";
-export { default as SidebarCards } from "./SidebarCards";
-export { default as StatsGrid } from "./StatsGrid";
+export { ConsoleAccountCard, MilestoneProgressCard, StreaksCard } from "./SidebarCards";
+export { ProfileStatsGrid, TrainingStatsGrid, AchievementsPanel, ActivityLogsPanel } from "./StatsGrid";
 export { UserProfileDialog } from "./UserProfileDialog";

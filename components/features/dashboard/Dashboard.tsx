@@ -13,7 +13,6 @@ import { swrFetcher } from "@/lib/apiClient";
 import DashboardHero from "./DashboardHero";
 import DashboardStatCards, { buildDashboardStats } from "./DashboardStatCards";
 import DashboardStreaks from "./DashboardStreaks";
-import DashboardHeatmap from "./DashboardHeatmap";
 import DashboardSidebar from "./DashboardSidebar";
 
 type StreakPayload = {
@@ -88,7 +87,7 @@ export default function Dashboard() {
   const secondaryLoading = isHistoryLoading || isUpsolveLoading;
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6">
       {/* Hero renders immediately — no dependency on history/upsolve */}
       <DashboardHero
         user={user}
@@ -107,28 +106,23 @@ export default function Dashboard() {
 
       <DashboardStreaks streaks={streaks} roadmapRank={roadmapRank} />
 
-      {/* Heatmap + Sidebar — show skeleton while history/upsolve are loading */}
+      {/* Terminal sub-panes — show skeleton while history/upsolve are loading */}
       {secondaryLoading ? (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 rounded-[2rem] border border-border/40 bg-card/30 h-48 animate-pulse" />
-          <div className="rounded-[2rem] border border-border/40 bg-card/30 h-48 animate-pulse" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+          <div className="rounded-2xl border border-emerald-500/15 bg-emerald-950/5 h-48 animate-pulse" />
+          <div className="rounded-2xl border border-emerald-500/15 bg-emerald-950/5 h-48 animate-pulse" />
+          <div className="rounded-2xl border border-emerald-500/15 bg-emerald-950/5 h-48 animate-pulse" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <DashboardHeatmap
-            history={history || []}
-            upsolvedProblems={upsolvedProblems || []}
-            roadmapActivity={roadmapActivity}
-          />
-          <DashboardSidebar
-            user={user}
-            roadmapXp={roadmapXp}
-            roadmapProblemsSolved={roadmapProblemsSolved}
-            summary={summary}
-            leaderboard={leaderboard}
-          />
-        </div>
+        <DashboardSidebar
+          user={user}
+          roadmapXp={roadmapXp}
+          roadmapProblemsSolved={roadmapProblemsSolved}
+          summary={summary}
+          leaderboard={leaderboard}
+        />
       )}
     </div>
   );
 }
+

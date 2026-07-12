@@ -468,3 +468,66 @@ body {
 .prose blockquote p:last-of-type::after {
   content: none !important;
 }
+
+/* Terminal CRT styling */
+.bg-terminal-scanlines {
+  background: linear-gradient(
+    rgba(6, 10, 8, 0) 50%, 
+    rgba(0, 0, 0, 0.35) 50%
+  );
+  background-size: 100% 4px;
+}
+
+@keyframes scanline-sweep {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.terminal-scanline-sweep {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(to bottom, transparent, rgba(16, 185, 129, 0.15), transparent);
+  animation: scanline-sweep 6s linear infinite;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.glow-text-emerald {
+  text-shadow: 0 0 10px rgba(52, 211, 153, 0.6), 0 0 20px rgba(52, 211, 153, 0.2);
+}
+
+.glow-text-amber {
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.6), 0 0 20px rgba(245, 158, 11, 0.2);
+}
+
+.glow-text-cyan {
+  text-shadow: 0 0 10px rgba(34, 211, 238, 0.6), 0 0 20px rgba(34, 211, 238, 0.2);
+}
+
+.blink-cursor::after {
+  content: '▋';
+  display: inline-block;
+  margin-left: 2.5px;
+  vertical-align: middle;
+  color: inherit;
+  animation: cursor-blink 1s step-end infinite;
+}
+
+@keyframes cursor-blink {
+  from, to { opacity: 0 }
+  50% { opacity: 1 }
+}
+
+.terminal-window {
+  position: relative;
+  background-color: rgba(6, 10, 8, 0.95) !important;
+  border: 1px solid rgba(16, 185, 129, 0.25) !important;
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.05), inset 0 0 25px rgba(16, 185, 129, 0.05) !important;
+}

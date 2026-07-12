@@ -39,35 +39,54 @@ export default function DashboardHero({
       initial={{opacity: 0, y: 20}}
       animate={{opacity: 1, y: 0}}
       transition={{duration: 0.6}}
-      className="relative overflow-hidden rounded-[2.5rem] border border-border/80 dark:border-border/40 bg-card/70 dark:bg-card/20 backdrop-blur-xl"
+      className="relative overflow-hidden rounded-[2rem] border border-emerald-500/25 bg-[#060a08] shadow-[0_0_30px_rgba(16,185,129,0.08)] text-emerald-400 font-mono"
     >
-      {/* Background effects */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -left-20 -top-20 size-60 rounded-full bg-primary/10 blur-[100px]" />
-        <div className="absolute -right-20 -bottom-20 size-60 rounded-full bg-emerald-500/10 blur-[100px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-80 rounded-full bg-amber-500/5 blur-[120px]" />
+      {/* Scanline CRT overlay */}
+      <div className="absolute inset-0 pointer-events-none z-20 bg-terminal-scanlines opacity-[0.15]" />
+      <div className="terminal-scanline-sweep" />
+
+      {/* Terminal Header Bar */}
+      <div className="flex items-center justify-between px-6 py-3 border-b border-emerald-500/15 bg-[#0b120f] select-none text-xs text-emerald-500/60">
+        <div className="flex items-center gap-2">
+          <div className="flex gap-1.5">
+            <div className="size-3 rounded-full bg-[#ef4444]/80 border border-[#ef4444]/30" />
+            <div className="size-3 rounded-full bg-[#eab308]/80 border border-[#eab308]/30" />
+            <div className="size-3 rounded-full bg-[#22c55e]/80 border border-[#22c55e]/30" />
+          </div>
+          <span className="ml-3 font-semibold tracking-wider">guest@upsolve: ~/profile_telemetry</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-[10px] tracking-widest font-black uppercase text-emerald-500/50">SYS_OPERATIONAL</span>
+        </div>
       </div>
 
-      <div className="relative z-10 p-8 sm:p-10 lg:p-12">
-        <div className="flex flex-col lg:flex-row lg:items-center gap-8 lg:gap-12">
+      <div className="relative z-10 p-6 sm:p-8 lg:p-10 space-y-6">
+        {/* Terminal diagnostic header */}
+        <div className="space-y-1 bg-black/40 p-4 border border-emerald-500/10 rounded-lg">
+          <div className="flex items-center gap-2 text-emerald-500/60 text-xs">
+            <span>guest@upsolve.it:~$</span>
+            <span className="text-emerald-400 font-bold">./fetch_diagnostics.sh --id={user.codeforcesHandle}</span>
+          </div>
+          <div className="text-[10px] text-emerald-500/40 font-mono leading-relaxed">
+            [INFO] CONNECTING TO CODEFORCES API... SUCCESS<br />
+            [INFO] DECODING USER PROFILE TELEMETRY... COMPLETE
+          </div>
+        </div>
+
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
           {/* Left: User Info + XP Ring */}
-          <div className="flex items-center gap-6 sm:gap-8 flex-1 min-w-0">
-            {/* XP Ring */}
-            <div className="relative shrink-0">
+          <div className="flex flex-col sm:flex-row items-center gap-6 flex-1 min-w-0">
+            {/* XP Ring formatted as Radar Grid */}
+            <div className="relative shrink-0 select-none">
               <svg
                 viewBox="0 0 120 120"
-                className="size-24 sm:h-28 sm:w-28 -rotate-90"
+                className="size-24 sm:size-28 -rotate-90"
               >
-                {/* Background circle */}
-                <circle
-                  cx="60"
-                  cy="60"
-                  r="52"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="6"
-                  className="text-muted/20 dark:text-white/5"
-                />
+                {/* Background grid circles */}
+                <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(16, 185, 129, 0.05)" strokeWidth="6" />
+                <circle cx="60" cy="60" r="42" fill="none" stroke="rgba(16, 185, 129, 0.03)" strokeWidth="1" strokeDasharray="3 3" />
+                <circle cx="60" cy="60" r="32" fill="none" stroke="rgba(16, 185, 129, 0.03)" strokeWidth="1" strokeDasharray="2 2" />
                 {/* Progress arc */}
                 <m.circle
                   cx="60"
@@ -93,105 +112,113 @@ export default function DashboardHero({
                     x2="100%"
                     y2="100%"
                   >
-                    <stop offset="0%" stopColor="hsl(var(--primary))" />
-                    <stop offset="100%" stopColor="#10b981" />
+                    <stop offset="0%" stopColor="#10b981" />
+                    <stop offset="100%" stopColor="#047857" />
                   </linearGradient>
                 </defs>
               </svg>
               {/* Level number inside ring */}
               <div className="absolute inset-0 flex flex-col items-center justify-center rotate-0">
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/80 dark:text-muted-foreground/60">
+                <span className="text-[8px] font-black tracking-[0.2em] text-emerald-500/50">
                   LVL
                 </span>
-                <span className="text-2xl sm:text-3xl font-black text-primary tabular-nums leading-none">
+                <span className="text-3xl font-black text-emerald-400 glow-text-emerald leading-none tabular-nums">
                   {xpLevel}
                 </span>
               </div>
             </div>
 
             {/* User details */}
-            <div className="min-w-0 space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-[0.2em]">
-                <div className="size-1.5 rounded-full bg-primary animate-pulse" />
+            <div className="min-w-0 space-y-3 text-center sm:text-left">
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-emerald-950/40 border border-emerald-500/25 text-emerald-400 text-[10px] font-black uppercase tracking-wider">
+                <div className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 {xpTitle}
               </div>
-              <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight uppercase leading-none truncate">
+              <h1 className="text-3xl sm:text-5xl font-black tracking-tight uppercase leading-none truncate text-emerald-400 glow-text-emerald blink-cursor">
                 {user.codeforcesHandle}
               </h1>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex flex-wrap justify-center sm:justify-start items-center gap-x-4 gap-y-1.5 text-xs text-emerald-500/75">
                 <span className="flex items-center gap-1.5">
-                  <Zap className="size-3.5 text-primary" />
-                  <span className="font-black text-foreground tabular-nums">
+                  <Zap className="size-3.5 text-emerald-400" />
+                  <span>XP:</span>
+                  <span className="font-bold text-emerald-300 tabular-nums">
                     {roadmapXp.toLocaleString()}
-                  </span>{" "}
-                  XP
+                  </span>
                 </span>
-                <span className="text-border">•</span>
+                <span className="opacity-30">•</span>
                 <span className="flex items-center gap-1.5">
-                  <TrendingUp className="size-3.5 text-emerald-500" />
-                  <span className="font-black text-foreground tabular-nums">
+                  <TrendingUp className="size-3.5 text-emerald-400" />
+                  <span>NEXT_LVL:</span>
+                  <span className="font-bold text-emerald-300 tabular-nums">
                     {xpToNext}
-                  </span>{" "}
-                  to next level
+                  </span>
+                  <span className="text-[10px] opacity-50">XP NEEDED</span>
                 </span>
               </div>
             </div>
           </div>
 
           {/* Right: Action Buttons */}
-          <div className="flex flex-wrap lg:flex-nowrap items-center gap-3">
+          <div className="flex flex-wrap lg:flex-nowrap items-center justify-center gap-3">
             <Button
               onClick={onSync}
               disabled={isSyncing}
               variant="outline"
-              className="h-11 px-5 rounded-2xl border-border/40 font-black uppercase tracking-widest text-[9px] hover:bg-card/40 transition-all"
+              className="h-10 rounded border border-emerald-500/35 bg-[#060a08] text-emerald-400 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-500/10 hover:text-emerald-300 hover:border-emerald-500/60 active:scale-[0.98] transition-all font-mono"
             >
               <RefreshCw
                 className={cn("mr-2 size-3.5", isSyncing && "animate-spin")}
               />
-              {isSyncing ? "Syncing..." : "Sync"}
+              {isSyncing ? "SYNC_RUNNING..." : "[ SYNC ]"}
             </Button>
             <Button
               asChild
               variant="outline"
-              className="h-11 px-5 rounded-2xl border-border/40 font-black uppercase tracking-widest text-[9px] hover:bg-card/40 transition-all relative"
+              className="h-10 rounded border border-emerald-500/35 bg-[#060a08] text-emerald-400 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-500/10 hover:text-emerald-300 hover:border-emerald-500/60 active:scale-[0.98] transition-all relative font-mono"
             >
               <Link href="/friends" className="flex items-center gap-2">
                 <Users className="size-3.5" />
-                Friends
+                [ FRIENDS ]
                 {friendRequestCount > 0 && (
-                  <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-black leading-none text-white ring-2 ring-background">
-                    {friendRequestCount > 9 ? "9+" : friendRequestCount}
+                  <span className="flex h-4 min-w-4 items-center justify-center rounded bg-red-950 border border-red-500 px-1 text-[9px] font-black text-red-400 animate-pulse">
+                    {friendRequestCount}
                   </span>
                 )}
               </Link>
             </Button>
             <Button
               asChild
-              className="h-11 px-6 rounded-2xl bg-primary font-black uppercase tracking-widest text-[9px] shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:scale-[1.02]"
+              className="h-10 rounded bg-emerald-500 text-emerald-950 font-bold uppercase tracking-widest text-[9px] shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:bg-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] active:scale-[0.98] transition-all font-mono"
             >
-              <Link href="/training">Start Training</Link>
+              <Link href="/training">[ START_TRAINING.EXE ]</Link>
             </Button>
           </div>
         </div>
 
         {/* XP Progress Bar */}
-        <div className="mt-8 space-y-2">
-          <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-muted-foreground/80 dark:text-muted-foreground/50">
-            <span>Level {xpLevel}</span>
-            <span>{Math.round(xpProgress)}%</span>
-            <span>Level {xpLevel + 1}</span>
+        <div className="space-y-2 mt-4">
+          <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-emerald-500/50">
+            <span>LEVEL_CWR: {xpLevel}</span>
+            <span>SECTOR_XP_PROGRESS: {Math.round(xpProgress)}%</span>
+            <span>LEVEL_NEXT: {xpLevel + 1}</span>
           </div>
-          <div className="h-2 w-full bg-muted/60 dark:bg-white/5 rounded-full overflow-hidden border border-border/40 dark:border-white/5">
+          <div className="h-5 w-full bg-emerald-950/20 border border-emerald-500/20 rounded p-0.5 overflow-hidden flex items-center">
             <m.div
               initial={{width: 0}}
               animate={{width: `${xpProgress}%`}}
-              transition={{duration: 1, ease: "easeOut"}}
-              className="h-full bg-gradient-to-r from-primary/60 via-primary to-emerald-500 rounded-full shadow-[0_0_12px_rgba(16,185,129,0.3)]"
-            />
+              transition={{duration: 1.2, ease: "easeOut"}}
+              className="h-full bg-emerald-500 rounded-sm relative flex items-center justify-end overflow-hidden"
+              style={{
+                backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(0,0,0,0.15) 4px, rgba(0,0,0,0.15) 8px)'
+              }}
+            >
+              {/* Shiny overlay */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
+            </m.div>
           </div>
         </div>
       </div>
     </m.section>
   );
 }
+
