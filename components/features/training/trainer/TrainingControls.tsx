@@ -40,14 +40,12 @@ const TrainingControls = ({
   onStopTraining,
   onExtendEndTime,
 }: TrainingControlsProps) => {
-  // ponytail: break = freeze session timer. Record remaining on start, extend on end.
   const [breakEndTime, setBreakEndTime] = useState<number | null>(null);
   const [showBreakPicker, setShowBreakPicker] = useState(false);
   const [, setTick] = useState(0);
 
   const isOnBreak = breakEndTime !== null && Date.now() < breakEndTime;
 
-  // tick every second to update break countdown
   useEffect(() => {
     if (!isOnBreak) return;
     const timer = setInterval(() => {
@@ -63,11 +61,9 @@ const TrainingControls = ({
   const startBreak = useCallback((minutes: number) => {
     setBreakEndTime(Date.now() + minutes * 60000);
     setShowBreakPicker(false);
-    // ponytail: extend endTime NOW to prevent auto-finish timer from killing session during break
     onExtendEndTime?.(minutes);
   }, [onExtendEndTime]);
 
-  // ponytail: setter is stable, useCallback unnecessary
   const endBreakEarly = () => setBreakEndTime(null);
 
   if (!training) return null;
@@ -79,22 +75,22 @@ const TrainingControls = ({
   const renderBreakBanner = () => {
     if (!isOnBreak) return null;
     return (
-      <div className="rounded-xl border border-sky-500/20 bg-sky-500/[0.06] p-4 space-y-3">
+      <div className="rounded border border-cyan-500/20 bg-cyan-950/10 p-4 space-y-3 font-mono text-cyan-400">
         <div className="flex items-center gap-2">
-          <Coffee className="size-4 text-sky-400" />
-          <span className="text-xs font-semibold text-sky-300">On Break</span>
+          <Coffee size={14} className="text-cyan-400 animate-pulse" />
+          <span className="text-[10px] font-bold uppercase tracking-widest">[ BREAK_MODE_ACTIVE ]</span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-2xl font-black text-sky-200 tabular-nums">
+          <span className="text-2xl font-black text-cyan-300 tabular-nums">
             {breakMinutes}:{breakSeconds.toString().padStart(2, "0")}
           </span>
           <Button
             size="sm"
             variant="outline"
             onClick={endBreakEarly}
-            className="text-[10px] font-bold uppercase tracking-wider border-sky-500/20 text-sky-300 hover:bg-sky-500/10"
+            className="text-[9px] font-bold uppercase tracking-wider border-cyan-500/35 bg-transparent text-cyan-300 hover:bg-cyan-500/10 h-7 rounded font-mono"
           >
-            End Break
+            [ RESUME.SH ]
           </Button>
         </div>
       </div>
@@ -104,9 +100,9 @@ const TrainingControls = ({
   const renderBreakPicker = () => {
     if (!showBreakPicker) return null;
     return (
-      <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3 space-y-2">
-        <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">
-          Break duration
+      <div className="rounded border border-emerald-500/15 bg-emerald-950/5 p-3 space-y-2 font-mono">
+        <p className="text-[8px] font-bold text-emerald-500/40 uppercase tracking-widest">
+          select break duration
         </p>
         <div className="flex gap-2">
           {BREAK_OPTIONS.map((min) => (
@@ -115,9 +111,9 @@ const TrainingControls = ({
               size="sm"
               variant="outline"
               onClick={() => startBreak(min)}
-              className="flex-1 text-xs font-bold border-white/[0.06] text-foreground hover:bg-white/[0.06]"
+              className="flex-1 text-[10px] font-bold border-emerald-500/35 text-emerald-400 bg-transparent hover:bg-emerald-500/10 h-7 rounded font-mono"
             >
-              {min}m
+              {min}M
             </Button>
           ))}
         </div>
@@ -127,18 +123,18 @@ const TrainingControls = ({
 
   const renderActionButtons = (isMobile = false) => {
     const buttonClass = isMobile
-      ? "h-11 flex-1 text-[10px] font-bold uppercase tracking-wider"
-      : "w-full h-11 text-[11px] font-bold uppercase tracking-wider";
+      ? "h-9 flex-1 text-[9px] font-bold uppercase tracking-widest rounded border font-mono bg-transparent"
+      : "w-full h-10 text-[9px] font-bold uppercase tracking-widest rounded border font-mono bg-transparent";
 
     if (isTraining && isPreContestPeriod) {
       return (
         <Button
-          variant="destructive"
+          variant="outline"
           onClick={onStopTraining}
-          className={cn(buttonClass, "bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white border border-rose-500/20")}
+          className={cn(buttonClass, "border-red-500/35 text-red-400 hover:bg-red-500/10 hover:border-red-500/60")}
         >
-          <XCircle className="size-3.5 mr-2" />
-          Cancel Session
+          <XCircle size={13} className="mr-1.5" />
+          [ CANCEL_SESSION.SH ]
         </Button>
       );
     }
@@ -146,26 +142,23 @@ const TrainingControls = ({
     if (isTraining) {
       return (
         <div className={cn("space-y-2.5", isMobile && "flex items-center gap-2 space-y-0")}>
-          {isOnBreak ? (
-            // ponytail: banner has End Break button. Mobile bottom bar handles mobile break UI.
-            null
-          ) : (
+          {isOnBreak ? null : (
             <>
               <Button
                 variant="outline"
                 onClick={refreshProblemStatus}
-                className={cn(buttonClass, "bg-white/[0.03] border-white/[0.06] hover:bg-white/[0.06] hover:border-white/[0.1] text-foreground")}
+                className={cn(buttonClass, "border-emerald-500/35 text-emerald-400 hover:bg-emerald-500/10")}
                 disabled={isRefreshing}
               >
-                <RefreshCw className={cn("size-3.5 mr-2", isRefreshing ? "animate-spin" : "")} />
-                {isRefreshing ? "Refreshing..." : "Refresh Status"}
+                <RefreshCw size={12} className={cn("mr-1.5", isRefreshing ? "animate-spin" : "")} />
+                {isRefreshing ? "[ REFRESHING... ]" : "[ REFRESH_STATUS.SH ]"}
               </Button>
 
               {!isMobile && (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/[0.04] border border-primary/10">
-                  <RefreshCw className="size-3 text-primary/60 shrink-0" />
-                  <p className="text-[10px] text-primary/70 leading-relaxed">
-                    Click after each submit to update status
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded border border-emerald-500/10 bg-emerald-950/5">
+                  <RefreshCw size={10} className="text-emerald-500/40 shrink-0" />
+                  <p className="text-[8px] text-emerald-500/50 leading-normal uppercase">
+                    Submit on CF then trigger refresh
                   </p>
                 </div>
               )}
@@ -175,10 +168,10 @@ const TrainingControls = ({
                   <Button
                     variant="outline"
                     onClick={() => setShowBreakPicker(!showBreakPicker)}
-                    className={cn(buttonClass, "bg-white/[0.03] border-white/[0.06] hover:bg-white/[0.06] hover:border-white/[0.1] text-foreground")}
+                    className={cn(buttonClass, "border-emerald-500/35 text-emerald-400 hover:bg-emerald-500/10")}
                   >
-                    <Coffee className="size-3.5 mr-2" />
-                    Take Break
+                    <Coffee size={12} className="mr-1.5" />
+                    [ COFFEE_BREAK.SH ]
                   </Button>
                   {renderBreakPicker()}
                 </>
@@ -186,19 +179,23 @@ const TrainingControls = ({
 
               <Button
                 onClick={onFinishTraining}
-                className={cn(buttonClass, "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_-4px_rgba(var(--primary),0.4)]")}
+                className={cn(
+                  isMobile
+                    ? "h-9 flex-1 text-[9px] font-bold uppercase tracking-widest rounded font-mono bg-emerald-500 text-emerald-950 hover:bg-emerald-400"
+                    : "w-full h-10 text-[9px] font-bold uppercase tracking-widest rounded font-mono bg-emerald-500 text-emerald-950 hover:bg-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_20px_rgba(16,185,129,0.5)]"
+                )}
               >
-                <Trophy className="size-3.5 mr-2" />
-                Finish Session
+                <Trophy size={12} className="mr-1.5" />
+                [ FINISH_RUN.EXE ]
               </Button>
 
               {!isMobile && (
                 <button
                   onClick={onStopTraining}
-                  className="w-full py-2.5 text-[10px] font-medium text-muted-foreground/50 hover:text-rose-400 transition-colors flex items-center justify-center gap-1.5"
+                  className="w-full py-1 text-[8px] font-bold uppercase tracking-widest text-emerald-500/40 hover:text-red-400 hover:glow-text-red transition-all flex items-center justify-center gap-1"
                 >
-                  <Square className="size-2.5" />
-                  Stop Training
+                  <Square size={8} />
+                  [ STOP_TRAINING ]
                 </button>
               )}
             </>
@@ -213,51 +210,43 @@ const TrainingControls = ({
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block font-mono text-emerald-400 w-full">
         <div className="sticky top-6 space-y-4">
           <m.div variants={fadeUp} initial="hidden" animate="show">
-            <div className="rounded-3xl border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-white/[0.01] backdrop-blur-2xl overflow-hidden shadow-[0_0_40px_-10px_rgba(0,0,0,0.3)]">
-              <div className="p-6 space-y-6">
-                {isOnBreak ? (
-                  renderBreakBanner()
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10">
-                        <Clock className="size-4 text-primary" />
-                      </div>
-                      <span className="text-xs font-semibold text-foreground">
-                        {isPreContestPeriod ? "Starting In" : "Time Remaining"}
-                      </span>
-                    </div>
-                    <CountDown
-                      startTime={training.startTime}
-                      endTime={training.endTime}
-                    />
-                  </div>
-                )}
-
-                <div className="h-px bg-white/[0.04]" />
-
+            <div className="rounded-xl border border-emerald-500/15 bg-[#060a08]/50 p-6 space-y-5 relative overflow-hidden">
+              <div className="absolute inset-0 pointer-events-none z-10 bg-terminal-scanlines opacity-[0.06]" />
+              
+              {isOnBreak ? (
+                renderBreakBanner()
+              ) : (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10">
-                      <Target className="size-4 text-primary" />
-                    </div>
-                    <span className="text-xs font-semibold text-foreground">
-                      Progress
-                    </span>
+                  <div className="flex items-center gap-2 text-[10px] text-emerald-500/40 uppercase tracking-widest">
+                    <Clock size={14} className="text-emerald-400 animate-pulse" />
+                    <span>{isPreContestPeriod ? "STARTING_IN" : "TIME_REMAINING"}</span>
                   </div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-black text-foreground tabular-nums">{solvedCount}</span>
-                    <span className="text-sm text-muted-foreground/60">/ {totalCount} solved</span>
-                  </div>
+                  <CountDown
+                    startTime={training.startTime}
+                    endTime={training.endTime}
+                  />
                 </div>
+              )}
 
-                <div className="h-px bg-white/[0.04]" />
+              <div className="h-px bg-emerald-500/10" />
 
-                {renderActionButtons()}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-[10px] text-emerald-500/40 uppercase tracking-widest">
+                  <Target size={14} className="text-emerald-400" />
+                  <span>METRICS_PROGRESS</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-black text-emerald-300 glow-text-emerald tabular-nums leading-none">{solvedCount}</span>
+                  <span className="text-xs text-emerald-500/60">/ {totalCount} solved nodes</span>
+                </div>
               </div>
+
+              <div className="h-px bg-emerald-500/10" />
+
+              {renderActionButtons()}
             </div>
           </m.div>
 
@@ -267,9 +256,9 @@ const TrainingControls = ({
             animate="show"
             transition={{ delay: 0.1 }}
           >
-            <div className="rounded-2xl border border-white/[0.04] bg-white/[0.02] p-5">
-              <p className="text-[11px] leading-relaxed text-muted-foreground/50 italic">
-                &quot;Precision and speed are the keys to victory. Stay focused and keep pushing.&quot;
+            <div className="rounded-xl border border-emerald-500/10 bg-transparent p-4">
+              <p className="text-[10px] leading-relaxed text-emerald-500/45 italic">
+                &quot;Precision and speed are the keys to compilation integrity. Stay focused.&quot;
               </p>
             </div>
           </m.div>
@@ -280,20 +269,20 @@ const TrainingControls = ({
       <AnimatePresence>
         {isTraining && (
           <m.div
-            className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
+            className="fixed bottom-0 left-0 right-0 z-50 lg:hidden font-mono text-emerald-400"
             initial={{ y: 100 }}
             animate={{ y: 0 }}
             exit={{ y: 100 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
           >
-            <div className="mx-3 mb-3 rounded-2xl border border-white/[0.08] bg-black/80 backdrop-blur-2xl shadow-[0_-4px_30px_-4px_rgba(0,0,0,0.5)]">
+            <div className="mx-3 mb-3 rounded-xl border border-emerald-500/25 bg-black/90 backdrop-blur-2xl shadow-[0_-4px_30px_rgba(0,0,0,0.5)]">
               <div className="px-4 py-3">
                 {isOnBreak ? (
                   <div className="flex items-center gap-3">
-                    <Coffee className="size-4 text-sky-400 shrink-0" />
+                    <Coffee size={14} className="text-cyan-400 shrink-0 animate-pulse" />
                     <div className="flex-1 min-w-0">
-                      <div className="text-[8px] font-bold uppercase tracking-widest text-sky-400/70 mb-1">Break</div>
-                      <span className="text-lg font-black text-sky-200 tabular-nums">
+                      <div className="text-[8px] font-bold uppercase tracking-widest text-cyan-400/70 mb-0.5">BREAK</div>
+                      <span className="text-lg font-black text-cyan-300 tabular-nums">
                         {breakMinutes}:{breakSeconds.toString().padStart(2, "0")}
                       </span>
                     </div>
@@ -301,16 +290,16 @@ const TrainingControls = ({
                       size="sm"
                       variant="outline"
                       onClick={endBreakEarly}
-                      className="text-[9px] font-bold uppercase tracking-wider border-sky-500/20 text-sky-300 hover:bg-sky-500/10 shrink-0"
+                      className="text-[9px] font-bold uppercase tracking-wider border-cyan-500/35 bg-transparent text-cyan-300 hover:bg-cyan-500/10 shrink-0 h-7 rounded font-mono"
                     >
-                      Resume
+                      [ RESUME ]
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <div className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/50 mb-1.5">
-                        {isPreContestPeriod ? "Starting In" : "Time Left"}
+                      <div className="text-[7px] font-bold uppercase tracking-widest text-emerald-500/40 mb-0.5">
+                        {isPreContestPeriod ? "STARTING_IN" : "TIME_LEFT"}
                       </div>
                       <CountDown
                         startTime={training.startTime}
@@ -319,18 +308,18 @@ const TrainingControls = ({
                       />
                     </div>
 
-                    <div className="h-12 w-px bg-white/[0.06]" />
+                    <div className="h-10 w-px bg-emerald-500/10" />
 
                     <div className="text-center shrink-0">
-                      <div className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/50 mb-1.5">Solved</div>
-                      <div className="text-xl font-black text-foreground tabular-nums">
-                        {solvedCount}<span className="text-sm font-medium text-muted-foreground/40">/{totalCount}</span>
+                      <div className="text-[7px] font-bold uppercase tracking-widest text-emerald-500/40 mb-0.5">SOLVED</div>
+                      <div className="text-base font-black text-emerald-300 glow-text-emerald tabular-nums">
+                        {solvedCount}<span className="text-[10px] font-normal text-emerald-500/40">/{totalCount}</span>
                       </div>
                     </div>
 
-                    <div className="h-12 w-px bg-white/[0.06]" />
+                    <div className="h-10 w-px bg-emerald-500/10" />
 
-                    <div className="shrink-0">
+                    <div className="shrink-0 flex items-center">
                       {renderActionButtons(true)}
                     </div>
                   </div>

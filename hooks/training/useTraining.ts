@@ -395,11 +395,23 @@ const useTraining = () => {
           durationMinutes: opts.durationMinutes,
           customRatings: opts.customRatings,
           problems: problems.map((p) => ({
-            ...p,
             problemId: p.problemId ?? `${p.contestId}_${p.index}`,
+            contestId: p.contestId,
+            index: p.index,
+            name: p.name,
+            rating: p.rating ?? 0,
+            tags: p.tags,
+            url: p.url,
+            startedAt: p.startedAt,
+            solvedAt: p.solvedAt,
+            timeSpentSeconds: p.timeSpentSeconds,
             expectedTimeSeconds:
               p.expectedTimeSeconds ??
               expectedTimeSecondsFromRating(p.rating ?? 0),
+            speedStatus: p.speedStatus,
+            attempts: p.attempts,
+            isSolved: p.isSolved,
+            solvedTime: p.solvedTime,
           })),
         };
         const res = await apiClient.post<{ sessionId: string }>(

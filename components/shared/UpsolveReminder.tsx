@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {useUpsolvedProblems} from "@/hooks/data";
-import { Card, CardContent } from "@/components/ui/card";
+import { useUpsolvedProblems } from "@/hooks/data";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/providers/Toast";
-import { Lightbulb } from "lucide-react";
+import { Lightbulb, ShieldAlert, Cpu } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { m } from "framer-motion";
-
 const SNOOZE_STORAGE_KEY = "training-tracker-upsolve-snoozed";
 
 const UpsolveReminder = () => {
@@ -90,80 +88,76 @@ const UpsolveReminder = () => {
 
   return (
     <m.div
-      initial={{ opacity: 0, y: -30 }}
+      initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative w-full group mb-6"
+      className="relative w-full font-mono text-amber-400 select-none"
     >
-      {/* Immersive Background Glow */}
-      <div className="absolute -inset-2 bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 rounded-[3rem] blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-700" />
-      
-      <Card className="relative overflow-hidden border-border/40 bg-card/40 backdrop-blur-2xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] rounded-[2.5rem]">
-        {/* Decorative Light Leaks */}
-        <div className="absolute top-0 right-0 size-64 bg-primary/10 rounded-full blur-[100px] -mr-32 -mt-32" />
-        <div className="absolute bottom-0 left-0 size-64 bg-accent/5 rounded-full blur-[100px] -ml-32 -mb-32" />
+      <div className="relative overflow-hidden rounded-2xl border border-amber-500/25 bg-[#080705] shadow-[0_0_20px_rgba(245,158,11,0.03)]">
+        {/* Scanline CRT overlay */}
+        <div className="absolute inset-0 pointer-events-none z-20 bg-terminal-scanlines opacity-[0.08]" />
         
-        <CardContent className="p-8 sm:p-10">
-          <div className="flex flex-col lg:flex-row items-center gap-10">
-            {/* Content Section */}
-            <div className="flex-1 flex flex-col sm:flex-row items-center sm:items-start gap-8 text-center sm:text-left">
-              <div className="relative group/icon">
-                <div className="absolute inset-0 bg-primary/30 rounded-2xl blur-xl group-hover/icon:blur-2xl transition-all animate-pulse" />
-                <div className="relative size-16 rounded-[1.25rem] bg-background/60 flex items-center justify-center border border-primary/20 shadow-inner group-hover/icon:scale-110 transition-transform duration-500">
-                  <Lightbulb className="size-8 text-primary" />
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 justify-center sm:justify-start">
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Intelligence Prompt</span>
-                  <div className="h-[1px] w-8 bg-primary/30" />
-                </div>
-                <h3 className="text-2xl font-black text-foreground tracking-tight leading-none">Upsolve Opportunity</h3>
-                <p className="text-base text-muted-foreground font-medium leading-relaxed max-w-xl opacity-80">
-                  We recommend mastering previous challenges before starting new ones. 
-                  Ready to tackle <span className="text-foreground font-black border-b-2 border-primary/30">{firstUnsolved.contestId}-{firstUnsolved.index}</span>?
-                </p>
-              </div>
-            </div>
+        {/* Cockpit Shell Top Status Header */}
+        <div className="flex flex-wrap items-center justify-between px-6 py-2.5 border-b border-amber-500/15 bg-[#14100b] text-[9px] text-amber-500/40">
+          <div className="flex items-center gap-2">
+            <ShieldAlert size={12} className="text-amber-400 animate-pulse" />
+            <span className="font-bold tracking-wider">COGNITIVE_PROMPT // UNRESOLVED_DEPENDENCY</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Cpu size={10} className="text-amber-500/30" />
+            <span>INTERCEPT: ACTIVE</span>
+          </div>
+        </div>
 
-            {/* Actions Section */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full lg:w-auto">
-              <Button
-                onClick={onUpsolveNow}
-                className="w-full sm:w-auto h-14 px-10 bg-primary text-primary-foreground hover:bg-primary/90 font-black uppercase tracking-widest text-xs shadow-2xl shadow-primary/20 rounded-2xl transition-all hover:-translate-y-1 active:scale-95"
-              >
-                Upsolve Now
-              </Button>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  onClick={onLater}
-                  className="h-12 px-6 text-muted-foreground hover:text-foreground font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-white/5"
-                >
-                  Later
-                </Button>
-                <div className="h-4 w-[1px] bg-border/40" />
-                <Button
-                  variant="ghost"
-                  onClick={onGiveUp}
-                  className="h-12 px-6 text-muted-foreground hover:text-rose-500 font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-rose-500/5"
-                >
-                  Discard
-                </Button>
-              </div>
+        {/* Viewport Screen Content */}
+        <div className="p-6 relative z-10 bg-[#080705]/95 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-start gap-4 flex-1">
+            <div className="size-10 shrink-0 rounded border border-amber-500/20 bg-amber-950/10 flex items-center justify-center text-amber-400">
+              <Lightbulb size={18} className="animate-pulse" />
+            </div>
+            
+            <div className="space-y-1">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-amber-500/40">system_recommendation</span>
+              <h4 className="text-sm font-bold text-amber-300">
+                Unsolved Challenge Node Detected: {firstUnsolved.contestId}-{firstUnsolved.index}
+              </h4>
+              <p className="text-[11px] leading-relaxed text-amber-500/60 max-w-2xl">
+                We recommend resolving previous unsolved problem blocks before compiling a new contest simulation.
+                Do you want to compile <span className="font-bold text-amber-300 underline underline-offset-4">{firstUnsolved.contestId}-{firstUnsolved.index}</span> now?
+              </p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Action buttons */}
+          <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0 w-full md:w-auto">
+            <Button
+              onClick={onUpsolveNow}
+              className="w-full sm:w-auto h-10 rounded bg-amber-500 text-amber-950 font-bold uppercase tracking-widest text-[10px] shadow-[0_0_15px_rgba(245,158,11,0.25)] hover:bg-amber-400 hover:shadow-[0_0_20px_rgba(245,158,11,0.45)] active:scale-[0.98] transition-all font-mono"
+            >
+              [ UPSOLVE_NOW.EXE ]
+            </Button>
+            
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-center">
+              <Button
+                variant="outline"
+                onClick={onLater}
+                className="h-10 px-4 rounded border border-amber-500/35 bg-transparent text-amber-400 font-bold uppercase tracking-widest text-[9px] hover:bg-amber-500/10 hover:text-amber-300 hover:border-amber-500/60 active:scale-[0.98] transition-all font-mono"
+              >
+                [ SNOOZE.SH ]
+              </Button>
+              <div className="h-4 w-px bg-amber-500/15" />
+              <Button
+                variant="outline"
+                onClick={onGiveUp}
+                className="h-10 px-4 rounded border border-red-500/35 bg-transparent text-red-400 font-bold uppercase tracking-widest text-[9px] hover:bg-red-500/10 hover:text-red-300 hover:border-red-500/60 active:scale-[0.98] transition-all font-mono"
+              >
+                [ PURGE_NODE.SH ]
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
     </m.div>
   );
 };
 
 export default UpsolveReminder;
-
-
-
-
-
-
-

@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { m } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronUp, ChevronDown, RotateCcw, Trophy, Target, Zap } from "lucide-react";
 import { useLevels } from "@/hooks/roadmap";
-import {useUser} from "@/hooks/auth";
+import { useUser } from "@/hooks/auth";
+import { cn } from "@/lib/utils";
 
 interface LevelSelectorProps {
   onLevelChange: (ratings: {
@@ -26,8 +25,7 @@ const LevelSelector = ({
   showRatings,
   setShowRatings,
 }: LevelSelectorProps) => {
-  const { levels, isLoading, getDefaultLevel, getLevelByPerformance } =
-    useLevels();
+  const { levels, isLoading, getDefaultLevel, getLevelByPerformance } = useLevels();
   const { user } = useUser();
 
   const sortedLevels = useMemo(
@@ -35,11 +33,6 @@ const LevelSelector = ({
     [levels],
   );
 
-  /**
-   * Map props to a level id. When several rows share the same P1–P4 (possible with the
-   * ladder formula), prefer the highest target Performance so we do not stick on an
-   * earlier duplicate row (e.g. cannot leave level 4).
-   */
   const matchIdFromRatings = useMemo(() => {
     if (sortedLevels.length === 0) return 1;
     const same = sortedLevels.filter(
@@ -81,16 +74,15 @@ const LevelSelector = ({
     [sortedLevels],
   );
 
-  // Helper function to get problem difficulty color
   const getProblemDifficultyColor = (rating: number) => {
-    if (rating < 1200) return "from-slate-400 to-slate-600"; // Newbie
-    if (rating < 1400) return "from-emerald-400 to-emerald-600"; // Pupil
-    if (rating < 1600) return "from-cyan-400 to-cyan-600"; // Specialist
-    if (rating < 1900) return "from-indigo-400 to-indigo-600"; // Expert
-    if (rating < 2100) return "from-violet-400 to-violet-600"; // CM
-    if (rating < 2300) return "from-amber-400 to-amber-600"; // Master
-    if (rating < 2400) return "from-orange-500 to-orange-700"; // IM
-    return "from-rose-500 to-rose-700"; // LGM/GM
+    if (rating < 1200) return "text-slate-400 border-slate-500/20";
+    if (rating < 1400) return "text-green-400 border-green-500/20";
+    if (rating < 1600) return "text-cyan-400 border-cyan-500/20";
+    if (rating < 1900) return "text-blue-400 border-blue-500/20";
+    if (rating < 2100) return "text-purple-400 border-purple-500/20";
+    if (rating < 2300) return "text-amber-400 border-amber-500/20";
+    if (rating < 2400) return "text-orange-400 border-orange-500/20";
+    return "text-red-400 border-red-500/20";
   };
 
   const applyLevelId = (levelId: number) => {
@@ -133,7 +125,6 @@ const LevelSelector = ({
 
   const currentLevel = sortedLevels.find((level) => level.id === activeLevelId);
 
-  // ponytail: sync parent customRatings on mount when levels finish loading
   useEffect(() => {
     if (!currentLevel) return;
     onLevelChange({
@@ -142,192 +133,163 @@ const LevelSelector = ({
       P3: Number.parseInt(currentLevel.P3, 10),
       P4: Number.parseInt(currentLevel.P4, 10),
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- sync once on mount, stabilizes after
-  }, [currentLevel]);
+  }, [currentLevel, onLevelChange]);
+
+  // Block loading
+  const totalBlocks = 18;
+  const levelPercent = maxLevelId > 0 ? (activeLevelId / maxLevelId) * 100 : 0;
+  const filledBlocks = Math.min(totalBlocks, Math.max(0, Math.round((levelPercent / 100) * totalBlocks)));
+  const emptyBlocks = totalBlocks - filledBlocks;
+  const levelBlocks = "█".repeat(filledBlocks) + "░".repeat(emptyBlocks);
 
   if (isLoading) {
     return (
-      <Card className="border-border/60 bg-card/30 backdrop-blur-xl animate-pulse">
-        <CardContent className="p-12 space-y-8">
-          <div className="h-10 w-64 bg-muted rounded-full mx-auto" />
-          <div className="grid grid-cols-2 gap-4">
-            <div className="h-24 bg-muted rounded-2xl" />
-            <div className="h-24 bg-muted rounded-2xl" />
-          </div>
-          <div className="h-32 bg-muted rounded-3xl" />
-        </CardContent>
-      </Card>
+      <div className="border border-emerald-500/15 bg-transparent p-8 text-center animate-pulse font-mono text-emerald-500/40">
+        [SYS] SECURING ROADMAP DIFFICULTY LEVELS... STANDBY
+      </div>
     );
   }
 
   return (
-    <Card className="relative overflow-hidden border-border/60 bg-card/40 backdrop-blur-xl shadow-2xl transition-all duration-500 hover:shadow-primary/5">
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
-
-      <CardHeader className="p-6 sm:p-8 border-b border-border/40">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <div className="space-y-1">
-            <CardTitle className="text-2xl sm:text-3xl font-black tracking-tight text-foreground flex items-center gap-3">
-              <Trophy className="size-8 text-primary" />
-              Training Level
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">Adjust the problem set difficulty to match your goals.</p>
-          </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowRatings((prev) => !prev)}
-            className="h-10 px-4 rounded-full border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 transition-all duration-300"
-          >
-            <Target className="size-4 mr-2" />
-            {showRatings ? "Hide Probabilities" : "Show Probabilities"}
-          </Button>
+    <div className="font-mono text-emerald-400 space-y-6">
+      {/* Header bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-emerald-500/15 select-none text-xs text-emerald-500/60">
+        <div className="flex items-center gap-2">
+          <Trophy size={14} className="text-emerald-400" />
+          <span className="font-semibold tracking-wider">SYS.LEVELS // CONFIG_DIFFICULTY</span>
         </div>
-      </CardHeader>
 
-      <CardContent className="p-6 sm:p-8 lg:p-10 space-y-10 sm:space-y-12">
-        {/* Main Display */}
-        <div className="grid lg:grid-cols-2 gap-8 items-center">
-          {/* Level Info */}
-          <div className="space-y-6">
-            <div className="relative group">
-              <div className="absolute -inset-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-[2rem] blur-2xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
-              <div className="relative bg-background/60 border border-primary/20 rounded-3xl p-8 text-center space-y-4 backdrop-blur-md shadow-inner">
-                <div className="text-sm font-bold tracking-[0.2em] text-primary uppercase">Current Level</div>
-                <div className="text-6xl sm:text-7xl font-black text-foreground tabular-nums tracking-tighter">
-                  {currentLevel?.level || "1"}
-                </div>
-                <div className="flex items-center justify-center gap-6 pt-2">
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Target Rating</span>
-                    <span className="text-lg font-bold text-foreground">{currentLevel?.Performance || "900"}</span>
-                  </div>
-                  <div className="w-px h-8 bg-border" />
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Time Limit</span>
-                    <span className="text-lg font-bold text-foreground">{currentLevel?.time || "120"}m</span>
-                  </div>
-                </div>
-              </div>
+        <Button
+          onClick={() => setShowRatings((prev) => !prev)}
+          variant="outline"
+          className="h-8 px-3 rounded border border-emerald-500/35 bg-[#060a08] text-emerald-400 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-500/10 hover:text-emerald-300 hover:border-emerald-500/60 active:scale-[0.98] transition-all font-mono"
+        >
+          <Target size={11} className="mr-1.5" />
+          {showRatings ? "[ MASK RATING ]" : "[ REVEAL RATING ]"}
+        </Button>
+      </div>
+
+      <div className="grid lg:grid-cols-12 gap-6 items-start">
+        {/* Left Adjuster block (col-span-5) */}
+        <div className="lg:col-span-5 space-y-4">
+          <div className="relative bg-[#060a08]/50 border border-emerald-500/15 rounded-xl p-6 text-center space-y-3 relative overflow-hidden">
+            <div className="absolute inset-0 pointer-events-none z-10 bg-terminal-scanlines opacity-[0.06]" />
+            <div className="text-[10px] font-bold tracking-[0.2em] text-emerald-500/40 uppercase">TELEMETRY_LEVEL</div>
+            <div className="text-6xl font-black text-emerald-300 glow-text-emerald leading-none py-2 tabular-nums">
+              LVL_{activeLevelId}
             </div>
-
-            {/* Controls */}
-            <div className="flex items-center justify-between gap-4 p-2 bg-muted/20 rounded-[2rem] border border-border/40 backdrop-blur-sm">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={decreaseLevel}
-                disabled={selectedIndex <= 0}
-                className="size-14 rounded-full hover:bg-background shadow-none hover:shadow-xl transition-all duration-300 disabled:opacity-20"
-              >
-                <ChevronDown className="size-6" />
-              </Button>
-
-              <div className="text-center">
-                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-1">Scale Level</div>
-                <div className="h-1.5 w-32 bg-muted rounded-full overflow-hidden">
-                  <m.div
-                    className="h-full bg-primary"
-                    initial={{ width: 0 }}
-                    animate={{
-                      width: `${
-                        maxLevelId > 0
-                          ? (activeLevelId / maxLevelId) * 100
-                          : 0
-                      }%`,
-                    }}
-                    transition={{ type: "spring", bounce: 0, duration: 0.5 }}
-                  />
-                </div>
+            
+            <div className="flex items-center justify-center gap-6 pt-2 text-[10px] border-t border-emerald-500/10">
+              <div className="flex flex-col items-center">
+                <span className="text-[8px] font-bold text-emerald-500/40 uppercase">TARGET PERFORMANCE</span>
+                <span className="text-sm font-bold text-emerald-300 mt-0.5 tabular-nums">{currentLevel?.Performance || "900"}</span>
               </div>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={increaseLevel}
-                disabled={
-                  selectedIndex < 0 ||
-                  selectedIndex >= sortedLevels.length - 1
-                }
-                className="size-14 rounded-full hover:bg-background shadow-none hover:shadow-xl transition-all duration-300 disabled:opacity-20"
-              >
-                <ChevronUp className="size-6" />
-              </Button>
+              <div className="w-px h-6 bg-emerald-500/15" />
+              <div className="flex flex-col items-center">
+                <span className="text-[8px] font-bold text-emerald-500/40 uppercase">TIMEOUT PARAM</span>
+                <span className="text-sm font-bold text-emerald-300 mt-0.5 tabular-nums">{currentLevel?.time || "120"} MIN</span>
+              </div>
             </div>
           </div>
 
-          {/* Breakdown */}
-          <div className="space-y-6">
-            <h3 className="text-sm font-bold text-foreground uppercase tracking-[0.2em] px-2 flex items-center gap-2">
-              <Zap className="size-4 text-accent" />
-              Difficulty Breakdown
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { label: "Problem 1", rating: currentLevel?.P1, color: getProblemDifficultyColor(Number.parseInt(currentLevel?.P1 || "0")) },
-                { label: "Problem 2", rating: currentLevel?.P2, color: getProblemDifficultyColor(Number.parseInt(currentLevel?.P2 || "0")) },
-                { label: "Problem 3", rating: currentLevel?.P3, color: getProblemDifficultyColor(Number.parseInt(currentLevel?.P3 || "0")) },
-                { label: "Problem 4", rating: currentLevel?.P4, color: getProblemDifficultyColor(Number.parseInt(currentLevel?.P4 || "0")) }
-              ].map((p) => (
-                <div key={p.label} className="group relative">
-                  <div className={`absolute inset-0 bg-gradient-to-br ${p.color} opacity-[0.03] rounded-2xl group-hover:opacity-[0.08] transition-opacity duration-300`} />
-                  <div className="relative p-5 rounded-2xl border border-border/40 bg-background/40 hover:border-primary/30 transition-all duration-300">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{p.label}</span>
-                      <div className={`size-1.5 rounded-full bg-gradient-to-r ${p.color} animate-pulse`} />
+          {/* Level adjustment slider wrapper */}
+          <div className="flex items-center justify-between gap-4 p-3 bg-emerald-950/5 rounded-xl border border-emerald-500/15 font-mono">
+            <Button
+              onClick={decreaseLevel}
+              disabled={selectedIndex <= 0}
+              variant="outline"
+              className="h-10 px-3 rounded border border-emerald-500/35 bg-transparent text-emerald-400 font-bold uppercase hover:bg-emerald-500/10 disabled:opacity-20 transition-all font-mono"
+            >
+              <ChevronDown className="size-4" />
+            </Button>
+
+            <div className="text-center flex-1">
+              <div className="text-[8px] font-black uppercase tracking-[0.25em] text-emerald-500/40 mb-1.5">SCALE DIFFICULTY</div>
+              <div className="text-[9px] tracking-tight font-mono text-emerald-300 select-none">
+                [{levelBlocks}] {Math.round(levelPercent)}%
+              </div>
+            </div>
+
+            <Button
+              onClick={increaseLevel}
+              disabled={
+                selectedIndex < 0 ||
+                selectedIndex >= sortedLevels.length - 1
+              }
+              variant="outline"
+              className="h-10 px-3 rounded border border-emerald-500/35 bg-transparent text-emerald-400 font-bold uppercase hover:bg-emerald-500/10 disabled:opacity-20 transition-all font-mono"
+            >
+              <ChevronUp className="size-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Right Difficulty breakdown (col-span-7) */}
+        <div className="lg:col-span-7 space-y-4">
+          <span className="text-[8px] font-bold text-emerald-500/40 uppercase tracking-[0.2em] flex items-center gap-2">
+            <Zap className="size-3 text-emerald-400 animate-pulse" />
+            DIFFICULTY_NODES_TELEMETRY
+          </span>
+          
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { label: "PROBLEM_NODE_01", rating: currentLevel?.P1, style: getProblemDifficultyColor(Number.parseInt(currentLevel?.P1 || "0")) },
+              { label: "PROBLEM_NODE_02", rating: currentLevel?.P2, style: getProblemDifficultyColor(Number.parseInt(currentLevel?.P2 || "0")) },
+              { label: "PROBLEM_NODE_03", rating: currentLevel?.P3, style: getProblemDifficultyColor(Number.parseInt(currentLevel?.P3 || "0")) },
+              { label: "PROBLEM_NODE_04", rating: currentLevel?.P4, style: getProblemDifficultyColor(Number.parseInt(currentLevel?.P4 || "0")) }
+            ].map((p) => (
+              <div
+                key={p.label}
+                className={cn(
+                  "relative p-4 rounded-xl border bg-emerald-950/5 font-mono flex flex-col justify-between",
+                  p.style
+                )}
+              >
+                <div className="flex items-center justify-between text-[8px] font-bold uppercase tracking-widest opacity-60">
+                  <span>{p.label}</span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
+                </div>
+                
+                <div className="mt-2.5">
+                  <span className="text-[8px] font-bold uppercase tracking-wider text-emerald-500/40 block">difficulty rating</span>
+                  <div className="relative h-6 mt-0.5">
+                    <div className={cn("text-base font-black tabular-nums transition-all leading-none", showRatings ? "" : "blur-md opacity-15")}>
+                      {p.rating}
                     </div>
-                    <div className="relative h-8">
-                      <div className={`text-xl font-black tabular-nums transition-all duration-500 ${showRatings ? "" : "blur-md opacity-20"}`}>
-                        {p.rating}
+                    {!showRatings && (
+                      <div className="absolute inset-0 flex items-center text-[9px] font-black text-emerald-500/30 uppercase tracking-widest">
+                        [ HIDDEN ]
                       </div>
-                      {!showRatings && (
-                        <div className="absolute inset-0 flex items-center text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">
-                          Hidden
-                        </div>
-                      )}
-                    </div>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
+      </div>
 
-        {/* Footer Actions */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-6 border-t border-border/40">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
-              <RotateCcw className="size-4 text-muted-foreground" />
-            </div>
-            <div className="text-left">
-              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Restore Defaults</div>
-              <button
-                onClick={resetToDefault}
-                className="text-xs font-bold text-primary hover:text-primary/80 transition-colors"
-              >
-                Reset to {user?.rating ? "Recommended" : "Level 1"}
-              </button>
-            </div>
-          </div>
-
-          <div className="px-4 py-1.5 rounded-full bg-muted/30 border border-border/40 flex items-center gap-2">
-            <span className="size-1.5 rounded-full bg-accent" />
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.1em]">
-              Level Range: 1 - {maxLevelId || levels.length}
-            </span>
-          </div>
+      {/* Footer defaults block */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-emerald-500/10">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={resetToDefault}
+            className="h-8 px-3 rounded border border-emerald-500/20 bg-transparent text-emerald-500 hover:text-emerald-300 hover:border-emerald-500/50 transition-all font-mono text-[9px] font-bold uppercase flex items-center gap-1.5"
+          >
+            <RotateCcw className="size-3" />
+            [ RESET_RECOMMENDED ]
+          </button>
+          <span className="text-[9px] text-emerald-500/50">
+            Reset to rating recommended level: {user?.rating ? `LVL_${getLevelByPerformance(user.rating)?.id}` : "LVL_1"}
+          </span>
         </div>
-      </CardContent>
-    </Card>
+
+        <div className="text-[8px] font-bold text-emerald-500/40 uppercase tracking-[0.1em] px-2 py-0.5 rounded border border-emerald-500/10 bg-emerald-950/10">
+          LEVEL RANGE: 1 - {maxLevelId || levels.length}
+        </div>
+      </div>
+    </div>
   );
 };
 
 export default LevelSelector;
-
-
-
-
-
-
-
