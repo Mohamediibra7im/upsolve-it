@@ -10,6 +10,7 @@ import {
   ArrowLeft,
   ListMusic,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { useAdminRoadmapTopics } from "@/hooks/admin/useAdminRoadmap";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/providers/Toast";
 import type { RoadmapTopicSummary } from "@/types/Roadmap";
+import { cn } from "@/lib/utils";
 
 interface AdminRoadmapTopicsProps {
   levelId: string;
@@ -116,15 +118,15 @@ export default function AdminRoadmapTopicsComponent({
       if (editingTopic) {
         await updateTopic(editingTopic._id, payload);
         toast({
-          title: "Updated",
-          description: "Session updated successfully",
+          title: "ROADMAP: SESSION UPDATED",
+          description: "Successfully updated training session details.",
           variant: "success",
         });
       } else {
         await createTopic(payload);
         toast({
-          title: "Created",
-          description: "Session created successfully",
+          title: "ROADMAP: SESSION INJECTED",
+          description: "Successfully registered a new training session node.",
           variant: "success",
         });
       }
@@ -133,8 +135,8 @@ export default function AdminRoadmapTopicsComponent({
       setEditingTopic(null);
     } catch (err: any) {
       toast({
-        title: "Error",
-        description: err.message || "Failed to save topic",
+        title: "SYS.ERR: WRITE FAILED",
+        description: err.message || "Failed to save session configuration.",
         variant: "destructive",
       });
     }
@@ -143,52 +145,52 @@ export default function AdminRoadmapTopicsComponent({
   const handleTopicDelete = async (id: string) => {
     if (
       !confirm(
-        "Are you sure you want to delete this session, including its resources and problems?"
+        "Are you sure you want to delete this session, including its resources and problems? This action is permanent!"
       )
     )
       return;
     try {
       await deleteTopic(id);
       toast({
-        title: "Deleted",
-        description: "Session deleted successfully",
+        title: "ROADMAP: SESSION REMOVED",
+        description: "Session node deleted.",
         variant: "success",
       });
     } catch (_err: any) {
       toast({
-        title: "Error",
-        description: "Failed to delete session",
+        title: "SYS.ERR: DELETE FAILED",
+        description: "Failed to delete training session.",
         variant: "destructive",
       });
     }
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 font-mono text-emerald-400">
       {/* Header back navigation */}
       <div className="flex items-center gap-4">
         <Link
           href="/admin/roadmap"
-          className="inline-flex items-center gap-2 rounded-2xl border border-border/40 bg-card/30 px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+          className="inline-flex items-center gap-2 rounded-none border border-emerald-500/15 bg-[#060a08]/30 px-4 py-1.5 text-[9px] font-bold uppercase tracking-widest text-emerald-500/60 hover:text-emerald-300 hover:border-emerald-500/30 transition-all shadow-sm"
         >
-          <ArrowLeft className="size-4" />
-          Back to Levels
+          <ArrowLeft className="size-3" />
+          <span>[ BACK_TO_LEVELS.SH ]</span>
         </Link>
       </div>
 
       {/* Sessions List */}
-      <div className="rounded-3xl border border-border/40 bg-card/60 overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between border-b border-border/40 px-8 py-5 gap-4">
+      <div className="rounded-none border border-emerald-500/15 bg-[#060a08]/10 shadow-2xl">
+        <div className="flex flex-wrap items-center justify-between border-b border-emerald-500/15 px-6 py-4 gap-4">
           <div className="flex items-center gap-3">
-            <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-              <ListMusic size={18} />
+            <div className="size-8 rounded-none bg-emerald-950/15 border border-emerald-500/25 flex items-center justify-center text-emerald-400 shrink-0">
+              <ListMusic size={16} />
             </div>
             <div>
-              <h2 className="text-base font-black text-foreground">
-                Level Sessions
+              <h2 className="text-xs font-bold uppercase tracking-widest text-emerald-300">
+                LEVEL_SESSIONS
               </h2>
-              <p className="text-xs text-muted-foreground">
-                Click on a session to manage its resources and problems.
+              <p className="text-[9px] text-emerald-500/40 font-bold uppercase mt-0.5">
+                Click on a session row to manage its resources and problems.
               </p>
             </div>
           </div>
@@ -206,27 +208,28 @@ export default function AdminRoadmapTopicsComponent({
             <DialogTrigger asChild>
               <Button
                 onClick={handleOpenCreateTopic}
-                className="rounded-xl bg-primary text-xs font-black uppercase tracking-[0.1em] text-primary-foreground gap-2"
+                className="h-8 px-4 rounded-none bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[9px] font-mono shadow-[0_0_15px_rgba(16,185,129,0.25)] border-transparent"
               >
-                <Plus size={16} />
-                Create Session
+                <Plus size={12} className="mr-1.5 shrink-0" />
+                <span>[ CREATE_SESSION.EXE ]</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md bg-card border-border text-foreground max-h-[90vh] overflow-y-auto">
-              <form onSubmit={handleTopicSubmit}>
+            <DialogContent className="max-w-md bg-[#060a08] border-emerald-500/25 text-emerald-400 font-mono rounded-none max-h-[90vh] overflow-y-auto">
+              <form onSubmit={handleTopicSubmit} className="space-y-4">
                 <DialogHeader>
-                  <DialogTitle>
-                    {editingTopic ? "Edit Session" : "Create Session"}
+                  <DialogTitle className="text-xs font-bold uppercase tracking-widest text-emerald-300">
+                    {editingTopic ? "EDIT_SESSION_NODE" : "CREATE_SESSION_NODE"}
                   </DialogTitle>
-                  <DialogDescription>
-                    Configure session details, progression gates, and XP
-                    rewards.
+                  <DialogDescription asChild>
+                    <div className="text-[10px] text-emerald-500/40 font-bold uppercase mt-0.5">
+                      Configure session details, progression gates, and XP rewards.
+                    </div>
                   </DialogDescription>
                 </DialogHeader>
 
-                <div className="py-4 space-y-4 text-left">
+                <div className="py-2 space-y-3 text-left">
                   <div className="grid grid-cols-3 items-center gap-4">
-                    <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/45 text-right">
                       Order Index
                     </label>
                     <Input
@@ -235,52 +238,52 @@ export default function AdminRoadmapTopicsComponent({
                       onChange={(e) =>
                         setOrderIndex(Number(e.target.value))
                       }
-                      className="col-span-2 rounded-xl"
+                      className="col-span-2 rounded-none bg-[#040604]/50 border-emerald-500/15 focus:ring-0 focus:border-emerald-500/45 text-emerald-300 text-xs font-mono"
                       required
                     />
                   </div>
                   <div className="grid grid-cols-3 items-center gap-4">
-                    <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/45 text-right">
                       Session Title
                     </label>
                     <Input
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      className="col-span-2 rounded-xl"
+                      className="col-span-2 rounded-none bg-[#040604]/50 border-emerald-500/15 focus:ring-0 focus:border-emerald-500/45 text-emerald-300 text-xs font-mono"
                       placeholder="e.g. Session 1: Binary Search"
                       required
                     />
                   </div>
                   <div className="grid grid-cols-3 items-center gap-4">
-                    <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/45 text-right">
                       Description
                     </label>
                     <Textarea
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      className="col-span-2 rounded-xl"
+                      className="col-span-2 rounded-none bg-[#040604]/50 border-emerald-500/15 focus:ring-0 focus:border-emerald-500/45 text-emerald-300 text-xs font-mono min-h-20"
                       placeholder="Brief outline of the session"
                     />
                   </div>
                   <div className="grid grid-cols-3 items-center gap-4">
-                    <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">
-                      Subtopics (comma split)
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/45 text-right">
+                      Subtopics
                     </label>
                     <Input
                       value={subtopicsRaw}
                       onChange={(e) => setSubtopicsRaw(e.target.value)}
-                      className="col-span-2 rounded-xl"
+                      className="col-span-2 rounded-none bg-[#040604]/50 border-emerald-500/15 focus:ring-0 focus:border-emerald-500/45 text-emerald-300 text-xs font-mono"
                       placeholder="e.g. Lower Bound, Upper Bound"
                     />
                   </div>
 
-                  <div className="border-t border-border/40 pt-4 space-y-4">
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                      Progression Gates
+                  <div className="border-t border-emerald-500/15 pt-3 space-y-3">
+                    <div className="text-[8px] font-bold uppercase tracking-widest text-emerald-500/35">
+                      {"// PROGRESSION_GATES"}
                     </div>
                     <div className="grid grid-cols-3 items-center gap-4">
-                      <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">
-                        Req. Learning %
+                      <label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/45 text-right">
+                        Req. Learn %
                       </label>
                       <Input
                         type="number"
@@ -288,14 +291,14 @@ export default function AdminRoadmapTopicsComponent({
                         onChange={(e) =>
                           setRequiredLearningPct(Number(e.target.value))
                         }
-                        className="col-span-2 rounded-xl"
+                        className="col-span-2 rounded-none bg-[#040604]/50 border-emerald-500/15 focus:ring-0 focus:border-emerald-500/45 text-emerald-300 text-xs font-mono"
                         min={0}
                         max={100}
                         required
                       />
                     </div>
                     <div className="grid grid-cols-3 items-center gap-4">
-                      <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">
+                      <label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/45 text-right">
                         Req. Problem %
                       </label>
                       <Input
@@ -304,15 +307,15 @@ export default function AdminRoadmapTopicsComponent({
                         onChange={(e) =>
                           setRequiredProblemPct(Number(e.target.value))
                         }
-                        className="col-span-2 rounded-xl"
+                        className="col-span-2 rounded-none bg-[#040604]/50 border-emerald-500/15 focus:ring-0 focus:border-emerald-500/45 text-emerald-300 text-xs font-mono"
                         min={0}
                         max={100}
                         required
                       />
                     </div>
                     <div className="grid grid-cols-3 items-center gap-4">
-                      <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">
-                        Topic XP Reward
+                      <label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/45 text-right">
+                        XP Reward
                       </label>
                       <Input
                         type="number"
@@ -320,27 +323,27 @@ export default function AdminRoadmapTopicsComponent({
                         onChange={(e) =>
                           setTopicXpReward(Number(e.target.value))
                         }
-                        className="col-span-2 rounded-xl"
+                        className="col-span-2 rounded-none bg-[#040604]/50 border-emerald-500/15 focus:ring-0 focus:border-emerald-500/45 text-emerald-300 text-xs font-mono"
                         required
                       />
                     </div>
                   </div>
                 </div>
 
-                <DialogFooter>
+                <DialogFooter className="gap-2 sm:gap-0 pt-2">
                   <Button
                     type="button"
                     variant="ghost"
                     onClick={() => setIsTopicDialogOpen(false)}
-                    className="rounded-xl"
+                    className="rounded-none border border-emerald-500/15 text-emerald-400 hover:bg-emerald-500/10 font-mono text-[9px] uppercase tracking-widest h-8"
                   >
-                    Cancel
+                    [ CANCEL ]
                   </Button>
                   <Button
                     type="submit"
-                    className="rounded-xl bg-primary text-primary-foreground"
+                    className="rounded-none bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[9px] font-mono shadow-[0_0_15px_rgba(16,185,129,0.25)] border-transparent h-8"
                   >
-                    Save Changes
+                    [ SAVE_CHANGES.EXE ]
                   </Button>
                 </DialogFooter>
               </form>
@@ -349,63 +352,51 @@ export default function AdminRoadmapTopicsComponent({
         </div>
 
         {isLoading ? (
-          <div className="p-8 text-center text-muted-foreground">
-            Loading sessions...
+          <div className="p-8 text-center text-xs font-bold text-emerald-500/40 uppercase tracking-widest animate-pulse">
+            Loading roadmap session nodes...
           </div>
         ) : topics.length === 0 ? (
-          <div className="p-12 text-center text-muted-foreground italic">
-            No sessions registered for this level yet. Create one!
+          <div className="p-12 text-center text-xs font-bold text-emerald-500/35 uppercase tracking-widest italic">
+            [ NO_SESSIONS_REGISTERED_FOR_LEVEL ]
           </div>
         ) : (
           <Table>
-            <TableHeader className="bg-background/40">
-              <TableRow>
-                <TableHead className="px-6 py-4">#</TableHead>
-                <TableHead className="px-6 py-4">Session Title</TableHead>
-                <TableHead className="px-6 py-4 text-center">
-                  Resources
-                </TableHead>
-                <TableHead className="px-6 py-4 text-center">
-                  Problems
-                </TableHead>
-                <TableHead className="px-6 py-4 text-center">
-                  Learn %
-                </TableHead>
-                <TableHead className="px-6 py-4 text-center">
-                  Problem %
-                </TableHead>
-                <TableHead className="px-6 py-4 text-center">
-                  XP
-                </TableHead>
-                <TableHead className="px-6 py-4 text-right">
-                  Actions
-                </TableHead>
+            <TableHeader className="bg-black/20">
+              <TableRow className="border-b border-emerald-500/15 hover:bg-transparent">
+                <TableHead className="px-6 py-3 text-[9px] font-bold uppercase tracking-widest text-emerald-500/40 w-16">#</TableHead>
+                <TableHead className="px-6 py-3 text-[9px] font-bold uppercase tracking-widest text-emerald-500/40">SESSION_TITLE</TableHead>
+                <TableHead className="px-6 py-3 text-[9px] font-bold uppercase tracking-widest text-emerald-500/40 text-center">RESOURCES</TableHead>
+                <TableHead className="px-6 py-3 text-[9px] font-bold uppercase tracking-widest text-emerald-500/40 text-center">PROBLEMS</TableHead>
+                <TableHead className="px-6 py-3 text-[9px] font-bold uppercase tracking-widest text-emerald-500/40 text-center">REQ_LEARN</TableHead>
+                <TableHead className="px-6 py-3 text-[9px] font-bold uppercase tracking-widest text-emerald-500/40 text-center">REQ_PROBLEMS</TableHead>
+                <TableHead className="px-6 py-3 text-[9px] font-bold uppercase tracking-widest text-emerald-500/40 text-center">XP_REWARD</TableHead>
+                <TableHead className="px-6 py-3 text-[9px] font-bold uppercase tracking-widest text-emerald-500/40 text-right">OPERATIONS</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {topics.map((t) => (
                 <TableRow
                   key={t._id}
-                  className="hover:bg-card/25 cursor-pointer group"
+                  className="hover:bg-emerald-500/[0.02] border-b border-emerald-500/[0.08] cursor-pointer group"
                   onClick={() =>
                     router.push(
                       `/admin/roadmap/${levelId}/sessions/${t._id}`
                     )
                   }
                 >
-                  <TableCell className="px-6 py-4 font-mono font-bold text-xs">
-                    {t.orderIndex}
+                  <TableCell className="px-6 py-4 font-mono font-bold text-xs text-emerald-500/35">
+                    {String(t.orderIndex).padStart(2, '0')}
                   </TableCell>
                   <TableCell className="px-6 py-4 font-bold">
                     <div className="flex flex-col">
-                      <span className="group-hover:text-primary transition-colors">
+                      <span className="text-emerald-300 group-hover:text-emerald-200 transition-colors tracking-wider">
                         {t.title}
                       </span>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {(t.subtopics ?? []).map((sub) => (
                           <span
                             key={sub}
-                            className="rounded-full bg-secondary px-2 py-0.5 text-[8px] font-bold text-muted-foreground"
+                            className="bg-emerald-500/10 border border-emerald-500/15 px-1.5 py-0.5 text-[8px] font-bold text-emerald-500/60 uppercase rounded-none"
                           >
                             {sub}
                           </span>
@@ -413,30 +404,30 @@ export default function AdminRoadmapTopicsComponent({
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="px-6 py-4 text-center font-mono text-xs font-black">
+                  <TableCell className="px-6 py-4 text-center font-mono text-xs font-bold text-emerald-300">
                     {t.resourcesCount ?? 0}
                   </TableCell>
-                  <TableCell className="px-6 py-4 text-center font-mono text-xs font-black">
+                  <TableCell className="px-6 py-4 text-center font-mono text-xs font-bold text-emerald-300">
                     {t.problemsCount ?? 0}
                   </TableCell>
                   <TableCell className="px-6 py-4 text-center">
-                    <span className="text-xs font-bold text-muted-foreground/80">
+                    <span className="text-xs font-bold text-emerald-500/60">
                       {t.requiredLearningPct ?? 80}%
                     </span>
                   </TableCell>
                   <TableCell className="px-6 py-4 text-center">
-                    <span className="text-xs font-bold text-muted-foreground/80">
+                    <span className="text-xs font-bold text-emerald-500/60">
                       {t.requiredProblemPct ?? 60}%
                     </span>
                   </TableCell>
                   <TableCell className="px-6 py-4 text-center">
-                    <span className="text-sm font-black text-primary">
-                      +{t.topicXpReward ?? 100}
+                    <span className="text-xs font-bold text-emerald-400">
+                      +{t.topicXpReward ?? 100} XP
                     </span>
                   </TableCell>
                   <TableCell className="px-6 py-4 text-right">
                     <div
-                      className="flex items-center justify-end gap-1"
+                      className="flex items-center justify-end gap-2"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Button
@@ -446,12 +437,9 @@ export default function AdminRoadmapTopicsComponent({
                           e.stopPropagation();
                           handleOpenEditTopic(t);
                         }}
-                        className="rounded-xl size-8 hover:bg-secondary"
+                        className="size-7 rounded-none border border-emerald-500/15 hover:bg-emerald-500/10 text-emerald-450"
                       >
-                        <Edit2
-                          size={12}
-                          className="text-muted-foreground"
-                        />
+                        <Edit2 size={12} />
                       </Button>
                       <Button
                         variant="ghost"
@@ -460,13 +448,13 @@ export default function AdminRoadmapTopicsComponent({
                           e.stopPropagation();
                           handleTopicDelete(t._id);
                         }}
-                        className="rounded-xl size-8 hover:bg-destructive/10"
+                        className="size-7 rounded-none border border-red-500/15 hover:bg-red-955/10 text-red-400"
                       >
-                        <Trash2 size={12} className="text-destructive" />
+                        <Trash2 size={12} />
                       </Button>
                       <ChevronRight
-                        size={16}
-                        className="text-muted-foreground/40 ml-2 group-hover:text-primary group-hover:translate-x-0.5 transition-all"
+                        size={14}
+                        className="text-emerald-500/30 ml-1 group-hover:text-emerald-300 group-hover:translate-x-0.5 transition-all"
                       />
                     </div>
                   </TableCell>

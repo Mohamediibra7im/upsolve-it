@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Plus, Edit2, Trash2, Layers, Check, X, ArrowRight, Search, Users, Eye, EyeOff, KeyRound } from "lucide-react";
+import { Plus, Edit2, Trash2, Layers, Check, X, ArrowRight, Search, Users, Eye, EyeOff, KeyRound, Lock, Unlock, Loader2 } from "lucide-react";
 import { useAdminRoadmapLevels } from "@/hooks/admin/useAdminRoadmap";
 import { useAdminUsers } from "@/hooks/admin/useAdminUsers";
 import { Button } from "@/components/ui/button";
@@ -132,15 +132,15 @@ export default function AdminRoadmapLevelsComponent() {
     try {
       if (editingLevel) {
         await updateLevel(editingLevel._id, payload);
-        toast({ title: "Success", description: "Level updated successfully", variant: "success" });
+        toast({ title: "ROADMAP: LEVEL UPDATED", description: "Successfully updated roadmap level parameters.", variant: "success" });
       } else {
         await createLevel(payload);
-        toast({ title: "Success", description: "Level created successfully", variant: "success" });
+        toast({ title: "ROADMAP: LEVEL CREATED", description: "Successfully injected a new roadmap level node.", variant: "success" });
       }
       setIsOpen(false);
       resetForm();
     } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Failed to save level", variant: "destructive" });
+      toast({ title: "SYS.ERR: WRITE FAILED", description: err.message || "Failed to commit level settings.", variant: "destructive" });
     }
   };
 
@@ -148,9 +148,9 @@ export default function AdminRoadmapLevelsComponent() {
     if (!confirm("Are you sure you want to delete this level and all its sessions/problems? This cannot be undone!")) return;
     try {
       await deleteLevel(id);
-      toast({ title: "Success", description: "Level deleted successfully", variant: "success" });
+      toast({ title: "ROADMAP: LEVEL REMOVED", description: "Level node deleted.", variant: "success" });
     } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Failed to delete level", variant: "destructive" });
+      toast({ title: "SYS.ERR: DELETE FAILED", description: err.message || "Failed to delete level.", variant: "destructive" });
     }
   };
 
@@ -188,18 +188,17 @@ export default function AdminRoadmapLevelsComponent() {
         try {
           await revokeLevelAccess(lvl._id, toRevoke);
         } catch (revokeErr) {
-          // rollback grant if revoke fails
           if (toGrant.length > 0) {
             await revokeLevelAccess(lvl._id, toGrant).catch(() => {});
           }
           throw new Error("Revoke failed. Grant was rolled back.");
         }
       }
-      toast({ title: "Success", description: "Level access updated", variant: "success" });
+      toast({ title: "ROADMAP: ACCESS GRANTED", description: "Successfully updated registry clearance parameters.", variant: "success" });
       setGrantDialogOpen(false);
       resetGrantDialog();
     } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Failed to update access", variant: "destructive" });
+      toast({ title: "SYS.ERR: ACCESS UPDATE FAILED", description: err.message || "Failed to update level keys.", variant: "destructive" });
     }
   };
 
@@ -207,83 +206,56 @@ export default function AdminRoadmapLevelsComponent() {
     try {
       await updateLevel(lvl._id, { isPublished: !lvl.isPublished });
       toast({
-        title: "Updated",
-        description: `Level is now ${!lvl.isPublished ? "Published" : "Draft"}`,
+        title: "ROADMAP: LEVEL UPDATED",
+        description: `Level status set to ${!lvl.isPublished ? "PUBLISHED" : "DRAFT"}`,
         variant: "success",
       });
     } catch (_err: any) {
-      toast({ title: "Error", description: "Failed to update publish state", variant: "destructive" });
+      toast({ title: "SYS.ERR: LEVE_UPDATE FAILED", description: "Failed to update publish state.", variant: "destructive" });
     }
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 font-mono text-emerald-400">
       {/* Overview/Threshold dashboard */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-2xl border border-border/40 bg-card p-5">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Total Levels</span>
-          <p className="text-3xl font-heading font-black text-foreground mt-2">{levels.length}</p>
-          <p className="text-[10px] text-muted-foreground mt-1">
+        <div className="rounded-none border border-emerald-500/15 bg-[#060a08]/30 p-5 shadow-sm">
+          <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-500/35">TOTAL_LEVEL_NODES</span>
+          <p className="text-2xl font-bold text-emerald-300 mt-2">{levels.length}</p>
+          <p className="text-[9px] text-emerald-500/40 mt-1 uppercase">
             {levels.filter((l) => l.isPublished).length} published, {levels.filter((l) => !l.isPublished).length} drafts
           </p>
         </div>
-        <div className="rounded-2xl border border-border/40 bg-card p-5">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Total Sessions</span>
-          <p className="text-3xl font-heading font-black text-foreground mt-2">
+        <div className="rounded-none border border-emerald-500/15 bg-[#060a08]/30 p-5 shadow-sm">
+          <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-500/35">TOTAL_TOPIC_SESSIONS</span>
+          <p className="text-2xl font-bold text-emerald-300 mt-2">
             {levels.reduce((sum, l) => sum + (l.topicsCount ?? 0), 0)}
           </p>
-          <p className="text-[10px] text-muted-foreground mt-1">
-            Across all levels
+          <p className="text-[9px] text-emerald-500/40 mt-1 uppercase">
+            Curriculum sector nodes
           </p>
         </div>
-        <div className="rounded-2xl border border-border/40 bg-card p-5">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Total Bonus XP Pool</span>
-          <p className="text-3xl font-heading font-black text-primary mt-2">
+        <div className="rounded-none border border-emerald-500/15 bg-[#060a08]/30 p-5 shadow-sm">
+          <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-500/35">BONUS_XP_POOL_POOL</span>
+          <p className="text-2xl font-bold text-emerald-400 mt-2">
             {levels.reduce((sum, l) => sum + (l.levelBonusXp ?? 0), 0).toLocaleString()} XP
           </p>
-          <p className="text-[10px] text-muted-foreground mt-1">
-            Sum of all level bonuses
-          </p>
-        </div>
-        <div className="rounded-2xl border border-border/40 bg-card p-5">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Avg Level Bonus XP</span>
-          <p className="text-3xl font-heading font-black text-primary mt-2">
-            {levels.length > 0 ? Math.round(levels.reduce((sum, l) => sum + (l.levelBonusXp ?? 0), 0) / levels.length) : 0} XP
-          </p>
-          <p className="text-[10px] text-muted-foreground mt-1">
-            Per level average
-          </p>
-        </div>
-        <div className="rounded-2xl border border-border/40 bg-card p-5">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Restricted Levels</span>
-          <p className="text-3xl font-heading font-black text-purple-400 mt-2">
-            {levels.filter((l) => l.visibility === "specific_users").length}
-          </p>
-          <p className="text-[10px] text-muted-foreground mt-1">
-            {levels.filter((l) => l.visibility === "all").length} open to all users
-          </p>
-        </div>
-        <div className="rounded-2xl border border-border/40 bg-card p-5">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Published Rate</span>
-          <p className="text-3xl font-heading font-black text-emerald-400 mt-2">
-            {levels.length > 0 ? Math.round((levels.filter((l) => l.isPublished).length / levels.length) * 100) : 0}%
-          </p>
-          <p className="text-[10px] text-muted-foreground mt-1">
-            {levels.filter((l) => l.isPublished).length} of {levels.length} levels live
+          <p className="text-[9px] text-emerald-500/40 mt-1 uppercase">
+            Sum of all reward vectors
           </p>
         </div>
       </div>
 
       {/* Main Levels Table */}
-      <div className="rounded-3xl border border-border/40 bg-card/60 overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between border-b border-border/40 px-8 py-5 gap-4">
+      <div className="rounded-none border border-emerald-500/15 bg-[#060a08]/10 shadow-2xl">
+        <div className="flex flex-wrap items-center justify-between border-b border-emerald-500/15 px-6 py-4 gap-4">
           <div className="flex items-center gap-3">
-            <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-              <Layers size={18} />
+            <div className="size-8 rounded-none bg-emerald-950/15 border border-emerald-500/25 flex items-center justify-center text-emerald-400 shrink-0">
+              <Layers size={16} />
             </div>
             <div>
-              <h2 className="text-base font-black text-foreground">Roadmap Levels</h2>
-              <p className="text-xs text-muted-foreground">Configure global progression thresholds and point weights.</p>
+              <h2 className="text-xs font-bold uppercase tracking-widest text-emerald-300">ROADMAP_LEVEL_SECTORS</h2>
+              <p className="text-[9px] text-emerald-500/40 font-bold uppercase mt-0.5">Configure progression thresholds and point weights.</p>
             </div>
           </div>
 
@@ -294,73 +266,79 @@ export default function AdminRoadmapLevelsComponent() {
             }
           }}>
             <DialogTrigger asChild>
-              <Button onClick={handleOpenCreate} className="rounded-xl bg-primary text-xs font-black uppercase tracking-[0.1em] text-primary-foreground gap-2">
-                <Plus size={16} />
-                Create Level
+              <Button onClick={handleOpenCreate} className="h-8 px-4 rounded-none bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[9px] font-mono shadow-[0_0_15px_rgba(16,185,129,0.25)] border-transparent">
+                <Plus size={12} className="mr-1.5 shrink-0" />
+                <span>[ CREATE_LEVEL.EXE ]</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-lg bg-card border-border text-foreground max-h-[90vh] overflow-y-auto">
-              <form onSubmit={handleSubmit}>
+            <DialogContent className="max-w-lg bg-[#060a08] border-emerald-500/25 text-emerald-400 font-mono rounded-none max-h-[90vh] overflow-y-auto">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <DialogHeader>
-                  <DialogTitle>{editingLevel ? "Edit Level" : "Create Roadmap Level"}</DialogTitle>
-                  <DialogDescription>Setup rating bands, progression gates, and XP rewards.</DialogDescription>
+                  <DialogTitle className="text-xs font-bold uppercase tracking-widest text-emerald-300">
+                    {editingLevel ? "EDIT_LEVEL_NODE" : "CREATE_ROADMAP_LEVEL"}
+                  </DialogTitle>
+                  <DialogDescription asChild>
+                    <div className="text-[10px] text-emerald-500/40 font-bold uppercase tracking-wider">
+                      Setup rating bands, progression gates, and XP rewards.
+                    </div>
+                  </DialogDescription>
                 </DialogHeader>
 
-                <div className="py-4 space-y-4 text-left">
+                <div className="py-2 space-y-3 text-left">
                   <div className="grid grid-cols-3 items-center gap-4">
-                    <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Order Index</label>
-                    <Input type="number" value={orderIndex} onChange={(e) => setOrderIndex(Number(e.target.value))} className="col-span-2 rounded-xl" required />
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/45 text-right">Order Index</label>
+                    <Input type="number" value={orderIndex} onChange={(e) => setOrderIndex(Number(e.target.value))} className="col-span-2 rounded-none bg-[#040604]/50 border-emerald-500/15 focus:ring-0 focus:border-emerald-500/45 text-emerald-300 text-xs" required />
                   </div>
                   <div className="grid grid-cols-3 items-center gap-4">
-                    <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Level Title</label>
-                    <Input value={title} onChange={(e) => setTitle(e.target.value)} className="col-span-2 rounded-xl" placeholder="e.g. Level 0: Fundamentals" required />
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/45 text-right">Level Title</label>
+                    <Input value={title} onChange={(e) => setTitle(e.target.value)} className="col-span-2 rounded-none bg-[#040604]/50 border-emerald-500/15 focus:ring-0 focus:border-emerald-500/45 text-emerald-300 text-xs" placeholder="e.g. Level 0: Fundamentals" required />
                   </div>
                   <div className="grid grid-cols-3 items-center gap-4">
-                    <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Description</label>
-                    <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="col-span-2 rounded-xl" placeholder="Brief outline of the level targets" />
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/45 text-right">Description</label>
+                    <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="col-span-2 rounded-none bg-[#040604]/50 border-emerald-500/15 focus:ring-0 focus:border-emerald-500/45 text-emerald-300 text-xs font-mono min-h-20" placeholder="Brief outline of the level targets" />
                   </div>
                   <div className="grid grid-cols-3 items-center gap-4">
-                    <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Level Bonus XP</label>
-                    <Input type="number" value={levelBonusXp} onChange={(e) => setLevelBonusXp(Number(e.target.value))} className="col-span-2 rounded-xl" required />
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/45 text-right">Level Bonus XP</label>
+                    <Input type="number" value={levelBonusXp} onChange={(e) => setLevelBonusXp(Number(e.target.value))} className="col-span-2 rounded-none bg-[#040604]/50 border-emerald-500/15 focus:ring-0 focus:border-emerald-500/45 text-emerald-300 text-xs" required />
                   </div>
                   <div className="grid grid-cols-3 items-center gap-4">
-                    <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Status</label>
-                    <select title="Select status" value={String(isPublished)} onChange={(e) => setIsPublished(e.target.value === "true")} className="col-span-2 rounded-xl border border-border/40 bg-background/50 px-3 py-2 text-xs focus:outline-none">
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/45 text-right">Status</label>
+                    <select title="Select status" value={String(isPublished)} onChange={(e) => setIsPublished(e.target.value === "true")} className="col-span-2 rounded-none border border-emerald-500/15 bg-[#040604]/50 text-emerald-300 px-3 py-2 text-xs focus:outline-none focus:border-emerald-500/45 font-mono">
                       <option value="true">Published</option>
                       <option value="false">Draft</option>
                     </select>
                   </div>
                   <div className="grid grid-cols-3 items-center gap-4">
-                    <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Visibility</label>
-                    <select title="Select visibility" value={visibility} onChange={(e) => setVisibility(e.target.value as "all" | "specific_users")} className="col-span-2 rounded-xl border border-border/40 bg-background/50 px-3 py-2 text-xs focus:outline-none">
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/45 text-right">Visibility</label>
+                    <select title="Select visibility" value={visibility} onChange={(e) => setVisibility(e.target.value as "all" | "specific_users")} className="col-span-2 rounded-none border border-emerald-500/15 bg-[#040604]/50 text-emerald-300 px-3 py-2 text-xs focus:outline-none focus:border-emerald-500/45 font-mono">
                       <option value="all">All Users</option>
-                      <option value="specific_users">Specific Users</option>
+                      <option value="specific_users">Specific Users Only</option>
                     </select>
                   </div>
 
                   {visibility === "specific_users" && (
-                    <div className="space-y-3 rounded-xl border border-border/40 bg-background/30 p-4">
-                      <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground flex items-center gap-2">
-                        <Users size={14} />
+                    <div className="col-span-3 space-y-3 rounded-none border border-emerald-500/15 bg-[#040604]/40 p-4">
+                      <label className="text-[9px] font-bold uppercase tracking-widest text-emerald-300 flex items-center gap-2">
+                        <Users size={12} className="text-emerald-400" />
                         Allowed Users ({selectedUsers.length})
                       </label>
 
                       {/* Selected users chips */}
                       {selectedUsers.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-1">
                           {selectedUsers.map((u) => (
                             <span
                               key={u._id}
-                              className="inline-flex items-center gap-1 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-1 text-[10px] font-bold text-primary"
+                              className="inline-flex items-center gap-1 rounded-none bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[8px] font-bold text-emerald-300"
                             >
                               {u.codeforcesHandle}
                               <button
                                 type="button"
                                 onClick={() => handleRemoveUser(u._id)}
                                 aria-label={`Remove ${u.codeforcesHandle}`}
-                                className="ml-0.5 rounded-full hover:bg-primary/20 p-0.5"
+                                className="ml-1 rounded-none hover:bg-emerald-500/20 text-emerald-500/60 hover:text-emerald-300"
                               >
-                                <X size={10} />
+                                <X size={9} />
                               </button>
                             </span>
                           ))}
@@ -369,18 +347,18 @@ export default function AdminRoadmapLevelsComponent() {
 
                       {/* Search input */}
                       <div className="relative">
-                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500/40" />
                         <Input
                           value={userSearch}
                           onChange={(e) => setUserSearch(e.target.value)}
-                          placeholder="Search by Codeforces handle..."
-                          className="pl-9 rounded-xl text-xs"
+                          placeholder="Search Codeforces handle..."
+                          className="pl-8 h-8 rounded-none bg-[#040604]/60 border-emerald-500/15 focus:ring-0 focus:border-emerald-500/45 text-emerald-300 text-xs font-mono"
                         />
                       </div>
 
                       {/* User dropdown */}
                       {userSearch.trim() && filteredUsers.length > 0 && (
-                        <div className="max-h-40 overflow-y-auto rounded-xl border border-border/40 bg-background/80 divide-y divide-border/20">
+                        <div className="max-h-32 overflow-y-auto rounded-none border border-emerald-500/20 bg-[#060a08] divide-y divide-emerald-500/[0.08]">
                           {filteredUsers.slice(0, 15).map((u) => (
                             <button
                               key={u._id}
@@ -388,30 +366,34 @@ export default function AdminRoadmapLevelsComponent() {
                               onClick={() => handleAddUser(u._id)}
                               disabled={allowedUserIds.includes(u._id)}
                               className={cn(
-                                "w-full flex items-center gap-3 px-3 py-2 text-left text-xs transition-colors",
+                                "w-full flex items-center gap-3 px-3 py-1.5 text-left text-[10px] font-bold font-mono transition-colors",
                                 allowedUserIds.includes(u._id)
                                   ? "opacity-40 cursor-not-allowed"
-                                  : "hover:bg-primary/5 cursor-pointer"
+                                  : "hover:bg-emerald-500/10 text-emerald-450 cursor-pointer"
                               )}
                             >
-                              <span className="font-bold text-foreground">{u.codeforcesHandle}</span>
-                              <span className="text-muted-foreground">#{u.rank}</span>
-                              <span className="ml-auto text-muted-foreground">{u.rating}</span>
+                              <span className="text-emerald-300">{u.codeforcesHandle}</span>
+                              <span className="text-emerald-500/30">#{u.rank}</span>
+                              <span className="ml-auto text-emerald-400">{u.rating}</span>
                             </button>
                           ))}
                         </div>
                       )}
 
                       {userSearch.trim() && filteredUsers.length === 0 && (
-                        <p className="text-[10px] text-muted-foreground text-center py-2">No users found matching &quot;{userSearch}&quot;</p>
+                        <p className="text-[8px] font-bold text-emerald-500/25 text-center py-2 uppercase">No users found matching &quot;{userSearch}&quot;</p>
                       )}
                     </div>
                   )}
                 </div>
 
-                <DialogFooter>
-                  <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="rounded-xl">Cancel</Button>
-                  <Button type="submit" className="rounded-xl bg-primary text-primary-foreground">Save Changes</Button>
+                <DialogFooter className="gap-2 sm:gap-0 pt-2">
+                  <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="rounded-none border border-emerald-500/15 text-emerald-400 hover:bg-emerald-500/10 font-mono text-[9px] uppercase tracking-widest h-8">
+                    [ CANCEL ]
+                  </Button>
+                  <Button type="submit" className="rounded-none bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[9px] font-mono shadow-[0_0_15px_rgba(16,185,129,0.25)] border-transparent h-8">
+                    [ SAVE_CHANGES.EXE ]
+                  </Button>
                 </DialogFooter>
               </form>
             </DialogContent>
@@ -419,97 +401,103 @@ export default function AdminRoadmapLevelsComponent() {
         </div>
 
         {isLoading ? (
-          <div className="p-8 text-center text-muted-foreground">Loading levels...</div>
+          <div className="p-8 text-center text-xs font-bold text-emerald-500/40 uppercase tracking-widest animate-pulse">Loading roadmap levels...</div>
         ) : levels.length === 0 ? (
-          <div className="p-12 text-center text-muted-foreground italic">No levels created yet. Click &quot;Create Level&quot; to start the curriculum.</div>
+          <div className="p-12 text-center text-xs font-bold text-emerald-500/35 uppercase tracking-widest italic">[ NO_LEVELS_CREATED_YET ]</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
+            <table className="w-full text-left text-[10px]">
               <thead>
-                <tr className="border-b border-border/30">
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 w-16">Order</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Title</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center">Bonus XP</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center">Visibility</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-center">Status</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 text-right">Actions</th>
+                <tr className="border-b border-emerald-500/15">
+                  <th className="px-6 py-3 text-[9px] font-bold uppercase tracking-widest text-emerald-500/40 w-16">ORDER</th>
+                  <th className="px-6 py-3 text-[9px] font-bold uppercase tracking-widest text-emerald-500/40">LEVEL_TITLE</th>
+                  <th className="px-6 py-3 text-[9px] font-bold uppercase tracking-widest text-emerald-500/40 text-center">BONUS_XP</th>
+                  <th className="px-6 py-3 text-[9px] font-bold uppercase tracking-widest text-emerald-500/40 text-center">ACCESS_KEYS</th>
+                  <th className="px-6 py-3 text-[9px] font-bold uppercase tracking-widest text-emerald-500/40 text-center">STATE</th>
+                  <th className="px-6 py-3 text-[9px] font-bold uppercase tracking-widest text-emerald-500/40 text-right">OPERATIONS</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border/20">
+              <tbody className="divide-y divide-emerald-500/[0.08]">
                 {levels.map((lvl) => (
-                  <tr key={lvl._id} className="group hover:bg-white/[0.02] transition-colors">
-                    <td className="px-6 py-5">
-                      <span className="inline-flex items-center justify-center size-8 rounded-lg bg-muted/50 text-xs font-mono font-bold text-muted-foreground">
+                  <tr key={lvl._id} className="group hover:bg-emerald-500/[0.02] transition-colors">
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center justify-center size-7 rounded-none bg-emerald-950/10 border border-emerald-500/15 text-[10px] font-mono font-bold text-emerald-400">
                         {lvl.orderIndex}
                       </span>
                     </td>
-                    <td className="px-6 py-5 max-w-[280px]">
+                    <td className="px-6 py-4 max-w-[280px]">
                       <div className="flex flex-col">
-                        <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{lvl.title}</span>
-                        <span className="text-[11px] text-muted-foreground/60 font-normal mt-1 line-clamp-1">{lvl.description}</span>
+                        <Link href={`/admin/roadmap/${lvl._id}`} className="text-xs font-bold text-emerald-300 hover:text-emerald-200 tracking-wider">
+                          {lvl.title}
+                        </Link>
+                        <span className="text-[9px] text-emerald-500/35 font-normal mt-0.5 line-clamp-1 uppercase">{lvl.description}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-5 text-center">
-                      <span className="text-sm font-black text-primary">+{lvl.levelBonusXp ?? 0} XP</span>
+                    <td className="px-6 py-4 text-center tabular-nums text-emerald-300 font-bold">
+                      {lvl.levelBonusXp ?? 0}
                     </td>
-                    <td className="px-6 py-5 text-center">
+                    <td className="px-6 py-4 text-center">
                       {lvl.visibility === "specific_users" ? (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/25 px-3 py-1 text-[10px] font-bold uppercase tracking-wider">
-                          <EyeOff size={11} />
-                          {lvl.allowedUserIds?.length ?? 0} Users
-                        </span>
+                        <button
+                          onClick={() => handleOpenGrant(lvl)}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 border border-purple-500/25 bg-purple-955/10 text-purple-400 text-[8px] font-bold uppercase hover:bg-purple-955/20 transition-all rounded-none"
+                        >
+                          <Lock size={10} className="shrink-0" />
+                          <span>[{lvl.allowedUserIds?.length ?? 0} KEYS]</span>
+                        </button>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/25 px-3 py-1 text-[10px] font-bold uppercase tracking-wider">
-                          <Eye size={11} />
-                          All
-                        </span>
+                        <button
+                          onClick={() => handleOpenGrant(lvl)}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 border border-emerald-500/15 bg-emerald-500/5 text-emerald-500/60 text-[8px] font-bold uppercase hover:bg-emerald-500/10 transition-all rounded-none"
+                        >
+                          <Unlock size={10} className="shrink-0 animate-pulse" />
+                          <span>[PUBLIC]</span>
+                        </button>
                       )}
                     </td>
-                    <td className="px-6 py-5 text-center">
+                    <td className="px-6 py-4 text-center">
                       <button
                         onClick={() => handleTogglePublish(lvl)}
                         className={cn(
-                          "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-all",
+                          "inline-flex items-center gap-1.5 px-2 py-0.5 border text-[8px] font-bold uppercase tracking-wider rounded-none transition-all",
                           lvl.isPublished
-                            ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"
-                            : "bg-amber-500/15 text-amber-400 border border-amber-500/25"
+                            ? "bg-emerald-955/10 border-emerald-500/20 text-emerald-450 hover:bg-emerald-500/15"
+                            : "bg-amber-955/10 border-amber-500/20 text-amber-400 hover:bg-amber-500/15"
                         )}
                       >
-                        {lvl.isPublished ? <Check size={11} /> : <X size={11} />}
-                        {lvl.isPublished ? "Published" : "Draft"}
+                        <div className={cn("size-1.5 rounded-none shrink-0", lvl.isPublished ? "bg-emerald-400" : "bg-amber-400")} />
+                        <span>{lvl.isPublished ? "[LIVE]" : "[DRAFT]"}</span>
                       </button>
                     </td>
-                    <td className="px-6 py-5">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Link
-                          href={`/admin/roadmap/${lvl._id}`}
-                          className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-primary/10 border border-primary/20 text-primary px-3 py-1.5 rounded-lg hover:bg-primary/20 hover:border-primary/30 transition-all"
-                        >
-                          Sessions
-                          <ArrowRight size={12} />
-                        </Link>
-                        <button
-                          onClick={() => handleOpenGrant(lvl)}
-                          aria-label={`Grant access to ${lvl.title}`}
-                          className="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-purple-400 hover:bg-purple-500/10 transition-all"
-                          title="Grant/Revoke User Access"
-                        >
-                          <KeyRound size={14} />
-                        </button>
-                        <button
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          size="icon"
+                          variant="ghost"
                           onClick={() => handleOpenEdit(lvl)}
-                          aria-label={`Edit ${lvl.title}`}
-                          className="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                          className="size-7 rounded-none border border-emerald-500/15 hover:bg-emerald-500/10 text-emerald-450"
                         >
-                          <Edit2 size={14} />
-                        </button>
-                        <button
+                          <Edit2 size={12} />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
                           onClick={() => handleDelete(lvl._id)}
-                          aria-label={`Delete ${lvl.title}`}
-                          className="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+                          className="size-7 rounded-none border border-red-500/15 hover:bg-red-955/10 text-red-400"
                         >
-                          <Trash2 size={14} />
-                        </button>
+                          <Trash2 size={12} />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          asChild
+                          className="h-7 px-2 rounded-none border border-emerald-500/15 hover:bg-emerald-500/10 text-[8px] font-bold uppercase tracking-widest text-emerald-450"
+                        >
+                          <Link href={`/admin/roadmap/${lvl._id}`}>
+                            <span>[ SESSIONS ]</span>
+                            <ArrowRight size={10} className="ml-1 shrink-0" />
+                          </Link>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -520,108 +508,115 @@ export default function AdminRoadmapLevelsComponent() {
         )}
       </div>
 
-      {/* Grant Access Dialog */}
-      <Dialog open={grantDialogOpen} onOpenChange={(open) => {
-        setGrantDialogOpen(open);
-        if (!open) resetGrantDialog();
-      }}>
-        <DialogContent className="max-w-lg bg-card border-border text-foreground max-h-[90vh] overflow-y-auto">
+      {/* Grant Access Modal */}
+      <Dialog open={grantDialogOpen} onOpenChange={(open) => !open && setGrantDialogOpen(false)}>
+        <DialogContent className="max-w-lg bg-[#060a08] border-emerald-500/25 text-emerald-400 font-mono rounded-none max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Manage Level Access</DialogTitle>
-            <DialogDescription>
-              {grantLevel ? `Grant or revoke access to "${grantLevel.title}"` : "Select users who can access this level"}
+            <DialogTitle className="text-xs font-bold uppercase tracking-widest text-emerald-300">
+              GRANT_SECTOR_ clearance
+            </DialogTitle>
+            <DialogDescription asChild>
+              <div className="text-[10px] text-emerald-500/40 font-bold uppercase mt-0.5">
+                Target: {grantLevel?.title}
+              </div>
             </DialogDescription>
           </DialogHeader>
 
-          <div className="py-4 space-y-4 text-left">
-            {/* Selected users chips */}
-            {grantSelectedUsers.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {grantSelectedUsers.map((u) => (
-                  <span
-                    key={u._id}
-                    className="inline-flex items-center gap-1 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-1 text-[10px] font-bold text-primary"
-                  >
-                    {u.codeforcesHandle}
-                    <button
-                      type="button"
-                      onClick={() => handleGrantToggleUser(u._id)}
-                      aria-label={`Remove ${u.codeforcesHandle}`}
-                      className="ml-0.5 rounded-full hover:bg-primary/20 p-0.5"
+          <div className="py-2 space-y-4">
+            {/* Allowed users stats */}
+            <div className="p-3 bg-[#040604]/60 border border-emerald-500/15 rounded-none">
+              <p className="text-[9px] font-bold text-emerald-500/35 uppercase tracking-widest flex items-center gap-1.5 mb-2">
+                <KeyRound size={12} className="text-emerald-400" />
+                Clearance Keys Granted ({grantSelectedIds.length})
+              </p>
+              {grantSelectedUsers.length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {grantSelectedUsers.map((u) => (
+                    <span
+                      key={u._id}
+                      className="inline-flex items-center gap-1 rounded-none bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[8px] font-bold text-emerald-300"
                     >
-                      <X size={10} />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Search input */}
-            <div className="relative">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={grantUserSearch}
-                onChange={(e) => setGrantUserSearch(e.target.value)}
-                placeholder="Search users by Codeforces handle..."
-                className="pl-9 rounded-xl text-xs"
-              />
+                      {u.codeforcesHandle}
+                      <button
+                        type="button"
+                        onClick={() => handleGrantToggleUser(u._id)}
+                        className="ml-1 text-emerald-500/40 hover:text-emerald-300"
+                      >
+                        <X size={9} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[8px] font-bold text-emerald-500/20 uppercase italic">No specific clearance tags granted. Sector defaults to public access.</p>
+              )}
             </div>
 
-            {/* User list for selection */}
-            {grantUserSearch.trim() && grantFilteredUsers.length > 0 && (
-              <div className="max-h-40 overflow-y-auto rounded-xl border border-border/40 bg-background/80 divide-y divide-border/20">
-                {grantFilteredUsers.slice(0, 15).map((u) => {
-                  const isSelected = grantSelectedIds.includes(u._id);
-                  return (
-                    <button
-                      key={u._id}
-                      type="button"
-                      onClick={() => handleGrantToggleUser(u._id)}
-                      className={cn(
-                        "w-full flex items-center gap-3 px-3 py-2 text-left text-xs transition-colors",
-                        isSelected ? "bg-primary/10" : "hover:bg-primary/5"
-                      )}
-                    >
-                      <div className={cn(
-                        "size-4 rounded border flex items-center justify-center",
-                        isSelected ? "bg-primary border-primary" : "border-border"
-                      )}>
-                        {isSelected && <Check size={10} className="text-primary-foreground" />}
-                      </div>
-                      <span className="font-bold text-foreground">{u.codeforcesHandle}</span>
-                      <span className="text-muted-foreground">#{u.rank}</span>
-                      <span className="ml-auto text-muted-foreground">{u.rating}</span>
-                    </button>
-                  );
-                })}
+            {/* Search filter */}
+            <div className="space-y-2">
+              <div className="relative">
+                <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500/40" />
+                <Input
+                  value={grantUserSearch}
+                  onChange={(e) => setGrantUserSearch(e.target.value)}
+                  placeholder="Search user logs by handle..."
+                  className="pl-8 h-8 rounded-none bg-[#040604]/60 border-emerald-500/15 focus:ring-0 focus:border-emerald-500/45 text-emerald-300 text-xs font-mono"
+                />
               </div>
-            )}
 
-            {grantUserSearch.trim() && grantFilteredUsers.length === 0 && (
-              <p className="text-[10px] text-muted-foreground text-center py-2">No users found matching &quot;{grantUserSearch}&quot;</p>
-            )}
-
-            {!grantUserSearch.trim() && (
-              <p className="text-[10px] text-muted-foreground text-center py-2">
-                {grantSelectedIds.length > 0
-                  ? `${grantSelectedIds.length} user(s) currently granted access. Search to add or remove users.`
-                  : "No users granted access. Search to add users."}
-              </p>
-            )}
+              {grantUserSearch.trim() && (
+                <div className="max-h-40 overflow-y-auto border border-emerald-500/15 bg-[#040604]/40 rounded-none divide-y divide-emerald-500/[0.08]">
+                  {grantFilteredUsers.slice(0, 10).map((u) => {
+                    const isSelected = grantSelectedIds.includes(u._id);
+                    return (
+                      <button
+                        key={u._id}
+                        type="button"
+                        onClick={() => handleGrantToggleUser(u._id)}
+                        className="w-full flex items-center justify-between px-3 py-1.5 text-left text-[10px] font-bold transition-all hover:bg-emerald-500/10 font-mono"
+                      >
+                        <div className="flex flex-col">
+                          <span className="text-emerald-300">{u.codeforcesHandle}</span>
+                          <span className="text-[8px] text-emerald-500/35">Rating: {u.rating}</span>
+                        </div>
+                        <div className={cn(
+                          "size-4 border flex items-center justify-center rounded-none",
+                          isSelected
+                            ? "border-emerald-500 text-emerald-950 bg-emerald-500"
+                            : "border-emerald-500/20 text-transparent"
+                        )}>
+                          <Check size={10} />
+                        </div>
+                      </button>
+                    );
+                  })}
+                  {grantFilteredUsers.length === 0 && (
+                    <p className="text-[8px] font-bold text-emerald-500/20 text-center py-3 uppercase">No users found matching query</p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
-          <DialogFooter className="flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground">
-              {grantSelectedIds.length} user(s) selected
-            </span>
-            <div className="flex gap-2">
-              <Button type="button" variant="ghost" onClick={() => { setGrantDialogOpen(false); resetGrantDialog(); }} className="rounded-xl">
-                Cancel
-              </Button>
-              <Button onClick={handleSaveGrant} className="rounded-xl bg-primary text-primary-foreground">
-                Save Access
-              </Button>
-            </div>
+          <DialogFooter className="gap-2 sm:gap-0 pt-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                setGrantDialogOpen(false);
+                resetGrantDialog();
+              }}
+              className="rounded-none border border-emerald-500/15 text-emerald-400 hover:bg-emerald-500/10 font-mono text-[9px] uppercase tracking-widest h-8"
+            >
+              [ CANCEL ]
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSaveGrant}
+              className="rounded-none bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[9px] font-mono shadow-[0_0_15px_rgba(16,185,129,0.25)] border-transparent h-8"
+            >
+              [ COMMIT_CLEARANCE.EXE ]
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

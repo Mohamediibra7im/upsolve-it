@@ -19,6 +19,9 @@ import {
   ArrowUpRight,
   X,
   Check,
+  Sparkles,
+  Link as LinkIcon,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -86,25 +89,33 @@ export default function AdminSuggestions() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-sm text-muted-foreground">Loading suggestions...</div>
+      <div className="flex flex-col items-center justify-center py-20 space-y-4 font-mono text-emerald-400">
+        <Loader2 className="size-8 animate-spin text-emerald-400" />
+        <p className="text-[10px] font-bold uppercase tracking-widest animate-pulse">SUGGESTIONS_SYNCHRONIZING.SYS...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Suggestions</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Manage suggested websites and resources
+    <div className="space-y-8 font-mono text-emerald-400">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-emerald-500/40 font-bold text-[9px] uppercase tracking-widest">
+            <LinkIcon size={12} className="text-emerald-400" />
+            SYSOP_DIRECTORY // PLATFORM_SUGGESTIONS
+          </div>
+          <h2 className="text-lg font-bold tracking-widest text-emerald-300 uppercase">Suggested Resources</h2>
+          <p className="text-[10px] text-emerald-500/40 font-bold uppercase tracking-wider">
+            Manage suggested websites, reference logs, and training tools.
           </p>
         </div>
         {mode === "list" && (
-          <Button onClick={startCreate} className="gap-2">
-            <Plus className="size-4" />
-            Add Suggestion
+          <Button
+            onClick={startCreate}
+            className="h-8 px-4 rounded-none bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[9px] font-mono shadow-[0_0_15px_rgba(16,185,129,0.25)] border-transparent"
+          >
+            <Plus className="mr-1.5 size-3.5" />
+            <span>[ ADD_SUGGESTION.BAT ]</span>
           </Button>
         )}
       </div>
@@ -113,94 +124,129 @@ export default function AdminSuggestions() {
         <m.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl border border-border/40 bg-card/50 p-6 space-y-4"
+          className="rounded-none border border-emerald-500/15 bg-[#060a08]/30 p-6 space-y-5 shadow-2xl"
         >
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-foreground">
-              {mode === "create" ? "New Suggestion" : "Edit Suggestion"}
+          <div className="flex items-center justify-between border-b border-emerald-500/10 pb-2">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-emerald-300">
+              {mode === "create" ? "CREATE_SUGGESTION_NODE" : "EDIT_SUGGESTION_NODE"}
             </h2>
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
               onClick={() => { setMode("list"); setEditing(null); resetForm(); }}
+              className="size-7 rounded-none border border-emerald-500/15 bg-transparent hover:bg-emerald-500/10 flex items-center justify-center text-emerald-500/60 hover:text-emerald-300 transition-all shrink-0"
             >
-              <X className="size-4" />
-            </Button>
+              <X className="size-3.5" />
+            </button>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Title *</label>
+              <label className="block text-[9px] font-bold text-emerald-500/40 uppercase tracking-widest">TITLE_REF *</label>
               <input
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="w-full h-9 px-3 rounded-lg border border-border/40 bg-background/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40"
+                className="w-full h-8 px-3 rounded-none border border-emerald-500/15 bg-[#040604]/50 text-emerald-300 text-xs font-mono placeholder:text-emerald-500/20 focus:outline-none focus:border-emerald-500/45 focus:ring-0"
                 placeholder="Codeforces"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">URL *</label>
+              <label className="block text-[9px] font-bold text-emerald-500/40 uppercase tracking-widest">URL_REF *</label>
               <input
                 value={form.url}
                 onChange={(e) => setForm({ ...form, url: e.target.value })}
-                className="w-full h-9 px-3 rounded-lg border border-border/40 bg-background/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40"
+                className="w-full h-8 px-3 rounded-none border border-emerald-500/15 bg-[#040604]/50 text-emerald-300 text-xs font-mono placeholder:text-emerald-500/20 focus:outline-none focus:border-emerald-500/45 focus:ring-0"
                 placeholder="https://codeforces.com"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Category</label>
+              <label className="block text-[9px] font-bold text-emerald-500/40 uppercase tracking-widest">CATEGORY_TAG</label>
               <input
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="w-full h-9 px-3 rounded-lg border border-border/40 bg-background/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40"
+                className="w-full h-8 px-3 rounded-none border border-emerald-500/15 bg-[#040604]/50 text-emerald-300 text-xs font-mono placeholder:text-emerald-500/20 focus:outline-none focus:border-emerald-500/45 focus:ring-0"
                 placeholder="Practice"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Order</label>
+              <label className="block text-[9px] font-bold text-emerald-500/40 uppercase tracking-widest">ORDER_INDEX</label>
               <input
                 type="number"
                 value={form.order}
                 onChange={(e) => setForm({ ...form, order: Number(e.target.value) })}
-                className="w-full h-9 px-3 rounded-lg border border-border/40 bg-background/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40"
+                className="w-full h-8 px-3 rounded-none border border-emerald-500/15 bg-[#040604]/50 text-emerald-300 text-xs font-mono focus:outline-none focus:border-emerald-500/45 focus:ring-0"
               />
             </div>
             <div className="space-y-1.5 sm:col-span-2">
-              <label className="text-xs font-medium text-muted-foreground">Description</label>
+              <label className="block text-[9px] font-bold text-emerald-500/40 uppercase tracking-widest">DESCRIPTION_LOG</label>
               <input
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
-                className="w-full h-9 px-3 rounded-lg border border-border/40 bg-background/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40"
+                className="w-full h-8 px-3 rounded-none border border-emerald-500/15 bg-[#040604]/50 text-emerald-300 text-xs font-mono placeholder:text-emerald-500/20 focus:outline-none focus:border-emerald-500/45 focus:ring-0"
                 placeholder="Brief description..."
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-2 pt-2">
-            <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+          <div className="flex items-center gap-2 pt-1">
+            <label className="inline-flex items-center gap-2 text-[9px] font-bold text-emerald-500/50 cursor-pointer select-none uppercase border border-emerald-500/15 h-8 px-3 bg-[#060a08]/30 hover:bg-emerald-500/5 transition-all">
               <input
                 type="checkbox"
                 checked={form.isActive}
                 onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-                className="size-4 rounded border-border/40 accent-primary"
+                className="size-3.5 border-emerald-500/20 text-emerald-500 bg-transparent rounded-none focus:ring-0 accent-emerald-500"
               />
-              Active (visible to users)
+              <span>[ ACTIVE_STATUS ]</span>
             </label>
           </div>
 
-          <div className="flex gap-2 pt-2">
-            <Button onClick={handleSubmit} disabled={!form.title || !form.url}>
-              <Check className="size-4 mr-1.5" />
-              {mode === "create" ? "Create" : "Save Changes"}
+          <div className="flex gap-2 pt-1">
+            <Button
+              onClick={handleSubmit}
+              disabled={!form.title || !form.url}
+              className="h-8 px-4 rounded-none bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[9px] font-mono shadow-[0_0_15px_rgba(16,185,129,0.25)] border-transparent"
+            >
+              <Check className="size-3 mr-1.5" />
+              <span>[ {mode === "create" ? "CREATE_SUGGESTION.EXE" : "COMMIT_CHANGES.EXE"} ]</span>
             </Button>
-            <Button variant="outline" onClick={() => { setMode("list"); setEditing(null); resetForm(); }}>
-              Cancel
+            <Button
+              variant="outline"
+              onClick={() => { setMode("list"); setEditing(null); resetForm(); }}
+              className="h-8 px-3 rounded-none border border-emerald-500/15 text-emerald-400 hover:bg-emerald-500/10 font-mono text-[9px] uppercase tracking-widest"
+            >
+              [ CANCEL ]
             </Button>
           </div>
         </m.div>
       )}
 
-      <div className="space-y-2">
+      {/* Empty State */}
+      {suggestions.length === 0 && (
+        <m.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col items-center justify-center py-20 text-center rounded-none border border-dashed border-emerald-500/10 space-y-4"
+        >
+          <div className="size-12 rounded-none bg-emerald-955/15 border border-emerald-500/20 flex items-center justify-center">
+            <Sparkles size={20} className="text-emerald-400 animate-pulse" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-300">
+              NO_SUGGESTIONS_CONFIGURED
+            </h3>
+            <p className="text-[9px] text-emerald-500/30 uppercase max-w-[240px] mx-auto">
+              Create platform resources cards to populate user dashboards.
+            </p>
+          </div>
+          <Button
+            onClick={startCreate}
+            className="h-8 px-4 rounded-none bg-transparent border border-emerald-500/15 hover:bg-emerald-500/10 text-emerald-400 font-bold uppercase tracking-widest text-[9px] font-mono"
+          >
+            <Plus size={12} className="mr-1.5 shrink-0" />
+            <span>[ INITIALIZE_SUGGESTION.BAT ]</span>
+          </Button>
+        </m.div>
+      )}
+
+      <div className="space-y-4">
         <AnimatePresence mode="popLayout">
           {suggestions.map((s) => (
             <m.div
@@ -209,73 +255,75 @@ export default function AdminSuggestions() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="flex items-center gap-4 p-4 rounded-xl border border-border/30 bg-card/30 hover:bg-card/50 transition-colors"
+              className="flex items-center justify-between gap-4 p-4 rounded-none border border-emerald-500/15 bg-[#060a08]/30 hover:border-emerald-500/35 hover:bg-[#060a08]/40 transition-colors"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-semibold text-foreground truncate">{s.title}</h3>
+                  <h3 className="text-sm font-bold text-emerald-300 truncate tracking-wide">{s.title}</h3>
                   <a
                     href={s.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-muted-foreground/40 hover:text-primary transition-colors"
+                    className="text-emerald-500/40 hover:text-emerald-300 transition-colors"
                   >
                     <ArrowUpRight className="size-3.5" />
                   </a>
                 </div>
-                <p className="text-[11px] text-muted-foreground/60 truncate">{s.description}</p>
-                <div className="flex items-center gap-2 mt-1">
+                <p className="text-[10px] text-emerald-500/40 uppercase mt-0.5 truncate">{s.description}</p>
+                <div className="flex items-center gap-2 mt-2">
                   {s.category && (
-                    <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground/50 bg-muted/30 px-1.5 py-0.5 rounded">
-                      {s.category}
+                    <span className="text-[8px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-955/15 border border-emerald-500/15 px-1.5 py-0.5 rounded-none">
+                      [{s.category}]
                     </span>
                   )}
                   <span className={cn(
-                    "text-[9px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded",
-                    s.isActive ? "text-emerald-500 bg-emerald-500/10" : "text-muted-foreground/50 bg-muted/30"
+                    "text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-none border",
+                    s.isActive ? "text-emerald-400 border-emerald-500/20 bg-emerald-500/5" : "text-emerald-500/40 border-emerald-500/10 bg-transparent"
                   )}>
-                    {s.isActive ? "Active" : "Inactive"}
+                    {s.isActive ? "[ACTIVE]" : "[INACTIVE]"}
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={() => toggleActive(s)}
                   className={cn(
-                    "p-1.5 rounded-lg transition-colors",
-                    s.isActive ? "text-emerald-500 hover:bg-emerald-500/10" : "text-muted-foreground/40 hover:bg-muted/30"
+                    "size-7 rounded-none border flex items-center justify-center transition-colors",
+                    s.isActive
+                      ? "text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/15"
+                      : "text-emerald-500/40 border-emerald-500/10 hover:bg-emerald-500/5"
                   )}
                 >
-                  {s.isActive ? <Eye className="size-3.5" /> : <EyeOff className="size-3.5" />}
+                  {s.isActive ? <Eye size={12} /> : <EyeOff size={12} />}
                 </button>
                 <button
                   onClick={() => startEdit(s)}
-                  className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-primary hover:bg-primary/10 transition-colors"
+                  className="size-7 rounded-none border border-emerald-500/15 hover:bg-emerald-500/10 flex items-center justify-center text-emerald-450 transition-colors"
                 >
-                  <Pencil className="size-3.5" />
+                  <Pencil size={12} />
                 </button>
                 {deletingId === s._id ? (
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-2">
                     <button
                       onClick={() => void handleDelete(s._id)}
-                      className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/10 transition-colors"
+                      className="h-7 px-2 rounded-none border border-red-500/25 bg-red-955/10 text-red-400 hover:bg-red-500/20 text-[8px] font-bold uppercase transition-all"
                     >
-                      <Check className="size-3.5" />
+                      [ CONFIRM ]
                     </button>
                     <button
                       onClick={() => setDeletingId(null)}
-                      className="p-1.5 rounded-lg text-muted-foreground/40 hover:bg-muted/30 transition-colors"
+                      className="size-7 rounded-none border border-emerald-500/15 hover:bg-emerald-500/10 flex items-center justify-center text-emerald-400 transition-colors"
                     >
-                      <X className="size-3.5" />
+                      <X size={12} />
                     </button>
                   </div>
                 ) : (
                   <button
                     onClick={() => setDeletingId(s._id)}
-                    className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+                    className="size-7 rounded-none border border-red-500/15 hover:bg-red-955/10 flex items-center justify-center text-red-455 hover:text-red-400 transition-colors"
                   >
-                    <Trash2 className="size-3.5" />
+                    <Trash2 size={12} />
                   </button>
                 )}
               </div>

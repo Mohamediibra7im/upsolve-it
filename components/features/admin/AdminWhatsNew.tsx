@@ -9,7 +9,6 @@ import {
   type WhatsNewEntry,
 } from "@/hooks/admin";
 import { useToast } from "@/components/providers/Toast";
-import Loader from "@/components/shared/Loader";
 import { m, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -23,6 +22,7 @@ import {
   Sparkles,
   Send,
   ArrowLeft,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -52,7 +52,8 @@ function formatDate(dateStr: string | null) {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  });
+    hour12: false,
+  }).toUpperCase();
 }
 
 export default function AdminWhatsNew() {
@@ -93,7 +94,7 @@ export default function AdminWhatsNew() {
 
   const handleSave = async () => {
     if (!form.title.trim() || !form.content.trim()) {
-      toast({ title: "Title and content are required", variant: "destructive" });
+      toast({ title: "SYS.ERR: VALIDATION FAILED", description: "Title and content fields are required.", variant: "destructive" });
       return;
     }
 
@@ -101,16 +102,17 @@ export default function AdminWhatsNew() {
     try {
       if (mode === "create") {
         await createWhatsNewEntry(form);
-        toast({ title: "Entry created successfully", variant: "success" });
+        toast({ title: "CHANGELOG: ENTRY CREATED", description: "Successfully injected changelog entry node.", variant: "success" });
       } else if (mode === "edit" && editingId) {
         await updateWhatsNewEntry(editingId, form);
-        toast({ title: "Entry updated successfully", variant: "success" });
+        toast({ title: "CHANGELOG: ENTRY UPDATED", description: "Successfully committed changelog changes.", variant: "success" });
       }
       await mutate();
       resetEditor();
     } catch (err: any) {
       toast({
-        title: err?.message || "Failed to save entry",
+        title: "SYS.ERR: COMMIT FAILED",
+        description: err?.message || "Failed to save entry.",
         variant: "destructive",
       });
     } finally {
@@ -121,12 +123,13 @@ export default function AdminWhatsNew() {
   const handleDelete = async (id: string) => {
     try {
       await deleteWhatsNewEntry(id);
-      toast({ title: "Entry deleted", variant: "success" });
+      toast({ title: "CHANGELOG: ENTRY DELETED", description: "Successfully removed changelog node.", variant: "success" });
       await mutate();
       setDeleteConfirmId(null);
     } catch (err: any) {
       toast({
-        title: err?.message || "Failed to delete entry",
+        title: "SYS.ERR: DELETE FAILED",
+        description: err?.message || "Failed to delete entry.",
         variant: "destructive",
       });
     }
@@ -138,86 +141,95 @@ export default function AdminWhatsNew() {
         isPublished: !entry.isPublished,
       });
       toast({
-        title: entry.isPublished ? "Unpublished" : "Published",
+        title: "CHANGELOG: UPDATE COMMITTED",
+        description: `Entry status set to ${!entry.isPublished ? "PUBLISHED" : "DRAFT"}`,
         variant: "success",
       });
       await mutate();
     } catch (err: any) {
       toast({
-        title: err?.message || "Failed to update entry",
+        title: "SYS.ERR: UPDATE FAILED",
+        description: err?.message || "Failed to update entry.",
         variant: "destructive",
       });
     }
   };
 
-  if (isLoading) return <Loader message="Loading entries..." />;
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 space-y-4 font-mono text-emerald-400">
+        <Loader2 className="size-8 animate-spin text-emerald-400" />
+        <p className="text-[10px] font-bold uppercase tracking-widest animate-pulse">CHANGELOG_SYNCHRONIZING.SYS...</p>
+      </div>
+    );
+  }
 
   /* ─── Editor View (Create / Edit) ─── */
   if (mode === "create" || mode === "edit") {
     return (
       <m.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-6"
+        className="space-y-6 font-mono text-emerald-400"
       >
         {/* Editor Header */}
-        <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center justify-between gap-4 flex-wrap pb-2 border-b border-emerald-500/10">
           <div className="flex items-center gap-3">
             <button
               onClick={resetEditor}
               title="Back to list"
               aria-label="Back to list"
-              className="size-9 rounded-xl bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all"
+              className="size-8 rounded-none border border-emerald-500/15 bg-[#060a08]/30 flex items-center justify-center text-emerald-500/60 hover:text-emerald-300 hover:border-emerald-500/30 transition-all shrink-0"
             >
-              <ArrowLeft size={16} />
+              <ArrowLeft size={14} />
             </button>
             <div>
-              <h2 className="text-lg font-bold text-foreground">
-                {mode === "create" ? "New Entry" : "Edit Entry"}
+              <h2 className="text-sm font-bold uppercase tracking-widest text-emerald-300">
+                {mode === "create" ? "NEW_CHANGELOG_ENTRY" : "EDIT_CHANGELOG_ENTRY"}
               </h2>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+              <p className="text-[9px] font-bold text-emerald-500/40 uppercase tracking-wider mt-0.5">
                 {mode === "create"
-                  ? "Create a new changelog entry"
-                  : "Modify an existing entry"}
+                  ? "Configure and compile a new version logs page"
+                  : "Modify an existing version parameters node"}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowPreview(!showPreview)}
-              className="gap-2 text-xs font-bold"
+              className="h-8 rounded-none border border-emerald-500/15 hover:bg-emerald-500/10 text-emerald-450 font-mono text-[9px] uppercase tracking-widest gap-1.5"
             >
-              {showPreview ? <FileText size={14} /> : <Eye size={14} />}
-              {showPreview ? "Editor" : "Preview"}
+              {showPreview ? <FileText size={12} /> : <Eye size={12} />}
+              <span>{showPreview ? "[ EDITOR ]" : "[ PREVIEW ]"}</span>
             </Button>
 
-            <label className="inline-flex items-center gap-2 text-xs font-bold text-muted-foreground cursor-pointer select-none">
+            <label className="inline-flex items-center gap-2 text-[9px] font-bold text-emerald-500/50 cursor-pointer select-none uppercase border border-emerald-500/15 h-8 px-3 bg-[#060a08]/30 hover:bg-emerald-500/5 transition-all">
               <input
                 type="checkbox"
                 checked={form.isPublished}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, isPublished: e.target.checked }))
                 }
-                className="size-4 rounded border-border accent-primary"
+                className="size-3.5 border-emerald-500/20 text-emerald-500 bg-transparent rounded-none focus:ring-0 accent-emerald-500"
               />
-              Publish
+              <span>[ PUBLISH ]</span>
             </label>
 
             <Button
               size="sm"
               onClick={handleSave}
               disabled={isSaving}
-              className="gap-2 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90"
+              className="h-8 rounded-none bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[9px] font-mono shadow-[0_0_15px_rgba(16,185,129,0.25)] border-transparent gap-1.5"
             >
               {isSaving ? (
-                <>Saving...</>
+                <>SAVING...</>
               ) : (
                 <>
-                  <Save size={14} />
-                  {mode === "create" ? "Create" : "Save"}
+                  <Save size={12} />
+                  <span>[ COMMIT_ENTRY.EXE ]</span>
                 </>
               )}
             </Button>
@@ -227,8 +239,8 @@ export default function AdminWhatsNew() {
         {/* Form Fields */}
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">
-              Title
+            <label className="block text-[9px] font-bold text-emerald-500/40 uppercase tracking-widest mb-1.5">
+              TITLE_HEX
             </label>
             <input
               type="text"
@@ -237,12 +249,12 @@ export default function AdminWhatsNew() {
                 setForm((f) => ({ ...f, title: e.target.value }))
               }
               placeholder="e.g. Dark Mode Support"
-              className="w-full px-4 py-3 rounded-xl bg-background border border-border text-foreground text-sm font-medium placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/30 transition-all"
+              className="w-full px-4 py-2.5 rounded-none bg-[#040604]/50 border border-emerald-500/15 text-emerald-300 text-xs font-mono placeholder:text-emerald-500/20 focus:outline-none focus:border-emerald-500/45 focus:ring-0 transition-all"
             />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">
-              Version (optional)
+            <label className="block text-[9px] font-bold text-emerald-500/40 uppercase tracking-widest mb-1.5">
+              VERSION_TAG
             </label>
             <input
               type="text"
@@ -251,28 +263,28 @@ export default function AdminWhatsNew() {
                 setForm((f) => ({ ...f, version: e.target.value }))
               }
               placeholder="e.g. v2.1.0"
-              className="w-full px-4 py-3 rounded-xl bg-background border border-border text-foreground text-sm font-medium placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/30 transition-all"
+              className="w-full px-4 py-2.5 rounded-none bg-[#040604]/50 border border-emerald-500/15 text-emerald-300 text-xs font-mono placeholder:text-emerald-500/20 focus:outline-none focus:border-emerald-500/45 focus:ring-0 transition-all"
             />
           </div>
         </div>
 
         {/* Markdown Editor / Preview */}
-        <div className="rounded-2xl border border-border bg-card/50 overflow-hidden">
-          <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-black/5">
-            <FileText size={14} className="text-muted-foreground" />
-            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-              {showPreview ? "Preview" : "Content (Markdown)"}
+        <div className="rounded-none border border-emerald-500/15 bg-[#060a08]/30 overflow-hidden shadow-2xl">
+          <div className="flex items-center gap-2 px-4 py-2 border-b border-emerald-500/15 bg-black/10">
+            <FileText size={12} className="text-emerald-500/40" />
+            <span className="text-[8px] font-bold text-emerald-500/35 uppercase tracking-widest">
+              {showPreview ? "PREVIEW_WINDOW" : "CONTENT_MARKDOWN_COMPILER"}
             </span>
           </div>
 
           {showPreview ? (
-            <div className="p-6 min-h-[320px]">
+            <div className="p-6 min-h-[320px] bg-[#040604]/20">
               <MarkdownRenderer
-                className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-primary prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none prose-pre:bg-black/40 prose-pre:border prose-pre:border-border/50 prose-pre:rounded-xl prose-img:rounded-xl prose-blockquote:border-primary/30"
+                className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-bold prose-headings:text-emerald-300 prose-p:text-emerald-400/80 prose-strong:text-emerald-300 prose-a:text-emerald-400 prose-code:text-emerald-350 prose-code:bg-emerald-950/20 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-none prose-code:before:content-none prose-code:after:content-none prose-pre:bg-black/30 prose-pre:border prose-pre:border-emerald-500/10 prose-pre:rounded-none prose-img:rounded-none prose-blockquote:border-emerald-500/20"
               >
                 {form.content || (
-                  <p className="text-muted-foreground italic">
-                    Nothing to preview yet...
+                  <p className="text-emerald-500/20 italic">
+                    Nothing to compile yet...
                   </p>
                 )}
               </MarkdownRenderer>
@@ -284,7 +296,7 @@ export default function AdminWhatsNew() {
                 setForm((f) => ({ ...f, content: e.target.value }))
               }
               placeholder={`Write your changelog entry in Markdown...\n\n## New Features\n- Feature one\n- Feature two\n\n## Bug Fixes\n- Fixed issue with...`}
-              className="w-full min-h-[320px] p-6 bg-transparent text-foreground text-sm font-mono leading-relaxed placeholder:text-muted-foreground/30 focus:outline-none resize-y"
+              className="w-full min-h-[320px] p-6 bg-transparent text-emerald-350 text-xs font-mono leading-relaxed placeholder:text-emerald-500/20 focus:outline-none resize-y"
             />
           )}
         </div>
@@ -294,24 +306,28 @@ export default function AdminWhatsNew() {
 
   /* ─── List View ─── */
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 font-mono text-emerald-400">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h2 className="text-lg font-bold text-foreground">
-            Changelog Entries
+      <div className="flex items-center justify-between gap-4 flex-wrap pb-2">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-emerald-500/40 font-bold text-[9px] uppercase tracking-widest">
+            <FileText size={12} className="text-emerald-400" />
+            SYSOP_NEWS // CHANGELOG_REGISTRY
+          </div>
+          <h2 className="text-lg font-bold tracking-widest text-emerald-300 uppercase">
+            Changelog Logs
           </h2>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-            {entries.length} {entries.length === 1 ? "entry" : "entries"}
+          <p className="text-[10px] text-emerald-500/40 font-bold uppercase tracking-wider mt-0.5">
+            {entries.length} version registry {entries.length === 1 ? "entry" : "entries"} compiled
           </p>
         </div>
         <Button
           size="sm"
           onClick={openCreate}
-          className="gap-2 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90"
+          className="h-8 px-4 rounded-none bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[9px] font-mono shadow-[0_0_15px_rgba(16,185,129,0.25)] border-transparent"
         >
-          <Plus size={14} />
-          New Entry
+          <Plus size={12} className="mr-1.5 shrink-0" />
+          <span>[ NEW_ENTRY.BAT ]</span>
         </Button>
       </div>
 
@@ -320,30 +336,32 @@ export default function AdminWhatsNew() {
         <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex flex-col items-center justify-center py-20 text-center"
+          className="flex flex-col items-center justify-center py-20 text-center rounded-none border border-dashed border-emerald-500/10 space-y-4"
         >
-          <div className="size-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
-            <Sparkles size={28} className="text-primary" />
+          <div className="size-12 rounded-none bg-emerald-955/15 border border-emerald-500/20 flex items-center justify-center">
+            <Sparkles size={20} className="text-emerald-400 animate-pulse" />
           </div>
-          <h3 className="text-base font-bold text-foreground mb-1">
-            No entries yet
-          </h3>
-          <p className="text-xs text-muted-foreground mb-4">
-            Create your first changelog entry to keep users informed.
-          </p>
+          <div className="space-y-1">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-300">
+              NO_ENTRIES_COMPILED
+            </h3>
+            <p className="text-[9px] text-emerald-500/30 uppercase max-w-[240px] mx-auto">
+              Create your first version log entry to notify the user console.
+            </p>
+          </div>
           <Button
             size="sm"
             onClick={openCreate}
-            className="gap-2 text-xs font-bold"
+            className="h-8 px-4 rounded-none bg-transparent border border-emerald-500/15 hover:bg-emerald-500/10 text-emerald-400 font-bold uppercase tracking-widest text-[9px] font-mono"
           >
-            <Plus size={14} />
-            Create First Entry
+            <Plus size={12} className="mr-1.5 shrink-0" />
+            <span>[ INITIALIZE_ENTRY.EXE ]</span>
           </Button>
         </m.div>
       )}
 
       {/* Entry Cards */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <AnimatePresence mode="popLayout">
           {entries.map((entry) => (
             <m.div
@@ -352,77 +370,77 @@ export default function AdminWhatsNew() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96 }}
-              className="group rounded-xl border border-border bg-card/50 p-4 sm:p-5 transition-all hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
+              className="group rounded-none border border-emerald-500/15 bg-[#060a08]/30 p-5 transition-all hover:border-emerald-500/35 hover:shadow-md"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                    <h3 className="text-sm font-bold text-foreground truncate">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <h3 className="text-sm font-bold text-emerald-300 group-hover:text-emerald-250 transition-colors tracking-wide truncate">
                       {entry.title}
                     </h3>
                     {entry.version && (
-                      <span className="px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[9px] font-bold uppercase">
-                        {entry.version}
+                      <span className="px-2 py-0.5 border border-emerald-500/20 bg-emerald-955/15 text-emerald-400 text-[8px] font-bold uppercase rounded-none">
+                        [{entry.version}]
                       </span>
                     )}
                     <span
                       className={cn(
-                        "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase",
+                        "px-2 py-0.5 border text-[8px] font-bold uppercase rounded-none",
                         entry.isPublished
-                          ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-500"
-                          : "bg-amber-500/10 border border-amber-500/20 text-amber-500",
+                          ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-400"
+                          : "bg-amber-955/10 border-amber-500/20 text-amber-400",
                       )}
                     >
-                      {entry.isPublished ? "Published" : "Draft"}
+                      {entry.isPublished ? "[PUBLISHED]" : "[DRAFT]"}
                     </span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">
-                    Created {formatDate(entry.createdAt)}
+                  <p className="text-[9px] font-bold text-emerald-500/35 uppercase">
+                    COMPILED: {formatDate(entry.createdAt)}
                     {entry.publishedAt &&
-                      ` · Published ${formatDate(entry.publishedAt)}`}
+                      ` // PUSHED: ${formatDate(entry.publishedAt)}`}
                   </p>
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-1 shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={() => handleTogglePublish(entry)}
                     title={entry.isPublished ? "Unpublish" : "Publish"}
                     aria-label={entry.isPublished ? "Unpublish" : "Publish"}
-                    className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                    className="size-7 rounded-none border border-emerald-500/15 hover:bg-emerald-500/10 flex items-center justify-center text-emerald-400 transition-all"
                   >
                     {entry.isPublished ? (
-                      <EyeOff size={14} />
+                      <EyeOff size={12} />
                     ) : (
-                      <Send size={14} />
+                      <Send size={12} />
                     )}
                   </button>
                   <button
                     onClick={() => openEdit(entry)}
                     title="Edit"
                     aria-label="Edit"
-                    className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
+                    className="size-7 rounded-none border border-emerald-500/15 hover:bg-emerald-500/10 flex items-center justify-center text-emerald-450 transition-all"
                   >
-                    <Pencil size={14} />
+                    <Pencil size={12} />
                   </button>
 
                   {deleteConfirmId === entry._id ? (
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleDelete(entry._id)}
                         title="Confirm delete"
                         aria-label="Confirm delete"
-                        className="size-8 rounded-lg flex items-center justify-center text-destructive bg-destructive/10 hover:bg-destructive/20 transition-all"
+                        className="h-7 px-2 rounded-none border border-red-500/25 bg-red-955/10 text-red-400 hover:bg-red-500/20 text-[8px] font-bold uppercase transition-all"
                       >
-                        <Trash2 size={14} />
+                        [ CONFIRM ]
                       </button>
                       <button
                         onClick={() => setDeleteConfirmId(null)}
                         title="Cancel delete"
                         aria-label="Cancel delete"
-                        className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                        className="size-7 rounded-none border border-emerald-500/15 hover:bg-emerald-500/10 flex items-center justify-center text-emerald-400 transition-all"
                       >
-                        <X size={14} />
+                        <X size={12} />
                       </button>
                     </div>
                   ) : (
@@ -430,9 +448,9 @@ export default function AdminWhatsNew() {
                       onClick={() => setDeleteConfirmId(entry._id)}
                       title="Delete"
                       aria-label="Delete"
-                      className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+                      className="size-7 rounded-none border border-red-500/15 hover:bg-red-955/10 flex items-center justify-center text-red-400 transition-all"
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={12} />
                     </button>
                   )}
                 </div>

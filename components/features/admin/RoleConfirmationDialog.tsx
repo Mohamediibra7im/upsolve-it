@@ -36,107 +36,103 @@ export function RoleConfirmationDialog({
   const isPromotion = confirmDialog.newRole === 'admin';
   
   const roleConfig = {
-    title: isPromotion ? 'Promote to Admin' : 'Demote to User',
-    actionText: isPromotion ? 'Promote User' : 'Demote User',
-    loadingText: isPromotion ? 'Promoting...' : 'Demoting...',
+    title: isPromotion ? 'PROMOTION: GRANT ADMIN RIGHTS' : 'DEMOTION: REVOKE ADMIN RIGHTS',
+    actionText: isPromotion ? 'CONFIRM_PROMOTION.EXE' : 'CONFIRM_DEMOTION.EXE',
+    loadingText: isPromotion ? 'PROMOTING...' : 'DEMOTING...',
     description: isPromotion 
-      ? 'This user will gain administrative privileges and access to all admin features.'
-      : 'This user will lose administrative privileges and be restricted to regular user features.',
+      ? 'This user will gain administrative privileges and access to all admin tools.'
+      : 'This user will lose administrative privileges and be restricted to regular user bounds.',
     icon: isPromotion ? Crown : UserIcon,
-    colorClass: isPromotion ? 'text-purple-600 dark:text-purple-400' : 'text-gray-600 dark:text-gray-400',
-    bgColorClass: isPromotion 
-      ? 'bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/20 dark:to-pink-900/20'
-      : 'bg-gradient-to-r from-gray-100 to-slate-100 dark:from-gray-800 dark:to-slate-800',
+    colorClass: isPromotion ? 'text-amber-400' : 'text-red-400',
+    bgColorClass: isPromotion ? 'border-amber-500/20 bg-amber-955/10' : 'border-red-500/20 bg-red-955/10',
     bannerColorClass: isPromotion
-      ? 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20'
-      : 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20',
+      ? 'text-amber-400 bg-amber-955/10 border-amber-500/20'
+      : 'text-red-400 bg-red-955/10 border-red-500/20',
     buttonColorClass: isPromotion
-      ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
-      : 'bg-gradient-to-r from-gray-600 to-slate-600 hover:from-gray-700 hover:to-slate-700'
+      ? 'bg-amber-500 text-amber-950 hover:bg-amber-400 font-bold border-transparent'
+      : 'bg-red-600 text-red-50 hover:bg-red-500 font-bold border-transparent'
   };
 
   const Icon = roleConfig.icon;
 
   return (
     <Dialog open={confirmDialog.open} onOpenChange={(open) => !open && setConfirmDialog({ open: false, user: null, newRole: null })}>
-      <DialogContent className="w-[95vw] max-w-md mx-auto sm:w-full rounded-xl">
-        <DialogHeader className="text-center space-y-3 sm:space-y-4">
-          <div className="flex justify-center mb-3 sm:mb-4">
-            <div className={`rounded-full p-2 sm:p-3 ${roleConfig.bgColorClass}`}>
-              <Icon className={`size-6 sm:h-8 sm:w-8 ${roleConfig.colorClass}`} />
+      <DialogContent className="w-[95vw] max-w-md mx-auto sm:w-full rounded-none border border-emerald-500/25 bg-[#060a08] font-mono text-emerald-400">
+        <DialogHeader className="space-y-3 sm:space-y-4">
+          <div className="flex justify-center mb-1">
+            <div className={`p-3 border rounded-none ${roleConfig.bgColorClass}`}>
+              <Icon className="size-6 shrink-0" />
             </div>
           </div>
-          <DialogTitle className={`text-lg sm:text-xl font-semibold ${roleConfig.colorClass}`}>
+          <DialogTitle className={`text-sm font-bold tracking-widest text-center uppercase ${roleConfig.colorClass}`}>
             {roleConfig.title}
           </DialogTitle>
-          <DialogDescription className="text-center space-y-3 sm:space-y-4">
-            <div className="bg-muted/50 rounded-2xl p-3 sm:p-4">
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-3">
-                <Avatar className="size-8 sm:h-10 sm:w-10 rounded-2xl">
-                  <AvatarImage src={confirmDialog.user?.avatar} alt={confirmDialog.user?.codeforcesHandle} />
-                  <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs sm:text-sm rounded-2xl">
-                    {confirmDialog.user?.codeforcesHandle?.slice(0, 2).toUpperCase() || 'UN'}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="text-center sm:text-left">
-                  <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm sm:text-base">
-                    {confirmDialog.user?.codeforcesHandle || 'Unknown User'}
-                  </p>
-                  <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground mt-1">
-                    <Badge variant="outline" className="text-xs rounded-2xl">
-                      Current: {confirmDialog.user?.role}
-                    </Badge>
-                    <span className="hidden sm:inline">→</span>
-                    <span className="sm:hidden">↓</span>
-                    <Badge variant="outline" className="text-xs rounded-2xl">
-                      New: {confirmDialog.newRole}
-                    </Badge>
+          <DialogDescription asChild>
+            <div className="space-y-4 text-emerald-400/80">
+              <div className="bg-[#040604]/60 border border-emerald-500/10 p-3 sm:p-4 rounded-none">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <Avatar className="size-8 sm:h-10 sm:w-10 rounded-none border border-emerald-500/20">
+                    <AvatarImage src={confirmDialog.user?.avatar} alt={confirmDialog.user?.codeforcesHandle} />
+                    <AvatarFallback className="bg-emerald-955/15 text-emerald-500/40 text-xs sm:text-sm rounded-none">
+                      {confirmDialog.user?.codeforcesHandle?.slice(0, 2).toUpperCase() || 'UN'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="text-center sm:text-left">
+                    <p className="font-bold text-emerald-300 text-sm tracking-wider">
+                      {confirmDialog.user?.codeforcesHandle || 'UNKNOWN_USER'}
+                    </p>
+                    <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 text-[9px] font-bold mt-1 text-emerald-500/40 uppercase">
+                      <Badge variant="outline" className="text-[9px] rounded-none border-emerald-500/15 text-emerald-500/50 bg-transparent">
+                        CURRENT: {confirmDialog.user?.role}
+                      </Badge>
+                      <span className="hidden sm:inline">{"->"}</span>
+                      <span className="sm:hidden">|</span>
+                      <Badge variant="outline" className="text-[9px] rounded-none border-emerald-500/15 text-emerald-500/50 bg-transparent">
+                        NEW: {confirmDialog.newRole}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className={`flex flex-col sm:flex-row items-center justify-center gap-2 p-3 rounded-2xl ${roleConfig.bannerColorClass}`}>
-              <span className="flex items-center justify-center">
-                {isPromotion ? <Crown className="size-5" /> : <AlertTriangle className="size-5" />}
-              </span>
-              <span className="text-xs sm:text-sm font-medium text-center">
-                {roleConfig.description}
-              </span>
-            </div>
+              <div className={`flex items-start gap-2.5 p-3 border rounded-none text-left ${roleConfig.bannerColorClass}`}>
+                <span className="mt-0.5 shrink-0">
+                  {isPromotion ? <Crown className="size-4" /> : <AlertTriangle className="size-4" />}
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-wide leading-relaxed">
+                  {roleConfig.description}
+                </span>
+              </div>
 
-            <p className="text-sm sm:text-base font-medium">
-              Are you sure you want to {isPromotion ? 'promote' : 'demote'} this user?
-            </p>
+              <p className="text-[10px] font-bold text-center uppercase tracking-widest text-emerald-300">
+                Are you sure you want to {isPromotion ? 'promote' : 'demote'} this user node?
+              </p>
+            </div>
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="flex flex-col sm:flex-row gap-3 sm:gap-3 sm:justify-center pt-4">
+        <DialogFooter className="flex flex-col sm:flex-row gap-3 sm:justify-center pt-2">
           <Button
             variant="outline"
             onClick={() => setConfirmDialog({ open: false, user: null, newRole: null })}
             disabled={updating !== null}
-            className="w-full sm:w-auto order-2 sm:order-1 rounded-xl"
+            className="w-full sm:w-auto order-2 sm:order-1 rounded-none border border-emerald-500/15 hover:bg-emerald-500/10 text-emerald-400 font-mono text-[9px] uppercase tracking-widest"
           >
-            Cancel
+            [ CANCEL ]
           </Button>
           <Button
             onClick={handleConfirmRoleChange}
             disabled={updating !== null}
-            className={`w-full sm:w-auto order-1 sm:order-2 rounded-xl ${roleConfig.buttonColorClass}`}
+            className={`w-full sm:w-auto order-1 sm:order-2 rounded-none font-mono text-[9px] uppercase tracking-widest ${roleConfig.buttonColorClass}`}
           >
             {updating === null ? (
               <>
-                <Icon className="mr-2 size-3 sm:h-4 sm:w-4" />
-                <span className="text-sm sm:text-base">
-                  {roleConfig.actionText}
-                </span>
+                <Icon className="mr-2 size-3.5" />
+                <span>{roleConfig.actionText}</span>
               </>
             ) : (
               <>
-                <Loader2 className="mr-2 size-3 sm:h-4 sm:w-4 animate-spin" />
-                <span className="text-sm sm:text-base">
-                  {roleConfig.loadingText}
-                </span>
+                <Loader2 className="mr-2 size-3.5 animate-spin" />
+                <span>{roleConfig.loadingText}</span>
               </>
             )}
           </Button>
