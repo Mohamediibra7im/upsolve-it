@@ -90,9 +90,9 @@ export default function RootLayout({
               <MotionConfig reducedMotion="user">
               <div className="relative flex min-h-screen flex-col bg-background">
                 {/* Site-wide background */}
-                <div className="fixed inset-0 -z-10 pointer-events-none bg-[#040604]" aria-hidden="true">
-                  <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,.015)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,.015)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,black_45%,transparent_100%)]" />
-                  <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.03]" />
+                <div className="fixed inset-0 -z-10 pointer-events-none bg-background transition-colors duration-300" aria-hidden="true">
+                  <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,.04)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,.04)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(16,185,129,.015)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,.015)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,black_45%,transparent_100%)]" />
+                  <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.015] dark:opacity-[0.03]" />
                 </div>
                 <AuthGuard>
                   <PageTransition>
