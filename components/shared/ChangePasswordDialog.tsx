@@ -12,9 +12,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { KeyRound } from "lucide-react";
+import { KeyRound, ShieldAlert, CheckCircle } from "lucide-react";
 import { validatePassword } from "@/utils/passwordValidation";
-import {useUser} from "@/hooks/auth";
+import { useUser } from "@/hooks/auth";
 
 const ChangePasswordDialog = () => {
   const [open, setOpen] = useState(false);
@@ -95,26 +95,30 @@ const ChangePasswordDialog = () => {
       <SheetTrigger asChild>
         <Button
           variant="outline"
-          size="default"
-          className="w-full h-10 sm:h-12 text-xs sm:text-sm font-semibold rounded-lg btn-enhanced hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-indigo-500/10 hover:border-blue-500/60 hover:shadow-lg hover:shadow-blue-500/20 group relative overflow-hidden"
+          className="w-full h-10 rounded-sm border border-emerald-500/20 bg-transparent text-emerald-450 font-bold uppercase tracking-widest text-[10px] hover:bg-emerald-500/10 transition-all font-mono"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/8 to-blue-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <KeyRound className="mr-1.5 sm:mr-2 size-3.5 sm:h-4 sm:w-4 relative z-10 transition-transform duration-300 group-hover:rotate-12" />
-          <span className="relative z-10">Change Password</span>
+          <KeyRound className="mr-1.5 size-3.5" />
+          <span>[ CHANGE_PASSWORD ]</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="h-auto">
-        <SheetHeader>
-          <SheetTitle>Change Password</SheetTitle>
-          <SheetDescription>
+      <SheetContent side="bottom" className="h-auto border-t border-emerald-500/25 bg-[#060a08] font-mono text-emerald-400 p-6 shadow-[0_-6px_22px_rgba(0,0,0,0.6)]">
+        <SheetHeader className="space-y-1 pt-2">
+          <div className="flex items-center gap-1.5 text-[8px] font-bold text-emerald-500/40 uppercase tracking-widest">
+            <span>SECURITY_PROTOCOL</span>
+            <span>{"//"}</span>
+            <span>CREDENTIAL_ROTATION</span>
+          </div>
+          <SheetTitle className="text-sm font-bold uppercase tracking-wider text-white">Change Password</SheetTitle>
+          <SheetDescription className="text-[10px] text-emerald-500/60 uppercase">
             Enter your current password and create a new strong password.
           </SheetDescription>
         </SheetHeader>
-        <div className="mx-auto max-w-md">
-          <form onSubmit={handleSubmit} className="space-y-6 mt-6">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium">
-                Current Password
+        
+        <div className="mx-auto max-w-md mt-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="block text-[9px] font-bold uppercase tracking-wider text-emerald-500/50">
+                [ CURRENT_PASSWORD ]:
               </label>
               <Input
                 type="password"
@@ -122,12 +126,13 @@ const ChangePasswordDialog = () => {
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 placeholder="Enter your current password"
                 required
+                className="h-10 rounded-sm bg-[#040604] border border-emerald-500/20 text-xs text-emerald-300 placeholder-emerald-500/20 focus:border-emerald-500/50 outline-none transition-all font-mono"
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium">
-                New Password
+            <div className="space-y-1.5">
+              <label className="block text-[9px] font-bold uppercase tracking-wider text-emerald-500/50">
+                [ NEW_PASSWORD ]:
               </label>
               <Input
                 type="password"
@@ -135,13 +140,16 @@ const ChangePasswordDialog = () => {
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Create a strong password"
                 required
+                className="h-10 rounded-sm bg-[#040604] border border-emerald-500/20 text-xs text-emerald-300 placeholder-emerald-500/20 focus:border-emerald-500/50 outline-none transition-all font-mono"
               />
-              <PasswordStrengthIndicator password={newPassword} />
+              <div className="pt-0.5">
+                <PasswordStrengthIndicator password={newPassword} />
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium">
-                Confirm New Password
+            <div className="space-y-1.5">
+              <label className="block text-[9px] font-bold uppercase tracking-wider text-emerald-500/50">
+                [ CONFIRM_NEW_PASSWORD ]:
               </label>
               <Input
                 type="password"
@@ -149,28 +157,43 @@ const ChangePasswordDialog = () => {
                 onChange={(e) => setConfirmNewPassword(e.target.value)}
                 placeholder="Re-enter your new password"
                 required
+                className="h-10 rounded-sm bg-[#040604] border border-emerald-500/20 text-xs text-emerald-300 placeholder-emerald-500/20 focus:border-emerald-500/50 outline-none transition-all font-mono"
               />
             </div>
 
             {error && (
-              <p className="text-sm text-red-500 text-center">{error}</p>
+              <div className="p-3 rounded-sm bg-red-955/10 border border-red-500/20 text-red-400 text-[9px] uppercase tracking-wide text-center flex items-center justify-center gap-1.5">
+                <ShieldAlert size={12} className="shrink-0 animate-pulse" />
+                <span>{error}</span>
+              </div>
             )}
             {success && (
-              <p className="text-sm text-green-500 text-center">{success}</p>
+              <div className="p-3 rounded-sm bg-emerald-500/5 border border-emerald-500/20 text-emerald-300 text-[9px] uppercase tracking-wide text-center flex items-center justify-center gap-1.5">
+                <CheckCircle size={12} className="shrink-0" />
+                <span>{success}</span>
+              </div>
             )}
 
-            <div className="flex gap-3 pt-4">
+            <div className="flex gap-3 pt-4 border-t border-emerald-500/10">
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleCancel}
                 disabled={isLoading}
-                className="flex-1"
+                className="flex-1 h-10 rounded-sm border border-emerald-500/20 bg-transparent text-emerald-400 font-bold uppercase tracking-widest text-[10px] hover:bg-emerald-500/10 transition-all font-mono"
               >
-                Cancel
+                [ CANCEL ]
               </Button>
-              <Button type="submit" disabled={isLoading} className="flex-1">
-                {isLoading ? "Changing..." : "Change Password"}
+              <Button 
+                type="submit" 
+                disabled={isLoading}
+                className="flex-1 h-10 rounded-sm bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[10px] shadow-[0_0_8px_rgba(16,185,129,0.2)] transition-all font-mono"
+              >
+                {isLoading ? (
+                  <span>UPDATING...</span>
+                ) : (
+                  <span>[ ROTATE_KEY.EXE ]</span>
+                )}
               </Button>
             </div>
           </form>
@@ -181,10 +204,3 @@ const ChangePasswordDialog = () => {
 };
 
 export default ChangePasswordDialog;
-
-
-
-
-
-
-
