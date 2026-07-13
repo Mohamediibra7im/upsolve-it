@@ -12,8 +12,8 @@ const fetcher = (url: string) => apiFetcher<AdminUsersResponse>(url);
 const EMPTY_USERS: User[] = [];
 
 export function useAdminUsers() {
-  // ponytail: no limit param — backend defaults to 500
-  const { data, error, mutate } = useSWR<AdminUsersResponse>("/api/admin/users", fetcher, {
+  // Request all users (backend caps at 5000); the table paginates client-side.
+  const { data, error, mutate } = useSWR<AdminUsersResponse>("/api/admin/users?limit=0", fetcher, {
     // Optimize for fast loading
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
