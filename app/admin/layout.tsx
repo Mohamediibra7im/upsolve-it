@@ -7,14 +7,13 @@ import Loader from "@/components/shared/Loader";
 import Image from "next/image";
 import { m, AnimatePresence } from "framer-motion";
 import { 
-  Shield, 
-  LayoutDashboard, 
-  Users, 
-  Database, 
+  Shield,
+  LayoutDashboard,
+  Users,
+  Database,
   Layers,
   ChevronRight,
   LogOut,
-  Bell,
   Menu,
   X,
   ChevronLeft,
@@ -26,6 +25,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { AdminNotificationBell } from '@/components/features/admin/AdminNotificationBell';
 import {
   Tooltip,
   TooltipContent,
@@ -264,10 +264,7 @@ export default function AdminLayout({
           </div>
 
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="size-9 rounded-sm border border-emerald-500/15 text-emerald-500/60 hover:text-emerald-300 bg-transparent relative hover:bg-emerald-500/5">
-              <Bell size={14} />
-              <div className="absolute top-2 right-2 size-1.5 bg-emerald-400 rounded-sm border border-background animate-pulse" />
-            </Button>
+            <AdminNotificationBell />
             <div className="size-9 rounded-sm bg-emerald-950/15 border border-emerald-500/25 flex items-center justify-center text-emerald-400 shadow-2xl">
               <Shield size={16} />
             </div>

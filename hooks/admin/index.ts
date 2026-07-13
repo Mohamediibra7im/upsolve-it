@@ -25,3 +25,8 @@ export {
   deleteSuggestion,
 } from "./useSuggestions";
 export type { Suggestion } from "./useSuggestions";
+export { useUnreadContact } from "./useUnreadContact";
+export type {
+  UnreadContactSummary,
+  UnreadContactItem,
+} from "./useUnreadContact";

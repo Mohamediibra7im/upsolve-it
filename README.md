@@ -2,6 +2,8 @@
 
 > **Frontend Protocol: COMMAND-CONSOLE-V3**
 > A high-fidelity, monospaced dark terminal dashboard for elite competitive programmers.
+>
+> 📡 **Backend Core Service**: [upsolve-it--backend](https://github.com/Mohamediibra7im/upsolve-it--backend)
 
 ---
 
