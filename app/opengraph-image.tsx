@@ -25,50 +25,51 @@ export default function Image() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#050505',
+          backgroundColor: '#040604',
           position: 'relative',
+          fontFamily: 'Montserrat',
         }}
       >
-        {/* Background Radial Glow */}
+        {/* Background Grid Lines Overlay */}
         <div 
           style={{
             position: 'absolute',
             inset: 0,
-            backgroundImage: 'radial-gradient(circle at 50% 50%, #007F5F10 0%, transparent 70%)',
+            backgroundImage: 'radial-gradient(circle at 50% 50%, #10b98108 0%, transparent 70%)',
             display: 'flex',
           }}
         />
 
         {/* Corner Telemetry: Top Left */}
         <div style={{ position: 'absolute', top: '40px', left: '40px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <span style={{ color: '#007F5F', fontSize: '10px', fontWeight: 900, letterSpacing: '0.2em' }}>PLATFORM</span>
-          <span style={{ color: 'white', fontSize: '12px', fontWeight: 700 }}>UPSOLVE.IT // V2.0</span>
+          <span style={{ color: '#10b981', fontSize: '9px', fontWeight: 900, letterSpacing: '0.25em' }}>{"// SYS_PROTOCOL"}</span>
+          <span style={{ color: 'white', fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em' }}>UPSOLVE_COMMAND_CENTER_V2.0</span>
         </div>
 
         {/* Corner Telemetry: Top Right */}
         <div style={{ position: 'absolute', top: '40px', right: '40px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-          <span style={{ color: '#007F5F', fontSize: '10px', fontWeight: 900, letterSpacing: '0.2em' }}>STATION</span>
-          <span style={{ color: 'white', fontSize: '12px', fontWeight: 700 }}>CAIRO, EGYPT</span>
+          <span style={{ color: '#10b981', fontSize: '9px', fontWeight: 900, letterSpacing: '0.25em' }}>{"// SECTOR"}</span>
+          <span style={{ color: 'white', fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em' }}>ONLINE_MATRIX_GLOBAL</span>
         </div>
 
         {/* Corner Telemetry: Bottom Left */}
         <div style={{ position: 'absolute', bottom: '40px', left: '40px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <span style={{ color: '#007F5F', fontSize: '10px', fontWeight: 900, letterSpacing: '0.2em' }}>LEAD OPERATOR</span>
-          <span style={{ color: 'white', fontSize: '12px', fontWeight: 700 }}>MOHAMMED IBRAHIM</span>
+          <span style={{ color: '#10b981', fontSize: '9px', fontWeight: 900, letterSpacing: '0.25em' }}>{"// COMPILER_OPERATOR"}</span>
+          <span style={{ color: 'white', fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em' }}>MOHAMMED IBRAHIM</span>
         </div>
 
         {/* Corner Telemetry: Bottom Right */}
         <div style={{ position: 'absolute', bottom: '40px', right: '40px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-          <span style={{ color: '#007F5F', fontSize: '10px', fontWeight: 900, letterSpacing: '0.2em' }}>ESTABLISHED</span>
-          <span style={{ color: 'white', fontSize: '12px', fontWeight: 700 }}>HNU - ICPC COMMUNITY // 2026</span>
+          <span style={{ color: '#10b981', fontSize: '9px', fontWeight: 900, letterSpacing: '0.25em' }}>{"// AUTHORIZED"}</span>
+          <span style={{ color: 'white', fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em' }}>HNU_ICPC_COMMUNITY_2026</span>
         </div>
 
-        {/* Side Level Bars */}
-        <div style={{ position: 'absolute', left: '40px', top: '150px', bottom: '150px', width: '2px', backgroundColor: '#007F5F20', display: 'flex' }}>
-          <div style={{ height: '70%', width: '100%', backgroundColor: '#007F5F', display: 'flex' }} />
+        {/* Side Level Terminal Meters */}
+        <div style={{ position: 'absolute', left: '40px', top: '150px', bottom: '150px', width: '2px', backgroundColor: '#10b98115', display: 'flex' }}>
+          <div style={{ height: '75%', width: '100%', backgroundColor: '#10b981', display: 'flex' }} />
         </div>
-        <div style={{ position: 'absolute', right: '40px', top: '150px', bottom: '150px', width: '2px', backgroundColor: '#007F5F20', display: 'flex' }}>
-          <div style={{ height: '40%', width: '100%', backgroundColor: '#007F5F', display: 'flex' }} />
+        <div style={{ position: 'absolute', right: '40px', top: '150px', bottom: '150px', width: '2px', backgroundColor: '#10b98115', display: 'flex' }}>
+          <div style={{ height: '50%', width: '100%', backgroundColor: '#10b981', display: 'flex' }} />
         </div>
 
         {/* Center Branding Area */}
@@ -78,13 +79,12 @@ export default function Image() {
             flexDirection: 'column',
             alignItems: 'center', 
             justifyContent: 'center',
-            gap: '20px',
-            fontFamily: 'Montserrat'
+            gap: '24px',
           }}
         >
           {/* Top Row: Brackets + Name */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
-            <div style={{ fontSize: '180px', color: '#007F5F', fontWeight: 200, display: 'flex', lineHeight: 1 }}>[</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div style={{ fontSize: '160px', color: '#10b981', fontWeight: 100, display: 'flex', lineHeight: 1 }}>[</div>
             
             <div 
               style={{ 
@@ -92,57 +92,57 @@ export default function Image() {
                 alignItems: 'center', 
                 justifyContent: 'center',
                 lineHeight: 1,
-                transform: 'translateY(15px)'
+                transform: 'translateY(10px)'
               }}
             >
-              <span style={{ fontSize: '120px', color: 'white', letterSpacing: '0.02em' }}>UPSOLVE</span>
-              <span style={{ fontSize: '120px', color: '#007F5F', letterSpacing: '0.02em', marginLeft: '10px' }}>.it</span>
+              <span style={{ fontSize: '105px', color: 'white', letterSpacing: '0.05em', fontWeight: 900 }}>UPSOLVE</span>
+              <span style={{ fontSize: '105px', color: '#10b981', letterSpacing: '0.05em', fontWeight: 900, marginLeft: '5px' }}>.it</span>
             </div>
 
-            <div style={{ fontSize: '180px', color: '#007F5F', fontWeight: 200, display: 'flex', lineHeight: 1 }}>]</div>
+            <div style={{ fontSize: '160px', color: '#10b981', fontWeight: 100, display: 'flex', lineHeight: 1 }}>]</div>
           </div>
           
-          {/* Bottom Row: Protocol Badge */}
+          {/* Bottom Row: Protocol Executable Badge */}
           <div 
             style={{ 
               display: 'flex', 
-              backgroundColor: '#007F5F10',
-              padding: '10px 40px',
-              border: '1px solid #007F5F30',
-              borderRadius: '4px'
+              backgroundColor: '#10b98108',
+              padding: '8px 30px',
+              border: '1px solid #10b98125',
+              borderRadius: '2px'
             }}
           >
-            <span style={{ fontSize: '16px', fontWeight: 900, color: '#007F5F', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-              Practice Redefined
+            <span style={{ fontSize: '13px', fontWeight: 900, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
+              [ SYSTEM_MASTERY_ACTIVE.EXE ]
             </span>
           </div>
         </div>
 
-        {/* System Dashboard Bar */}
+        {/* System Dashboard Telemetry Bar */}
         <div 
           style={{
             position: 'absolute',
-            bottom: '100px',
+            bottom: '110px',
             display: 'flex',
             alignItems: 'center',
             gap: '30px',
-            backgroundColor: '#080808',
-            padding: '8px 30px',
-            borderRadius: '100px',
-            border: '1px solid #ffffff05'
+            backgroundColor: '#060a08',
+            padding: '8px 24px',
+            borderRadius: '2px',
+            border: '1px solid #10b98115'
           }}
         >
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#007F5F', display: 'flex' }} />
-            <span style={{ color: '#888', fontSize: '9px', fontWeight: 900, letterSpacing: '0.1em' }}>ENGINE: ACTIVE</span>
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <div style={{ width: '4px', height: '4px', backgroundColor: '#10b981', display: 'flex' }} />
+            <span style={{ color: '#10b981', fontSize: '9px', fontWeight: 900, letterSpacing: '0.15em' }}>SYS: ONLINE</span>
           </div>
-          <div style={{ width: '1px', height: '10px', backgroundColor: '#333', display: 'flex' }} />
+          <div style={{ width: '1px', height: '8px', backgroundColor: '#10b98115', display: 'flex' }} />
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <span style={{ color: '#888', fontSize: '9px', fontWeight: 900, letterSpacing: '0.1em' }}>SYNC: 100%</span>
+            <span style={{ color: '#10b98180', fontSize: '9px', fontWeight: 900, letterSpacing: '0.15em' }}>DB_SYNC: 100%</span>
           </div>
-          <div style={{ width: '1px', height: '10px', backgroundColor: '#333', display: 'flex' }} />
+          <div style={{ width: '1px', height: '8px', backgroundColor: '#10b98115', display: 'flex' }} />
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <span style={{ color: '#007F5F', fontSize: '9px', fontWeight: 900, letterSpacing: '0.1em' }}>CONNECTION: SECURE</span>
+            <span style={{ color: '#10b981', fontSize: '9px', fontWeight: 900, letterSpacing: '0.15em' }}>INTEGRITY: SECURE</span>
           </div>
         </div>
       </div>
