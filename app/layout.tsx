@@ -8,8 +8,7 @@ import { ToastProvider } from "@/components/providers/Toast";
 import { Analytics } from "@vercel/analytics/react";
 import { cn } from "@/lib/utils";
 import PageTransition from "@/components/shared/PageTransition";
-import HelpFab from "@/components/layout/HelpFab";
-import WhatsNewFab from "@/components/layout/WhatsNewFab";
+import SystemConsoleFab from "@/components/layout/SystemConsoleFab";
 import { LazyMotion, domMax, MotionConfig } from "framer-motion";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 
@@ -100,8 +99,7 @@ export default function RootLayout({
                     <ErrorBoundary>{children}</ErrorBoundary>
                   </PageTransition>
                 </AuthGuard>
-                <WhatsNewFab />
-                <HelpFab />
+                <SystemConsoleFab />
               </div>
             </MotionConfig>
           </LazyMotion>

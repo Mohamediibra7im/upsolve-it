@@ -1,8 +1,7 @@
 "use client";
 
-import {useEffect, useState, useRef} from "react";
-import {Loader2} from "lucide-react";
-import {FaLock} from "react-icons/fa6";
+import { useEffect, useState, useRef } from "react";
+import { Loader2, Lock } from "lucide-react";
 
 type ProgressPayload = {
   currentTime: number;
@@ -168,12 +167,12 @@ const VideoPlayer = ({
   }, [videoUrl, isLocked]);
 
   return (
-    <div className="relative w-full aspect-video flex items-center justify-center bg-zinc-950 overflow-hidden border border-border/40 shadow-2xl">
+    <div className="relative w-full aspect-video flex items-center justify-center bg-[#040604] overflow-hidden border border-emerald-500/15 rounded-sm shadow-[0_6px_22px_rgba(0,0,0,0.6)] font-mono">
       {/* Loading State Overlay */}
       {!isReady && !isLocked && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 w-full gap-3 aspect-video z-10 pointer-events-none">
-          <Loader2 className="size-8 animate-spin text-primary" />
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground animate-pulse">
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#040604]/95 w-full gap-3 aspect-video z-10 pointer-events-none">
+          <Loader2 className="size-8 animate-spin text-emerald-400" />
+          <p className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/40 animate-pulse">
             Loading session player...
           </p>
         </div>
@@ -181,11 +180,18 @@ const VideoPlayer = ({
 
       {/* Locked State Overlay */}
       {isLocked && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 w-full gap-3 aspect-video z-10">
-          <FaLock className="size-8 text-primary animate-bounce" />
-          <p className="text-sm font-semibold text-zinc-300">
-            This topic is locked
-          </p>
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#040604]/95 w-full gap-3 aspect-video z-10">
+          <div className="p-3 bg-red-955/15 rounded-sm border border-red-500/20 text-red-400 animate-pulse">
+            <Lock className="size-6" />
+          </div>
+          <div className="space-y-1 text-center">
+            <p className="text-[10px] font-bold text-red-450 uppercase tracking-widest">
+              This topic is locked
+            </p>
+            <p className="text-[8px] font-bold text-red-500/35 uppercase">
+              [ RESOLVE_PREVIOUS_LOGS_TO_UNLOCK ]
+            </p>
+          </div>
         </div>
       )}
 
