@@ -1,8 +1,7 @@
 "use client";
 
-import {m} from "framer-motion";
-import {RefreshCw, Target, Zap, BarChart3, ArrowRight} from "lucide-react";
-import Orb from "./Orb";
+import { m as motion } from "framer-motion";
+import { RefreshCw, Target, Zap, BarChart3, ArrowRight } from "lucide-react";
 
 const steps = [
   {
@@ -11,12 +10,12 @@ const steps = [
     desc: "Connect your handle; ratings and submissions populate.",
     icon: RefreshCw,
     ui: (
-      <div className="mt-6 p-3 bg-background/50 border border-border/40 rounded-xl text-[10px] space-y-1.5">
+      <div className="mt-6 p-3 bg-emerald-950/5 border border-emerald-500/10 rounded-sm text-[10px] space-y-1.5 font-mono">
         <div className="flex justify-between items-center">
-          <span className="font-bold text-muted-foreground/60">Handle Sync</span>
-          <span className="text-[7px] font-black uppercase text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 tracking-wider">Synced</span>
+          <span className="font-bold text-emerald-500/40">Handle Sync</span>
+          <span className="text-[7px] font-bold uppercase text-emerald-300 bg-emerald-500/10 px-1.5 py-0.5 rounded-sm border border-emerald-500/20 tracking-wider">Synced</span>
         </div>
-        <div className="font-mono bg-card p-1.5 border border-border/60 rounded text-primary font-bold text-center">
+        <div className="font-mono bg-[#060a08] p-1.5 border border-emerald-500/15 rounded-sm text-emerald-300 font-bold text-center">
           tourist
         </div>
       </div>
@@ -28,19 +27,19 @@ const steps = [
     desc: "Pick a mode, set tags and rating band.",
     icon: Target,
     ui: (
-      <div className="mt-6 p-3 bg-background/50 border border-border/40 rounded-xl text-[10px] space-y-2">
-        <div className="flex justify-between items-center text-muted-foreground/60 font-bold">
+      <div className="mt-6 p-3 bg-emerald-950/5 border border-emerald-500/10 rounded-sm text-[10px] space-y-2 font-mono">
+        <div className="flex justify-between items-center text-emerald-500/40 font-bold">
           <span>Mode: Ladder</span>
           <span>Rating Band</span>
         </div>
         <div className="flex gap-1">
-          <span className="bg-primary/10 border border-primary/20 text-primary text-[7px] font-black px-1.5 py-0.5 rounded uppercase">dp</span>
-          <span className="bg-primary/10 border border-primary/20 text-primary text-[7px] font-black px-1.5 py-0.5 rounded uppercase">graphs</span>
+          <span className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[7px] font-bold px-1.5 py-0.5 rounded-sm uppercase">dp</span>
+          <span className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[7px] font-bold px-1.5 py-0.5 rounded-sm uppercase">graphs</span>
         </div>
-        <div className="w-full h-1 bg-muted rounded relative">
-          <div className="absolute left-[25%] right-[20%] h-full bg-primary rounded" />
-          <div className="absolute left-[25%] -translate-x-1/2 -translate-y-[2px] size-1.5 rounded-full bg-primary" />
-          <div className="absolute right-[20%] translate-x-1/2 -translate-y-[2px] size-1.5 rounded-full bg-primary" />
+        <div className="w-full h-1 bg-emerald-950/20 rounded-sm relative">
+          <div className="absolute left-[25%] right-[20%] h-full bg-emerald-500 rounded-sm" />
+          <div className="absolute left-[25%] -translate-x-1/2 -translate-y-[2px] size-1.5 rounded-sm bg-emerald-400" />
+          <div className="absolute right-[20%] translate-x-1/2 -translate-y-[2px] size-1.5 rounded-sm bg-emerald-400" />
         </div>
       </div>
     ),
@@ -51,19 +50,19 @@ const steps = [
     desc: "Run timed sessions, then debrief with reviews.",
     icon: Zap,
     ui: (
-      <div className="mt-6 p-3 bg-background/50 border border-border/40 rounded-xl text-[10px] space-y-2">
+      <div className="mt-6 p-3 bg-emerald-950/5 border border-emerald-500/10 rounded-sm text-[10px] space-y-2 font-mono">
         <div className="flex justify-between items-center">
-          <span className="font-bold text-muted-foreground/60">Session Active</span>
-          <span className="font-mono text-[9px] font-black text-amber-500">01:42:15</span>
+          <span className="font-bold text-emerald-500/40">Session Active</span>
+          <span className="font-mono text-[9px] font-bold text-amber-500">01:42:15</span>
         </div>
         <div className="space-y-1">
-          <div className="flex justify-between text-[8px] border-b border-border/40 pb-0.5">
-            <span className="font-mono text-muted-foreground">Problem A</span>
-            <span className="text-emerald-500 font-bold">✓ 18m</span>
+          <div className="flex justify-between text-[8px] border-b border-emerald-500/10 pb-0.5">
+            <span className="font-mono text-emerald-500/50">Problem A</span>
+            <span className="text-emerald-400 font-bold">✓ 18m</span>
           </div>
           <div className="flex justify-between text-[8px]">
-            <span className="font-mono text-muted-foreground">Problem B</span>
-            <span className="text-muted-foreground/60">Solving...</span>
+            <span className="font-mono text-emerald-500/50">Problem B</span>
+            <span className="text-emerald-500/30">Solving...</span>
           </div>
         </div>
       </div>
@@ -75,12 +74,12 @@ const steps = [
     desc: "Use stats, trajectories, and upsolve list to steer your next block.",
     icon: BarChart3,
     ui: (
-      <div className="mt-6 p-3 bg-background/50 border border-border/40 rounded-xl text-[10px] space-y-2">
-        <div className="flex justify-between items-center text-muted-foreground/60 font-bold">
+      <div className="mt-6 p-3 bg-emerald-950/5 border border-emerald-500/10 rounded-sm text-[10px] space-y-2 font-mono">
+        <div className="flex justify-between items-center text-emerald-500/40 font-bold">
           <span>Performance</span>
-          <span className="text-primary font-black">+45 rating</span>
+          <span className="text-emerald-300 font-bold">+45 rating</span>
         </div>
-        <div className="h-10 w-full flex items-end gap-1.5 px-0.5 justify-between">
+        <div className="h-10 w-full flex items-end gap-1 px-0.5 justify-between">
           {[
             { h: "h-[30%]" },
             { h: "h-[45%]" },
@@ -90,7 +89,7 @@ const steps = [
             { h: "h-[80%]" }
           ].map((item, idx) => (
             <div key={idx} className="flex-1 flex flex-col justify-end h-full">
-              <div className={`w-full rounded-t-sm bg-gradient-to-t from-primary/30 to-primary ${item.h}`} />
+              <div className={`w-full rounded-sm bg-emerald-500/40 group-hover:bg-emerald-500 transition-colors ${item.h}`} />
             </div>
           ))}
         </div>
@@ -100,54 +99,51 @@ const steps = [
 ];
 
 const WorkflowSection = () => (
-  <section className="py-32 relative overflow-hidden">
-    <Orb className="size-[400px] bg-primary/6 bottom-[10%] left-[5%]" />
-
-    <div className="container mx-auto px-6 relative z-10">
-      <m.div
-        initial={{opacity: 0, y: 16}}
-        whileInView={{opacity: 1, y: 0}}
-        viewport={{once: true}}
-        className="text-center max-w-2xl mx-auto mb-24 space-y-4"
+  <section className="py-24 relative overflow-hidden bg-[#040604] font-mono text-emerald-400 border-t border-emerald-500/10">
+    <div className="container mx-auto max-w-6xl px-4 relative z-10">
+      
+      {/* Section Header */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="text-center max-w-2xl mx-auto mb-16 space-y-3"
       >
-        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
-          Workflow
+        <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-emerald-500/45">
+          {"// Workflow Protocol"}
         </span>
-        <h2 className="text-4xl md:text-6xl font-[1000] tracking-tighter uppercase leading-[0.95]">
-          <span className="bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent">The Evolution</span>{" "}
-          <span className="bg-gradient-to-r from-primary to-emerald-400 bg-clip-text text-transparent">Protocol</span>
+        <h2 className="text-3xl md:text-5xl font-black tracking-tight uppercase text-white leading-none">
+          The Evolution Protocol
         </h2>
-        <p className="text-muted-foreground font-medium text-lg pt-1">
+        <p className="text-emerald-500/50 text-xs leading-relaxed max-w-lg mx-auto uppercase">
           One repeatable loop from sync to insight, run it every week.
         </p>
-      </m.div>
+      </motion.div>
 
       {/* Grid Steps */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 relative">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative">
         {steps.map((s, i) => (
-          <m.div
+          <motion.div
             key={s.n}
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{delay: i * 0.08}}
-            className="p-6 md:p-8 rounded-3xl bg-card/40 backdrop-blur-md border border-border/40 hover:border-primary/30 hover:bg-primary/[0.01] transition-all duration-500 ease-out group relative overflow-hidden flex flex-col justify-between min-h-[350px]"
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.08 }}
+            className="p-6 rounded-sm bg-[#060a08]/30 border border-emerald-500/15 hover:border-emerald-500/25 transition-all duration-300 group relative flex flex-col justify-between min-h-[340px]"
           >
-            <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] pointer-events-none" />
-            
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div className="flex justify-between items-start">
-                <div className="size-12 rounded-2xl bg-primary/[0.06] flex items-center justify-center text-primary group-hover:bg-primary/[0.12] group-hover:scale-110 transition-all duration-500">
-                  <s.icon size={22} />
+                <div className="size-10 rounded-sm bg-emerald-500/5 border border-emerald-500/15 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500/10 transition-colors">
+                  <s.icon size={18} />
                 </div>
-                <span className="text-4xl font-[1000] leading-none text-primary/10 select-none">{s.n}</span>
+                <span className="text-2xl font-black leading-none text-emerald-500/10">{s.n}</span>
               </div>
               
-              <div className="space-y-3">
-                <h4 className="text-xl font-black uppercase tracking-tight group-hover:text-primary transition-colors">
+              <div className="space-y-2">
+                <h4 className="text-md font-bold uppercase tracking-wide text-emerald-300">
                   {s.title}
                 </h4>
-                <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                <p className="text-[10px] text-emerald-500/60 leading-relaxed uppercase">
                   {s.desc}
                 </p>
               </div>
@@ -155,14 +151,14 @@ const WorkflowSection = () => (
 
             {/* Connecting arrows for lg screen width */}
             {i < steps.length - 1 && (
-              <div className="hidden lg:flex absolute top-[25%] right-[-16px] translate-x-1/2 z-20 size-8 rounded-full bg-background border border-border/80 items-center justify-center text-muted-foreground/60 shadow-md">
-                <ArrowRight size={14} />
+              <div className="hidden lg:flex absolute top-[25%] right-[-14px] translate-x-1/2 z-20 size-6 rounded-sm bg-[#060a08] border border-emerald-500/15 items-center justify-center text-emerald-500/40">
+                <ArrowRight size={12} />
               </div>
             )}
 
             {/* Micro UI */}
             {s.ui}
-          </m.div>
+          </motion.div>
         ))}
       </div>
     </div>

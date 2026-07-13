@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Search, ExternalLink } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { useState, useEffect } from "react";
+import { Search, ExternalLink } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface SearchResult {
   id: string;
@@ -16,67 +16,67 @@ interface SearchResult {
 
 const helpContent: SearchResult[] = [
   {
-    id: '1',
-    title: 'How to start your first practice session',
-    description: 'Learn how to set up and begin a practice session with custom difficulty and tags.',
-    category: 'Training',
-    tags: ['training', 'beginner', 'session', 'setup'],
+    id: "1",
+    title: "How to start your first practice session",
+    description: "Learn how to set up and begin a practice session with custom difficulty and tags.",
+    category: "Training",
+    tags: ["training", "beginner", "session", "setup"],
     relevance: 0.9,
   },
   {
-    id: '2',
-    title: 'Understanding the notification system',
-    description: 'Learn about notifications, marking as read, and managing your notification center.',
-    category: 'Notifications',
-    tags: ['notifications', 'bell', 'admin', 'alerts'],
+    id: "2",
+    title: "Understanding the notification system",
+    description: "Learn about notifications, marking as read, and managing your notification center.",
+    category: "Notifications",
+    tags: ["notifications", "bell", "admin", "alerts"],
     relevance: 0.8,
   },
   {
-    id: '3',
-    title: 'Syncing your Codeforces profile',
-    description: 'How to connect and sync your Codeforces account with CF Training Tracker.',
-    category: 'Account',
-    tags: ['codeforces', 'sync', 'profile', 'connection'],
+    id: "3",
+    title: "Syncing your Codeforces profile",
+    description: "How to connect and sync your Codeforces account with CF Training Tracker.",
+    category: "Account",
+    tags: ["codeforces", "sync", "profile", "connection"],
     relevance: 0.9,
   },
   {
-    id: '4',
-    title: 'Reading statistics and performance analytics',
-    description: 'Understand your progress charts, heatmaps, and performance metrics.',
-    category: 'Analytics',
-    tags: ['statistics', 'analytics', 'charts', 'performance'],
+    id: "4",
+    title: "Reading statistics and performance analytics",
+    description: "Understand your progress charts, heatmaps, and performance metrics.",
+    category: "Analytics",
+    tags: ["statistics", "analytics", "charts", "performance"],
     relevance: 0.7,
   },
   {
-    id: '5',
-    title: 'Managing upsolve problems',
-    description: 'Track and manage problems you need to upsolve from contests.',
-    category: 'Upsolve',
-    tags: ['upsolve', 'contests', 'problems', 'tracking'],
+    id: "5",
+    title: "Managing upsolve problems",
+    description: "Track and manage problems you need to upsolve from contests.",
+    category: "Upsolve",
+    tags: ["upsolve", "contests", "problems", "tracking"],
     relevance: 0.6,
   },
   {
-    id: '6',
-    title: 'Changing your PIN and account settings',
-    description: 'How to update your PIN, change themes, and manage account preferences.',
-    category: 'Settings',
-    tags: ['pin', 'settings', 'account', 'security'],
+    id: "6",
+    title: "Changing your PIN and account settings",
+    description: "How to update your PIN, change themes, and manage account preferences.",
+    category: "Settings",
+    tags: ["pin", "settings", "account", "security"],
     relevance: 0.8,
   },
   {
-    id: '7',
-    title: 'Admin features and notification management',
-    description: 'How to use admin features to create and manage notifications for all users.',
-    category: 'Admin',
-    tags: ['admin', 'management', 'notifications', 'users'],
+    id: "7",
+    title: "Admin features and notification management",
+    description: "How to use admin features to create and manage notifications for all users.",
+    category: "Admin",
+    tags: ["admin", "management", "notifications", "users"],
     relevance: 0.5,
   },
   {
-    id: '8',
-    title: 'Troubleshooting login issues',
-    description: 'Common solutions for login problems and account access issues.',
-    category: 'Troubleshooting',
-    tags: ['login', 'troubleshooting', 'access', 'problems'],
+    id: "8",
+    title: "Troubleshooting login issues",
+    description: "Common solutions for login problems and account access issues.",
+    category: "Troubleshooting",
+    tags: ["login", "troubleshooting", "access", "problems"],
     relevance: 0.7,
   },
 ];
@@ -96,7 +96,6 @@ export default function HelpSearch({ query }: HelpSearchProps) {
       return;
     }
 
-    // Simulate search with a small delay
     const searchTimer = setTimeout(() => {
       const results = helpContent
         .filter((item) => {
@@ -109,7 +108,6 @@ export default function HelpSearch({ query }: HelpSearchProps) {
           );
         })
         .sort((a, b) => {
-          // Calculate relevance score based on query match
           const calculateScore = (item: SearchResult) => {
             const searchTerm = query.toLowerCase();
             let score = 0;
@@ -123,7 +121,7 @@ export default function HelpSearch({ query }: HelpSearchProps) {
 
           return calculateScore(b) - calculateScore(a);
         })
-        .slice(0, 8); // Limit to 8 results
+        .slice(0, 8);
 
       setResultsState({ query, results });
     }, 300);
@@ -139,65 +137,67 @@ export default function HelpSearch({ query }: HelpSearchProps) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Search className="size-5" />
-          <span>Search Results</span>
+    <Card className="border border-emerald-500/20 bg-[#060a08] rounded-sm text-emerald-400 font-mono">
+      <CardHeader className="border-b border-emerald-500/10 pb-4">
+        <CardTitle className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-emerald-300">
+          <Search className="size-4" />
+          <span>{"Search Results"}</span>
           {searchResults.length > 0 && (
-            <Badge variant="secondary">{searchResults.length}</Badge>
+            <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 rounded-sm text-[8px] font-bold">
+              {searchResults.length}
+            </Badge>
           )}
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-[9px] uppercase text-emerald-500/40 font-bold">
           Results for &quot;{query}&quot;
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-4">
         {isLoading ? (
-          <div className="space-y-4">
+          <div className="space-y-4 text-[9px] uppercase">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-muted rounded w-1/2"></div>
+              <div key={i} className="animate-pulse space-y-1">
+                <div className="h-3 bg-emerald-500/10 rounded-sm w-3/4"></div>
+                <div className="h-2.5 bg-emerald-500/5 rounded-sm w-1/2"></div>
               </div>
             ))}
           </div>
         ) : searchResults.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {searchResults.map((result) => (
               <div
                 key={result.id}
-                className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
+                className="p-3.5 border border-emerald-500/10 rounded-sm hover:bg-emerald-500/5 hover:border-emerald-500/20 transition-all cursor-pointer group"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h4 className="font-medium group-hover:text-primary transition-colors">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 space-y-1">
+                    <h4 className="text-[11px] font-bold text-emerald-300 group-hover:text-emerald-400 transition-colors uppercase tracking-wide">
                       {result.title}
                     </h4>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-[9px] text-emerald-500/60 leading-relaxed uppercase">
                       {result.description}
                     </p>
-                    <div className="flex items-center space-x-2 mt-2">
-                      <Badge variant="outline" className="text-xs">
+                    <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                      <span className="text-[8px] font-bold uppercase border border-emerald-500/15 bg-emerald-950/10 px-1.5 py-0.5 rounded-sm text-emerald-400">
                         {result.category}
-                      </Badge>
+                      </span>
                       {result.tags.slice(0, 3).map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
+                        <span key={tag} className="text-[8px] font-bold uppercase bg-emerald-500/5 px-1.5 py-0.5 rounded-sm text-emerald-500/40">
                           {tag}
-                        </Badge>
+                        </span>
                       ))}
                     </div>
                   </div>
-                  <ExternalLink className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <ExternalLink className="size-3.5 text-emerald-500/30 group-hover:text-emerald-400 transition-colors shrink-0" />
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-8">
-            <Search className="size-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="font-medium mb-2">No results found</h3>
-            <p className="text-sm text-muted-foreground">
+          <div className="text-center py-6 text-emerald-500/40">
+            <Search className="size-8 mx-auto mb-3 animate-pulse" />
+            <h3 className="text-xs font-bold uppercase text-emerald-300">No results found</h3>
+            <p className="text-[9px] uppercase mt-1">
               Try searching with different keywords or browse our help categories above.
             </p>
           </div>
@@ -206,10 +206,3 @@ export default function HelpSearch({ query }: HelpSearchProps) {
     </Card>
   );
 }
-
-
-
-
-
-
-

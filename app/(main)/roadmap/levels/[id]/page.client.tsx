@@ -1,34 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import {useMemo} from "react";
-import {useParams} from "next/navigation";
-import {m as motion} from "framer-motion";
+import { useMemo } from "react";
+import { useParams } from "next/navigation";
+import { m as motion } from "framer-motion";
 import {
-  ChevronRight,
   Lock,
   Target,
-  ArrowLeft,
-  Award,
   Activity,
-  Shield,
-  Play,
   CheckCircle2,
   BookOpen,
+  Cpu,
 } from "lucide-react";
 import Loader from "@/components/shared/Loader";
-import {useRoadmapLevel} from "@/hooks/roadmap/useRoadmap";
-import {cn} from "@/lib/utils";
-import {progressWidthClass} from "@/components/features/roadmap";
-
-const Orb = ({className}: {className?: string}) => (
-  <div
-    className={cn(
-      "absolute rounded-full pointer-events-none blur-[120px]",
-      className,
-    )}
-  />
-);
+import { useRoadmapLevel } from "@/hooks/roadmap/useRoadmap";
+import { cn } from "@/lib/utils";
 
 const getLevelNodeTier = (orderIndex: number) => {
   if (orderIndex === 0)
@@ -68,9 +54,9 @@ const getLevelNodeTier = (orderIndex: number) => {
 };
 
 const LevelPage = () => {
-  const params = useParams<{id: string}>();
+  const params = useParams<{ id: string }>();
   const levelId = params?.id;
-  const {data, isLoading} = useRoadmapLevel(levelId);
+  const { data, isLoading } = useRoadmapLevel(levelId);
 
   const progressPct = useMemo(() => {
     if (!data?.level?.topicsCount) return 0;
@@ -82,6 +68,10 @@ const LevelPage = () => {
     );
   }, [data]);
 
+  // Progress blocks
+  const totalBlocks = 20;
+  const filledBlocks = Math.min(totalBlocks, Math.round((progressPct / 100) * totalBlocks));
+
   if (isLoading || !data) {
     return <Loader message="Loading curriculum level..." />;
   }
@@ -90,110 +80,65 @@ const LevelPage = () => {
   const tier = getLevelNodeTier(levelIndex);
 
   return (
-    <div className="min-h-screen pb-20 pt-0 relative overflow-hidden bg-[linear-gradient(to_right,rgba(var(--primary),0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(var(--primary),0.02)_1px,transparent_1px)] bg-[size:32px_32px]">
-      {/* Ambient background glows */}
-      <Orb className="size-[500px] bg-primary/5 dark:bg-primary/4 top-10 left-1/4 animate-pulse [animation-duration:7s]" />
-      <Orb className="size-[400px] bg-emerald-500/5 dark:bg-emerald-500/4 bottom-10 right-1/4 animate-pulse [animation-duration:9s]" />
+    <div className="min-h-screen pb-20 relative font-mono text-emerald-400">
+      {/* Background */}
+      <div className="absolute inset-0 -z-10 bg-[#040604]">
+        <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.04]" />
+      </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 max-w-7xl">
-        {/* Navigation & Header */}
-        <div className="pb-6">
-          <Link
-            href="/roadmap"
-            className="inline-flex items-center gap-2 rounded-xl border border-border/80 dark:border-border/40 hover:border-primary/40 dark:hover:border-primary/40 bg-card/60 hover:bg-primary/5 px-4 py-2.5 text-[10px] font-black uppercase tracking-wider text-foreground hover:text-primary transition-all duration-300"
-          >
-            <ArrowLeft className="size-4" />
-            Back to Console
-          </Link>
-        </div>
-
-        {/* Level Hero Header */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 max-w-6xl space-y-6">
+        {/* Terminal Header */}
         <motion.section
-          initial={{opacity: 0, y: 20}}
-          animate={{opacity: 1, y: 0}}
-          transition={{duration: 0.6}}
-          className="relative overflow-hidden rounded-3xl border border-border/60 dark:border-border/40 bg-card/45 dark:bg-card/20 p-6 md:p-8 backdrop-blur-xl shadow-xl"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="space-y-4 pt-8"
         >
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute -top-12 -right-12 size-64 rounded-full bg-primary/10 blur-[100px] opacity-70" />
-            <div className="absolute bottom-0 left-10 size-48 rounded-full bg-emerald-500/5 blur-[80px] opacity-50" />
+          <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40">
+            <Target size={12} className="text-emerald-400" />
+            <span>LEVEL_BRIEFING // SYSTEM_SECTOR</span>
+            <span className="flex-1 border-b border-emerald-500/10" />
+            <Cpu size={10} className="text-emerald-500/30" />
+            <span>{tier.name.toUpperCase()}</span>
           </div>
 
-          <div className="relative z-10 grid gap-8 lg:grid-cols-12 items-center">
-            {/* Left Description Briefing */}
-            <div className="lg:col-span-8 space-y-5">
-              <div className="flex flex-wrap gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.2em]">
-                  <Target size={11} /> Level Briefing
-                </span>
-                <span
-                  className={cn(
-                    "inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-[0.2em]",
-                    tier.color,
-                    tier.bg,
-                    tier.border,
-                  )}
-                >
-                  <Shield size={11} /> {tier.name} (Lvl {levelIndex})
-                </span>
-              </div>
-
-              <div className="space-y-2">
-                <h1 className="text-3xl md:text-5xl font-[1000] tracking-tighter uppercase text-foreground leading-none">
-                  {data.level.title}
-                </h1>
-                <p className="text-sm text-muted-foreground/80 max-w-3xl leading-relaxed font-medium">
-                  {data.level.description ||
-                    "No curriculum description formulated yet for this level."}
-                </p>
-              </div>
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+            <div className="space-y-2">
+              <h1 className="text-xl sm:text-2xl font-bold text-emerald-300 uppercase tracking-wider">
+                {data.level.title}
+              </h1>
+              <p className="text-[11px] text-emerald-500/40 max-w-3xl leading-relaxed">
+                {data.level.description || "No level description formulated yet."}
+              </p>
             </div>
 
-            {/* Right progress indicator */}
-            <div className="lg:col-span-4 rounded-2xl border border-border/60 dark:border-border/40 bg-background/50 p-5 space-y-4 shadow-md">
-              <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-muted-foreground/60">
-                <span>Missions Completed</span>
-                <span className="text-primary font-bold">
-                  {data.level.topicsUnlockedCount} / {data.level.topicsCount} (
-                  {progressPct}% Completed)
+            {/* Level progress readout */}
+            <div className="shrink-0 space-y-2 text-right">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/40">LEVEL_COMPILATION</span>
+              <div className="flex items-center justify-end gap-3 text-xs">
+                <span className="flex items-center">
+                  <span className="text-emerald-500/30">[</span>
+                  <span className="text-emerald-400">{"█".repeat(filledBlocks)}</span>
+                  <span className="text-emerald-500/15">{"░".repeat(totalBlocks - filledBlocks)}</span>
+                  <span className="text-emerald-500/30">]</span>
                 </span>
+                <span className="font-bold text-emerald-300">{progressPct}%</span>
               </div>
-
-              {/* Progress Bar */}
-              <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden border border-border/40">
-                <motion.div
-                  initial={{width: 0}}
-                  animate={{width: `${progressPct}%`}}
-                  transition={{duration: 0.8}}
-                  className="h-full bg-gradient-to-r from-primary to-emerald-400 rounded-full"
-                />
-              </div>
-
-              <div className="pt-3 border-t border-border/30 flex items-center justify-between text-[10px] font-bold text-muted-foreground/60 uppercase">
-                <span className="flex items-center gap-1 text-primary">
-                  <Award size={14} /> Level Bonus: +
-                  {data.level.levelBonusXp ?? 500} XP
-                </span>
+              <div className="flex items-center justify-end gap-3 text-[9px] text-emerald-500/30">
+                <span>MISSIONS: {data.level.topicsUnlockedCount}/{data.level.topicsCount}</span>
+                <span>•</span>
+                <span>BONUS: +{data.level.levelBonusXp ?? 500} XP</span>
               </div>
             </div>
           </div>
         </motion.section>
 
-        {/* Sessions Grid */}
-        <section className="mt-14 space-y-8">
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl border border-border bg-card p-2 text-primary shadow-sm">
-              <Activity size={18} />
-            </div>
-            <div>
-              <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight text-foreground">
-                Missions & Practical Labs
-              </h2>
-              <p className="text-xs text-muted-foreground/80 font-medium">
-                Finish watching lecture modules & optional materials to unlock
-                practical programming sheets.
-              </p>
-            </div>
+        {/* Sessions Section */}
+        <section className="space-y-6 pt-6">
+          <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40">
+            <Activity size={12} className="text-emerald-400" />
+            <span>MISSIONS_AND_PRACTICAL_LABS // CURRICULUM_LOG</span>
+            <span className="flex-1 border-b border-emerald-500/10" />
           </div>
 
           {/* Grid Layout of Sessions */}
@@ -207,173 +152,161 @@ const LevelPage = () => {
                 learningPct >= (topic.requiredLearningPct ?? 80);
 
               const status = isLocked
-                ? "Locked"
+                ? "LOCKED"
                 : isComplete
-                  ? "Completed"
+                  ? "COMPLETED"
                   : isProblemsUnlocked
-                    ? "Practice Open"
+                    ? "PRACTICE_OPEN"
                     : learningPct > 0
-                      ? "Learning Active"
-                      : "Unstarted";
+                      ? "LEARNING_ACTIVE"
+                      : "UNSTARTED";
+
+              // Progress bar segments
+              const learnSegs = Math.min(10, Math.round((learningPct / 100) * 10));
+              const probSegs = Math.min(10, Math.round((problemPct / 100) * 10));
 
               return (
                 <motion.div
                   key={topic._id}
-                  initial={{opacity: 0, y: 15}}
-                  animate={{opacity: 1, y: 0}}
-                  transition={{duration: 0.4, delay: idx * 0.04}}
-                  className={cn(
-                    "group relative flex flex-col justify-between rounded-3xl border p-5 bg-card/45 dark:bg-card/15 hover:bg-card/65 transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-1 hover:border-primary/30",
-                    isLocked && "opacity-90",
-                  )}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: idx * 0.02 }}
+                  className="relative flex flex-col justify-between rounded-lg border border-emerald-500/15 bg-[#060a08]/30 overflow-hidden"
                 >
-                  {/* Glassmorphic Lock Overlay */}
+                  {/* Lock Screen */}
                   {isLocked && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center rounded-3xl bg-background/95 dark:bg-background/90 text-center p-6 border border-border/80 dark:border-border/60 z-20">
-                      <div className="rounded-2xl bg-muted border border-border p-3 mb-3 shadow-md">
-                        <Lock className="size-5 text-muted-foreground/60 group-hover:scale-110 transition-transform duration-300" />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#060a08]/95 text-center p-5 z-20">
+                      <div className="rounded border border-emerald-500/20 bg-emerald-950/15 p-2.5 mb-2.5">
+                        <Lock size={16} className="text-emerald-500/40" />
                       </div>
-                      <h4 className="text-xs font-black uppercase tracking-[0.2em] text-foreground">
-                        Mission Locked
+                      <h4 className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">
+                        MISSION_LOCKED
                       </h4>
-                      <p className="text-[10px] text-muted-foreground/75 mt-1.5 max-w-[220px] leading-relaxed font-medium">
-                        Complete previous sessions first:
+                      <p className="text-[9px] text-emerald-500/30 mt-1 max-w-[200px] leading-relaxed">
+                        Complete previous sessions to unlock this sector parameters:
                       </p>
-                      <div className="mt-2.5 space-y-1.5">
-                        <span className="flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-primary">
-                          <BookOpen className="size-3" />
+                      <div className="mt-2 space-y-1">
+                        <span className="flex items-center justify-center gap-1 text-[8px] font-bold uppercase tracking-wider text-primary">
                           Learn {topic.requiredLearningPct}%
                         </span>
-                        <span className="flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-emerald-500">
-                          <CheckCircle2 className="size-3" />
+                        <span className="flex items-center justify-center gap-1 text-[8px] font-bold uppercase tracking-wider text-emerald-500">
                           Solve {topic.requiredProblemPct}%
                         </span>
                       </div>
                     </div>
                   )}
 
-                  <div className="space-y-4">
-                    {/* Header */}
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <span className="text-[9px] font-black uppercase tracking-[0.25em] text-muted-foreground/60 block group-hover:text-primary transition-colors">
-                          Mission {topic.orderIndex}
-                        </span>
-                        <h3 className="text-base font-black text-foreground mt-1">
-                          {topic.title}
-                        </h3>
-                      </div>
-                      <span
-                        className={cn(
-                          "shrink-0 rounded-full px-2.5 py-0.5 text-[8px] font-black uppercase tracking-wider border",
-                          status === "Completed"
-                            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 shadow-sm"
-                            : status === "Practice Open"
-                              ? "bg-teal-500/10 border-teal-500/20 text-teal-500"
-                              : status === "Learning Active"
-                                ? "bg-amber-500/5 border-amber-500/10 text-amber-500"
-                                : "bg-muted border-border/80 text-foreground",
-                        )}
-                      >
-                        {status}
-                      </span>
-                    </div>
-
-                    <p className="text-xs text-muted-foreground/70 leading-relaxed font-medium line-clamp-3">
-                      {topic.description ||
-                        "No session detail formulations recorded."}
-                    </p>
-
-                    {/* Subtopics tag list */}
-                    {topic.subtopics?.length ? (
-                      <div className="flex flex-wrap gap-1.5">
-                        {topic.subtopics.slice(0, 3).map((sub) => (
-                          <span
-                            key={sub}
-                            className="rounded-lg border border-border/60 bg-background/60 px-2 py-1 text-[9px] font-bold text-muted-foreground/80"
-                          >
-                            {sub}
-                          </span>
-                        ))}
-                        {topic.subtopics.length > 3 && (
-                          <span className="rounded-lg border border-border/40 bg-background/20 px-2 py-0.5 text-[8px] font-bold text-muted-foreground/40">
-                            +{topic.subtopics.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    ) : null}
+                  {/* Header bar */}
+                  <div className="flex items-center justify-between px-4 py-2 border-b border-emerald-500/10 bg-[#081210]">
+                    <span className="text-[9px] font-bold text-emerald-500/50 uppercase">
+                      MISSION_{String(topic.orderIndex).padStart(2, "0")}
+                    </span>
+                    <span className={cn(
+                      "text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border",
+                      isComplete
+                        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                        : isProblemsUnlocked
+                          ? "bg-primary/10 border-primary/20 text-primary"
+                          : "bg-emerald-500/5 border-emerald-500/5 text-emerald-500/30"
+                    )}>
+                      {status}
+                    </span>
                   </div>
 
-                  <div className="mt-5 pt-4 border-t border-border/40 dark:border-border/20 space-y-4">
-                    {/* Learning Progress Bar */}
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-muted-foreground/50">
-                        <span className="flex items-center gap-1">
-                          <BookOpen className="size-3" />
-                          Learning progress
-                        </span>
-                        <span className="text-foreground font-bold">
-                          {learningPct}%
-                        </span>
-                      </div>
-                      <div className="h-1.5 w-full rounded-full bg-background border border-border/40 overflow-hidden">
-                        <div
-                          className={cn("h-full rounded-full bg-gradient-to-r from-primary to-blue-400 transition-all duration-300", progressWidthClass(learningPct))}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Problems Progress Bar */}
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-muted-foreground/50">
-                        <span className="flex items-center gap-1">
-                          <CheckCircle2 className="size-3" />
-                          Practice solved
-                        </span>
-                        <span
-                          className={cn(
-                            "font-bold",
-                            isProblemsUnlocked
-                              ? "text-foreground"
-                              : "text-muted-foreground/30",
-                          )}
-                        >
-                          {isProblemsUnlocked ? `${problemPct}%` : "Locked"}
-                        </span>
-                      </div>
-                      <div className="h-1.5 w-full rounded-full bg-background border border-border/40 overflow-hidden">
-                        {isProblemsUnlocked ? (
-                          <div
-                            className={cn("h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300", progressWidthClass(problemPct))}
-                          />
-                        ) : (
-                          <div className="h-full rounded-full bg-muted/50 w-full" />
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Footer Stats */}
-                    <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground/60">
-                      <span className="inline-flex items-center gap-1">
-                        <Target className="size-3.5" />
-                        {topic.problemsCount ?? 0} problems
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-primary">
-                        <Award className="size-3.5" />+
-                        {topic.topicXpReward ?? 100} XP
-                      </span>
-                    </div>
-
-                    <Link
-                      href={`/roadmap/levels/${levelId}/topics/${topic._id}`}
-                      className={cn(
-                        "w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-border/80 hover:border-primary/40 bg-background/50 py-3 text-xs font-black uppercase tracking-[0.15em] text-foreground hover:text-primary hover:bg-primary/5 transition-all duration-300 group",
-                        isLocked && "pointer-events-none opacity-50",
+                  {/* Content details */}
+                  <div className="p-4 space-y-4 flex-1 flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <h3 className="text-xs font-bold text-emerald-300 uppercase">
+                        {topic.title}
+                      </h3>
+                      {topic.description && (
+                        <p className="text-[10px] text-emerald-500/40 leading-relaxed line-clamp-3">
+                          {topic.description}
+                        </p>
                       )}
-                    >
-                      <Play size={10} className="fill-current" /> Enter Mission
-                      <ChevronRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
-                    </Link>
+
+                      {/* Subtopics tags */}
+                      {topic.subtopics?.length ? (
+                        <div className="flex flex-wrap gap-1 pt-1">
+                          {topic.subtopics.slice(0, 3).map((sub) => (
+                            <span
+                              key={sub}
+                              className="text-[8px] font-bold text-emerald-500/30 uppercase"
+                            >
+                              [{sub}]
+                            </span>
+                          ))}
+                          {topic.subtopics.length > 3 && (
+                            <span className="text-[8px] font-bold text-emerald-500/20 uppercase">
+                              [+{topic.subtopics.length - 3}]
+                            </span>
+                          )}
+                        </div>
+                      ) : null}
+                    </div>
+
+                    {/* Progress details */}
+                    <div className="pt-3 border-t border-emerald-500/[0.07] space-y-2.5">
+                      {/* Learn Progress */}
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[9px] text-emerald-500/45">
+                          <span className="flex items-center gap-1">
+                            <BookOpen size={10} />
+                            LEARNING
+                          </span>
+                          <span className="font-bold text-emerald-300 tabular-nums">
+                            {learningPct}%
+                          </span>
+                        </div>
+                        <div className="text-[9px] tabular-nums flex items-center">
+                          <span className="text-emerald-500/30">[</span>
+                          <span className="text-emerald-400">{"█".repeat(learnSegs)}</span>
+                          <span className="text-emerald-500/15">{"░".repeat(10 - learnSegs)}</span>
+                          <span className="text-emerald-500/30">]</span>
+                        </div>
+                      </div>
+
+                      {/* Problems Progress */}
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[9px] text-emerald-500/45">
+                          <span className="flex items-center gap-1">
+                            <CheckCircle2 size={10} />
+                            PRACTICE
+                          </span>
+                          <span className="font-bold text-emerald-300 tabular-nums">
+                            {isProblemsUnlocked ? `${problemPct}%` : "LOCKED"}
+                          </span>
+                        </div>
+                        <div className="text-[9px] tabular-nums flex items-center">
+                          {isProblemsUnlocked ? (
+                            <>
+                              <span className="text-emerald-500/30">[</span>
+                              <span className="text-emerald-400">{"█".repeat(probSegs)}</span>
+                              <span className="text-emerald-500/15">{"░".repeat(10 - probSegs)}</span>
+                              <span className="text-emerald-500/30">]</span>
+                            </>
+                          ) : (
+                            <span className="text-emerald-500/20">[░░░░░░░░░░]</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Target count / XP */}
+                      <div className="flex items-center justify-between text-[8px] text-emerald-500/35 uppercase tracking-wider">
+                        <span>{topic.problemsCount ?? 0} problems</span>
+                        <span>+{topic.topicXpReward ?? 100} XP</span>
+                      </div>
+
+                      <Link
+                        href={`/roadmap/levels/${levelId}/topics/${topic._id}`}
+                        className={cn(
+                          "w-full h-9 rounded bg-emerald-500 text-emerald-950 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-400 transition-all inline-flex items-center justify-center font-mono",
+                          isLocked && "pointer-events-none opacity-50",
+                        )}
+                      >
+                        [ ENTER_MISSION.EXE ]
+                      </Link>
+                    </div>
                   </div>
                 </motion.div>
               );

@@ -2,7 +2,7 @@
 
 import type React from "react";
 import Link from "next/link";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 type AuthShellProps = {
@@ -25,66 +25,72 @@ export default function AuthShell({
   className,
 }: AuthShellProps) {
   return (
-    <section className={cn("relative w-full", className)}>
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-background" />
-        <div className="absolute inset-0 bg-grid-pattern opacity-[0.045]" />
-        <div className="absolute -top-24 left-1/2 size-[30rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
-        <div className="absolute -bottom-24 left-1/3 size-[26rem] -translate-x-1/2 rounded-full bg-accent/10 blur-3xl" />
-      </div>
+    <section className={cn("relative w-full font-mono text-emerald-400 bg-[#040604] py-8 min-h-[calc(100vh-4rem)] flex items-center justify-center select-none", className)}>
+      {/* Background terminal grid lines */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,.015)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,.015)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,black_45%,transparent_100%)]" />
 
-      <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
+      {/* Terminal Scanline overlay */}
+      <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.03] pointer-events-none z-50" />
+
+      <div className="mx-auto w-full max-w-4xl px-4 relative z-10">
         {back ? (
           <Link
             href={back.href}
-            className="mb-6 inline-flex w-fit items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+            className="mb-4 inline-flex items-center gap-1 text-[10px] font-bold uppercase text-emerald-500/60 hover:text-emerald-300 transition-colors"
           >
-            {back.label}
+            [ {back.label.toUpperCase().replace(/ /g, "_")} ]
           </Link>
         ) : null}
 
-        <Card className="overflow-hidden rounded-3xl border-2 border-border/60 bg-card/60 backdrop-blur-xl shadow-2xl">
-          <CardHeader className="p-0" />
-          <div className="grid lg:grid-cols-12">
-            <div className="relative lg:col-span-5">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-background/10 to-accent/15" />
-              <div className="absolute inset-0 opacity-60 [mask-image:radial-gradient(40rem_25rem_at_50%_20%,black,transparent)] bg-grid-pattern" />
-              <div className="relative p-6 sm:p-10 lg:min-h-[32rem]">
-                {icon ? (
-                  <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/15">
-                    <div className="text-primary-foreground">{icon}</div>
+        <Card className="overflow-hidden rounded-sm border border-emerald-500/20 bg-[#060a08]/40 backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.6)]">
+          <div className="grid lg:grid-cols-12 font-mono">
+            {/* Left Console Panel */}
+            <div className="relative lg:col-span-5 border-b lg:border-b-0 lg:border-r border-emerald-500/15">
+              <div className="relative p-6 sm:p-8 lg:min-h-[30rem] flex flex-col justify-between h-full bg-emerald-950/[0.02]">
+                <div className="space-y-6">
+                  {/* Status header */}
+                  <div className="flex items-center justify-between border-b border-emerald-500/10 pb-2 text-[8px] text-emerald-500/35 font-bold uppercase tracking-widest">
+                    <span>SYS_ACCESS // PORTAL</span>
+                    <span>ACTIVE</span>
                   </div>
-                ) : null}
 
-                <div className="mt-5 space-y-3">
-                  <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
-                    {title}
-                  </h1>
-                  {subtitle ? (
-                    <p className="max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
-                      {subtitle}
-                    </p>
+                  {icon ? (
+                    <div className="size-10 rounded-sm bg-emerald-500/5 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                      {icon}
+                    </div>
                   ) : null}
+
+                  <div className="space-y-2">
+                    <h1 className="text-xl font-bold uppercase tracking-wide text-white leading-none">
+                      {title}
+                    </h1>
+                    {subtitle ? (
+                      <p className="text-[10px] text-emerald-500/60 leading-relaxed uppercase">
+                        {subtitle}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
 
-                <div className="mt-7 hidden lg:block">
-                  <div className="rounded-2xl border border-border/60 bg-background/40 p-4 backdrop-blur">
-                    <p className="text-xs font-semibold text-muted-foreground">
-                      Tip
+                <div className="mt-8 hidden lg:block">
+                  <div className="rounded-sm border border-emerald-500/10 bg-[#040604]/60 p-3.5">
+                    <p className="text-[8px] font-bold text-emerald-500/40 uppercase tracking-wider">
+                      {"// SYSTEM_COMPATIBILITY_INFO"}
                     </p>
-                    <p className="mt-1 text-sm text-foreground/90">
-                      Use the same handle as your{" "}
-                      <span className="font-semibold">codeforces.com</span>{" "}
-                      profile so your progress sync works instantly.
+                    <p className="mt-1.5 text-[9px] leading-relaxed text-emerald-500/60 uppercase">
+                      Use the same handle as your <span className="text-emerald-300 font-bold">codeforces.com</span> profile so your progress sync works instantly.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <CardContent className="lg:col-span-7 p-6 sm:p-10">
-              {children}
-              {footer ? <div className="mt-8">{footer}</div> : null}
+            {/* Right Form Panel */}
+            <CardContent className="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between min-h-[30rem]">
+              <div className="w-full">
+                {children}
+              </div>
+              {footer ? <div className="mt-6 pt-4 border-t border-emerald-500/10">{footer}</div> : null}
             </CardContent>
           </div>
         </Card>
@@ -92,11 +98,3 @@ export default function AuthShell({
     </section>
   );
 }
-
-
-
-
-
-
-
-

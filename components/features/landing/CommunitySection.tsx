@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import {m} from "framer-motion";
-import {Users, BookOpen, Trophy, Heart, ArrowRight, Github, Facebook} from "lucide-react";
+import { m as motion } from "framer-motion";
+import { Users, BookOpen, Trophy, Heart, ArrowRight, Github, Facebook } from "lucide-react";
 import Counter from "./Counter";
 
 const values = [
@@ -24,157 +24,153 @@ const values = [
 ];
 
 const CommunitySection = () => (
-  <section className="py-32 relative overflow-hidden">
-    <div className="absolute rounded-full pointer-events-none blur-[120px] size-[400px] -top-[10%] right-[10%]" />
-    <div className="absolute rounded-full pointer-events-none blur-[120px] size-[350px] -bottom-[10%] left-[10%]" />
-
-    <div className="container mx-auto px-6 relative z-10">
+  <section className="py-24 relative overflow-hidden bg-[#040604] font-mono text-emerald-400 border-t border-emerald-500/10">
+    <div className="container mx-auto max-w-6xl px-4 relative z-10">
 
       {/* Section Title */}
-      <m.div
-        initial={{opacity: 0, y: 16}}
-        whileInView={{opacity: 1, y: 0}}
-        viewport={{once: true}}
-        className="text-center max-w-2xl mx-auto mb-20 space-y-4"
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="text-center max-w-2xl mx-auto mb-16 space-y-3"
       >
-        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
-          Community Product
+        <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-emerald-500/45">
+          {"// Community Operations"}
         </span>
-        <h2 className="text-4xl md:text-6xl font-[1000] tracking-tighter uppercase leading-[0.95]">
-          <span className="bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent">Born from the</span>{" "}
-          <span className="bg-gradient-to-r from-primary to-emerald-400 bg-clip-text text-transparent">Community</span>
+        <h2 className="text-3xl md:text-5xl font-black tracking-tight uppercase text-white leading-none">
+          Born from the Community
         </h2>
-        <p className="text-muted-foreground font-medium text-lg pt-1">
-          A product raised from the heart of the HNU ICPC Community. Built to elevate training standards and empower every competitor.
+        <p className="text-emerald-500/50 text-xs leading-relaxed max-w-lg mx-auto uppercase">
+          A product raised from the heart of the HNU ICPC Community. Built to elevate training standards.
         </p>
-      </m.div>
+      </motion.div>
 
       {/* Stats Row */}
-      <m.div
-        initial={{opacity: 0, y: 20}}
-        whileInView={{opacity: 1, y: 0}}
-        viewport={{once: true}}
-        transition={{duration: 0.5}}
-        className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16"
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12"
       >
         {[
-          {value: <Counter to={500} suffix="+" />, label: "Members", icon: Users},
-          {value: <Counter to={10} suffix="k+" />, label: "Problems Solved", icon: Trophy},
-          {value: "5+", label: "Training Levels", icon: BookOpen},
-          {value: "100%", label: "Free & Open", icon: Heart},
+          { value: <Counter to={500} suffix="+" />, label: "Members Logged", icon: Users },
+          { value: <Counter to={10} suffix="k+" />, label: "Problems Solved", icon: Trophy },
+          { value: "5+", label: "Training Levels", icon: BookOpen },
+          { value: "100%", label: "Free & Open Code", icon: Heart },
         ].map((stat, idx) => (
-          <m.div
+          <motion.div
             key={stat.label}
-            initial={{opacity: 0, y: 16}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{delay: idx * 0.08}}
-            className="text-center p-6 rounded-2xl bg-card/30 backdrop-blur-md border border-border/30 hover:border-primary/20 transition-all duration-500"
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: idx * 0.08 }}
+            className="text-center p-6 rounded-sm bg-[#060a08]/30 border border-emerald-500/15 hover:border-emerald-500/25 transition-all duration-350"
           >
-            <stat.icon size={18} className="mx-auto mb-3 text-primary/60" />
-            <span className="block text-3xl md:text-4xl font-[1000] tracking-tighter text-primary">
+            <stat.icon size={15} className="mx-auto mb-3 text-emerald-500/45 animate-pulse" />
+            <span className="block text-2xl md:text-3xl font-black tracking-tight text-emerald-300">
               {stat.value}
             </span>
-            <span className="block text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mt-1">
+            <span className="block text-[8px] font-bold uppercase tracking-wider text-emerald-500/35 mt-1">
               {stat.label}
             </span>
-          </m.div>
+          </motion.div>
         ))}
-      </m.div>
+      </motion.div>
 
-      {/* Avatar Row + Values */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+      {/* Grid: Members & Values */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
 
-        {/* Community Avatars */}
-        <m.div
-          initial={{opacity: 0, y: 20}}
-          whileInView={{opacity: 1, y: 0}}
-          viewport={{once: true}}
-          transition={{duration: 0.5, delay: 0.1}}
-          className="p-8 rounded-3xl bg-card/30 backdrop-blur-md border border-border/30 hover:border-primary/20 transition-all duration-500 flex flex-col items-center justify-center text-center space-y-6"
+        {/* Community Members Panel */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="p-8 rounded-sm bg-[#060a08]/30 border border-emerald-500/15 hover:border-emerald-500/25 transition-all duration-350 flex flex-col items-center justify-center text-center space-y-6"
         >
-          <div className="flex -space-x-3">
+          <div className="flex -space-x-1.5">
             {[
-              {bg: "bg-primary/20", text: "text-primary", border: "border-primary/20", label: "JD"},
-              {bg: "bg-emerald-500/10", text: "text-emerald-500", border: "border-emerald-500/20", label: "AM"},
-              {bg: "bg-primary/10", text: "text-primary", border: "border-primary/20", label: "KS"},
-              {bg: "bg-amber-500/10", text: "text-amber-500", border: "border-amber-500/20", label: "RW"},
-              {bg: "bg-blue-500/10", text: "text-blue-500", border: "border-blue-500/20", label: "SL"},
+              { bg: "bg-emerald-500/10", text: "text-emerald-300", border: "border-emerald-500/25", label: "JD" },
+              { bg: "bg-emerald-500/20", text: "text-emerald-300", border: "border-emerald-500/40", label: "AM" },
+              { bg: "bg-emerald-500/5", text: "text-emerald-400", border: "border-emerald-500/15", label: "KS" },
+              { bg: "bg-emerald-500/10", text: "text-emerald-300", border: "border-emerald-500/25", label: "RW" },
+              { bg: "bg-emerald-500/20", text: "text-emerald-400", border: "border-emerald-500/40", label: "SL" },
             ].map((a, i) => (
               <div
                 key={i}
-                className={`size-10 rounded-full ring-2 ring-background ${a.bg} text-[10px] font-black flex items-center justify-center border ${a.border} ${a.text}`}
+                className={`size-9 rounded-sm border ${a.bg} ${a.border} ${a.text} text-[9px] font-bold flex items-center justify-center`}
               >
-                {a.label}
+                [{a.label}]
               </div>
             ))}
-            <div className="size-10 rounded-full ring-2 ring-background bg-muted border border-border text-[10px] font-bold flex items-center justify-center text-muted-foreground/70">
+            <div className="size-9 rounded-sm border border-emerald-500/10 bg-emerald-950/10 text-[9px] font-bold flex items-center justify-center text-emerald-500/35">
               +500
             </div>
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-black text-foreground uppercase tracking-tight">
-              500+ Competitors and Growing
+            <p className="text-xs font-bold text-emerald-300 uppercase tracking-wider">
+              500+ Competitors Online
             </p>
-            <p className="text-xs text-muted-foreground font-medium">
-              Join the HNU ICPC Community on Facebook
+            <p className="text-[10px] text-emerald-500/55 uppercase">
+              Join the HNU ICPC Community portal
             </p>
           </div>
           <a
             href="https://www.facebook.com/fcsit.hnu.icpc"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs font-black uppercase tracking-wider hover:bg-primary/20 transition-all"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-sm bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-wider hover:bg-emerald-500/20 hover:text-emerald-300 transition-all"
           >
-            <Facebook size={14} />
-            Join the Group
+            <Facebook size={12} />
+            [ JOIN_COMMUNITY_PORTAL.EXE ]
           </a>
-        </m.div>
+        </motion.div>
 
-        {/* Community Values */}
-        <m.div
-          initial={{opacity: 0, y: 20}}
-          whileInView={{opacity: 1, y: 0}}
-          viewport={{once: true}}
-          transition={{duration: 0.5, delay: 0.2}}
-          className="p-8 rounded-3xl bg-card/30 backdrop-blur-md border border-border/30 hover:border-primary/20 transition-all duration-500 flex flex-col justify-center"
+        {/* Community Values Panel */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="p-8 rounded-sm bg-[#060a08]/30 border border-emerald-500/15 hover:border-emerald-500/25 transition-all duration-350 flex flex-col justify-center"
         >
           <div className="space-y-5">
             {values.map((v) => (
               <div key={v.label} className="flex items-start gap-4">
-                <div className="size-10 rounded-xl bg-primary/[0.06] flex items-center justify-center text-primary shrink-0 mt-0.5">
-                  <v.icon size={18} />
+                <div className="size-8 rounded-sm bg-emerald-500/5 border border-emerald-500/15 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
+                  <v.icon size={14} />
                 </div>
                 <div>
-                  <h4 className="text-sm font-black uppercase tracking-tight text-foreground">
+                  <h4 className="text-xs font-bold uppercase tracking-wide text-emerald-300">
                     {v.label}
                   </h4>
-                  <p className="text-xs text-muted-foreground font-medium leading-relaxed mt-0.5">
+                  <p className="text-[10px] text-emerald-500/60 leading-relaxed mt-0.5 uppercase">
                     {v.desc}
                   </p>
                 </div>
               </div>
             ))}
           </div>
-        </m.div>
+        </motion.div>
       </div>
 
-      {/* CTA */}
-      <m.div
-        initial={{opacity: 0, y: 20}}
-        whileInView={{opacity: 1, y: 0}}
-        viewport={{once: true}}
-        transition={{duration: 0.5, delay: 0.3}}
+      {/* Action Button */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, delay: 0.3 }}
         className="text-center"
       >
         <Link
           href="/signup"
-          className="inline-flex items-center gap-3 px-10 py-4 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs shadow-[0_8px_40px_hsl(var(--primary)/0.35)] hover:shadow-[0_14px_50px_hsl(var(--primary)/0.5)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300"
+          className="inline-flex items-center gap-2 px-8 py-3 rounded-sm bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[10px] shadow-[0_0_10px_rgba(16,185,129,0.25)] transition-all"
         >
-          Join the Community
-          <ArrowRight size={16} />
+          [ INITIALIZE_CONNECTION.EXE ]
+          <ArrowRight size={12} />
         </Link>
-      </m.div>
+      </motion.div>
     </div>
   </section>
 );

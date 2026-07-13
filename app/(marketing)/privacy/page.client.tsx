@@ -1,3 +1,5 @@
+"use client";
+
 import { Shield, Lock, Eye, Cookie, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -27,46 +29,54 @@ const sections = [
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen relative overflow-hidden py-20">
-      <div className="absolute inset-0 -z-10 bg-grid-pattern opacity-[0.02]" />
-      
-      <div className="container mx-auto px-4 max-w-4xl space-y-16">
-        <div className="text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest">
-            Privacy Policy
+    <div className="min-h-screen relative overflow-hidden py-20 bg-[#040604] font-mono text-emerald-400 select-none">
+      {/* Background terminal grid lines */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,.015)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,.015)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,black_45%,transparent_100%)]" />
+
+      {/* Terminal Scanline overlay */}
+      <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.03] pointer-events-none z-50" />
+
+      <div className="container mx-auto px-4 max-w-3xl space-y-12 relative z-10">
+        
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-950/20 border border-emerald-500/15 rounded-sm text-[9px] font-bold uppercase tracking-widest text-emerald-400">
+            [ LEGAL_DEPARTMENT // PRIVACY_POLICY ]
           </div>
-          <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase leading-none">
-            Your <span className="text-primary">Privacy</span>
+          <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-white leading-none">
+            Your Privacy
           </h1>
-          <p className="text-muted-foreground text-lg font-medium max-w-2xl mx-auto">
+          <p className="text-emerald-500/50 text-xs uppercase leading-relaxed max-w-xl mx-auto">
             Transparency is important to us. Learn how we handle your data and keep your information safe.
           </p>
         </div>
 
-        <div className="grid gap-6">
+        {/* Sections Grid */}
+        <div className="grid gap-4">
           {sections.map((section) => (
             <div
               key={section.title}
-              className="p-8 rounded-3xl bg-card/30 border border-border/40 backdrop-blur-xl space-y-4 hover:border-primary/20 transition-all"
+              className="p-6 rounded-sm bg-[#060a08]/30 border border-emerald-500/15 hover:border-emerald-500/25 transition-all space-y-3"
             >
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20">
-                  <section.icon size={20} />
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-sm bg-emerald-500/5 text-emerald-400 border border-emerald-500/15">
+                  <section.icon size={16} />
                 </div>
-                <h3 className="text-xl font-black uppercase tracking-tight">{section.title}</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-300">{section.title}</h3>
               </div>
-              <p className="text-muted-foreground font-medium leading-relaxed">
+              <p className="text-[10px] text-emerald-500/60 leading-relaxed uppercase">
                 {section.content}
               </p>
             </div>
           ))}
         </div>
 
-        <div className="flex flex-col items-center gap-8 pt-8">
-          <div className="h-px w-full bg-gradient-to-r from-transparent via-border/40 to-transparent" />
-          <Button asChild variant="ghost" className="rounded-xl font-black uppercase tracking-widest text-[10px]">
+        {/* Footer */}
+        <div className="flex flex-col items-center gap-6 pt-6">
+          <div className="h-[1px] w-full bg-emerald-500/10" />
+          <Button asChild variant="ghost" className="h-9 px-4 rounded-sm border border-emerald-500/10 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/5 text-[9px] font-bold uppercase tracking-widest font-mono">
             <Link href="/">
-              <ArrowLeft size={14} className="mr-2" /> Back to Home
+              <ArrowLeft size={12} className="mr-1.5" /> [ BACK_TO_HOME.SYS ]
             </Link>
           </Button>
         </div>

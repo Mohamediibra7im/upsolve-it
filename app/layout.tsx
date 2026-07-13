@@ -91,11 +91,9 @@ export default function RootLayout({
               <MotionConfig reducedMotion="user">
               <div className="relative flex min-h-screen flex-col bg-background">
                 {/* Site-wide background */}
-                <div className="fixed inset-0 -z-10 pointer-events-none" aria-hidden="true">
-                  <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.018)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.018)_1px,transparent_1px)] bg-[size:56px_56px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,black_20%,transparent_100%)]" />
-                  <div className="absolute size-[700px] rounded-full blur-[150px] bg-[hsl(var(--primary)/0.07)] -top-[20%] -left-[10%]" />
-                  <div className="absolute size-[500px] rounded-full blur-[130px] bg-[hsl(165_70%_50%/0.05)] bottom-[10%] right-[-8%]" />
-                  <div className="absolute size-[400px] rounded-full blur-[120px] bg-[hsl(var(--primary)/0.04)] top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2" />
+                <div className="fixed inset-0 -z-10 pointer-events-none bg-[#040604]" aria-hidden="true">
+                  <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,.015)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,.015)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,black_45%,transparent_100%)]" />
+                  <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.03]" />
                 </div>
                 <AuthGuard>
                   <PageTransition>

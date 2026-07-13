@@ -1,10 +1,10 @@
 "use client";
 
-import {useState, useEffect, useRef} from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import {usePathname} from "next/navigation";
-import {m, AnimatePresence} from "framer-motion";
-import {Button} from "@/components/ui/button";
+import { usePathname } from "next/navigation";
+import { m as motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
 import {
   Menu,
   ChevronRight,
@@ -15,23 +15,19 @@ import {
   Target,
   LineChart,
   Layers,
-  ShieldAlert,
   ClipboardList,
   Compass,
   ExternalLink,
   Users,
-  User,
   Sun,
   Moon,
-  Zap,
   Trophy,
   BookOpen,
-  MoreHorizontal,
 } from "lucide-react";
 import ClientOnly from "@/components/shared/ClientOnly";
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import {useUser} from "@/hooks/auth";
-import {useFriendRequests} from "@/hooks/social";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useUser } from "@/hooks/auth";
+import { useFriendRequests } from "@/hooks/social";
 import {
   Sheet,
   SheetContent,
@@ -39,27 +35,25 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import {cn} from "@/lib/utils";
-import {useTheme} from "next-themes";
+import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 
-const guestLinks = [{href: "/docs", label: "Docs", icon: BookOpen}];
+const guestLinks = [{ href: "/docs", label: "Docs", icon: BookOpen }];
 
-/* ── Primary links (shown directly in the bar) ── */
 const primaryLinks = [
-  {href: "/dashboard", label: "Dashboard", icon: LayoutDashboard},
-  {href: "/training", label: "Training", icon: Target},
-  {href: "/roadmap", label: "Roadmap", icon: Compass},
-  {href: "/upsolve", label: "Upsolve", icon: Layers},
-  {href: "/statistics", label: "Statistics", icon: LineChart},
-  {href: "/leaderboard", label: "Leaderboard", icon: Trophy},
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/training", label: "Training", icon: Target },
+  { href: "/roadmap", label: "Roadmap", icon: Compass },
+  { href: "/upsolve", label: "Upsolve", icon: Layers },
+  { href: "/statistics", label: "Statistics", icon: LineChart },
+  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
 ];
 
-/* ── Secondary links (inside the "More" dropdown) ── */
 const secondaryLinks = [
-  {href: "/training/reviews", label: "Reviews", icon: ClipboardList},
-  {href: "/friends", label: "Friends", icon: Users},
-  {href: "/levels", label: "Levels", icon: Trophy},
-  {href: "/docs", label: "Docs", icon: BookOpen},
+  { href: "/training/reviews", label: "Reviews", icon: ClipboardList },
+  { href: "/friends", label: "Friends", icon: Users },
+  { href: "/levels", label: "Levels", icon: Trophy },
+  { href: "/docs", label: "Docs", icon: BookOpen },
 ];
 
 const allUserLinks = [...primaryLinks, ...secondaryLinks];
@@ -70,11 +64,10 @@ const NavBar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
-  const [hoveredTab, setHoveredTab] = useState<string | null>(null);
-  const {user, logout} = useUser();
-  const {incoming: incomingFriendRequests} = useFriendRequests(!!user);
+  const { user, logout } = useUser();
+  const { incoming: incomingFriendRequests } = useFriendRequests(!!user);
   const friendRequestCount = incomingFriendRequests.length;
-  const {theme, setTheme} = useTheme();
+  const { theme, setTheme } = useTheme();
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -118,233 +111,165 @@ const NavBar = () => {
   }, [pathname]);
 
   const isSecondaryActive = secondaryLinks.some((l) => pathname === l.href);
-
   const visibleLinks = user ? primaryLinks : guestLinks;
   const mobileLinks = user ? allUserLinks : guestLinks;
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full transition-all duration-300 border-b backdrop-blur-md",
+        "sticky top-0 z-50 w-full transition-all duration-300 border-b font-mono text-emerald-400 select-none bg-[#040604] relative",
         scrolled
-          ? "bg-background/95 dark:bg-neutral-950/90 border-border/60 dark:border-white/[0.08] shadow-[0_2px_15px_rgba(0,0,0,0.03)] dark:shadow-[0_2px_15px_rgba(0,0,0,0.2)]"
-          : "bg-background/80 dark:bg-neutral-950/60 border-border/30 dark:border-white/[0.03]"
+          ? "border-emerald-500/20 bg-[#040604]/95 shadow-[0_2px_15px_rgba(4,6,4,0.85)]"
+          : "border-emerald-500/10 bg-[#040604]/80"
       )}
     >
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14">
+      {/* Top micro-line accent */}
+      <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />
+      
+      {/* Bottom glowing accent bar */}
+      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-500/15 to-transparent" />
+
+      <div className="container mx-auto max-w-6xl px-4 flex items-center justify-between h-14 relative z-10">
+        
         {/* Logo */}
         <div className="flex-none flex items-center">
-          <Link href="/" className="overflow-visible select-none">
-            <m.div
-              initial="initial"
-              whileHover="hover"
-              className="flex items-center gap-0.5 leading-none cursor-pointer"
-            >
-              <m.span
-                variants={{
-                  initial: {x: 0},
-                  hover: {x: -3, color: "#007F5F"},
-                }}
-                transition={{type: "spring", stiffness: 400, damping: 20}}
-                className="text-foreground/25 dark:text-foreground/20 font-light text-xl tracking-tight"
-              >
-                {"<"}
-              </m.span>
-              <div className="flex items-baseline">
-                <span className="font-black text-base md:text-lg tracking-tight uppercase text-foreground">
-                  UPSOLVE
-                </span>
-                <span className="font-black text-base md:text-lg tracking-tight bg-gradient-to-br from-primary to-emerald-500 bg-clip-text text-transparent">
-                  .it
-                </span>
-                <m.span
-                  animate={{opacity: [1, 1, 0, 0]}}
-                  transition={{
-                    duration: 0.9,
-                    repeat: Infinity,
-                    times: [0, 0.5, 0.5, 1],
-                    ease: "linear",
-                  }}
-                  className="inline-block w-[3px] h-4 bg-primary/50 ml-0.5 translate-y-[1px] rounded-full"
-                />
-              </div>
-              <m.span
-                variants={{
-                  initial: {x: 0},
-                  hover: {x: 3, color: "#007F5F"},
-                }}
-                transition={{type: "spring", stiffness: 400, damping: 20}}
-                className="text-foreground/25 dark:text-foreground/20 font-light text-xl tracking-tight"
-              >
-                {"/>"}
-              </m.span>
-            </m.div>
+          <Link href="/" className="overflow-visible">
+            <div className="flex items-center gap-1.5 leading-none font-bold text-sm tracking-wider group">
+              <span className="text-emerald-500/30 group-hover:text-emerald-400 transition-colors">&lt;</span>
+              <span className="text-white group-hover:text-emerald-300 transition-colors uppercase">UPSOLVE</span>
+              <span className="text-emerald-400 font-extrabold uppercase drop-shadow-[0_0_3px_rgba(16,185,129,0.3)]">.IT</span>
+              <span className="text-emerald-500/30 group-hover:text-emerald-400 transition-colors">/&gt;</span>
+            </div>
           </Link>
         </div>
 
-        {/* ─── Desktop Navigation (Center) ─── */}
+        {/* Desktop Navigation */}
         {visibleLinks.length > 0 && (
-          <nav 
-            className="hidden lg:flex items-center justify-center flex-1 h-full mx-6"
-            onMouseLeave={() => setHoveredTab(null)}
-          >
-            <div className="flex items-center gap-1 h-full">
+          <nav className="hidden lg:flex items-center justify-center flex-1 h-full mx-6">
+            <div className="flex items-center gap-1 h-full text-[10px]">
               {visibleLinks.map((link) => {
                 const isActive = pathname === link.href;
                 return (
                   <Link
                     key={link.href}
                     href={link.href}
-                    onMouseEnter={() => setHoveredTab(link.href)}
-                    className={cn(
-                      "relative flex items-center gap-1.5 px-3.5 h-full text-[11px] font-bold uppercase tracking-[0.06em] transition-all duration-200 whitespace-nowrap z-10",
-                      isActive
-                        ? "text-primary"
-                        : "text-muted-foreground hover:text-foreground",
-                    )}
+                    className="relative flex items-center h-full px-2 transition-colors uppercase font-bold whitespace-nowrap group"
                   >
-                    <m.div
-                      animate={hoveredTab === link.href || isActive ? { scale: 1.1, y: -0.5 } : { scale: 1, y: 0 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                      className={cn(
-                        "transition-colors",
-                        isActive ? "text-primary" : "text-muted-foreground/60"
-                      )}
-                    >
-                      <link.icon size={13} />
-                    </m.div>
-                    <span className="relative z-10">{link.label}</span>
-                    
+                    <span className="flex items-center gap-1.5 relative z-10">
+                      <span className={cn(
+                        "transition-colors font-bold",
+                        isActive ? "text-emerald-400" : "text-emerald-500/20 group-hover:text-emerald-500/40"
+                      )}>[</span>
+                      <span className={cn(
+                        "transition-colors tracking-widest",
+                        isActive ? "text-emerald-300 drop-shadow-[0_0_3px_rgba(16,185,129,0.45)]" : "text-emerald-500/50 group-hover:text-emerald-300"
+                      )}>
+                        {link.label}
+                      </span>
+                      <span className={cn(
+                        "transition-colors font-bold",
+                        isActive ? "text-emerald-400" : "text-emerald-500/20 group-hover:text-emerald-500/40"
+                      )}>]</span>
+                    </span>
+
                     {link.href === "/friends" && friendRequestCount > 0 && (
-                      <span className="absolute right-0 top-2.5 z-20 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[8px] font-black leading-none text-white shadow-sm">
-                        {friendRequestCount > 9
-                          ? "9+"
-                          : friendRequestCount}
+                      <span className="absolute right-0 top-2.5 z-20 flex h-4 min-w-4 items-center justify-center rounded bg-red-500/80 px-1 text-[8px] font-black leading-none text-white">
+                        {friendRequestCount > 9 ? "9+" : friendRequestCount}
                       </span>
                     )}
 
-                    {/* Active Bottom Line */}
-                    <span
-                      className={cn(
-                        "absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary to-emerald-500 shadow-[0_1px_5px_rgba(16,185,129,0.4)] transition-all duration-300 origin-center",
-                        isActive ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
-                      )}
-                    />
-
-                    {/* Hover Backdrop Pill */}
-                    {hoveredTab === link.href && !isActive && (
-                      <m.div
-                        layoutId="nav-hover-pill"
-                        className="absolute inset-x-1.5 inset-y-2.5 bg-muted/60 dark:bg-white/[0.04] rounded-lg -z-10"
-                        transition={{
-                          type: "spring",
-                          stiffness: 350,
-                          damping: 25,
-                        }}
-                      />
-                    )}
+                    {/* Custom Glowing Slider Underline */}
+                    <span className={cn(
+                      "absolute bottom-0 inset-x-3 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/45 to-transparent transition-all duration-300 scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100",
+                      isActive && "scale-x-100 opacity-100"
+                    )} />
                   </Link>
                 );
               })}
 
-              {/* "More" dropdown trigger (only for logged-in users) */}
+              {/* More dropdown */}
               {user && (
                 <div className="relative h-full flex items-center" ref={moreMenuRef}>
                   <button
                     onClick={() => setMoreMenuOpen((v) => !v)}
-                    onMouseEnter={() => setHoveredTab("more")}
-                    className={cn(
-                      "relative flex items-center gap-1.5 px-3.5 h-full text-[11px] font-bold uppercase tracking-[0.06em] transition-all duration-200 whitespace-nowrap z-10",
-                      isSecondaryActive || moreMenuOpen
-                        ? "text-primary"
-                        : "text-muted-foreground hover:text-foreground",
-                    )}
+                    className="flex items-center h-full px-2 uppercase font-bold transition-colors text-[10px] group relative"
                   >
-                    <MoreHorizontal size={14} className="relative z-10" />
-                    <span className="relative z-10">More</span>
-                    <ChevronDown
-                      size={10}
-                      className={cn(
-                        "relative z-10 transition-transform duration-200",
-                        moreMenuOpen ? "rotate-180" : "",
-                      )}
-                    />
-
-                    {/* Active Bottom Line */}
-                    <span
-                      className={cn(
-                        "absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary to-emerald-500 shadow-[0_1px_5px_rgba(16,185,129,0.4)] transition-all duration-300 origin-center",
-                        isSecondaryActive || moreMenuOpen ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
-                      )}
-                    />
-
-                    {hoveredTab === "more" && !(isSecondaryActive || moreMenuOpen) && (
-                      <m.div
-                        layoutId="nav-hover-pill"
-                        className="absolute inset-x-1.5 inset-y-2.5 bg-muted/60 dark:bg-white/[0.04] rounded-lg -z-10"
-                        transition={{
-                          type: "spring",
-                          stiffness: 350,
-                          damping: 25,
-                        }}
+                    <span className="flex items-center gap-1 relative z-10">
+                      <span className={cn(
+                        "transition-colors font-bold",
+                        isSecondaryActive || moreMenuOpen ? "text-emerald-400" : "text-emerald-500/20 group-hover:text-emerald-500/40"
+                      )}>[</span>
+                      <span className={cn(
+                        "transition-colors tracking-widest mr-1",
+                        isSecondaryActive || moreMenuOpen ? "text-emerald-300 drop-shadow-[0_0_3px_rgba(16,185,129,0.45)]" : "text-emerald-500/50 group-hover:text-emerald-300"
+                      )}>
+                        MORE
+                      </span>
+                      <ChevronDown
+                        size={10}
+                        className={cn(
+                          "transition-transform duration-200 inline-block align-middle",
+                          isSecondaryActive || moreMenuOpen ? "text-emerald-300" : "text-emerald-500/50 group-hover:text-emerald-300",
+                          moreMenuOpen ? "rotate-180" : ""
+                        )}
                       />
-                    )}
+                      <span className={cn(
+                        "transition-colors font-bold",
+                        isSecondaryActive || moreMenuOpen ? "text-emerald-400" : "text-emerald-500/20 group-hover:text-emerald-500/40"
+                      )}>]</span>
+                    </span>
+
+                    <span className={cn(
+                      "absolute bottom-0 inset-x-3 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/45 to-transparent transition-all duration-300 scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100",
+                      (isSecondaryActive || moreMenuOpen) && "scale-x-100 opacity-100"
+                    )} />
                   </button>
 
-                  {/* More dropdown panel */}
                   <AnimatePresence>
                     {moreMenuOpen && (
-                      <m.div
-                        initial={{opacity: 0, y: 10, scale: 0.95}}
-                        animate={{opacity: 1, y: 0, scale: 1}}
-                        exit={{opacity: 0, y: 10, scale: 0.95}}
-                        transition={{
-                          duration: 0.2,
-                          ease: [0.16, 1, 0.3, 1],
-                        }}
-                        className="absolute left-1/2 -translate-x-1/2 top-[calc(100%-4px)] w-56 z-[9999] origin-top"
+                      <motion.div
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 5 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute left-1/2 -translate-x-1/2 top-[calc(100%-4px)] w-48 z-[9999] origin-top"
                       >
-                        <div className="rounded-2xl bg-card/95 dark:bg-black/90 backdrop-blur-2xl border border-border/85 dark:border-white/[0.08] shadow-[0_10px_30px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_35px_rgba(0,0,0,0.4)] overflow-hidden p-1.5">
-                          {secondaryLinks.map((link) => {
-                            const isActive = pathname === link.href;
-                            return (
-                              <Link
-                                key={link.href}
-                                href={link.href}
-                                onClick={() => setMoreMenuOpen(false)}
-                                className={cn(
-                                  "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[12px] font-semibold uppercase tracking-wider transition-all duration-200 group relative overflow-hidden",
-                                  isActive
-                                    ? "text-primary bg-primary/8 dark:bg-primary/12"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40 dark:hover:bg-white/5",
-                                )}
-                              >
-                                {isActive && (
-                                  <span className="absolute left-0 top-2.5 bottom-2.5 w-1 rounded-r-md bg-primary" />
-                                )}
-                                <link.icon
-                                  size={14}
+                        <div className="rounded-sm border border-emerald-500/25 bg-[#060a08] overflow-hidden shadow-[0_6px_20px_rgba(0,0,0,0.7)]">
+                          {/* Mini Header */}
+                          <div className="px-2.5 py-1 bg-emerald-950/30 border-b border-emerald-500/10 flex items-center justify-between text-[7px] text-emerald-500/40 font-bold uppercase tracking-widest">
+                            <span>SYS_MORE_OPTIONS</span>
+                          </div>
+
+                          <div className="p-1 space-y-0.5">
+                            {secondaryLinks.map((link) => {
+                              const isActive = pathname === link.href;
+                              return (
+                                <Link
+                                  key={link.href}
+                                  href={link.href}
+                                  onClick={() => setMoreMenuOpen(false)}
                                   className={cn(
-                                    "transition-colors group-hover:scale-110 duration-200",
+                                    "flex items-center justify-between px-2.5 py-1.5 rounded-sm text-[9px] font-bold uppercase transition-all border border-transparent group",
                                     isActive
-                                      ? "text-primary"
-                                      : "text-muted-foreground/60 group-hover:text-foreground/80",
+                                      ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/20"
+                                      : "text-emerald-500/50 hover:text-emerald-300 hover:bg-emerald-500/5 hover:border-emerald-500/10"
                                   )}
-                                />
-                                <span className="relative z-10 transition-transform duration-200 group-hover:translate-x-0.5">{link.label}</span>
-                                {link.href === "/friends" &&
-                                  friendRequestCount > 0 && (
-                                    <span className="ml-auto flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[8px] font-bold text-white shadow-sm">
-                                      {friendRequestCount > 9
-                                        ? "9+"
-                                        : friendRequestCount}
+                                >
+                                  <span className="flex items-center gap-1.5">
+                                    <span className="text-emerald-500/20 group-hover:text-emerald-400 transition-colors">&gt;</span>
+                                    <span>{link.label}</span>
+                                  </span>
+                                  {link.href === "/friends" && friendRequestCount > 0 && (
+                                    <span className="flex h-3.5 min-w-3.5 items-center justify-center rounded bg-red-500/80 px-1 text-[7px] font-bold text-white">
+                                      {friendRequestCount > 9 ? "9+" : friendRequestCount}
                                     </span>
                                   )}
-                              </Link>
-                            );
-                          })}
+                                </Link>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </m.div>
+                      </motion.div>
                     )}
                   </AnimatePresence>
                 </div>
@@ -353,298 +278,190 @@ const NavBar = () => {
           </nav>
         )}
 
-        {/* ─── Right Actions ─── */}
+        {/* Right actions */}
         <div className="flex-none flex items-center gap-3">
           {/* Theme Toggle */}
           <ClientOnly>
-            <m.button
-              whileHover={{ scale: 1.05, rotate: 8 }}
-              whileTap={{ scale: 0.95 }}
+            <button
               onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-              className="relative size-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/40 dark:hover:bg-white/[0.05] transition-all duration-200 border border-border/30 dark:border-white/[0.05]"
+              className="h-8 px-2.5 rounded-sm border border-emerald-500/20 bg-emerald-950/5 hover:bg-emerald-500/10 flex items-center justify-center text-emerald-500/60 hover:text-emerald-300 hover:border-emerald-500/40 hover:shadow-[0_0_8px_rgba(16,185,129,0.15)] transition-all duration-200 text-[9px] font-bold uppercase"
               aria-label="Toggle theme"
             >
-              <Sun className="size-4 rotate-0 scale-100 transition-all duration-300 dark:-rotate-90 dark:scale-0 text-amber-500" />
-              <Moon className="absolute size-4 rotate-90 scale-0 transition-all duration-300 dark:rotate-0 dark:scale-100 text-indigo-400" />
-            </m.button>
+              <span className="flex items-center gap-1.5">
+                {theme === "light" ? <Sun size={11} className="text-amber-500" /> : <Moon size={11} className="text-indigo-400" />}
+                <span className="hidden sm:inline tracking-widest">{theme === "light" ? "LIGHT.SYS" : "DARK.SYS"}</span>
+              </span>
+            </button>
           </ClientOnly>
 
-          {/* Vertical separator */}
-          <div className="hidden sm:block w-px h-5 bg-border/40 dark:bg-white/[0.08]" />
-
-          {/* User / Auth */}
+          {/* User profile / Actions */}
           <ClientOnly>
             {user ? (
               <div className="relative" data-avatar-menu>
                 <div className="flex items-center gap-3">
-                  {user.rating && (
-                    <span className="hidden sm:inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-primary bg-primary/10 dark:bg-primary/15 px-2.5 py-1 rounded-full">
-                      <Zap size={9} className="fill-current" />
-                      {user.rating}
-                    </span>
-                  )}
-                  {user.rating && <div className="hidden sm:block w-px h-4 bg-border/40 dark:bg-white/[0.08]" />}
-                  
                   <button
                     onClick={() => setAvatarMenuOpen((v) => !v)}
                     className={cn(
-                      "outline-none group flex items-center gap-2.5 p-1 rounded-full transition-all duration-300",
+                      "outline-none flex items-center gap-2 h-8 px-2.5 rounded-sm border transition-all text-[9px] font-bold uppercase",
                       avatarMenuOpen
-                        ? "bg-muted/50 dark:bg-white/[0.08]"
-                        : "hover:bg-muted/30 dark:hover:bg-white/[0.04]",
+                        ? "border-emerald-500 text-emerald-300 bg-emerald-500/5 shadow-[0_0_8px_rgba(16,185,129,0.15)]"
+                        : "border-emerald-500/20 text-emerald-500/60 hover:text-emerald-300 hover:border-emerald-500/40 bg-emerald-950/5"
                     )}
                   >
-                    <div className="relative">
-                      <div
-                        className={cn(
-                          "rounded-full p-[1.5px] transition-all duration-300",
-                          avatarMenuOpen
-                            ? "bg-gradient-to-br from-primary to-emerald-400"
-                            : "bg-gradient-to-br from-border/80 to-border/80 group-hover:from-primary/50 group-hover:to-emerald-400/50",
-                        )}
-                      >
-                        <Avatar className="size-7 border-[1.5px] border-background">
-                          <AvatarImage
-                            src={user.avatar}
-                            alt={user.codeforcesHandle}
-                          />
-                          <AvatarFallback className="bg-primary/10 text-[10px] font-black uppercase text-primary">
-                            {user.codeforcesHandle?.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
-                      <span className="absolute -bottom-0.5 -right-0.5 flex size-2.5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full size-2.5 bg-emerald-500 border-2 border-background"></span>
+                    <div className="relative flex-shrink-0">
+                      <Avatar className="size-6 border border-emerald-500/25 rounded-sm">
+                        <AvatarImage src={user.avatar} alt={user.codeforcesHandle} />
+                        <AvatarFallback className="bg-emerald-950/30 text-[9px] font-bold text-emerald-400">
+                          {user.codeforcesHandle?.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="absolute -bottom-0.5 -right-0.5 flex size-2">
+                        <span className="relative inline-flex rounded-full size-2 bg-emerald-500"></span>
                       </span>
                     </div>
-                    <span className="hidden xl:block text-[11px] font-bold text-foreground/80 group-hover:text-foreground truncate max-w-[90px] transition-colors">
-                      {user.codeforcesHandle}
+                    <span className="hidden sm:block max-w-[80px] truncate tracking-widest">
+                      {user.codeforcesHandle?.toUpperCase()}_
                     </span>
-                    <ChevronDown
-                      size={10}
-                      className={cn(
-                        "hidden xl:block text-muted-foreground/50 transition-transform duration-200",
-                        avatarMenuOpen ? "rotate-180" : "",
-                      )}
-                    />
+                    <ChevronDown size={10} className={cn("transition-transform duration-200", avatarMenuOpen ? "rotate-180" : "")} />
                   </button>
                 </div>
 
-                {/* Dropdown Menu */}
+                {/* Profile dropdown */}
                 <AnimatePresence>
                   {avatarMenuOpen && (
-                    <m.div
-                      initial={{opacity: 0, y: 10, scale: 0.95}}
-                      animate={{opacity: 1, y: 0, scale: 1}}
-                      exit={{opacity: 0, y: 10, scale: 0.95}}
-                      transition={{
-                        duration: 0.2,
-                        ease: [0.16, 1, 0.3, 1],
-                      }}
-                      className="absolute right-0 top-[calc(100%+8px)] w-72 z-[9999] origin-top-right"
+                    <motion.div
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 5 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 top-[calc(100%+6px)] w-64 z-[9999] origin-top-right"
                     >
-                      <div className="rounded-2xl bg-card/95 dark:bg-black/90 backdrop-blur-2xl border border-border/80 dark:border-white/[0.08] shadow-[0_15px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_15px_40px_rgba(0,0,0,0.45)] overflow-hidden">
-                        {/* Profile Card Header */}
-                        <div className="relative p-5 pb-4">
-                          {/* Gradient accent strip */}
-                          <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-br from-primary/20 via-emerald-500/10 to-transparent dark:from-primary/25 dark:via-emerald-500/15 rounded-t-2xl" />
+                      <div className="rounded-sm border border-emerald-500/25 bg-[#060a08] overflow-hidden shadow-[0_6px_22px_rgba(0,0,0,0.7)]">
+                        {/* Terminal status bar */}
+                        <div className="px-2.5 py-1 bg-emerald-950/30 border-b border-emerald-500/15 flex items-center justify-between text-[8px] text-emerald-500/40 font-bold uppercase tracking-widest">
+                          <span>USER_PROFILE // DETAILED_LOG</span>
+                          <span>SYS.OK</span>
+                        </div>
 
-                          <div className="relative flex items-center gap-3.5">
-                            <div className="rounded-full p-[2px] bg-gradient-to-br from-primary to-emerald-400 shadow-md shadow-primary/10">
-                              <Avatar className="size-12 border-2 border-card">
-                                <AvatarImage
-                                  src={user.avatar}
-                                  alt={user.codeforcesHandle}
-                                />
-                                <AvatarFallback className="bg-primary/10 text-sm font-black uppercase text-primary">
-                                  {user.codeforcesHandle?.charAt(0)}
-                                </AvatarFallback>
-                              </Avatar>
+                        <div className="p-3 space-y-3">
+                          {/* Summary Box */}
+                          <div className="p-2.5 border border-emerald-500/10 bg-emerald-950/5 text-[9px] space-y-1.5 font-mono">
+                            <div className="flex justify-between">
+                              <span className="text-emerald-500/40">USER_HANDLE:</span>
+                              <span className="font-bold text-emerald-300 truncate max-w-[120px]">{user.codeforcesHandle}</span>
                             </div>
-                            <div className="flex-1 min-w-0 pt-1">
-                              <p className="text-sm font-extrabold tracking-tight text-foreground truncate">
-                                {user.codeforcesHandle}
-                              </p>
-                              <div className="flex items-center gap-1.5 mt-0.5">
-                                <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-primary bg-primary/10 dark:bg-primary/15 px-2 py-0.5 rounded-full">
-                                  <Zap size={9} className="fill-current" />
-                                  {user.rank || "Recruit"}
-                                </span>
-                                {user.rating && (
-                                  <span className="text-[10px] font-bold text-muted-foreground/75">
-                                    CF: {user.rating}
-                                  </span>
-                                )}
-                              </div>
+                            <div className="flex justify-between">
+                              <span className="text-emerald-500/40">CF_RATING:</span>
+                              <span className="font-bold text-emerald-300">{user.rating || "N/A"}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-emerald-500/40">RANK:</span>
+                              <span className="font-bold text-emerald-300 uppercase">{user.rank || "Recruit"}</span>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Separator */}
-                        <div className="h-px bg-border/60 dark:bg-white/[0.06] mx-4" />
-
-                        {/* Quick Actions */}
-                        <div className="p-2 space-y-0.5">
-                          <Link
-                            href="/profile"
-                            onClick={() => setAvatarMenuOpen(false)}
-                            className="flex items-center gap-3 px-3.5 py-3 rounded-xl text-foreground/80 hover:text-foreground hover:bg-muted/50 dark:hover:bg-white/5 transition-all duration-200 group relative"
-                          >
-                            <div className="size-8 rounded-lg bg-primary/8 dark:bg-primary/12 flex items-center justify-center text-primary group-hover:bg-primary/15 transition-colors duration-200">
-                              <User size={15} />
-                            </div>
-                            <div className="flex-1">
-                              <span className="text-[12px] font-bold block leading-none">
-                                My Profile
-                              </span>
-                              <span className="text-[10px] text-muted-foreground/60 mt-1 block">
-                                View stats & progress
-                              </span>
-                            </div>
-                            <ChevronRight
-                              size={14}
-                              className="text-muted-foreground/30 group-hover:text-muted-foreground/60 group-hover:translate-x-0.5 transition-all duration-200"
-                            />
-                          </Link>
-
-                          <button
-                            onClick={() => {
-                              window.open(
-                                `https://codeforces.com/profile/${user.codeforcesHandle}`,
-                                "_blank",
-                              );
-                              setAvatarMenuOpen(false);
-                            }}
-                            className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-foreground/80 hover:text-foreground hover:bg-muted/50 dark:hover:bg-white/5 transition-all duration-200 group relative"
-                          >
-                            <div className="size-8 rounded-lg bg-blue-500/8 dark:bg-blue-400/12 flex items-center justify-center text-blue-500 dark:text-blue-400 group-hover:bg-blue-500/15 transition-colors duration-200">
-                              <ExternalLink size={15} />
-                            </div>
-                            <div className="flex-1 text-left">
-                              <span className="text-[12px] font-bold block leading-none">
-                                Codeforces Profile
-                              </span>
-                              <span className="text-[10px] text-muted-foreground/60 mt-1 block">
-                                Open in new tab
-                              </span>
-                            </div>
-                            <ChevronRight
-                              size={14}
-                              className="text-muted-foreground/30 group-hover:text-muted-foreground/60 group-hover:translate-x-0.5 transition-all duration-200"
-                            />
-                          </button>
-
-                          {user?.role === "admin" && (
+                          {/* Dropdown Options */}
+                          <div className="space-y-1 text-[9px] font-bold">
                             <Link
-                              href="/admin"
+                              href="/profile"
                               onClick={() => setAvatarMenuOpen(false)}
-                              className="flex items-center gap-3 px-3.5 py-3 rounded-xl text-foreground/80 hover:text-foreground hover:bg-muted/50 dark:hover:bg-white/5 transition-all duration-200 group relative"
+                              className="flex items-center justify-between p-2 rounded-sm hover:bg-emerald-500/5 text-emerald-500/70 hover:text-emerald-300 border border-transparent hover:border-emerald-500/10 transition-all group"
                             >
-                              <div className="size-8 rounded-lg bg-amber-500/8 dark:bg-amber-400/12 flex items-center justify-center text-amber-500 dark:text-amber-400 group-hover:bg-amber-500/15 transition-colors duration-200">
-                                <ShieldAlert size={15} />
-                              </div>
-                              <div className="flex-1">
-                                <span className="text-[12px] font-bold block leading-none">
-                                  Admin Panel
-                                </span>
-                                <span className="text-[10px] text-muted-foreground/60 mt-1 block">
-                                  Manage platform
-                                </span>
-                              </div>
-                              <ChevronRight
-                                size={14}
-                                className="text-muted-foreground/30 group-hover:text-muted-foreground/60 group-hover:translate-x-0.5 transition-all duration-200"
-                              />
+                              <span className="flex items-center gap-1.5">
+                                <span className="text-emerald-500/20 group-hover:text-emerald-400 transition-colors">&gt;</span>
+                                <span>VIEW_PROFILE.EXE</span>
+                              </span>
+                              <ChevronRight size={10} className="text-emerald-500/30 group-hover:text-emerald-300 transition-colors" />
                             </Link>
-                          )}
-                        </div>
 
-                        {/* Separator */}
-                        <div className="h-px bg-border/60 dark:bg-white/[0.06] mx-4" />
+                            <button
+                              onClick={() => {
+                                window.open(`https://codeforces.com/profile/${user.codeforcesHandle}`, "_blank");
+                                setAvatarMenuOpen(false);
+                              }}
+                              className="w-full flex items-center justify-between p-2 rounded-sm hover:bg-emerald-500/5 text-emerald-500/70 hover:text-emerald-300 border border-transparent hover:border-emerald-500/10 transition-all group"
+                            >
+                              <span className="flex items-center gap-1.5">
+                                <span className="text-emerald-500/20 group-hover:text-emerald-400 transition-colors">&gt;</span>
+                                <span>CODEFORCES_PAGE.CF</span>
+                              </span>
+                              <ExternalLink size={10} className="text-emerald-500/30 group-hover:text-emerald-300 transition-colors" />
+                            </button>
 
-                        {/* Logout */}
-                        <div className="p-2">
-                          <button
-                            onClick={() => {
-                              logout();
-                              setAvatarMenuOpen(false);
-                            }}
-                            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-muted-foreground hover:text-red-500 hover:bg-red-500/5 dark:hover:bg-red-500/8 transition-all duration-200 group"
-                          >
-                            <div className="size-8 rounded-lg bg-muted/40 dark:bg-muted/20 flex items-center justify-center group-hover:bg-red-500/10 transition-colors duration-200">
-                              <LogOut
-                                size={14}
-                                className="group-hover:text-red-500 transition-colors duration-200"
-                              />
-                            </div>
-                            <span className="text-[12px] font-bold">
-                              Sign Out
-                            </span>
-                          </button>
+                            {user?.role === "admin" && (
+                              <Link
+                                href="/admin"
+                                onClick={() => setAvatarMenuOpen(false)}
+                                className="flex items-center justify-between p-2 rounded-sm hover:bg-emerald-500/5 text-emerald-300 border border-transparent hover:border-emerald-500/10 transition-all group"
+                              >
+                                <span className="flex items-center gap-1.5">
+                                  <span className="text-emerald-500/20 group-hover:text-emerald-400 transition-colors">&gt;</span>
+                                  <span>SYS_ADMIN_PANEL.SH</span>
+                                </span>
+                                <ChevronRight size={10} className="text-emerald-500/30 group-hover:text-emerald-300 transition-colors" />
+                              </Link>
+                            )}
+
+                            <button
+                              onClick={() => {
+                                logout();
+                                setAvatarMenuOpen(false);
+                              }}
+                              className="w-full flex items-center justify-between p-2 rounded-sm hover:bg-red-950/20 text-emerald-500/40 hover:text-red-400 mt-2 border-t border-emerald-500/10 pt-3 transition-colors group"
+                            >
+                              <span className="flex items-center gap-1.5">
+                                <span className="text-emerald-500/20 group-hover:text-red-400 transition-colors">&gt;</span>
+                                <span>SIGN_OUT.SYS</span>
+                              </span>
+                              <LogOut size={10} className="text-emerald-500/30 group-hover:text-red-400 transition-colors" />
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </m.div>
+                    </motion.div>
                   )}
                 </AnimatePresence>
               </div>
             ) : (
-              <div className="hidden sm:flex items-center gap-1.5">
+              <div className="hidden sm:flex items-center gap-2">
                 <Button
                   asChild
                   variant="ghost"
-                  className="text-[11px] font-bold uppercase tracking-wider px-3.5 h-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 dark:hover:bg-white/5 transition-all duration-200"
+                  className="text-[9px] font-bold uppercase tracking-wider h-8 rounded-sm border border-transparent hover:border-emerald-500/20 hover:bg-emerald-500/5 text-emerald-500/60 hover:text-emerald-300 font-mono"
                 >
-                  <Link href="/login">Log in</Link>
+                  <Link href="/login">[ LOGIN.EXE ]</Link>
                 </Button>
                 <Button
                   asChild
-                  className="text-[11px] font-bold uppercase tracking-wider px-4.5 h-8 rounded-full bg-primary text-primary-foreground shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/20 hover:brightness-105 transition-all duration-200"
+                  className="text-[9px] font-bold uppercase tracking-wider h-8 rounded-sm bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-mono shadow-[0_0_8px_rgba(16,185,129,0.2)]"
                 >
-                  <Link href="/signup">Join Free</Link>
+                  <Link href="/signup">[ JOIN_FREE.SH ]</Link>
                 </Button>
               </div>
             )}
           </ClientOnly>
 
-          {/* Mobile Menu Trigger */}
+          {/* Mobile menu sheet trigger */}
           <div className="lg:hidden flex items-center">
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative size-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 dark:hover:bg-white/[0.06] border border-border/30 dark:border-white/[0.05]"
-                >
-                  <Menu className="size-4" />
-                  <span className="sr-only">Toggle Menu</span>
-                </Button>
+                <button className="size-8 rounded-sm border border-emerald-500/20 bg-transparent flex items-center justify-center text-emerald-500/60 hover:text-emerald-300 hover:border-emerald-500/40 transition-colors">
+                  <Menu size={14} />
+                </button>
               </SheetTrigger>
-
               <SheetContent
                 side="right"
-                className="w-[300px] sm:w-[340px] p-0 border-l border-border/50 dark:border-border/30 bg-background/98 dark:bg-background/95 backdrop-blur-2xl"
+                className="w-64 p-0 border-l border-emerald-500/15 bg-[#040604] font-mono text-emerald-400"
               >
-                <SheetHeader className="p-5 pb-4 border-b border-border/40 dark:border-border/20">
-                  <SheetTitle>
-                    <div className="flex items-center gap-3 text-left">
-                      <div className="size-9 rounded-xl bg-gradient-to-br from-primary/15 to-emerald-500/10 border border-primary/15 flex items-center justify-center text-primary shadow-sm shadow-primary/5">
-                        <Terminal size={18} />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-black uppercase tracking-wider text-foreground">
-                          Navigation
-                        </span>
-                        <span className="text-[10px] font-medium text-muted-foreground/60">
-                          Quick access to all pages
-                        </span>
-                      </div>
-                    </div>
+                <SheetHeader className="p-4 border-b border-emerald-500/10">
+                  <SheetTitle className="text-xs font-bold text-emerald-300 uppercase tracking-widest flex items-center gap-1.5">
+                    <Terminal size={12} />
+                    <span>SYSTEM_NAVIGATION</span>
                   </SheetTitle>
                 </SheetHeader>
 
-                <div className="flex flex-col h-[calc(100%-73px)] justify-between overflow-y-auto">
-                  <div className="p-4 space-y-1">
+                <div className="flex flex-col h-[calc(100%-54px)] justify-between">
+                  <div className="p-3 space-y-1 text-[10px] font-bold uppercase">
                     {mobileLinks.map((link) => {
                       const isActive = pathname === link.href;
                       return (
@@ -653,115 +470,71 @@ const NavBar = () => {
                           href={link.href}
                           onClick={() => setIsMenuOpen(false)}
                           className={cn(
-                            "flex items-center justify-between group p-3 rounded-xl transition-all duration-200 relative overflow-hidden",
+                            "flex items-center justify-between p-2.5 rounded-sm transition-all border border-transparent group",
                             isActive
-                              ? "bg-primary/8 dark:bg-primary/12 text-primary"
-                              : "text-foreground/75 hover:bg-muted/50 dark:hover:bg-white/5 hover:text-foreground",
+                              ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/25"
+                              : "text-emerald-500/60 hover:text-emerald-300 hover:bg-emerald-950/20"
                           )}
                         >
-                          <div className="flex items-center gap-3.5">
-                            <div
-                              className={cn(
-                                "size-8 rounded-lg flex items-center justify-center transition-colors duration-200",
-                                isActive
-                                  ? "bg-primary/12 dark:bg-primary/18 text-primary shadow-sm"
-                                  : "bg-muted/40 dark:bg-muted/20 text-muted-foreground/70 group-hover:text-foreground/80",
-                              )}
-                            >
-                              <link.icon size={15} />
-                            </div>
-                            <span className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-wider">
-                              {link.label}
-                              {link.href === "/friends" &&
-                                friendRequestCount > 0 && (
-                                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[8px] font-bold text-white shadow-sm">
-                                    {friendRequestCount > 9
-                                      ? "9+"
-                                      : friendRequestCount}
-                                  </span>
-                                )}
+                          <span className="flex items-center gap-1.5">
+                            <span className="text-emerald-500/20 group-hover:text-emerald-400 transition-colors">&gt;</span>
+                            <span>{link.label}</span>
+                          </span>
+                          {link.href === "/friends" && friendRequestCount > 0 && (
+                            <span className="flex h-3.5 min-w-3.5 items-center justify-center rounded bg-red-500 px-1 text-[8px] font-bold text-white">
+                              {friendRequestCount > 9 ? "9+" : friendRequestCount}
                             </span>
-                          </div>
-                          <ChevronRight
-                            size={14}
-                            className={cn(
-                              "transition-all duration-200",
-                              isActive
-                                ? "text-primary/70 translate-x-0"
-                                : "text-muted-foreground/30 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5",
-                            )}
-                          />
-                          {isActive && (
-                            <span className="absolute left-0 top-3 bottom-3 w-1 rounded-r-md bg-primary" />
                           )}
                         </Link>
                       );
                     })}
                   </div>
 
-                  <div className="p-4 space-y-4 border-t border-border/40 dark:border-border/20 bg-muted/10 dark:bg-white/[0.01]">
+                  <div className="p-4 border-t border-emerald-500/10 space-y-3 bg-emerald-950/[0.02]">
                     {user ? (
-                      <div className="p-3.5 rounded-2xl bg-card border border-border/60 dark:border-white/[0.06] flex items-center justify-between shadow-sm">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="rounded-full p-[2px] bg-gradient-to-br from-primary to-emerald-400">
-                            <Avatar className="size-9 border-2 border-background">
-                              <AvatarImage src={user.avatar} />
-                              <AvatarFallback className="text-[10px] font-bold uppercase bg-primary/10 text-primary">
-                                {user.codeforcesHandle?.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                          </div>
+                      <div className="p-3 border border-emerald-500/15 bg-[#060a08] flex items-center justify-between rounded-sm">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Avatar className="size-7 border border-emerald-500/25 rounded-sm flex-shrink-0">
+                            <AvatarImage src={user.avatar} />
+                            <AvatarFallback className="text-[8px] font-bold bg-emerald-950/30 text-emerald-400">
+                              {user.codeforcesHandle?.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
                           <div className="flex flex-col min-w-0 leading-tight">
-                            <span className="text-[12px] font-black tracking-tight truncate text-foreground">
+                            <span className="text-[10px] font-bold text-emerald-300 truncate">
                               {user.codeforcesHandle}
                             </span>
-                            <span className="text-[10px] font-bold text-muted-foreground/60 truncate mt-0.5 uppercase tracking-wider">
-                              {user.rating && `${user.rating} · `}
-                              {user.rank || "Recruit"}
+                            <span className="text-[8px] text-emerald-500/35 uppercase truncate mt-0.5">
+                              {user.rating && `${user.rating} · `}{user.rank || "Recruit"}
                             </span>
                           </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
+                        <button
                           onClick={logout}
-                          className="size-9 rounded-xl hover:bg-red-500/10 hover:text-red-500 flex-shrink-0 transition-colors"
+                          className="size-7 rounded-sm hover:bg-red-950/20 hover:text-red-400 flex items-center justify-center transition-colors flex-shrink-0"
                         >
-                          <LogOut size={16} />
-                        </Button>
+                          <LogOut size={13} />
+                        </button>
                       </div>
                     ) : (
                       <div className="grid gap-2">
                         <Button
                           asChild
-                          variant="outline"
-                          className="h-10 rounded-xl text-[12px] font-bold uppercase tracking-wider border-border/60 hover:bg-muted/40"
+                          variant="ghost"
+                          className="h-9 rounded-sm border border-emerald-500/20 bg-transparent text-emerald-400 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-500/10 font-mono"
                         >
-                          <Link
-                            href="/login"
-                            onClick={() => setIsMenuOpen(false)}
-                          >
-                            Log in
-                          </Link>
+                          <Link href="/login" onClick={() => setIsMenuOpen(false)}>[ LOGIN.EXE ]</Link>
                         </Button>
                         <Button
                           asChild
-                          className="h-10 rounded-xl text-[12px] font-bold uppercase tracking-wider bg-primary text-primary-foreground"
+                          className="h-9 rounded-sm bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[9px] font-mono"
                         >
-                          <Link
-                            href="/signup"
-                            onClick={() => setIsMenuOpen(false)}
-                          >
-                            Join Free
-                          </Link>
+                          <Link href="/signup" onClick={() => setIsMenuOpen(false)}>[ JOIN_FREE.SH ]</Link>
                         </Button>
                       </div>
                     )}
-
-                    <div className="flex items-center justify-between px-1.5">
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/45">
-                        &copy; 2026 Upsolve.it
-                      </span>
+                    <div className="text-[8px] text-emerald-500/25 uppercase text-center tracking-wider font-mono">
+                      &copy; 2026 UPSOLVE.IT
                     </div>
                   </div>
                 </div>

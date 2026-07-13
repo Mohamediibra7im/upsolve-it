@@ -1,33 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {useParams} from "next/navigation";
-import {m as motion, AnimatePresence} from "framer-motion";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useParams } from "next/navigation";
+import { m as motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft,
   CheckCircle2,
   Lock,
-  Target,
   Video,
   ExternalLink,
-  ChevronRight,
   Check,
   Globe,
   Play,
   FileText,
   BookOpen,
   RefreshCw,
-  Zap,
-  Award,
-  LayoutList,
   GraduationCap,
   Layers,
   Loader2,
 } from "lucide-react";
 import Loader from "@/components/shared/Loader";
 import { useRoadmapTopic, useRoadmapLevel, useRoadmapUserSummary } from "@/hooks/roadmap/useRoadmap";
-import { VideoPlayer, progressWidthClass } from "@/components/features/roadmap";
+import { VideoPlayer } from "@/components/features/roadmap";
 import { apiClient } from "@/lib/apiClient";
 import { useToast } from "@/components/providers/Toast";
 import { useUser } from "@/hooks/auth";
@@ -45,66 +39,61 @@ import {
 
 const LanguageChoice = ({ onSelect }: { onSelect: (lang: "Arabic" | "English") => void }) => (
   <motion.div
-    initial={{ opacity: 0, y: 20 }}
+    initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -20 }}
-    transition={{ duration: 0.35 }}
-    className="flex flex-col items-center justify-center py-16 gap-10"
+    exit={{ opacity: 0, y: -10 }}
+    transition={{ duration: 0.3 }}
+    className="flex flex-col items-center justify-center py-12 gap-8 font-mono text-emerald-400"
   >
     <div className="text-center space-y-3">
-      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.2em] mb-2">
-        <GraduationCap size={12} /> Choose Your Path
+      <div className="flex items-center justify-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40">
+        <GraduationCap size={12} className="text-emerald-400" />
+        <span>CURRICULUM_SELECTION // PATH_INITIALIZATION</span>
       </div>
-      <h2 className="text-3xl font-[1000] uppercase tracking-tight text-foreground leading-none">
-        How do you want to learn?
+      <h2 className="text-lg font-bold text-emerald-300 uppercase tracking-wider">
+        Select Training Channel Path
       </h2>
-      <p className="text-sm text-muted-foreground/70 max-w-sm mx-auto leading-relaxed">
-        Pick a language. You can switch later, but your progress will reset.
+      <p className="text-[11px] text-emerald-500/40 max-w-sm mx-auto leading-relaxed">
+        Choose your primary tutorial feed type. Switching channels later will flush cached progress on this topic sector.
       </p>
     </div>
 
-    <div className="grid gap-5 sm:grid-cols-2 w-full max-w-2xl">
-      <motion.button
-        whileHover={{ y: -3 }}
-        whileTap={{ scale: 0.98 }}
+    <div className="grid gap-4 sm:grid-cols-2 w-full max-w-2xl">
+      <button
         onClick={() => onSelect("Arabic")}
-        className="group relative flex flex-col gap-5 rounded-3xl border border-border/60 dark:border-border/40 bg-card/50 hover:bg-card/80 hover:border-amber-500/40 transition-all duration-300 p-7 text-left shadow-md overflow-hidden cursor-pointer"
+        className="group relative flex flex-col gap-4 rounded border border-emerald-500/15 bg-emerald-950/5 hover:border-emerald-500/35 transition-all duration-200 p-5 text-left cursor-pointer"
       >
-        <div className="absolute -top-10 -right-10 size-32 rounded-full bg-amber-500/8 blur-3xl group-hover:bg-amber-500/15 transition-colors duration-500" />
-        <div className="relative z-10 size-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-          <Video className="size-6 text-amber-400" />
+        <div className="size-10 rounded border border-emerald-500/20 bg-emerald-950/10 flex items-center justify-center text-emerald-400 shrink-0">
+          <Video size={18} />
         </div>
-        <div className="relative z-10 space-y-1.5">
-          <h3 className="text-base font-black text-foreground">Arabic Path</h3>
-          <p className="text-xs text-muted-foreground/70 leading-relaxed">
-            Video lectures in Arabic with automatic watch-progress tracking.
+        <div className="space-y-1">
+          <h3 className="text-sm font-bold text-emerald-300 uppercase">Arabic Video Channel</h3>
+          <p className="text-[10px] text-emerald-500/40 leading-relaxed">
+            Automatic watch time calculation based on video lectures.
           </p>
         </div>
-        <span className="relative z-10 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-amber-400 group-hover:gap-2.5 transition-all duration-200">
-          Start <ChevronRight size={12} />
+        <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-400 group-hover:text-emerald-300 transition-colors">
+          [ START_PATH.EXE ]
         </span>
-      </motion.button>
+      </button>
 
-      <motion.button
-        whileHover={{ y: -3 }}
-        whileTap={{ scale: 0.98 }}
+      <button
         onClick={() => onSelect("English")}
-        className="group relative flex flex-col gap-5 rounded-3xl border border-border/60 dark:border-border/40 bg-card/50 hover:bg-card/80 hover:border-sky-500/40 transition-all duration-300 p-7 text-left shadow-md overflow-hidden cursor-pointer"
+        className="group relative flex flex-col gap-4 rounded border border-emerald-500/15 bg-emerald-950/5 hover:border-emerald-500/35 transition-all duration-200 p-5 text-left cursor-pointer"
       >
-        <div className="absolute -top-10 -right-10 size-32 rounded-full bg-sky-500/8 blur-3xl group-hover:bg-sky-500/15 transition-colors duration-500" />
-        <div className="relative z-10 size-12 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-          <Globe className="size-6 text-sky-400" />
+        <div className="size-10 rounded border border-emerald-500/20 bg-emerald-950/10 flex items-center justify-center text-emerald-400 shrink-0">
+          <Globe size={18} />
         </div>
-        <div className="relative z-10 space-y-1.5">
-          <h3 className="text-base font-black text-foreground">English Path</h3>
-          <p className="text-xs text-muted-foreground/70 leading-relaxed">
-            Articles, docs, and reading checklists with manual checkoff.
+        <div className="space-y-1">
+          <h3 className="text-sm font-bold text-emerald-300 uppercase">English Reading Channel</h3>
+          <p className="text-[10px] text-emerald-500/40 leading-relaxed">
+            Articles, documentation sheets, and manual checkoff listings.
           </p>
         </div>
-        <span className="relative z-10 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-sky-400 group-hover:gap-2.5 transition-all duration-200">
-          Start <ChevronRight size={12} />
+        <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-400 group-hover:text-emerald-300 transition-colors">
+          [ START_PATH.EXE ]
         </span>
-      </motion.button>
+      </button>
     </div>
   </motion.div>
 );
@@ -293,12 +282,13 @@ export default function TopicPage() {
     }
   }, [user, isCompletingLearning, topicId, selectedLanguage, mutate, mutateLevel, mutateSummary, toast]);
 
-  if (error && !data) {    return (
-      <div className="min-h-screen flex items-center justify-center">
+  if (error && !data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center font-mono text-emerald-400">
         <div className="text-center space-y-3">
-          <p className="text-sm font-bold text-destructive uppercase tracking-wider">Failed to load topic</p>
-          <p className="text-xs text-muted-foreground">{error}</p>
-          <button type="button" onClick={() => mutate()} className="text-xs text-primary hover:underline">Try again</button>
+          <p className="text-xs font-bold text-red-400 uppercase tracking-wider">[SYS.ERR // LOAD_FAILURE]</p>
+          <p className="text-[11px] text-emerald-500/50">{error}</p>
+          <button type="button" onClick={() => mutate()} className="text-[10px] font-bold text-emerald-400 hover:text-emerald-300">[ TRY_AGAIN.SH ]</button>
         </div>
       </div>
     );
@@ -316,50 +306,47 @@ export default function TopicPage() {
 
   const resourceTypeIcon = (type: string) => {
     switch (type) {
-      case "Video": return <Video className="size-3.5 text-amber-400" />;
-      case "Article": return <FileText className="size-3.5 text-sky-400" />;
-      case "Documentation": return <FileText className="size-3.5 text-blue-400" />;
-      case "Tutorial": return <Play className="size-3.5 text-violet-400" />;
-      case "Course": return <BookOpen className="size-3.5 text-emerald-400" />;
-      case "PDF": return <FileText className="size-3.5 text-orange-400" />;
-      case "Website": return <Globe className="size-3.5 text-teal-400" />;
-      default: return <ExternalLink className="size-3.5 text-muted-foreground/40" />;
+      case "Video": return <Video className="size-3 text-amber-400" />;
+      case "Article": return <FileText className="size-3 text-sky-400" />;
+      case "Documentation": return <FileText className="size-3 text-blue-400" />;
+      case "Tutorial": return <Play className="size-3 text-violet-400" />;
+      case "Course": return <BookOpen className="size-3 text-emerald-400" />;
+      case "PDF": return <FileText className="size-3 text-orange-400" />;
+      case "Website": return <Globe className="size-3 text-teal-400" />;
+      default: return <ExternalLink className="size-3 text-emerald-500/30" />;
     }
   };
 
-  return (
-    <div className="min-h-screen pb-24 relative">
-      {/* Subtle grid background */}
-      <div className="fixed inset-0 pointer-events-none bg-[linear-gradient(to_right,rgba(var(--primary),0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(var(--primary),0.015)_1px,transparent_1px)] bg-[size:40px_40px]" />
-      {/* Ambient glows */}
-      <div className="fixed top-0 left-1/4 size-[600px] rounded-full bg-primary/4 blur-[140px] pointer-events-none" />
-      <div className="fixed bottom-0 right-1/4 size-[500px] rounded-full bg-emerald-500/3 blur-[140px] pointer-events-none" />
+  // Progress readouts
+  const totalBlocks = 10;
+  const learnBlocks = Math.min(totalBlocks, Math.round((learningPct / 100) * totalBlocks));
+  const probBlocks = Math.min(totalBlocks, Math.round((problemPct / 100) * totalBlocks));
 
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
+  return (
+    <div className="min-h-screen pb-20 relative font-mono text-emerald-400">
+      {/* Background */}
+      <div className="absolute inset-0 -z-10 bg-[#040604]">
+        <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.04]" />
+      </div>
+
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl space-y-6">
 
         {/* ── TOP NAV ── */}
-        <div className="flex items-center justify-between py-6 gap-4">
-          <Link
-            href={`/roadmap/levels/${levelId}`}
-            className="inline-flex items-center gap-2 rounded-xl border border-border/60 bg-background/60 hover:bg-primary/5 hover:border-primary/30 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-muted-foreground hover:text-primary transition-all duration-200 backdrop-blur-sm"
-          >
-            <ArrowLeft size={13} /> Back to Level
-          </Link>
-
+        <div className="flex items-center justify-end py-4 gap-4">
           {/* Step tabs */}
           {selectedLanguage && (
-            <div className="flex items-center gap-1 rounded-2xl border border-border/60 bg-background/60 backdrop-blur-sm p-1">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setCurrentStep("learning")}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-wider transition-all duration-200",
+                  "h-9 px-4 rounded border font-bold uppercase tracking-widest text-[9px] transition-all duration-200 font-mono",
                   currentStep === "learning"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-emerald-500 text-emerald-950 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
+                    : "bg-transparent border-emerald-500/20 text-emerald-500/50 hover:text-emerald-300 hover:border-emerald-500/40"
                 )}
               >
-                <BookOpen size={12} /> Learn
+                [ LEARN.SH ]
               </button>
               <button
                 type="button"
@@ -368,14 +355,14 @@ export default function TopicPage() {
                   else toast({ title: "Locked", description: `Reach ${data.topic.requiredLearningPct}% learning first.`, variant: "destructive" });
                 }}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-wider transition-all duration-200",
+                  "h-9 px-4 rounded border font-bold uppercase tracking-widest text-[9px] transition-all duration-200 font-mono",
                   currentStep === "problems"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground",
+                    ? "bg-emerald-500 text-emerald-950 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
+                    : "bg-transparent border-emerald-500/20 text-emerald-500/50 hover:text-emerald-300 hover:border-emerald-500/40",
                   !isProblemsUnlocked && "opacity-40 cursor-not-allowed"
                 )}
               >
-                {isProblemsUnlocked ? <Target size={12} /> : <Lock size={12} />} Practice
+                [ PRACTICE.EXE ]
               </button>
             </div>
           )}
@@ -383,189 +370,150 @@ export default function TopicPage() {
 
         {/* ── HERO ── */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="relative rounded-[2rem] border border-border/60 dark:border-border/40 bg-card/50 dark:bg-card/20 backdrop-blur-xl overflow-hidden mb-8 shadow-xl"
+          transition={{ duration: 0.3 }}
+          className="space-y-4"
         >
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute -top-16 -right-16 size-72 rounded-full bg-primary/8 blur-[90px]" />
-            <div className="absolute bottom-0 left-0 size-48 rounded-full bg-emerald-500/5 blur-[70px]" />
-          </div>
-
-          <div className="relative z-10 p-7 md:p-10">
-            <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-8">
-              {/* Left: topic info */}
-              <div className="space-y-4 flex-1 min-w-0">
-                <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-[0.2em]">
-                    <Layers size={10} /> Topic
-                  </span>
-                  {selectedLanguage && (
-                    <span className={cn(
-                      "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.2em] border",
-                      selectedLanguage === "Arabic"
-                        ? "bg-amber-500/10 border-amber-500/20 text-amber-400"
-                        : "bg-sky-500/10 border-sky-500/20 text-sky-400"
-                    )}>
-                      {selectedLanguage === "Arabic" ? <Video size={9} /> : <Globe size={9} />}
-                      {selectedLanguage} Path
-                    </span>
-                  )}
-                </div>
-
-                <h1 className="text-3xl md:text-4xl xl:text-5xl font-[1000] tracking-tighter uppercase text-foreground leading-none">
-                  {data.topic.title}
-                </h1>
-
-                {data.topic.description && (
-                  <p className="text-sm text-muted-foreground/75 max-w-2xl leading-relaxed">
-                    {data.topic.description}
-                  </p>
-                )}
-
-                {data.topic.subtopics && data.topic.subtopics.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {data.topic.subtopics.map((sub: string) => (
-                      <span key={sub} className="rounded-full bg-background/70 border border-border/50 px-2.5 py-1 text-[9px] font-bold text-muted-foreground/70">
-                        {sub}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Right: stat cards */}
-              <div className="flex flex-row lg:flex-col gap-3 shrink-0">
-                {/* XP reward */}
-                <div className="flex items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-5 py-3.5">
-                  <div className="size-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                    <Zap size={16} className="text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-[9px] font-black uppercase tracking-wider text-primary/60">Topic Reward</p>
-                    <p className="text-xl font-[1000] text-primary leading-none mt-0.5">+{data.topic.topicXpReward} XP</p>
-                  </div>
-                </div>
-
-                {/* Learning progress pill */}
-                {selectedLanguage && (
-                  <div className="flex items-center gap-3 rounded-2xl border border-border/50 bg-background/50 px-5 py-3.5">
-                    <div className="size-9 rounded-xl bg-background border border-border/50 flex items-center justify-center">
-                      <Award size={16} className="text-muted-foreground/60" />
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground/50">Learning</p>
-                      <p className="text-xl font-[1000] text-foreground leading-none mt-0.5">{Math.round(learningPct)}%</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Progress bars — only when language is selected */}
+          <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40">
+            <Layers size={12} className="text-emerald-400" />
+            <span>MISSION_STATION // DATA_STREAM_BRIEFING</span>
+            <span className="flex-1 border-b border-emerald-500/10" />
             {selectedLanguage && (
-              <div className="mt-8 grid sm:grid-cols-2 gap-4">
-                {/* Learning bar */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-muted-foreground/50">
-                    <span className="flex items-center gap-1"><BookOpen size={10} /> Learn</span>
-                    <span className={cn(learningPct >= (data.topic.requiredLearningPct ?? 80) ? "text-emerald-400" : "text-primary")}>
-                      {Math.round(learningPct)}% / 100%
-                    </span>
-                  </div>
-                  <div className="h-2 w-full rounded-full bg-background border border-border/40 overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${learningPct}%` }}
-                      transition={{ duration: 0.6, ease: "easeOut" }}
-                      className={cn("h-full rounded-full", learningPct >= (data.topic.requiredLearningPct ?? 80) ? "bg-gradient-to-r from-emerald-500 to-teal-400" : "bg-gradient-to-r from-primary to-blue-400")}
-                    />
-                  </div>
-                </div>
-                {/* Practice bar */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-muted-foreground/50">
-                    <span className="flex items-center gap-1"><Target size={10} /> Practice</span>
-                    <span className={cn(isProblemsUnlocked ? (problemPct >= (data.topic.requiredProblemPct ?? 60) ? "text-emerald-400" : "text-foreground") : "text-muted-foreground/30")}>
-                      {isProblemsUnlocked ? `${solvedCount}/${totalCount} solved` : "Locked"}
-                    </span>
-                  </div>
-                  <div className="h-2 w-full rounded-full bg-background border border-border/40 overflow-hidden">
-                    {isProblemsUnlocked ? (
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${problemPct}%` }}
-                        transition={{ duration: 0.6, ease: "easeOut" }}
-                        className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"
-                      />
-                    ) : (
-                      <div className="h-full rounded-full bg-muted/50 w-full" />
-                    )}
-                  </div>
-                </div>
-              </div>
+              <span className={cn(
+                "text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border",
+                selectedLanguage === "Arabic"
+                  ? "bg-amber-500/10 border-amber-500/20 text-amber-400"
+                  : "bg-sky-500/10 border-sky-500/20 text-sky-400"
+              )}>
+                {selectedLanguage} Path
+              </span>
             )}
           </div>
+
+          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+            <div className="space-y-3 flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-emerald-300 uppercase tracking-wider leading-none">
+                {data.topic.title}
+              </h1>
+              {data.topic.description && (
+                <p className="text-[11px] text-emerald-500/40 max-w-2xl leading-relaxed">
+                  {data.topic.description}
+                </p>
+              )}
+              {data.topic.subtopics && data.topic.subtopics.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {data.topic.subtopics.map((sub: string) => (
+                    <span key={sub} className="text-[9px] font-bold text-emerald-500/30 uppercase">
+                      [{sub}]
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Right: stats readouts */}
+            <div className="flex flex-row lg:flex-col gap-4 shrink-0">
+              {/* Reward readout */}
+              <div className="py-2 px-3 border-b border-emerald-500/10">
+                <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-500/45 block">XP_REWARD</span>
+                <span className="text-lg font-bold text-emerald-300 tabular-nums">+{data.topic.topicXpReward} XP</span>
+              </div>
+
+              {/* Progress info */}
+              {selectedLanguage && (
+                <div className="py-2 px-3 border-b border-emerald-500/10">
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-500/45 block">LEARN_RATIO</span>
+                  <span className="text-lg font-bold text-emerald-300 tabular-nums">{Math.round(learningPct)}%</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Progress Block Meters */}
+          {selectedLanguage && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-emerald-500/10">
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-[9px] text-emerald-500/45">
+                  <span>LEARNING_PROGRESS</span>
+                  <span className="font-bold text-emerald-300">{Math.round(learningPct)}%</span>
+                </div>
+                <div className="text-[10px] tabular-nums flex items-center">
+                  <span className="text-emerald-500/30">[</span>
+                  <span className="text-emerald-400">{"█".repeat(learnBlocks)}</span>
+                  <span className="text-emerald-500/15">{"░".repeat(10 - learnBlocks)}</span>
+                  <span className="text-emerald-500/30">]</span>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-[9px] text-emerald-500/45">
+                  <span>PRACTICE_COMPLETION</span>
+                  <span className="font-bold text-emerald-300">
+                    {isProblemsUnlocked ? `${solvedCount}/${totalCount} solved` : "LOCKED"}
+                  </span>
+                </div>
+                <div className="text-[10px] tabular-nums flex items-center">
+                  {isProblemsUnlocked ? (
+                    <>
+                      <span className="text-emerald-500/30">[</span>
+                      <span className="text-emerald-400">{"█".repeat(probBlocks)}</span>
+                      <span className="text-emerald-500/15">{"░".repeat(10 - probBlocks)}</span>
+                      <span className="text-emerald-500/30">]</span>
+                    </>
+                  ) : (
+                    <span className="text-emerald-500/20">[░░░░░░░░░░]</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* ── MAIN CONTENT ── */}
         <AnimatePresence mode="wait">
-          {/* ── LANGUAGE CHOICE ── */}
           {selectedLanguage === null ? (
             <LanguageChoice key="langChoice" onSelect={handleSelectLanguage} />
-
           ) : currentStep === "learning" ? (
             <motion.div
               key="learning"
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-5"
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-6"
             >
-              {/* Path switcher bar */}
-              <div className="flex items-center justify-between rounded-2xl border border-border/50 bg-background/50 backdrop-blur-sm px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground/50">Active path:</span>
-                  <span className={cn(
-                    "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border",
-                    selectedLanguage === "Arabic" ? "bg-amber-500/10 border-amber-500/20 text-amber-400" : "bg-sky-500/10 border-sky-500/20 text-sky-400"
-                  )}>
-                    {selectedLanguage === "Arabic" ? <Video size={9} /> : <Globe size={9} />}
-                    {selectedLanguage}
-                  </span>
+              {/* Path Switcher status bar */}
+              <div className="flex items-center justify-between py-2.5 px-4 border border-emerald-500/10 bg-emerald-950/5 rounded">
+                <div className="flex items-center gap-2 text-[9px]">
+                  <span className="font-bold text-emerald-500/45 uppercase">ACTIVE_PATH //</span>
+                  <span className="font-bold text-emerald-300 uppercase">{selectedLanguage}</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => { setPendingLangSwitch(selectedLanguage === "Arabic" ? "English" : "Arabic"); setIsSwitchLangConfirmOpen(true); }}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 hover:border-primary/30 bg-background hover:bg-primary/5 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-muted-foreground hover:text-primary transition-all duration-200"
+                  className="h-7 px-3 rounded border border-emerald-500/20 bg-transparent text-emerald-500/60 font-bold uppercase tracking-widest text-[8px] hover:bg-emerald-500/10 hover:text-emerald-300 transition-all font-mono inline-flex items-center gap-1.5"
                 >
-                  <RefreshCw size={10} /> Switch
+                  <RefreshCw size={9} />
+                  [ SWITCH_PATH.COM ]
                 </button>
               </div>
 
-              {/* ── ARABIC LEARNING ── */}
+              {/* ── ARABIC LEARNING (VIDEO WORKSPACE) ── */}
               {selectedLanguage === "Arabic" && (
-                <div className="space-y-5">
+                <div className="space-y-6">
                   {videoResources.length > 1 ? (
-                    <div className="grid lg:grid-cols-3 gap-5">
-                      {/* Video player — takes 2 cols */}
+                    <div className="grid lg:grid-cols-3 gap-6">
+                      {/* Video Player Box */}
                       <div className="lg:col-span-2 space-y-4">
                         {activeVideo ? (
-                          <div className="rounded-[1.75rem] border border-border/60 dark:border-border/40 bg-card/50 dark:bg-card/20 backdrop-blur-xl overflow-hidden shadow-lg">
-                            {/* Player header */}
-                            <div className="flex items-center justify-between px-5 py-3.5 border-b border-border/40 bg-background/30">
-                              <div className="flex items-center gap-2.5 min-w-0">
-                                <div className="size-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_6px_rgba(16,185,129,0.6)] shrink-0" />
-                                <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/70 truncate">
-                                  {activeVideo.title}
-                                </span>
-                              </div>
+                          <div className="rounded border border-emerald-500/15 bg-[#060a08]/30 overflow-hidden">
+                            {/* Header */}
+                            <div className="flex items-center justify-between px-4 py-2 border-b border-emerald-500/10 bg-[#081210]">
+                              <span className="text-[9px] font-bold text-emerald-400 truncate max-w-md">
+                                {activeVideo.title.toUpperCase()}
+                              </span>
                               {activeVideoProgress?.isCompleted && (
-                                <span className="shrink-0 inline-flex items-center gap-1 text-[9px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
-                                  <CheckCircle2 size={10} /> Watched
-                                </span>
+                                <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider">[ WATCHED ]</span>
                               )}
                             </div>
                             <div className="overflow-hidden">
@@ -576,37 +524,38 @@ export default function TopicPage() {
                               />
                             </div>
                             {/* Watch progress */}
-                            <div className="px-5 py-3 border-t border-border/40 bg-background/20">
-                              <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-muted-foreground/40 mb-1.5">
-                                <span>Watch Progress</span>
+                            <div className="p-4 border-t border-emerald-500/10 bg-emerald-950/5">
+                              <div className="flex items-center justify-between text-[9px] text-emerald-500/40 mb-1">
+                                <span>WATCH_RATIO</span>
                                 <span>{activeVideoProgress?.watchPct ?? 0}%</span>
                               </div>
-                              <div className="h-1.5 w-full rounded-full bg-muted/60 overflow-hidden">
-                                <div className={cn("h-full rounded-full bg-gradient-to-r from-primary to-emerald-400 transition-all duration-300", progressWidthClass(activeVideoProgress?.watchPct ?? 0))} />
+                              <div className="text-[9px] tabular-nums flex items-center">
+                                <span className="text-emerald-500/30">[</span>
+                                <span className="text-emerald-400">
+                                  {"█".repeat(Math.min(10, Math.round((activeVideoProgress?.watchPct ?? 0) / 10)))}
+                                </span>
+                                <span className="text-emerald-500/15">
+                                  {"░".repeat(10 - Math.min(10, Math.round((activeVideoProgress?.watchPct ?? 0) / 10)))}
+                                </span>
+                                <span className="text-emerald-500/30">]</span>
                               </div>
                             </div>
                           </div>
                         ) : (
-                          <div className="rounded-[1.75rem] border border-border/60 bg-card/50 backdrop-blur-xl p-12 text-center">
-                            <Video className="size-10 text-muted-foreground/20 mx-auto mb-3" />
-                            <p className="text-sm font-bold text-muted-foreground/50">No video available for this topic.</p>
+                          <div className="py-12 border border-emerald-500/15 bg-emerald-950/5 text-center text-emerald-500/20 text-xs">
+                            [SYS.ERR // NO VIDEO STREAM LOCATED]
                           </div>
                         )}
                       </div>
 
-                      {/* Sidebar — video playlist */}
+                      {/* Playlist Sidebar */}
                       <div className="space-y-4">
-                        <div className="rounded-[1.75rem] border border-border/60 dark:border-border/40 bg-card/50 dark:bg-card/20 backdrop-blur-xl overflow-hidden shadow-md">
-                          <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-border/40 bg-amber-500/5">
-                            <div className="size-7 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-                              <LayoutList size={12} className="text-amber-400" />
-                            </div>
-                            <div>
-                              <p className="text-[10px] font-black uppercase tracking-wider text-amber-400">Playlist</p>
-                              <p className="text-[9px] text-muted-foreground/50">{videoResources.length} lectures</p>
-                            </div>
+                        <div className="rounded border border-emerald-500/15 bg-[#060a08]/30 overflow-hidden">
+                          <div className="px-4 py-2.5 border-b border-emerald-500/10 bg-emerald-950/5">
+                            <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest block">LECTURE_PLAYLIST</span>
+                            <span className="text-[8px] text-emerald-500/30 uppercase">{videoResources.length} sections logged</span>
                           </div>
-                          <div className="divide-y divide-border/30 max-h-64 overflow-y-auto">
+                          <div className="divide-y divide-emerald-500/[0.07] max-h-[320px] overflow-y-auto">
                             {videoResources.map((v, idx) => {
                               const vProg = data.progress?.resourceProgress?.[v._id];
                               const isActive = v._id === activeVideoId;
@@ -616,20 +565,14 @@ export default function TopicPage() {
                                   type="button"
                                   onClick={() => setActiveVideoId(v._id)}
                                   className={cn(
-                                    "w-full flex items-center gap-3 px-4 py-3 text-left transition-all duration-150",
-                                    isActive ? "bg-primary/8 border-l-2 border-l-primary" : "hover:bg-background/60 border-l-2 border-l-transparent"
+                                    "w-full flex items-center gap-3 px-4 py-3 text-left transition-all text-xs font-mono",
+                                    isActive ? "bg-emerald-500/10 border-l-2 border-emerald-500 text-emerald-300" : "hover:bg-emerald-950/5 border-l-2 border-l-transparent text-emerald-500/60"
                                   )}
                                 >
-                                  <span className={cn(
-                                    "shrink-0 size-6 rounded-full flex items-center justify-center text-[9px] font-black",
-                                    isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                                  )}>
-                                    {vProg?.isCompleted ? <Check size={10} strokeWidth={3} /> : idx + 1}
+                                  <span className="shrink-0 text-[9px] font-bold">
+                                    {vProg?.isCompleted ? "[✓]" : `[${String(idx + 1).padStart(2, "0")}]`}
                                   </span>
-                                  <span className={cn(
-                                    "text-[10px] font-bold line-clamp-2 leading-tight flex-1",
-                                    isActive ? "text-primary" : "text-muted-foreground/80"
-                                  )}>
+                                  <span className="truncate leading-tight flex-1">
                                     {v.title}
                                   </span>
                                 </button>
@@ -640,21 +583,16 @@ export default function TopicPage() {
                       </div>
                     </div>
                   ) : (
-                    /* Single video — full width, aligned with other cards */
+                    /* Single Video layout */
                     <div className="space-y-4">
                       {activeVideo ? (
-                        <div className="rounded-[1.75rem] border border-border/60 dark:border-border/40 bg-card/50 dark:bg-card/20 backdrop-blur-xl overflow-hidden shadow-lg">
-                          <div className="flex items-center justify-between px-5 py-3.5 border-b border-border/40 bg-background/30">
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <div className="size-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_6px_rgba(16,185,129,0.6)] shrink-0" />
-                              <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/70 truncate">
-                                {activeVideo.title}
-                              </span>
-                            </div>
+                        <div className="rounded border border-emerald-500/15 bg-[#060a08]/30 overflow-hidden">
+                          <div className="flex items-center justify-between px-4 py-2 border-b border-emerald-500/10 bg-[#081210]">
+                            <span className="text-[9px] font-bold text-emerald-400 truncate max-w-md">
+                              {activeVideo.title.toUpperCase()}
+                            </span>
                             {activeVideoProgress?.isCompleted && (
-                              <span className="shrink-0 inline-flex items-center gap-1 text-[9px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
-                                <CheckCircle2 size={10} /> Watched
-                              </span>
+                              <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider">[ WATCHED ]</span>
                             )}
                           </div>
                           <div className="overflow-hidden">
@@ -664,76 +602,73 @@ export default function TopicPage() {
                               onProgress={(payload) => handleVideoProgress(activeVideo._id, payload)}
                             />
                           </div>
-                          <div className="px-5 py-3 border-t border-border/40 bg-background/20">
-                            <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-muted-foreground/40 mb-1.5">
-                              <span>Watch Progress</span>
+                          <div className="p-4 border-t border-emerald-500/10 bg-emerald-950/5">
+                            <div className="flex items-center justify-between text-[9px] text-emerald-500/40 mb-1">
+                              <span>WATCH_RATIO</span>
                               <span>{activeVideoProgress?.watchPct ?? 0}%</span>
                             </div>
-                            <div className="h-1.5 w-full rounded-full bg-muted/60 overflow-hidden">
-                              <div className={cn("h-full rounded-full bg-gradient-to-r from-primary to-emerald-400 transition-all duration-300", progressWidthClass(activeVideoProgress?.watchPct ?? 0))} />
+                            <div className="text-[9px] tabular-nums flex items-center">
+                              <span className="text-emerald-500/30">[</span>
+                              <span className="text-emerald-400">
+                                {"█".repeat(Math.min(10, Math.round((activeVideoProgress?.watchPct ?? 0) / 10)))}
+                              </span>
+                              <span className="text-emerald-500/15">
+                                {"░".repeat(10 - Math.min(10, Math.round((activeVideoProgress?.watchPct ?? 0) / 10)))}
+                              </span>
+                              <span className="text-emerald-500/30">]</span>
                             </div>
                           </div>
                         </div>
                       ) : (
-                        <div className="rounded-[1.75rem] border border-border/60 bg-card/50 backdrop-blur-xl p-12 text-center">
-                          <Video className="size-10 text-muted-foreground/20 mx-auto mb-3" />
-                          <p className="text-sm font-bold text-muted-foreground/50">No video available for this topic.</p>
+                        <div className="py-12 border border-emerald-500/15 bg-emerald-950/5 text-center text-emerald-500/20 text-xs">
+                          [SYS.ERR // NO VIDEO STREAM LOCATED]
                         </div>
                       )}
                     </div>
                   )}
 
-                  {/* Extra Materials — full width below video */}
+                  {/* Extra Materials Checklist */}
                   {arabicNonVideoResources.length > 0 && (
-                    <div className="rounded-[1.75rem] border border-border/60 dark:border-border/40 bg-card/50 dark:bg-card/20 backdrop-blur-xl overflow-hidden shadow-lg">
-                      <div className="flex items-center justify-between px-6 py-4 border-b border-border/40 bg-amber-500/5">
-                        <div className="flex items-center gap-3">
-                          <div className="size-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-                            <FileText size={15} className="text-amber-400" />
-                          </div>
-                          <div>
-                            <h3 className="text-[11px] font-black uppercase tracking-wider text-amber-400">Extra Materials</h3>
-                            <p className="text-[9px] text-muted-foreground/50 mt-0.5">{arabicNonVideoResources.length} resource{arabicNonVideoResources.length !== 1 ? "s" : ""} · check off each one as you go</p>
-                          </div>
+                    <div className="rounded border border-emerald-500/15 bg-[#060a08]/30 overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-3.5 border-b border-emerald-500/10 bg-emerald-950/5">
+                        <div>
+                          <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest block">EXTRA_MATERIALS</span>
+                          <span className="text-[8px] text-emerald-500/30 uppercase">{arabicNonVideoResources.length} items logged</span>
                         </div>
-                        <span className="text-[9px] font-black text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full">
-                          {arabicNonVideoResources.filter(r => data.progress?.resourceProgress?.[r._id]?.isCompleted).length}/{arabicNonVideoResources.length} done
+                        <span className="text-[9px] text-emerald-400 uppercase tracking-wider">
+                          {arabicNonVideoResources.filter(r => data.progress?.resourceProgress?.[r._id]?.isCompleted).length}/{arabicNonVideoResources.length} completed
                         </span>
                       </div>
-                      <div className="divide-y divide-border/30">
+                      <div className="divide-y divide-emerald-500/[0.07]">
                         {arabicNonVideoResources.map((res, idx) => {
                           const rProg = data.progress?.resourceProgress?.[res._id] || { watchPct: 0, isCompleted: false };
                           const isToggling = togglingResourceIds.has(res._id);
                           return (
-                            <div key={res._id} className={cn("group flex items-center gap-4 px-6 py-4 transition-all duration-150", rProg.isCompleted ? "bg-emerald-500/[0.04]" : "hover:bg-background/50")}>
-                              <span className="text-[10px] font-mono text-muted-foreground/25 w-5 shrink-0 text-center">{idx + 1}</span>
-                              <div className="shrink-0 size-8 rounded-xl bg-background border border-border/40 flex items-center justify-center group-hover:border-amber-500/20 transition-colors">
+                            <div key={res._id} className={cn("flex items-center gap-4 px-4 py-3.5 transition-all text-xs", rProg.isCompleted && "bg-emerald-500/[0.02]")}>
+                              <span className="text-[10px] text-emerald-500/20 w-6 shrink-0 text-center">{String(idx + 1).padStart(2, "0")}</span>
+                              <div className="shrink-0 size-8 rounded border border-emerald-500/10 bg-emerald-950/10 flex items-center justify-center">
                                 {resourceTypeIcon(res.type)}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <a href={res.url} target="_blank" rel="noopener noreferrer" className={cn("text-xs font-bold transition-colors line-clamp-1 flex items-center gap-1.5 group/link", rProg.isCompleted ? "text-muted-foreground/40 line-through" : "text-foreground hover:text-amber-400")}>
+                                <a href={res.url} target="_blank" rel="noopener noreferrer" className={cn("font-bold transition-colors inline-flex items-center gap-1.5", rProg.isCompleted ? "text-emerald-500/30 line-through" : "text-emerald-300 hover:text-emerald-200")}>
                                   {res.title}
-                                  <ExternalLink size={9} className="shrink-0 opacity-0 group-hover/link:opacity-50 transition-opacity" />
+                                  <ExternalLink size={9} className="opacity-40" />
                                 </a>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                  <span className="text-[9px] text-muted-foreground/40">{res.type}</span>
-                                  {res.weight === 0 && <span className="text-[8px] font-black text-muted-foreground/30 bg-muted/40 border border-border/30 px-1.5 py-0.5 rounded uppercase">Optional</span>}
+                                <div className="flex items-center gap-2 mt-0.5 text-[8px] text-emerald-500/30 uppercase">
+                                  <span>{res.type}</span>
+                                  {res.weight === 0 && <span className="text-emerald-500/20 border border-emerald-500/10 px-1 rounded">[OPTIONAL]</span>}
                                 </div>
-                                {res.description && (
-                                  <p className="text-[10px] text-muted-foreground/55 mt-1 leading-relaxed line-clamp-2">{res.description}</p>
-                                )}
                               </div>
-                              <span className={cn("shrink-0 text-[9px] font-black px-2 py-0.5 rounded-full border", rProg.isCompleted ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : "text-amber-400 bg-amber-500/10 border-amber-500/20")}>
+                              <span className="shrink-0 text-[9px] text-emerald-500/40 mr-2">
                                 +{res.xpReward} XP
                               </span>
                               <button
                                 type="button"
                                 disabled={isToggling || !user}
                                 onClick={() => handleToggleResource(res._id, rProg.isCompleted)}
-                                aria-label={`Mark ${res.title} as ${rProg.isCompleted ? "incomplete" : "complete"}`}
-                                className={cn("shrink-0 size-5 rounded-md border flex items-center justify-center transition-all", isToggling && "opacity-50 cursor-wait animate-pulse", rProg.isCompleted ? "bg-emerald-500 border-emerald-500 text-white" : "border-muted-foreground/25 bg-background hover:border-amber-400/50")}
+                                className={cn("shrink-0 size-6 rounded border flex items-center justify-center transition-all", isToggling && "opacity-50 cursor-wait animate-pulse", rProg.isCompleted ? "bg-emerald-500 border-emerald-500 text-emerald-950" : "border-emerald-500/20 bg-[#060a08] hover:border-emerald-500/40")}
                               >
-                                {rProg.isCompleted && <Check size={11} strokeWidth={3} />}
+                                {rProg.isCompleted && <Check size={12} />}
                               </button>
                             </div>
                           );
@@ -744,66 +679,54 @@ export default function TopicPage() {
                 </div>
               )}
 
-              {/* ── ENGLISH LEARNING ── */}
+              {/* ── ENGLISH LEARNING (READING WORKSPACE) ── */}
               {selectedLanguage === "English" && (
-                <div className="rounded-[1.75rem] border border-border/60 dark:border-border/40 bg-card/50 dark:bg-card/20 backdrop-blur-xl overflow-hidden shadow-lg">
-                  <div className="flex items-center justify-between px-6 py-4 border-b border-border/40 bg-sky-500/5">
-                    <div className="flex items-center gap-3">
-                      <div className="size-9 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center">
-                        <BookOpen size={15} className="text-sky-400" />
-                      </div>
-                      <div>
-                        <h3 className="text-[11px] font-black uppercase tracking-wider text-sky-400">Reading List</h3>
-                        <p className="text-[9px] text-muted-foreground/50 mt-0.5">{englishResources.length} resource{englishResources.length !== 1 ? "s" : ""} · check off each one as you go</p>
-                      </div>
+                <div className="rounded border border-emerald-500/15 bg-[#060a08]/30 overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3.5 border-b border-emerald-500/10 bg-emerald-950/5">
+                    <div>
+                      <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest block">READING_CHECKLIST</span>
+                      <span className="text-[8px] text-emerald-500/30 uppercase">{englishResources.length} items logged</span>
                     </div>
-                    <span className="text-[9px] font-black text-sky-400 bg-sky-500/10 border border-sky-500/20 px-3 py-1 rounded-full">
-                      {englishResources.filter(r => data.progress?.resourceProgress?.[r._id]?.isCompleted).length}/{englishResources.length} done
+                    <span className="text-[9px] text-emerald-400 uppercase tracking-wider">
+                      {englishResources.filter(r => data.progress?.resourceProgress?.[r._id]?.isCompleted).length}/{englishResources.length} completed
                     </span>
                   </div>
 
                   {englishResources.length === 0 ? (
-                    <div className="flex flex-col items-center py-14 gap-3">
-                      <div className="size-14 rounded-2xl bg-muted/50 border border-border/40 flex items-center justify-center">
-                        <BookOpen size={22} className="text-muted-foreground/20" />
-                      </div>
-                      <p className="text-xs font-bold text-muted-foreground/40 uppercase tracking-wider">No resources yet</p>
+                    <div className="py-12 text-center text-emerald-500/20 text-xs">
+                      [SYS.EMPTY // NO READING RESOURCES DEFINED]
                     </div>
                   ) : (
-                    <div className="divide-y divide-border/30">
+                    <div className="divide-y divide-emerald-500/[0.07]">
                       {englishResources.map((res, idx) => {
                         const rProg = data.progress?.resourceProgress?.[res._id] || { watchPct: 0, isCompleted: false };
                         const isToggling = togglingResourceIds.has(res._id);
                         return (
-                          <div key={res._id} className={cn("group flex items-center gap-4 px-6 py-4 transition-all duration-150", rProg.isCompleted ? "bg-emerald-500/[0.04]" : "hover:bg-background/50")}>
-                            <span className="text-[10px] font-mono text-muted-foreground/25 w-5 shrink-0 text-center">{idx + 1}</span>
-                            <div className="shrink-0 size-8 rounded-xl bg-background border border-border/40 flex items-center justify-center group-hover:border-sky-500/20 transition-colors">
+                          <div key={res._id} className={cn("flex items-center gap-4 px-4 py-3.5 transition-all text-xs", rProg.isCompleted && "bg-emerald-500/[0.02]")}>
+                            <span className="text-[10px] text-emerald-500/20 w-6 shrink-0 text-center">{String(idx + 1).padStart(2, "0")}</span>
+                            <div className="shrink-0 size-8 rounded border border-emerald-500/10 bg-emerald-950/10 flex items-center justify-center">
                               {resourceTypeIcon(res.type)}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <a href={res.url} target="_blank" rel="noopener noreferrer" className={cn("text-xs font-bold transition-colors line-clamp-1 flex items-center gap-1.5 group/link", rProg.isCompleted ? "text-muted-foreground/40 line-through" : "text-foreground hover:text-sky-400")}>
+                              <a href={res.url} target="_blank" rel="noopener noreferrer" className={cn("font-bold transition-colors inline-flex items-center gap-1.5", rProg.isCompleted ? "text-emerald-500/30 line-through" : "text-emerald-300 hover:text-emerald-200")}>
                                 {res.title}
-                                <ExternalLink size={9} className="shrink-0 opacity-0 group-hover/link:opacity-50 transition-opacity" />
+                                <ExternalLink size={9} className="opacity-40" />
                               </a>
-                              <div className="flex items-center gap-2 mt-0.5">
-                                <span className="text-[9px] text-muted-foreground/40">{res.type}</span>
-                                {res.weight === 0 && <span className="text-[8px] font-black text-muted-foreground/30 bg-muted/40 border border-border/30 px-1.5 py-0.5 rounded uppercase">Optional</span>}
+                              <div className="flex items-center gap-2 mt-0.5 text-[8px] text-emerald-500/30 uppercase">
+                                <span>{res.type}</span>
+                                {res.weight === 0 && <span className="text-emerald-500/20 border border-emerald-500/10 px-1 rounded">[OPTIONAL]</span>}
                               </div>
-                              {res.description && (
-                                <p className="text-[10px] text-muted-foreground/55 mt-1 leading-relaxed line-clamp-2">{res.description}</p>
-                              )}
                             </div>
-                            <span className={cn("shrink-0 text-[9px] font-black px-2 py-0.5 rounded-full border", rProg.isCompleted ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : "text-sky-400 bg-sky-500/10 border-sky-500/20")}>
+                            <span className="shrink-0 text-[9px] text-emerald-500/40 mr-2">
                               +{res.xpReward} XP
                             </span>
                             <button
                               type="button"
                               disabled={isToggling || !user}
                               onClick={() => handleToggleResource(res._id, rProg.isCompleted)}
-                              aria-label={`Mark ${res.title} as ${rProg.isCompleted ? "incomplete" : "complete"}`}
-                              className={cn("shrink-0 size-5 rounded-md border flex items-center justify-center transition-all", isToggling && "opacity-50 cursor-wait animate-pulse", rProg.isCompleted ? "bg-emerald-500 border-emerald-500 text-white" : "border-muted-foreground/25 bg-background hover:border-sky-400/50")}
+                              className={cn("shrink-0 size-6 rounded border flex items-center justify-center transition-all", isToggling && "opacity-50 cursor-wait animate-pulse", rProg.isCompleted ? "bg-emerald-500 border-emerald-500 text-emerald-950" : "border-emerald-500/20 bg-[#060a08] hover:border-emerald-500/40")}
                             >
-                              {rProg.isCompleted && <Check size={11} strokeWidth={3} />}
+                              {rProg.isCompleted && <Check size={12} />}
                             </button>
                           </div>
                         );
@@ -813,26 +736,29 @@ export default function TopicPage() {
                 </div>
               )}
 
-              {/* Unlock CTA */}
-              <div className="flex items-center justify-between rounded-2xl border border-border/50 bg-background/40 px-6 py-4">
-                <div className="text-xs text-muted-foreground/60">
+              {/* Gated triggers at end of Learn step */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-3 px-4 border border-emerald-500/10 bg-emerald-950/5 rounded">
+                <span className="text-[10px] text-emerald-500/45 uppercase tracking-wider">
                   {isProblemsUnlocked
-                    ? <span className="flex items-center gap-1.5 text-emerald-400 font-black"><CheckCircle2 size={14} /> Practice problems unlocked!</span>
-                    : <span>Reach <span className="font-black text-primary">{data.topic.requiredLearningPct}%</span> to unlock practice problems</span>
+                    ? "[✓ TASK_STATE // PRACTICE_READY]"
+                    : `[ LOCKED // COMPILATION REQ: ${data.topic.requiredLearningPct}% LEARNING ]`
                   }
-                </div>
+                </span>
+
                 <div className="flex items-center gap-3">
                   {isProblemsUnlocked && learningPct < 100 && selectedLanguage === "Arabic" && (
                     <Button
                       type="button"
                       onClick={handleCompleteLearning}
                       disabled={isCompletingLearning}
-                      className="h-9 px-5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-emerald-500 text-white hover:bg-emerald-600 shadow-md shadow-emerald-500/20 transition-all"
+                      className="h-8 px-4 rounded bg-emerald-500 text-emerald-950 font-bold uppercase tracking-widest text-[8px] hover:bg-emerald-400 font-mono inline-flex items-center"
                     >
-                      {isCompletingLearning
-                        ? <Loader2 size={12} className="animate-spin mr-1.5" />
-                        : <CheckCircle2 size={12} className="mr-1.5" />}
-                      Complete
+                      {isCompletingLearning ? (
+                        <Loader2 size={10} className="animate-spin mr-1" />
+                      ) : (
+                        <CheckCircle2 size={10} className="mr-1" />
+                      )}
+                      [ COMPLETE.EXE ]
                     </Button>
                   )}
                   <Button
@@ -840,159 +766,134 @@ export default function TopicPage() {
                     onClick={() => { if (isProblemsUnlocked) setCurrentStep("problems"); }}
                     disabled={!isProblemsUnlocked}
                     className={cn(
-                      "h-9 px-6 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all",
+                      "h-8 px-4 rounded font-bold uppercase tracking-widest text-[8px] transition-all font-mono",
                       isProblemsUnlocked
-                        ? "bg-primary text-primary-foreground shadow-md shadow-primary/15 hover:shadow-primary/30"
-                        : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                        ? "bg-emerald-500 text-emerald-950 border-emerald-500 hover:bg-emerald-400"
+                        : "bg-transparent border-emerald-500/10 text-emerald-500/20 cursor-not-allowed"
                     )}
                   >
-                    {isProblemsUnlocked ? "Open Practice" : "Locked"}
-                    {isProblemsUnlocked ? <ChevronRight size={13} className="ml-1" /> : <Lock size={12} className="ml-1" />}
+                    {isProblemsUnlocked ? "[ OPEN_PRACTICE.EXE ]" : "[ LOCKED.SYS ]"}
                   </Button>
                 </div>
               </div>
             </motion.div>
 
           ) : (
-            /* ── PRACTICE STEP ── */
+            /* ── PRACTICE STEP (PROBLEMS MATRIX) ── */
             <motion.div
               key="practice"
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-5"
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-6"
             >
               {!isProblemsUnlocked ? (
-                <div className="rounded-[1.75rem] border border-border/60 bg-card/50 backdrop-blur-xl p-14 text-center space-y-4">
-                  <div className="size-16 rounded-2xl bg-muted/50 border border-border/50 flex items-center justify-center mx-auto">
-                    <Lock size={24} className="text-muted-foreground/40" />
+                <div className="py-12 border border-emerald-500/15 bg-emerald-950/5 text-center space-y-4">
+                  <div className="size-10 rounded border border-emerald-500/10 flex items-center justify-center text-emerald-500/30 mx-auto">
+                    <Lock size={16} />
                   </div>
-                  <h3 className="text-lg font-black uppercase tracking-wider">Practice Locked</h3>
-                  <p className="text-sm text-muted-foreground/60 max-w-sm mx-auto">
-                    Complete <span className="font-black text-primary">{data.topic.requiredLearningPct}%</span> of the learning materials first. Currently at <span className="font-black text-foreground">{Math.round(learningPct)}%</span>.
+                  <h3 className="text-sm font-bold text-emerald-300 uppercase">Practice Sector Locked</h3>
+                  <p className="text-[11px] text-emerald-500/40 max-w-sm mx-auto">
+                    Complete at least {data.topic.requiredLearningPct}% of the learning feeds to compile problems. (Current: {Math.round(learningPct)}%)
                   </p>
-                  <Button type="button" onClick={() => setCurrentStep("learning")} variant="outline" className="rounded-xl h-9 text-[10px] font-black uppercase tracking-wider">
-                    <ArrowLeft size={12} className="mr-1.5" /> Go to Learning
+                  <Button type="button" onClick={() => setCurrentStep("learning")} className="h-8 px-4 rounded border border-emerald-500/20 bg-transparent text-emerald-400 font-bold uppercase tracking-widest text-[8px] hover:bg-emerald-500/10 font-mono">
+                    [ GO_TO_LEARNING.SH ]
                   </Button>
                 </div>
               ) : (
-                <div className="rounded-[1.75rem] border border-border/60 dark:border-border/40 bg-card/50 dark:bg-card/20 backdrop-blur-xl overflow-hidden shadow-lg">
+                <div className="rounded border border-emerald-500/15 bg-[#060a08]/30 overflow-hidden">
                   {/* Header */}
-                  <div className="flex items-center justify-between px-6 py-4 border-b border-border/40 bg-emerald-500/[0.03]">
-                    <div className="flex items-center gap-3">
-                      <div className="size-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                        <Target size={15} className="text-emerald-400" />
-                      </div>
-                      <div>
-                        <h3 className="text-[11px] font-black uppercase tracking-wider text-emerald-400">Practice Problems</h3>
-                        <p className="text-[9px] text-muted-foreground/50 mt-0.5">
-                          Solve {data.topic.requiredProblemPct}% to complete this topic
-                        </p>
-                      </div>
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-emerald-500/10 bg-emerald-950/5">
+                    <div>
+                      <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest block">PRACTICE_PROBLEMS_LOG</span>
+                      <span className="text-[8px] text-emerald-500/30 uppercase">
+                        Resolve {data.topic.requiredProblemPct}% of targets
+                      </span>
                     </div>
                     <div className="text-right">
-                      <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground/40">Progress</p>
-                      <p className="text-sm font-[1000] text-foreground">{solvedCount}<span className="text-muted-foreground/40 font-bold">/{totalCount}</span></p>
+                      <span className="text-[8px] text-emerald-500/30 uppercase block">RESOLVED</span>
+                      <span className="text-xs font-bold text-emerald-300 tabular-nums">
+                        {solvedCount}/{totalCount}
+                      </span>
                     </div>
                   </div>
 
                   {/* Progress bar */}
-                  <div className="px-6 py-3 border-b border-border/40 bg-background/20">
-                    <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-muted-foreground/40 mb-1.5">
-                      <span>Completion</span>
-                      <span className={problemPct >= (data.topic.requiredProblemPct ?? 60) ? "text-emerald-400" : "text-foreground"}>{Math.round(problemPct)}%</span>
+                  <div className="px-4 py-2.5 border-b border-emerald-500/10 bg-emerald-950/5">
+                    <div className="flex items-center justify-between text-[9px] text-emerald-500/40 mb-1">
+                      <span>COMPLETION_RATIO</span>
+                      <span className={problemPct >= (data.topic.requiredProblemPct ?? 60) ? "text-emerald-400" : "text-emerald-300"}>
+                        {Math.round(problemPct)}%
+                      </span>
                     </div>
-                    <div className="h-2 w-full rounded-full bg-muted/50 overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${problemPct}%` }}
-                        transition={{ duration: 0.6, ease: "easeOut" }}
-                        className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"
-                      />
+                    <div className="text-[10px] tabular-nums flex items-center">
+                      <span className="text-emerald-500/30">[</span>
+                      <span className="text-emerald-400">{"█".repeat(probBlocks)}</span>
+                      <span className="text-emerald-500/15">{"░".repeat(10 - probBlocks)}</span>
+                      <span className="text-emerald-500/30">]</span>
                     </div>
                   </div>
 
-                  {/* CF group links */}
+                  {/* Codeforces Group links */}
                   {groupLinks.length > 0 && (
-                    <div className="px-6 py-4 border-b border-border/40 bg-background/10">
-                      <div className="flex items-start gap-3">
-                        <div className="size-7 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                          <ExternalLink size={12} className="text-emerald-400" />
-                        </div>
-                        <div className="space-y-1.5 flex-1 min-w-0">
-                          <p className="text-[9px] font-black uppercase tracking-wider text-emerald-400">Codeforces Group</p>
-                          {groupLinks.map((link: string, i: number) => (
-                            <a key={i} href={link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs font-bold text-primary hover:text-emerald-400 transition-colors truncate">
-                              {link} <ExternalLink size={9} className="shrink-0 opacity-60" />
-                            </a>
-                          ))}
-                          {data.topic?.groupNote && <p className="text-[10px] text-muted-foreground/50 italic">{data.topic.groupNote}</p>}
-                        </div>
+                    <div className="px-4 py-3 border-b border-emerald-500/10 bg-emerald-950/5 text-xs">
+                      <div className="space-y-1">
+                        <span className="text-[9px] font-bold text-emerald-500/45 uppercase tracking-wider block">CODEFORCES_GROUP_RESOURCES</span>
+                        {groupLinks.map((link: string, i: number) => (
+                          <a key={i} href={link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 font-bold text-emerald-300 hover:text-emerald-200 transition-colors">
+                            {link} <ExternalLink size={9} className="opacity-40" />
+                          </a>
+                        ))}
+                        {data.topic?.groupNote && <p className="text-[9px] text-emerald-500/30 italic mt-1">{data.topic.groupNote}</p>}
                       </div>
                     </div>
                   )}
 
-                  {/* Problems list */}
+                  {/* Problems checklist */}
                   {problemsList.length === 0 ? (
-                    <div className="flex flex-col items-center py-14 gap-3">
-                      <div className="size-14 rounded-2xl bg-muted/50 border border-border/40 flex items-center justify-center">
-                        <Target size={22} className="text-muted-foreground/20" />
-                      </div>
-                      <p className="text-xs font-bold text-muted-foreground/40 uppercase tracking-wider">No problems yet</p>
+                    <div className="py-12 text-center text-emerald-500/20 text-xs">
+                      [SYS.EMPTY // NO PRACTICE CHALLENGE NODES DEPLOYED]
                     </div>
                   ) : (
-                    <div className="divide-y divide-border/30">
+                    <div className="divide-y divide-emerald-500/[0.07]">
                       {problemsList.map((prob, index) => {
                         const isSolved = Boolean(data.progress?.problemProgress?.[prob._id]);
                         const isToggling = togglingProblemIds.has(prob._id);
                         return (
                           <div
                             key={prob._id}
-                            className={cn(
-                              "group flex items-center gap-4 px-6 py-4 transition-all duration-150",
-                              isSolved ? "bg-emerald-500/[0.04]" : "hover:bg-background/50"
-                            )}
+                            className={cn("flex items-center gap-4 px-4 py-3.5 transition-all text-xs", isSolved && "bg-emerald-500/[0.02]")}
                           >
-                            {/* Checkbox */}
                             <button
                               type="button"
                               disabled={isToggling || !user}
                               onClick={() => handleToggleProblem(prob._id, isSolved)}
-                              aria-label={`Mark ${prob.name} as ${isSolved ? "unsolved" : "solved"}`}
-                              className={cn(
-                                "shrink-0 size-5 rounded-md border flex items-center justify-center transition-all",
-                                isToggling && "opacity-50 cursor-wait animate-pulse",
-                                isSolved ? "bg-emerald-500 border-emerald-500 text-white shadow-sm" : "border-muted-foreground/25 bg-background hover:border-emerald-400/50"
-                              )}
+                              className={cn("shrink-0 size-6 rounded border flex items-center justify-center transition-all", isToggling && "opacity-50 cursor-wait animate-pulse", isSolved ? "bg-emerald-500 border-emerald-500 text-emerald-950" : "border-emerald-500/20 bg-[#060a08] hover:border-emerald-500/40")}
                             >
-                              {isSolved && <Check size={11} strokeWidth={3} />}
+                              {isSolved && <Check size={12} />}
                             </button>
 
-                            {/* Index */}
-                            <span className="text-[10px] font-mono text-muted-foreground/25 w-5 shrink-0 text-center">{prob.orderIndex ?? index + 1}</span>
+                            <span className="text-[10px] text-emerald-500/20 w-6 shrink-0 text-center">{String(prob.orderIndex ?? index + 1).padStart(2, "0")}</span>
 
-                            {/* Name */}
                             <div className="flex-1 min-w-0">
                               <a
                                 href={prob.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className={cn("text-xs font-bold transition-colors line-clamp-1 flex items-center gap-1.5 group/link", isSolved ? "text-muted-foreground/50 line-through" : "text-foreground hover:text-primary")}
+                                className={cn("font-bold transition-colors inline-flex items-center gap-1.5", isSolved ? "text-emerald-500/30 line-through" : "text-emerald-300 hover:text-emerald-200")}
                               >
                                 {prob.name}
-                                <ExternalLink size={9} className="shrink-0 opacity-0 group-hover/link:opacity-50 transition-opacity" />
+                                <ExternalLink size={9} className="opacity-40" />
                               </a>
                             </div>
 
-                            {/* XP */}
-                            <span className={cn("shrink-0 text-[9px] font-black px-2 py-0.5 rounded-full border", isSolved ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : "text-primary bg-primary/10 border-primary/20")}>
+                            <span className={cn("shrink-0 text-[9px] font-bold px-2 py-0.5 rounded border mr-2", isSolved ? "border-emerald-500/20 text-emerald-500/40" : "border-primary/20 text-primary")}>
                               +{prob.xpReward} XP
                             </span>
 
-                            {/* Status */}
-                            <span className={cn("shrink-0 hidden sm:inline-flex items-center text-[9px] font-black px-2.5 py-0.5 rounded-full border uppercase tracking-wider", isSolved ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : "text-muted-foreground/40 bg-muted/40 border-border/40")}>
-                              {isSolved ? "Solved" : "Open"}
+                            <span className={cn("shrink-0 hidden sm:inline text-[9px] font-bold uppercase", isSolved ? "text-emerald-400" : "text-emerald-500/30")}>
+                              {isSolved ? "[RESOLVED]" : "[PENDING]"}
                             </span>
                           </div>
                         );
@@ -1000,7 +901,7 @@ export default function TopicPage() {
                     </div>
                   )}
 
-                  {/* Next topic — gated by both learning + problem progress */}
+                  {/* Next topic trigger */}
                   {levelData?.topics && (() => {
                     const idx = levelData.topics.findIndex((t) => t._id === topicId);
                     const next = idx !== -1 ? levelData.topics[idx + 1] : null;
@@ -1009,20 +910,20 @@ export default function TopicPage() {
                     const reqProblem = data.topic.requiredProblemPct ?? 60;
                     const canProceed = learningPct >= reqLearning && problemPct >= reqProblem;
                     return (
-                      <div className="flex justify-end px-6 py-4 border-t border-border/40 bg-background/10">
+                      <div className="flex justify-end px-4 py-3 border-t border-emerald-500/10 bg-emerald-950/5">
                         {canProceed ? (
                           <Link
                             href={`/roadmap/levels/${levelId}/topics/${next._id}`}
-                            className="inline-flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/15 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-emerald-400 transition-all duration-200"
+                            className="h-8 px-4 rounded bg-emerald-500 text-emerald-950 font-bold uppercase tracking-widest text-[8px] hover:bg-emerald-400 transition-all font-mono inline-flex items-center"
                           >
-                            Next: {next.title} <ChevronRight size={12} />
+                            [ NEXT_MISSION: {next.title.toUpperCase()} ]
                           </Link>
                         ) : (
                           <span
-                            className="inline-flex items-center gap-2 rounded-xl bg-muted/50 border border-border/40 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-muted-foreground/40 cursor-not-allowed"
+                            className="h-8 px-4 rounded border border-emerald-500/5 text-emerald-500/20 text-[8px] font-bold uppercase tracking-widest inline-flex items-center select-none cursor-not-allowed"
                             title={`Need ${reqLearning}% learning and ${reqProblem}% problem progress`}
                           >
-                            <Lock size={10} /> {Math.round(learningPct)}/{reqLearning}% + {Math.round(problemPct)}/{reqProblem}%
+                            [ LOCKED: LRN {Math.round(learningPct)}/{reqLearning}% · PRB {Math.round(problemPct)}/{reqProblem}% ]
                           </span>
                         )}
                       </div>
@@ -1037,23 +938,23 @@ export default function TopicPage() {
 
       {/* Switch Language Dialog */}
       <Dialog open={isSwitchLangConfirmOpen} onOpenChange={setIsSwitchLangConfirmOpen}>
-        <DialogContent className="max-w-sm bg-card border-border/60 rounded-3xl p-0 overflow-hidden">
+        <DialogContent className="max-w-sm bg-[#060a08] border border-emerald-500/25 rounded p-0 overflow-hidden font-mono text-emerald-400">
           <div className="p-6 pb-0">
-            <div className="flex items-center justify-center size-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 mx-auto mb-4">
-              <RefreshCw size={20} className="text-amber-400" />
+            <div className="flex items-center justify-center size-10 rounded border border-amber-500/25 bg-amber-950/10 mx-auto mb-4">
+              <RefreshCw size={18} className="text-amber-400" />
             </div>
             <DialogHeader className="text-center">
-              <DialogTitle className="text-base font-black uppercase tracking-wider">Switch Learning Path?</DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground/70 leading-relaxed mt-2">
+              <DialogTitle className="text-sm font-bold uppercase tracking-wider text-emerald-300">Switch Learning Path?</DialogTitle>
+              <DialogDescription className="text-[11px] text-emerald-500/40 leading-relaxed mt-2">
                 Switching to{" "}
-                <span className="font-bold text-foreground">{pendingLangSwitch === "Arabic" ? "Arabic" : "English"}</span>{" "}
-                will reset your current progress and XP for this topic.
+                <span className="font-bold text-emerald-300">{pendingLangSwitch === "Arabic" ? "Arabic" : "English"}</span>{" "}
+                will purge accumulated progress and XP stats for this topic sector.
               </DialogDescription>
             </DialogHeader>
           </div>
-          <DialogFooter className="flex flex-row gap-3 p-6 pt-4 bg-muted/30 border-t border-border/40">
-            <Button type="button" variant="ghost" onClick={() => { setIsSwitchLangConfirmOpen(false); setPendingLangSwitch(null); }} className="flex-1 rounded-xl font-bold text-xs h-10 border border-border/60 hover:bg-background/80">
-              Cancel
+          <DialogFooter className="flex flex-row gap-3 p-6 pt-4 bg-[#081210]/40 border-t border-emerald-500/10">
+            <Button type="button" variant="ghost" onClick={() => { setIsSwitchLangConfirmOpen(false); setPendingLangSwitch(null); }} className="flex-1 h-9 rounded border border-emerald-500/20 bg-transparent text-emerald-500/60 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-500/10 font-mono">
+              [ CANCEL ]
             </Button>
             <Button
               type="button"
@@ -1069,9 +970,9 @@ export default function TopicPage() {
                 setPendingLangSwitch(null);
                 mutate(); mutateLevel(); mutateSummary();
               }}
-              className="flex-1 rounded-xl bg-primary text-primary-foreground font-bold text-xs h-10 hover:bg-primary/90"
+              className="flex-1 h-9 rounded bg-emerald-500 text-emerald-950 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-400 font-mono"
             >
-              Switch Path
+              [ SWITCH_PATH ]
             </Button>
           </DialogFooter>
         </DialogContent>

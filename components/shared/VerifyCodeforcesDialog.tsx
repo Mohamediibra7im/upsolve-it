@@ -1,18 +1,17 @@
 "use client";
 
-import {useState, useCallback, useEffect, useRef} from "react";
-import {m, AnimatePresence} from "framer-motion";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { m as motion, AnimatePresence } from "framer-motion";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Badge} from "@/components/ui/badge";
-import {VisuallyHidden} from "@radix-ui/react-visually-hidden";
-import {useUser} from "@/hooks/auth";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { useUser } from "@/hooks/auth";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -30,6 +29,7 @@ import {
   Trophy,
   ArrowRight,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Step = "intro" | "step1" | "step2" | "step3" | "success";
 
@@ -40,15 +40,13 @@ interface VerifyCodeforcesDialogProps {
 
 const slideVariants = {
   enter: (direction: number) => ({
-    x: direction > 0 ? 300 : -300,
+    x: direction > 0 ? 150 : -150,
     opacity: 0,
-    scale: 0.95,
   }),
-  center: {x: 0, opacity: 1, scale: 1},
+  center: { x: 0, opacity: 1 },
   exit: (direction: number) => ({
-    x: direction > 0 ? -300 : 300,
+    x: direction > 0 ? -150 : 150,
     opacity: 0,
-    scale: 0.95,
   }),
 };
 
@@ -72,15 +70,15 @@ function TimerBar({ pct, isLow }: { pct: number; isLow: boolean }) {
   return (
     <div
       ref={barRef}
-      className={`h-full rounded-full transition-all duration-1000 linear ${isLow ? "bg-destructive" : "bg-primary"}`}
+      className={`h-full rounded-sm transition-all duration-1000 linear ${isLow ? "bg-red-500" : "bg-emerald-400"}`}
     />
   );
 }
 
 const steps = [
-  {icon: ScrollText, label: "Open Settings"},
-  {icon: KeyRound, label: "Paste Code"},
-  {icon: ShieldCheck, label: "Verify"},
+  { icon: ScrollText, label: "SETTINGS" },
+  { icon: KeyRound, label: "CODE" },
+  { icon: ShieldCheck, label: "VERIFY" },
 ];
 
 interface CountdownTimerProps {
@@ -98,11 +96,11 @@ const CountdownTimer = ({ expiresAt, timerStartedAt, timeLeft }: CountdownTimerP
 
   return (
     <div className="flex items-center gap-2">
-      <div className={`flex items-center gap-1.5 text-xs font-bold ${isLow ? "text-destructive" : "text-primary"}`}>
+      <div className={`flex items-center gap-1.5 text-[9px] font-bold ${isLow ? "text-red-400" : "text-emerald-400"}`}>
         <Clock className="size-3" />
         <span>{formatTime(timeLeft)}</span>
       </div>
-      <div className="w-20 h-1.5 rounded-full bg-muted/50 overflow-hidden">
+      <div className="w-16 h-1 rounded-sm bg-emerald-950/40 border border-emerald-500/10 overflow-hidden">
         <TimerBar pct={pct} isLow={isLow} />
       </div>
     </div>
@@ -126,11 +124,10 @@ const VerifyCodeforcesDialog = ({
   const [timerStartedAt, setTimerStartedAt] = useState<number | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const {generateVerificationCode, verifyCodeforcesProfile} = useUser();
+  const { generateVerificationCode, verifyCodeforcesProfile } = useUser();
 
   useEffect(() => {
     if (expiresAt && (step === "step2" || step === "step3")) {
-      // Record when this timer session started (only once per code generation)
       if (!timerStartedAt) {
         setTimerStartedAt(Date.now());
       }
@@ -138,7 +135,7 @@ const VerifyCodeforcesDialog = ({
       const tick = () => {
         const remaining = Math.max(
           0,
-          Math.ceil((expiresAt - Date.now()) / 1000),
+          Math.ceil((expiresAt - Date.now()) / 1000)
         );
         setTimeLeft(remaining);
         if (remaining <= 0 && intervalRef.current) {
@@ -171,11 +168,11 @@ const VerifyCodeforcesDialog = ({
         ["intro", "step1", "step2", "step3", "success"].indexOf(next) >
           ["intro", "step1", "step2", "step3", "success"].indexOf(step)
           ? 1
-          : -1,
+          : -1
       );
       setStep(next);
     },
-    [step],
+    [step]
   );
 
   const handleStart = async () => {
@@ -268,7 +265,7 @@ const VerifyCodeforcesDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md border-border/50 bg-card/95 backdrop-blur-sm overflow-hidden p-0">
+      <DialogContent className="sm:max-w-md border border-emerald-500/25 bg-[#060a08] p-0 font-mono text-emerald-400 overflow-hidden shadow-[0_6px_22px_rgba(0,0,0,0.7)]">
         <VisuallyHidden>
           <DialogTitle>Verify your Codeforces profile</DialogTitle>
           <DialogDescription>
@@ -278,68 +275,56 @@ const VerifyCodeforcesDialog = ({
 
         {/* Quest header bar */}
         {step !== "intro" && step !== "success" && (
-          <div className="relative">
-            <div className="h-1 bg-muted/50">
-              <m.div
-                className="h-full bg-gradient-to-r from-primary to-accent"
-                initial={{width: "0%"}}
+          <div className="relative border-b border-emerald-500/15">
+            <div className="h-0.5 bg-emerald-950">
+              <motion.div
+                className="h-full bg-emerald-500"
+                initial={{ width: "0%" }}
                 animate={{
                   width:
                     step === "step1"
                       ? "33%"
                       : step === "step2"
-                        ? "66%"
-                        : "100%",
+                      ? "66%"
+                      : "100%",
                 }}
-                transition={{duration: 0.4, ease: "easeOut"}}
+                transition={{ duration: 0.4, ease: "easeOut" }}
               />
             </div>
-            <div className="flex items-center justify-between px-6 py-3 pr-14 bg-gradient-to-r from-primary/10 via-accent/5 to-transparent">
+            <div className="flex items-center justify-between px-6 py-2.5 bg-emerald-950/15">
               <div className="flex items-center gap-2">
-                <Shield className="size-4 text-primary" />
-                <span className="text-xs font-black uppercase tracking-widest text-primary">
+                <Shield className="size-3.5 text-emerald-400" />
+                <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-300">
                   Verification Quest
                 </span>
               </div>
               {step === "step2" || step === "step3" ? (
                 <CountdownTimer expiresAt={expiresAt} timerStartedAt={timerStartedAt} timeLeft={timeLeft} />
               ) : (
-                <Badge
-                  variant="outline"
-                  className="border-primary/30 text-primary text-[10px] font-bold gap-1"
-                >
-                  <Trophy className="size-3" />+{XP_REWARD} XP
-                </Badge>
+                <span className="text-[8.5px] font-bold uppercase tracking-wider text-emerald-400">
+                  [ REWARD: +{XP_REWARD} XP ]
+                </span>
               )}
             </div>
             {/* Step indicators */}
-            <div className="flex items-center justify-center gap-1 pb-3 px-6">
+            <div className="flex items-center justify-center gap-1 py-2 px-6 bg-[#040604]/30 border-t border-emerald-500/5">
               {steps.map((s, i) => {
-                const StepIcon = s.icon;
                 const isActive = i === currentStepIndex;
                 const isDone = i < currentStepIndex;
                 return (
-                  <div key={s.label} className="flex items-center gap-1">
-                    <div
-                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold transition-all duration-300 ${
-                        isDone
-                          ? "bg-primary/20 text-primary"
-                          : isActive
-                            ? "bg-primary/15 text-primary border border-primary/30"
-                            : "bg-muted/30 text-muted-foreground"
-                      }`}
-                    >
-                      {isDone ? (
-                        <CheckCircle2 className="size-3" />
-                      ) : (
-                        <StepIcon className="size-3" />
-                      )}
-                      <span className="hidden sm:inline">{s.label}</span>
-                    </div>
+                  <div key={s.label} className="flex items-center gap-1.5">
+                    <span className={cn(
+                      "text-[8.5px] font-bold uppercase tracking-wide",
+                      isDone
+                        ? "text-emerald-500/40"
+                        : isActive
+                        ? "text-emerald-300"
+                        : "text-emerald-500/15"
+                    )}>
+                      {isDone ? `[✓ ${s.label}]` : isActive ? `[█ ${s.label}]` : `[░ ${s.label}]`}
+                    </span>
                     {i < steps.length - 1 && (
-                      <div
-                        className={`w-4 h-px ${isDone ? "bg-primary/40" : "bg-muted/30"}`}
-                      />
+                      <span className="text-emerald-500/10 font-bold">&gt;</span>
                     )}
                   </div>
                 );
@@ -352,275 +337,237 @@ const VerifyCodeforcesDialog = ({
           <AnimatePresence mode="wait" custom={direction}>
             {/* INTRO STEP */}
             {step === "intro" && (
-              <m.div
+              <motion.div
                 key="intro"
                 custom={direction}
                 variants={slideVariants}
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{duration: 0.3, ease: "easeInOut"}}
+                transition={{ duration: 0.25 }}
+                className="space-y-5"
               >
                 {/* Quest banner */}
-                <div className="relative mb-6 rounded-xl overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/5 to-primary/10" />
-                  <div className="absolute inset-0 bg-grid-pattern opacity-10" />
-                  <div className="relative p-6 text-center">
-                    <m.div
-                      initial={{scale: 0, rotate: -180}}
-                      animate={{scale: 1, rotate: 0}}
-                      transition={{
-                        type: "spring",
-                        stiffness: 200,
-                        damping: 15,
-                        delay: 0.2,
-                      }}
-                      className="mx-auto size-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/25 mb-4"
-                    >
-                      <Shield className="size-8 text-primary-foreground" />
-                    </m.div>
-                    <h2 className="text-xl font-black tracking-tight">
-                      Verification Quest
-                    </h2>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Prove your Codeforces identity and earn rewards
-                    </p>
+                <div className="relative border border-emerald-500/15 bg-emerald-950/5 p-5 text-center rounded-sm">
+                  <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,.01)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,.01)_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none" />
+                  <div className="relative space-y-3">
+                    <div className="mx-auto size-11 rounded-sm bg-emerald-500/5 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                      <Shield className="size-5" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-bold uppercase tracking-wider text-white">
+                        Verification Quest
+                      </h2>
+                      <p className="text-[9px] text-emerald-500/60 uppercase tracking-wide mt-1">
+                        Prove your Codeforces identity and unlock features
+                      </p>
+                    </div>
                   </div>
                 </div>
 
                 {/* Quest objectives */}
-                <div className="space-y-2 mb-4">
-                  <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                    Quest Objectives
+                <div className="space-y-1.5 text-[9px] uppercase tracking-wide">
+                  <p className="font-bold text-emerald-500/40">
+                    {"// Quest Objectives"}
                   </p>
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 border border-border/30">
-                    <div className="flex-shrink-0 size-6 rounded-full bg-primary/20 flex items-center justify-center">
-                      <ScrollText className="size-3 text-primary" />
-                    </div>
-                    <span className="text-sm text-muted-foreground">
+                  <div className="flex items-center gap-3 p-2.5 rounded-sm bg-[#040604] border border-emerald-500/10">
+                    <ScrollText className="size-3.5 text-emerald-500/40 shrink-0" />
+                    <span className="text-emerald-500/65">
                       Open your Codeforces profile settings
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 border border-border/30">
-                    <div className="flex-shrink-0 size-6 rounded-full bg-primary/20 flex items-center justify-center">
-                      <KeyRound className="size-3 text-primary" />
-                    </div>
-                    <span className="text-sm text-muted-foreground">
+                  <div className="flex items-center gap-3 p-2.5 rounded-sm bg-[#040604] border border-emerald-500/10">
+                    <KeyRound className="size-3.5 text-emerald-500/40 shrink-0" />
+                    <span className="text-emerald-500/65">
                       Paste a verification code in your first name
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 border border-border/30">
-                    <div className="flex-shrink-0 size-6 rounded-full bg-primary/20 flex items-center justify-center">
-                      <ShieldCheck className="size-3 text-primary" />
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      Verify and unlock your badge
+                  <div className="flex items-center gap-3 p-2.5 rounded-sm bg-[#040604] border border-emerald-500/10">
+                    <ShieldCheck className="size-3.5 text-emerald-500/40 shrink-0" />
+                    <span className="text-emerald-500/65">
+                      Verify and unlock your profile badge
                     </span>
                   </div>
                 </div>
 
                 {/* Rewards preview */}
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 mb-4">
-                  <div className="flex-shrink-0 size-10 rounded-lg bg-primary/15 flex items-center justify-center">
-                    <Trophy className="size-5 text-primary" />
+                <div className="flex items-center justify-between p-3 rounded-sm border border-emerald-500/20 bg-emerald-950/10 text-[9px] uppercase tracking-wider">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="size-4 text-emerald-400 animate-pulse" />
+                    <span className="font-bold text-emerald-300">Quest Reward:</span>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-bold">Reward</p>
-                    <p className="text-xs text-muted-foreground">
-                      +{XP_REWARD} XP &amp; Verified Badge
-                    </p>
-                  </div>
-                  <Badge
-                    variant="outline"
-                    className="border-primary/30 text-primary text-xs font-bold"
-                  >
-                    <Sparkles className="size-3 mr-1" />+{XP_REWARD}
-                  </Badge>
+                  <span className="font-bold text-emerald-300">
+                    +{XP_REWARD} XP &amp; VERIFIED_BADGE
+                  </span>
                 </div>
 
                 {error && (
-                  <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                    <p className="text-sm text-destructive text-center">
-                      {error}
-                    </p>
+                  <div className="p-2.5 rounded-sm bg-red-950/10 border border-red-500/20 text-red-400 text-[9px] uppercase tracking-wide text-center">
+                    {error}
                   </div>
                 )}
 
                 <Button
                   onClick={handleStart}
                   disabled={isGenerating}
-                  className="w-full h-12 text-base font-black bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-lg shadow-primary/20 tracking-wide"
+                  className="w-full h-10 rounded-sm bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[10px] shadow-[0_0_8px_rgba(16,185,129,0.2)] transition-all"
                 >
                   {isGenerating ? (
                     <div className="flex items-center gap-2">
-                      <div className="size-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                      Initializing...
+                      <div className="size-3.5 border-2 border-emerald-950/30 border-t-emerald-950 rounded-full animate-spin" />
+                      <span>INITIALIZING...</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <Zap className="size-4" />
-                      Start Quest
+                    <div className="flex items-center gap-1.5 justify-center">
+                      <Zap className="size-3.5" />
+                      <span>START_VERIFICATION_QUEST.SH</span>
                     </div>
                   )}
                 </Button>
-              </m.div>
+              </motion.div>
             )}
 
             {/* STEP 1 */}
             {step === "step1" && (
-              <m.div
+              <motion.div
                 key="step1"
                 custom={direction}
                 variants={slideVariants}
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{duration: 0.3, ease: "easeInOut"}}
+                transition={{ duration: 0.25 }}
+                className="space-y-4"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                <div className="flex items-center justify-between text-[9px] font-bold uppercase">
+                  <button
                     onClick={() => navigateStep("intro")}
-                    className="gap-1 text-muted-foreground"
+                    className="flex items-center gap-1 text-emerald-500/60 hover:text-emerald-300 transition-colors"
                   >
-                    <ArrowLeft className="size-4" />
-                    Back
-                  </Button>
-                  <Badge
-                    variant="outline"
-                    className="border-primary/30 text-primary text-xs font-bold"
-                  >
-                    Objective 1/3
-                  </Badge>
+                    <ArrowLeft className="size-3.5" />
+                    [ PREVIOUS ]
+                  </button>
+                  <span className="text-emerald-500/40">
+                    OBJECTIVE 1/3
+                  </span>
                 </div>
 
-                <DialogHeader className="space-y-3">
-                  <DialogTitle className="text-xl font-bold text-center">
-                    Open your Codeforces profile settings
-                  </DialogTitle>
-                  <DialogDescription className="text-center text-muted-foreground">
-                    Navigate to the following page while logged in to
-                    Codeforces:
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="mt-6">
-                  <a
-                    href="https://codeforces.com/settings/social"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group flex items-center justify-center gap-2 w-full h-12 rounded-xl bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-bold text-sm transition-all shadow-lg shadow-primary/20"
-                  >
-                    Open Codeforces Settings
-                    <ExternalLink className="size-4 group-hover:translate-x-0.5 transition-transform" />
-                  </a>
-                </div>
-
-                <div className="mt-3 text-center">
-                  <a
-                    href="https://codeforces.com/settings/social"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-primary hover:underline"
-                  >
-                    https://codeforces.com/settings/social
-                  </a>
-                </div>
-
-                <div className="mt-4 p-3 rounded-lg bg-muted/30 border border-border/50">
-                  <p className="text-sm text-muted-foreground text-center">
-                    This is where you can edit your profile details.
+                <div className="space-y-2 text-center py-2">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-white">
+                    Open Codeforces settings
+                  </h3>
+                  <p className="text-[10px] text-emerald-500/60 uppercase max-w-xs mx-auto leading-relaxed">
+                    Navigate to the following settings page while logged in to Codeforces:
                   </p>
+                </div>
+
+                <div className="space-y-3">
+                  <a
+                    href="https://codeforces.com/settings/social"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-1.5 w-full h-10 rounded-sm bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold text-[10px] uppercase tracking-wider transition-all shadow-[0_0_8px_rgba(16,185,129,0.15)]"
+                  >
+                    [ OPEN_CODEFORCES_SETTINGS.EXE ]
+                    <ExternalLink className="size-3.5" />
+                  </a>
+
+                  <div className="text-center font-mono text-[9px]">
+                    <a
+                      href="https://codeforces.com/settings/social"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-emerald-500/45 hover:text-emerald-300 transition-colors underline decoration-emerald-500/20"
+                    >
+                      cf/settings/social
+                    </a>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-sm bg-[#040604] border border-emerald-500/10 text-[9px] text-emerald-500/50 uppercase leading-relaxed text-center">
+                  {"// Note: This settings page governs your public social parameters profile."}
                 </div>
 
                 <Button
                   onClick={() => navigateStep("step2")}
-                  className="mt-4 w-full h-12 text-base font-bold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+                  className="w-full h-10 rounded-sm border border-emerald-500/20 bg-transparent text-emerald-400 font-bold uppercase tracking-widest text-[10px] hover:bg-emerald-500/10 transition-all font-mono"
                 >
-                  <div className="flex items-center gap-2">
-                    Continue Quest
-                    <ArrowRight className="size-4" />
+                  <div className="flex items-center gap-1.5 justify-center">
+                    <span>CONTINUE_QUEST.SYS</span>
+                    <ArrowRight className="size-3.5" />
                   </div>
                 </Button>
-              </m.div>
+              </motion.div>
             )}
 
             {/* STEP 2 */}
             {step === "step2" && (
-              <m.div
+              <motion.div
                 key="step2"
                 custom={direction}
                 variants={slideVariants}
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{duration: 0.3, ease: "easeInOut"}}
+                transition={{ duration: 0.25 }}
+                className="space-y-4"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                <div className="flex items-center justify-between text-[9px] font-bold uppercase">
+                  <button
                     onClick={() => navigateStep("step1")}
-                    className="gap-1 text-muted-foreground"
+                    className="flex items-center gap-1 text-emerald-500/60 hover:text-emerald-300 transition-colors"
                   >
-                    <ArrowLeft className="size-4" />
-                    Back
-                  </Button>
-                  <Badge
-                    variant="outline"
-                    className="border-primary/30 text-primary text-xs font-bold"
-                  >
-                    Objective 2/3
-                  </Badge>
+                    <ArrowLeft className="size-3.5" />
+                    [ PREVIOUS ]
+                  </button>
+                  <span className="text-emerald-500/40">
+                    OBJECTIVE 2/3
+                  </span>
                 </div>
 
-                <DialogHeader className="space-y-3">
-                  <DialogTitle className="text-xl font-bold text-center">
-                    Paste the verification code
-                  </DialogTitle>
-                  <DialogDescription className="text-center text-muted-foreground">
-                    Edit the First Name section on Codeforces and paste this
-                    code:
-                  </DialogDescription>
-                </DialogHeader>
+                <div className="space-y-2 text-center py-2">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-white">
+                    Paste verification code
+                  </h3>
+                  <p className="text-[10px] text-emerald-500/60 uppercase max-w-xs mx-auto leading-relaxed">
+                    Edit the First Name input box on Codeforces and paste this exact token:
+                  </p>
+                </div>
 
                 {isExpired ? (
-                  <div className="mt-6 text-center space-y-4">
-                    <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <Clock className="size-5 text-destructive" />
-                        <p className="text-sm font-bold text-destructive">
-                          Code Expired
+                  <div className="text-center space-y-4">
+                    <div className="p-4 rounded-sm bg-red-950/5 border border-red-500/20 space-y-2">
+                      <div className="flex items-center justify-center gap-2 text-red-400">
+                        <Clock className="size-4 animate-pulse" />
+                        <p className="text-[10px] font-bold uppercase tracking-wider">
+                          Verification Code Expired
                         </p>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        Verification codes expire after 1 minutes for security.
+                      <p className="text-[9px] text-emerald-500/45 uppercase leading-relaxed">
+                        Verification codes expire after 2 minutes for security parameters.
                       </p>
                     </div>
 
                     {error && (
-                      <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                        <p className="text-sm text-destructive text-center">
-                          {error}
-                        </p>
+                      <div className="p-2.5 rounded-sm bg-red-950/10 border border-red-500/20 text-red-400 text-[9px] uppercase tracking-wide text-center">
+                        {error}
                       </div>
                     )}
 
                     <Button
                       onClick={handleRegenerate}
                       disabled={isGenerating}
-                      className="w-full h-12 text-base font-bold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-lg shadow-primary/20"
+                      className="w-full h-10 rounded-sm bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[10px] shadow-[0_0_8px_rgba(16,185,129,0.2)] transition-all"
                     >
                       {isGenerating ? (
                         <div className="flex items-center gap-2">
-                          <div className="size-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                          Generating...
+                          <div className="size-3.5 border-2 border-emerald-950/30 border-t-emerald-950 rounded-full animate-spin" />
+                          <span>GENERATING...</span>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2">
-                          <RotateCcw className="size-4" />
-                          Regenerate Code
+                        <div className="flex items-center gap-1.5 justify-center">
+                          <RotateCcw className="size-3.5" />
+                          <span>REGENERATE_TOKEN.EXE</span>
                         </div>
                       )}
                     </Button>
@@ -628,132 +575,122 @@ const VerifyCodeforcesDialog = ({
                 ) : (
                   <>
                     {/* Code display */}
-                    <div className="mt-6 relative">
-                      <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl blur-sm" />
-                      <div className="relative flex items-center gap-2 bg-card border border-border/50 rounded-xl p-1">
-                        <div className="flex-1 h-12 px-4 flex items-center font-mono text-xl font-black tracking-[0.3em] text-primary">
+                    <div className="relative">
+                      <div className="flex items-center gap-2 bg-[#040604] border border-emerald-500/20 rounded-sm p-1">
+                        <div className="flex-1 h-10 px-3 flex items-center font-mono text-base font-black tracking-widest text-emerald-300">
                           {verificationCode}
                         </div>
                         <Button
                           variant="secondary"
-                          size="lg"
                           onClick={handleCopy}
-                          className="h-10 px-4 gap-2 rounded-lg font-bold"
+                          className="h-8 px-3 gap-1 rounded-sm font-bold text-[9px] uppercase tracking-wider bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-emerald-950 transition-colors"
                         >
                           {copied ? (
                             <>
-                              <CheckCircle2 className="size-4 text-green-500" />
-                              Copied!
+                              <CheckCircle2 className="size-3.5 text-emerald-400" />
+                              COPIED
                             </>
                           ) : (
                             <>
-                              <Copy className="size-4" />
-                              Copy
+                              <Copy className="size-3.5" />
+                              COPY
                             </>
                           )}
                         </Button>
                       </div>
                     </div>
 
-                    <p className="mt-3 text-xs text-muted-foreground text-center">
-                      This code proves you own this Codeforces account. You can
-                      temporarily replace your first name with it.
+                    <p className="text-[8.5px] text-emerald-500/50 uppercase leading-relaxed text-center">
+                      This unique token proves profile ownership. You can temporarily revert your settings after verification.
                     </p>
 
                     <Button
                       onClick={() => navigateStep("step3")}
                       disabled={isExpired}
-                      className="mt-4 w-full h-12 text-base font-bold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+                      className="w-full h-10 rounded-sm bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[10px] shadow-[0_0_8px_rgba(16,185,129,0.2)] transition-all"
                     >
-                      <div className="flex items-center gap-2">
-                        I&apos;ve pasted the code
-                        <ArrowRight className="size-4" />
+                      <div className="flex items-center gap-1.5 justify-center">
+                        <span>I_HAVE_PASTED_CODE.EXE</span>
+                        <ArrowRight className="size-3.5" />
                       </div>
                     </Button>
                   </>
                 )}
-              </m.div>
+              </motion.div>
             )}
 
             {/* STEP 3 */}
             {step === "step3" && (
-              <m.div
+              <motion.div
                 key="step3"
                 custom={direction}
                 variants={slideVariants}
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{duration: 0.3, ease: "easeInOut"}}
+                transition={{ duration: 0.25 }}
+                className="space-y-4"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                <div className="flex items-center justify-between text-[9px] font-bold uppercase">
+                  <button
                     onClick={() => navigateStep("step2")}
-                    className="gap-1 text-muted-foreground"
+                    className="flex items-center gap-1 text-emerald-500/60 hover:text-emerald-300 transition-colors"
                   >
-                    <ArrowLeft className="size-4" />
-                    Back
-                  </Button>
-                  <Badge
-                    variant="outline"
-                    className="border-primary/30 text-primary text-xs font-bold"
-                  >
-                    Final Step
-                  </Badge>
+                    <ArrowLeft className="size-3.5" />
+                    [ PREVIOUS ]
+                  </button>
+                  <span className="text-emerald-500/40">
+                    FINAL OBJECTIVE
+                  </span>
                 </div>
 
-                <DialogHeader className="space-y-3">
-                  <DialogTitle className="text-xl font-bold text-center">
-                    Save &amp; Complete the Quest
-                  </DialogTitle>
-                  <DialogDescription className="text-center text-muted-foreground">
-                    Make sure you saved your Codeforces profile after pasting
-                    the verification code.
-                  </DialogDescription>
-                </DialogHeader>
+                <div className="space-y-2 text-center py-2">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-white">
+                    Save settings &amp; verify
+                  </h3>
+                  <p className="text-[10px] text-emerald-500/60 uppercase max-w-xs mx-auto leading-relaxed">
+                    Make sure you hit the &quot;Save Changes&quot; button at the bottom of the Codeforces settings page.
+                  </p>
+                </div>
 
-                <p className="mt-4 text-sm text-muted-foreground text-center">
-                  Click verify to claim your reward.
+                <p className="text-[9px] text-emerald-500/40 uppercase tracking-wide text-center">
+                  {"// Launch identity validation check once ready."}
                 </p>
 
                 {isExpired ? (
-                  <div className="mt-4 text-center space-y-4">
-                    <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <Clock className="size-5 text-destructive" />
-                        <p className="text-sm font-bold text-destructive">
-                          Code Expired
+                  <div className="text-center space-y-4">
+                    <div className="p-4 rounded-sm bg-red-950/5 border border-red-500/20 space-y-2">
+                      <div className="flex items-center justify-center gap-2 text-red-400">
+                        <Clock className="size-4 animate-pulse" />
+                        <p className="text-[10px] font-bold uppercase tracking-wider">
+                          Verification Code Expired
                         </p>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        Verification codes expire after 1 minutes for security.
+                      <p className="text-[9px] text-emerald-500/45 uppercase leading-relaxed">
+                        Verification codes expire after 2 minutes for security parameters.
                       </p>
                     </div>
 
                     {error && (
-                      <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                        <p className="text-sm text-destructive text-center">
-                          {error}
-                        </p>
+                      <div className="p-2.5 rounded-sm bg-red-950/10 border border-red-500/20 text-red-400 text-[9px] uppercase tracking-wide text-center">
+                        {error}
                       </div>
                     )}
 
                     <Button
                       onClick={handleRegenerate}
                       disabled={isGenerating}
-                      className="w-full h-12 text-base font-bold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-lg shadow-primary/20"
+                      className="w-full h-10 rounded-sm bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[10px] shadow-[0_0_8px_rgba(16,185,129,0.2)] transition-all"
                     >
                       {isGenerating ? (
                         <div className="flex items-center gap-2">
-                          <div className="size-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                          Generating...
+                          <div className="size-3.5 border-2 border-emerald-950/30 border-t-emerald-950 rounded-full animate-spin" />
+                          <span>GENERATING...</span>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2">
-                          <RotateCcw className="size-4" />
-                          Regenerate Code
+                        <div className="flex items-center gap-1.5 justify-center">
+                          <RotateCcw className="size-3.5" />
+                          <span>REGENERATE_TOKEN.EXE</span>
                         </div>
                       )}
                     </Button>
@@ -761,154 +698,88 @@ const VerifyCodeforcesDialog = ({
                 ) : (
                   <>
                     {error && (
-                      <div className="mt-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                        <p className="text-sm text-destructive text-center">
-                          {error}
-                        </p>
+                      <div className="p-2.5 rounded-sm bg-red-950/10 border border-red-500/20 text-red-400 text-[9px] uppercase tracking-wide text-center">
+                        {error}
                       </div>
                     )}
 
                     <Button
                       onClick={handleVerify}
                       disabled={isVerifying}
-                      className="mt-4 w-full h-14 text-base font-black bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:via-accent/90 hover:to-primary/90 text-primary-foreground shadow-xl shadow-primary/25 tracking-wide"
+                      className="w-full h-11 rounded-sm bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[10px] shadow-[0_0_8px_rgba(16,185,129,0.2)] transition-all"
                     >
                       {isVerifying ? (
-                        <div className="flex items-center gap-2">
-                          <div className="size-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                          Verifying...
+                        <div className="flex items-center gap-2 justify-center">
+                          <div className="size-3.5 border-2 border-emerald-950/30 border-t-emerald-950 rounded-full animate-spin" />
+                          <span>VERIFYING_CREDENTIALS...</span>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2">
-                          <ShieldCheck className="size-5" />
-                          Complete Quest
-                          <Badge
-                            variant="outline"
-                            className="border-white/30 text-white text-[10px] font-bold ml-1"
-                          >
-                            +{XP_REWARD} XP
-                          </Badge>
+                        <div className="flex items-center gap-1.5 justify-center">
+                          <ShieldCheck className="size-4" />
+                          <span>EXECUTE_FINAL_VALIDATION.SYS</span>
+                          <span className="text-[8.5px] text-emerald-950/65 font-bold">
+                            (+{XP_REWARD} XP)
+                          </span>
                         </div>
                       )}
                     </Button>
                   </>
                 )}
-              </m.div>
+              </motion.div>
             )}
 
             {/* SUCCESS STEP */}
             {step === "success" && (
-              <m.div
+              <motion.div
                 key="success"
                 custom={direction}
                 variants={slideVariants}
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{duration: 0.3, ease: "easeInOut"}}
-                className="text-center py-4"
+                transition={{ duration: 0.25 }}
+                className="text-center py-2 space-y-5"
               >
-                {/* Achievement unlock animation */}
-                <div className="relative mb-6">
-                  {/* Radial burst */}
-                  <m.div
-                    initial={{scale: 0, opacity: 0}}
-                    animate={{scale: 1, opacity: 1}}
-                    transition={{duration: 0.5, delay: 0.1}}
-                    className="absolute inset-0 flex items-center justify-center"
+                <div className="relative">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="mx-auto size-16 rounded-sm bg-emerald-500/5 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.15)]"
                   >
-                    <div className="size-32 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 animate-ping" />
-                  </m.div>
-
-                  {/* Stars */}
-                  {[...Array(6)].map((_, i) => (
-                    <m.div
-                      key={i}
-                      initial={{scale: 0, opacity: 0, x: 0, y: 0}}
-                      animate={{
-                        scale: [0, 1, 0],
-                        opacity: [0, 1, 0],
-                        x: Math.cos((i * Math.PI * 2) / 6) * 60,
-                        y: Math.sin((i * Math.PI * 2) / 6) * 60,
-                      }}
-                      transition={{duration: 1, delay: 0.3 + i * 0.1}}
-                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-                    >
-                      <Sparkles className="size-4 text-primary fill-primary/50" />
-                    </m.div>
-                  ))}
-
-                  {/* Badge */}
-                  <m.div
-                    initial={{scale: 0, rotate: -180}}
-                    animate={{scale: 1, rotate: 0}}
-                    transition={{
-                      type: "spring",
-                      stiffness: 200,
-                      damping: 12,
-                      delay: 0.2,
-                    }}
-                    className="mx-auto size-24 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-2xl shadow-primary/30"
-                  >
-                    <ShieldCheck className="size-12 text-primary-foreground" />
-                  </m.div>
+                    <ShieldCheck className="size-8 text-emerald-400" />
+                  </motion.div>
                 </div>
 
-                {/* Achievement unlocked text */}
-                <m.div
-                  initial={{opacity: 0, y: 10}}
-                  animate={{opacity: 1, y: 0}}
-                  transition={{delay: 0.5}}
-                >
-                  <p className="text-xs font-black uppercase tracking-[0.3em] text-primary mb-2">
-                    Achievement Unlocked
+                <div className="space-y-1">
+                  <p className="text-[8px] font-bold uppercase tracking-[0.25em] text-emerald-500/40">
+                    {"// Quest Completed"}
                   </p>
-                  <DialogTitle className="text-2xl font-black">
+                  <DialogTitle className="text-lg font-bold text-white uppercase tracking-wider">
                     Profile Verified!
                   </DialogTitle>
-                </m.div>
+                </div>
 
-                {/* XP reward */}
                 {xpAwarded !== null && (
-                  <m.div
-                    initial={{opacity: 0, scale: 0.8}}
-                    animate={{opacity: 1, scale: 1}}
-                    transition={{delay: 0.7, type: "spring"}}
-                    className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/15 to-accent/15 border border-primary/25"
-                  >
-                    <Sparkles className="size-4 text-primary" />
-                    <span className="text-sm font-black text-primary">
-                      +{xpAwarded} XP Earned!
-                    </span>
-                  </m.div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-950/15 border border-emerald-500/25 rounded-sm text-[9px] font-bold text-emerald-300">
+                    <Sparkles className="size-3.5 text-emerald-400 animate-pulse" />
+                    <span>REWARD_CLAIMED: +{xpAwarded} XP EARNED</span>
+                  </div>
                 )}
 
-                <m.p
-                  initial={{opacity: 0}}
-                  animate={{opacity: 1}}
-                  transition={{delay: 0.9}}
-                  className="mt-4 text-sm text-muted-foreground max-w-xs mx-auto"
-                >
-                  You&apos;ve unlocked your verified badge — a mark of
-                  authenticity. Showcase your achievements!
-                </m.p>
+                <p className="text-[10px] text-emerald-500/60 max-w-xs mx-auto uppercase leading-relaxed">
+                  You have successfully unlocked your verified profile badge — a mark of CP authenticity.
+                </p>
 
-                <m.div
-                  initial={{opacity: 0, y: 10}}
-                  animate={{opacity: 1, y: 0}}
-                  transition={{delay: 1.1}}
+                <Button
+                  onClick={handleClose}
+                  className="w-full h-10 rounded-sm bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[10px] shadow-[0_0_8px_rgba(16,185,129,0.2)] transition-all"
                 >
-                  <Button
-                    onClick={handleClose}
-                    className="mt-6 w-full h-12 text-base font-bold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
-                  >
-                    <div className="flex items-center gap-2">
-                      <UserCheck className="size-5" />
-                      Claim Reward
-                    </div>
-                  </Button>
-                </m.div>
-              </m.div>
+                  <div className="flex items-center gap-1.5 justify-center">
+                    <UserCheck className="size-4" />
+                    <span>CLAIM_REWARDS_AND_CLOSE.SYS</span>
+                  </div>
+                </Button>
+              </motion.div>
             )}
           </AnimatePresence>
         </div>

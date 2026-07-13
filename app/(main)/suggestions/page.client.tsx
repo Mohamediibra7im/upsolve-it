@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { m } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { ChevronLeft, ExternalLink, Globe, BookOpen, Trophy, GraduationCap } from "lucide-react";
 import { useSuggestions, type Suggestion } from "@/hooks/admin/useSuggestions";
 import Loader from "@/components/shared/Loader";
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as const } },
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
 };
 
 const stagger = {
@@ -40,55 +40,57 @@ export default function SuggestionsPage() {
   const grouped = groupByCategory(suggestions);
 
   return (
-    <section className="min-h-screen relative overflow-hidden">
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-primary/[0.03] via-transparent to-transparent" />
-        <div className="absolute inset-0 bg-grid-pattern opacity-[0.012]" />
-      </div>
+    <section className="min-h-screen relative overflow-hidden bg-[#040604] font-mono text-emerald-400 select-none py-8">
+      {/* Background terminal grid lines */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,.015)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,.015)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,black_45%,transparent_100%)]" />
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div className="max-w-4xl mx-auto space-y-8">
-          <m.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+      {/* Terminal Scanline overlay */}
+      <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.03] pointer-events-none z-50" />
+
+      <div className="container mx-auto px-4 max-w-3xl relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="space-y-4"
+        >
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-500/60 hover:text-emerald-300 transition-colors mb-4"
           >
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors mb-6"
-            >
-              <ChevronLeft className="size-3.5" />
-              Home
-            </Link>
+            <ChevronLeft className="size-3.5" />
+            [ HOME ]
+          </Link>
 
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20">
-                  <Globe className="size-3 text-primary" />
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-primary">Resources</span>
-                </div>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-950/20 border border-emerald-500/15 rounded-sm">
+                <Globe className="size-3.5 text-emerald-400" />
+                <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-300">Resources</span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
-                Suggested Websites
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Hand-picked resources to boost your competitive programming journey
-              </p>
             </div>
-          </m.div>
+            <h1 className="text-xl font-bold uppercase tracking-wider text-white">
+              Suggested Websites
+            </h1>
+            <p className="text-[10px] text-emerald-500/60 uppercase">
+              Hand-picked resources to boost your competitive programming journey
+            </p>
+          </div>
+        </motion.div>
 
+        <div className="mt-8">
           {grouped.length === 0 ? (
-            <m.div
+            <motion.div
               initial="hidden"
               animate="show"
               variants={fadeUp}
-              className="rounded-3xl border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-white/[0.01] backdrop-blur-2xl p-12 text-center"
+              className="rounded-sm border border-emerald-500/15 bg-[#060a08]/30 p-12 text-center"
             >
-              <Globe className="size-12 text-muted-foreground/30 mx-auto mb-4" />
-              <p className="text-sm text-muted-foreground">No suggestions available yet</p>
-            </m.div>
+              <Globe className="size-10 text-emerald-500/20 mx-auto mb-3" />
+              <p className="text-[10px] uppercase text-emerald-500/50">No suggestions available yet</p>
+            </motion.div>
           ) : (
-            <m.div
+            <motion.div
               initial="hidden"
               animate="show"
               variants={stagger}
@@ -97,45 +99,45 @@ export default function SuggestionsPage() {
               {grouped.map(([category, items]) => {
                 const CategoryIcon = categoryIcons[category] || Globe;
                 return (
-                  <m.div key={category} variants={fadeUp} className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <CategoryIcon className="size-4 text-primary" />
-                      <h2 className="text-sm font-bold text-foreground/80 uppercase tracking-wider">
+                  <motion.div key={category} variants={fadeUp} className="space-y-3">
+                    <div className="flex items-center gap-2 border-b border-emerald-500/10 pb-1.5">
+                      <CategoryIcon className="size-4 text-emerald-400" />
+                      <h2 className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest">
                         {category}
                       </h2>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
                       {items.map((s) => (
-                        <m.div key={s._id} variants={fadeUp}>
+                        <motion.div key={s._id} variants={fadeUp}>
                           <a
                             href={s.url}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="block group"
                           >
-                            <div className="rounded-2xl border border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/[0.08] transition-all duration-300 p-5">
-                              <div className="flex items-start gap-4">
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                            <div className="rounded-sm border border-emerald-500/15 bg-[#060a08]/30 hover:bg-[#060a08]/50 hover:border-emerald-500/25 transition-all duration-300 p-4">
+                              <div className="flex items-start gap-3">
+                                <div className="min-w-0 flex-1 space-y-1">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <h3 className="text-xs font-bold text-emerald-300 group-hover:text-emerald-400 transition-colors truncate uppercase">
                                       {s.title}
                                     </h3>
-                                    <ExternalLink className="size-3 text-muted-foreground/40 shrink-0 group-hover:text-primary/60 transition-colors" />
+                                    <ExternalLink className="size-3 text-emerald-500/30 group-hover:text-emerald-400 transition-colors shrink-0" />
                                   </div>
-                                  <p className="text-[12px] text-muted-foreground/60 leading-relaxed line-clamp-2">
+                                  <p className="text-[9px] text-emerald-500/60 leading-relaxed uppercase line-clamp-2">
                                     {s.description}
                                   </p>
                                 </div>
                               </div>
                             </div>
                           </a>
-                        </m.div>
+                        </motion.div>
                       ))}
                     </div>
-                  </m.div>
+                  </motion.div>
                 );
               })}
-            </m.div>
+            </motion.div>
           )}
         </div>
       </div>

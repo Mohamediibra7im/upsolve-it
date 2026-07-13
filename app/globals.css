@@ -50,7 +50,7 @@ body {
 
   .dark {
     /* Upsolve.it palette */
-    --background: 0 0% 4%; /* #0B0B0B */
+    --background: 120 20% 2%; /* #040604 */
     --foreground: 45 20% 97%; /* #FAF9F6 */
     --card: 0 0% 6%;
     --card-foreground: 45 20% 97%;

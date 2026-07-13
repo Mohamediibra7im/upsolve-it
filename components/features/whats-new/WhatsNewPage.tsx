@@ -2,74 +2,74 @@
 
 import { useWhatsNewPublished, type WhatsNewEntry } from "@/hooks/admin";
 import Loader from "@/components/shared/Loader";
-import { m } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { Sparkles, Calendar, Tag, Rocket } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MarkdownRenderer from "@/components/ui/markdown-renderer";
 
 function formatDate(dateStr: string | null) {
   if (!dateStr) return "";
-  return new Date(dateStr).toLocaleDateString("en-US", {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-US", {
     year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+    month: "2-digit",
+    day: "2-digit",
+  }).replace(/\//g, ".");
 }
 
 function EntryCard({ entry, index }: { entry: WhatsNewEntry; index: number }) {
   return (
-    <m.article
-      initial={{ opacity: 0, y: 24 }}
+    <motion.article
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, delay: index * 0.08, ease: "easeOut" }}
+      transition={{ duration: 0.35, delay: index * 0.08 }}
       className="group relative"
     >
       {/* Timeline dot + connector */}
-      <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-primary/40 via-primary/15 to-transparent hidden md:block" />
-      <div className="absolute -left-[5px] top-8 size-[11px] rounded-full border-2 border-primary bg-background shadow-[0_0_12px_rgba(16,185,129,0.35)] hidden md:block" />
+      <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-emerald-500/10 hidden md:block" />
+      <div className="absolute -left-[4.5px] top-6 font-bold text-emerald-500/40 text-[9px] bg-[#040604] px-0.5 hidden md:block">
+        [█]
+      </div>
 
       <div
         className={cn(
-          "relative md:ml-8 rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm overflow-hidden",
+          "relative md:ml-6 rounded-sm border border-emerald-500/15 bg-[#060a08]/30 overflow-hidden",
           "transition-all duration-300",
-          "hover:border-primary/30 hover:shadow-[0_8px_40px_-12px_rgba(16,185,129,0.15)]",
+          "hover:border-emerald-500/25",
         )}
       >
-        {/* Top glow accent */}
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-
         {/* Header */}
-        <div className="px-6 pt-6 pb-4 sm:px-8 sm:pt-8">
-          <div className="flex flex-wrap items-center gap-3 mb-3">
+        <div className="px-6 pt-5 pb-3 sm:px-6 sm:pt-5">
+          <div className="flex flex-wrap items-center gap-3 mb-2">
             {entry.version && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[11px] font-bold uppercase tracking-wider">
-                <Tag size={12} />
-                {entry.version}
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm bg-emerald-500/5 border border-emerald-500/15 text-emerald-400 text-[8.5px] font-bold uppercase tracking-wider">
+                <Tag size={10} />
+                v{entry.version}
               </span>
             )}
             {entry.publishedAt && (
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                <Calendar size={12} className="opacity-60" />
+              <span className="inline-flex items-center gap-1 text-[8.5px] font-bold text-emerald-500/40 uppercase tracking-widest">
+                <Calendar size={10} />
                 {formatDate(entry.publishedAt)}
               </span>
             )}
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground leading-snug">
+          <h2 className="text-sm font-bold tracking-wide text-emerald-300 uppercase leading-snug">
             {entry.title}
           </h2>
         </div>
 
         {/* Markdown Body */}
-        <div className="px-6 pb-6 sm:px-8 sm:pb-8">
+        <div className="px-6 pb-5 sm:px-6 sm:pb-5">
           <MarkdownRenderer
-            className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none prose-pre:bg-black/40 prose-pre:border prose-pre:border-border/50 prose-pre:rounded-xl prose-img:rounded-xl prose-blockquote:border-primary/30"
+            className="prose prose-xs dark:prose-invert max-w-none text-[10px] text-emerald-500/70 leading-relaxed uppercase prose-headings:text-emerald-300 prose-headings:font-bold prose-headings:text-xs prose-a:text-emerald-400 prose-a:underline hover:prose-a:text-emerald-300 prose-code:text-emerald-300 prose-code:bg-emerald-500/5 prose-code:border prose-code:border-emerald-500/10 prose-code:px-1 prose-code:py-0.2 prose-code:rounded-sm prose-code:before:content-none prose-code:after:content-none prose-pre:bg-black/40 prose-pre:border prose-pre:border-emerald-500/10 prose-pre:rounded-sm prose-img:rounded-sm prose-blockquote:border-emerald-500/20"
           >
             {entry.content}
           </MarkdownRenderer>
         </div>
       </div>
-    </m.article>
+    </motion.article>
   );
 }
 
@@ -79,47 +79,45 @@ export default function WhatsNewPage() {
   if (isLoading) return <Loader message="Loading updates..." />;
 
   return (
-    <div className="min-h-[60vh] py-4">
+    <div className="min-h-[60vh] py-4 font-mono text-emerald-400 select-none relative z-10">
       {/* Header */}
-      <m.div
-        initial={{ opacity: 0, y: -16 }}
+      <motion.div
+        initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="mb-12 text-center"
+        transition={{ duration: 0.4 }}
+        className="mb-8 text-center"
       >
-        <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
-          <Sparkles size={16} className="text-primary" />
-          <span className="text-xs font-bold text-primary uppercase tracking-widest">
-            Changelog
-          </span>
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-950/20 border border-emerald-500/15 rounded-sm text-[9px] font-bold uppercase tracking-widest text-emerald-400 mb-4">
+          <Sparkles size={12} className="text-emerald-400 animate-pulse" />
+          <span>CHANGELOG</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-foreground mb-4">
+        <h1 className="text-xl font-bold uppercase tracking-wider text-white mb-2">
           What&apos;s New
         </h1>
-        <p className="text-muted-foreground text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
-          Stay up to date with the latest features, improvements, and fixes we&apos;ve shipped.
+        <p className="text-emerald-500/55 text-xs uppercase max-w-md mx-auto leading-relaxed">
+          Stay up to date with the latest features, improvements, and bug fixes we&apos;ve shipped.
         </p>
-      </m.div>
+      </motion.div>
 
       {/* Timeline */}
       {entries.length === 0 ? (
-        <m.div
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex flex-col items-center justify-center py-24 text-center"
+          className="flex flex-col items-center justify-center py-20 text-center space-y-3"
         >
-          <div className="size-20 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-6">
-            <Rocket size={32} className="text-primary" />
+          <div className="size-11 rounded-sm bg-emerald-500/5 border border-emerald-500/15 flex items-center justify-center text-emerald-400">
+            <Rocket size={18} />
           </div>
-          <h3 className="text-lg font-bold text-foreground mb-2">
-            No updates yet
-          </h3>
-          <p className="text-sm text-muted-foreground max-w-sm">
-            We&apos;re building something great. Check back soon for the latest news!
-          </p>
-        </m.div>
+          <div className="space-y-0.5">
+            <h3 className="text-xs font-bold text-emerald-300 uppercase tracking-wide">No updates yet</h3>
+            <p className="text-[9px] text-emerald-500/60 uppercase">
+              We&apos;re building something great. Check back soon for the latest news!
+            </p>
+          </div>
+        </motion.div>
       ) : (
-        <div className="relative max-w-3xl mx-auto space-y-8 md:pl-6">
+        <div className="relative max-w-2xl mx-auto space-y-6 md:pl-4">
           {entries.map((entry, i) => (
             <EntryCard key={entry._id} entry={entry} index={i} />
           ))}

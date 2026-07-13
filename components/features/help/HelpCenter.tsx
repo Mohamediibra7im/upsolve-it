@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
+import { useState } from "react";
+import Link from "next/link";
 import { 
   Search, 
   Book, 
@@ -11,97 +11,97 @@ import {
   Zap,
   Clock,
   ChevronRight
-} from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { m, AnimatePresence } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import HelpSearch from './HelpSearch';
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { m as motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+import HelpSearch from "./HelpSearch";
 
 const helpCategories = [
   {
-    id: 'quick-start',
-    title: 'Getting Started',
-    description: 'Set up your account and start training in under 5 minutes.',
+    id: "quick-start",
+    title: "Getting Started",
+    description: "Set up your account and start training in under 5 minutes.",
     icon: Zap,
-    color: 'bg-sky-500/10 border-sky-500/20 text-sky-500',
-    hoverColor: 'hover:border-sky-500/40',
-    href: '/help/quick-start',
-    time: '5 min read',
+    color: "bg-emerald-500/5 border-emerald-500/15 text-emerald-400",
+    hoverColor: "hover:border-emerald-500/25",
+    href: "/help/quick-start",
+    time: "5 MIN READ",
   },
   {
-    id: 'faq',
-    title: 'FAQ & Guides',
-    description: 'Answers to the most common questions about every feature.',
+    id: "faq",
+    title: "FAQ & Guides",
+    description: "Answers to the most common questions about every feature.",
     icon: Book,
-    color: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500',
-    hoverColor: 'hover:border-emerald-500/40',
-    href: '/help/faq',
-    time: 'Browse all',
+    color: "bg-emerald-500/5 border-emerald-500/15 text-emerald-400",
+    hoverColor: "hover:border-emerald-500/25",
+    href: "/help/faq",
+    time: "BROWSE ALL",
   },
   {
-    id: 'support',
-    title: 'Contact Support',
-    description: 'Still need help? Reach out to our team directly.',
+    id: "support",
+    title: "Contact Support",
+    description: "Still need help? Reach out to our team directly.",
     icon: MessageCircle,
-    color: 'bg-amber-500/10 border-amber-500/20 text-amber-500',
-    hoverColor: 'hover:border-amber-500/40',
-    href: '/help/support',
-    time: '24-48h response',
+    color: "bg-emerald-500/5 border-emerald-500/15 text-emerald-400",
+    hoverColor: "hover:border-emerald-500/25",
+    href: "/help/support",
+    time: "24-48H RESPONSE",
   },
 ];
 
 const quickLinks = [
-  { label: 'How do I create an account?', href: '/help/faq' },
-  { label: 'How do I sync my profile?', href: '/help/faq' },
-  { label: 'How do practice sessions work?', href: '/help/faq' },
-  { label: 'What is upsolving?', href: '/help/faq' },
-  { label: 'How do I change my password?', href: '/help/faq' },
-  { label: 'Is my data safe?', href: '/help/faq' },
+  { label: "How do I create an account?", href: "/help/faq" },
+  { label: "How do I sync my profile?", href: "/help/faq" },
+  { label: "How do practice sessions work?", href: "/help/faq" },
+  { label: "What is upsolving?", href: "/help/faq" },
+  { label: "How do I change my password?", href: "/help/faq" },
+  { label: "Is my data safe?", href: "/help/faq" },
 ];
 
 export default function HelpCenter() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   return (
-    <div className="max-w-5xl mx-auto space-y-12 pb-20">
+    <div className="max-w-4xl mx-auto space-y-10 pb-20 font-mono text-emerald-400 select-none relative z-10">
       {/* Hero */}
-      <div className="text-center space-y-6 pt-8">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest">
-          <Sparkles className="size-3" />
-          Help Center
+      <div className="text-center space-y-4 pt-4">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-950/20 border border-emerald-500/15 rounded-sm text-[9px] font-bold uppercase tracking-widest text-emerald-400">
+          <Sparkles className="size-3 animate-pulse" />
+          {"// Help Center"}
         </div>
-        <h1 className="text-4xl sm:text-6xl font-black tracking-tighter text-foreground leading-none">
-          How can we <span className="text-primary">help?</span>
+        <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-none uppercase">
+          How can we help?
         </h1>
-        <p className="text-muted-foreground font-medium max-w-xl mx-auto">
+        <p className="text-emerald-500/50 text-xs uppercase max-w-lg mx-auto">
           Find answers to your questions, learn how to use the platform, or get in touch with our team.
         </p>
 
         {/* Search */}
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-xl mx-auto pt-2">
           <div className="relative group">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 size-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-emerald-500/30 group-focus-within:text-emerald-400 transition-colors" />
             <Input
               placeholder="Search questions or topics..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-14 pl-14 bg-card/40 border-border/40 rounded-2xl text-base focus:ring-primary/20 focus:border-primary/40 transition-all font-medium shadow-lg"
+              className="h-10 pl-9 bg-[#040604] border border-emerald-500/20 rounded-sm text-xs text-emerald-300 placeholder-emerald-500/20 focus:border-emerald-500/50 outline-none transition-all font-mono"
             />
           </div>
         </div>
 
         <AnimatePresence>
           {searchQuery && (
-            <m.div
-              initial={{ opacity: 0, y: 10 }}
+            <motion.div
+              initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              className="max-w-3xl mx-auto text-left"
+              exit={{ opacity: 0, y: 5 }}
+              className="max-w-xl mx-auto text-left"
             >
               <HelpSearch query={searchQuery} />
-            </m.div>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>
@@ -109,70 +109,70 @@ export default function HelpCenter() {
       {/* Category Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {helpCategories.map((category, idx) => (
-          <m.div
+          <motion.div
             key={category.id}
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: idx * 0.1 }}
+            transition={{ delay: idx * 0.08 }}
           >
             <Link href={category.href}>
               <Card 
                 className={cn(
-                  "h-full border-border/40 bg-card/30 backdrop-blur-md rounded-3xl cursor-pointer group transition-all duration-300 hover:shadow-lg hover:shadow-primary/5",
+                  "h-full border-emerald-500/15 bg-[#060a08]/30 rounded-sm cursor-pointer group transition-all duration-300 hover:border-emerald-500/25",
                   category.hoverColor
                 )}
               >
-                <CardContent className="p-8 space-y-5">
+                <CardContent className="p-6 space-y-4">
                   <div className={cn(
-                    "size-12 rounded-2xl flex items-center justify-center border transition-all duration-300 group-hover:scale-110",
+                    "size-9 rounded-sm flex items-center justify-center border transition-all duration-300",
                     category.color
                   )}>
-                    <category.icon className="size-6" />
+                    <category.icon className="size-4.5" />
                   </div>
                   
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-black text-foreground tracking-tight group-hover:text-primary transition-colors">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-300 group-hover:text-emerald-400 transition-colors">
                         {category.title}
                       </h3>
-                      <ChevronRight className="size-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                      <ChevronRight className="size-3.5 text-emerald-500/40 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
                     </div>
-                    <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                    <p className="text-[10px] text-emerald-500/60 leading-relaxed uppercase">
                       {category.description}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                  <div className="flex items-center gap-1.5 text-[8px] font-bold text-emerald-500/35 tracking-widest">
                     <Clock className="size-3" />
                     {category.time}
                   </div>
                 </CardContent>
               </Card>
             </Link>
-          </m.div>
+          </motion.div>
         ))}
       </div>
 
       {/* Quick Links */}
-      <Card className="border-border/40 bg-card/20 backdrop-blur-md rounded-3xl">
-        <CardContent className="p-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-              <Zap className="size-4" />
+      <Card className="border-emerald-500/15 bg-[#060a08]/20 rounded-sm">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="size-7 rounded-sm bg-emerald-500/5 border border-emerald-500/15 flex items-center justify-center text-emerald-400">
+              <Zap className="size-3.5" />
             </div>
-            <h2 className="text-lg font-black text-foreground tracking-tight">Common Questions</h2>
+            <h2 className="text-xs font-bold text-emerald-300 uppercase tracking-wider">Common Questions</h2>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] font-bold uppercase">
             {quickLinks.map((link) => (
               <Link
                 key={link.label}
                 href={link.href}
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/5 transition-colors group"
+                className="flex items-center gap-2 p-2 bg-[#040604]/40 border border-emerald-500/5 hover:border-emerald-500/15 rounded-sm hover:bg-emerald-500/5 transition-all group"
               >
-                <ChevronRight className="size-3 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
-                <span className="text-sm text-muted-foreground font-medium group-hover:text-foreground transition-colors">
+                <ChevronRight className="size-3 text-emerald-500/30 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all shrink-0" />
+                <span className="text-emerald-500/55 group-hover:text-emerald-300 transition-colors">
                   {link.label}
                 </span>
               </Link>
@@ -182,25 +182,25 @@ export default function HelpCenter() {
       </Card>
 
       {/* CTA */}
-      <div className="text-center space-y-4 py-8">
-        <div className="inline-flex items-center gap-2 text-muted-foreground/60">
-          <div className="h-px w-12 bg-border/40" />
-          <span className="text-xs font-medium">or</span>
-          <div className="h-px w-12 bg-border/40" />
+      <div className="text-center space-y-4 py-4">
+        <div className="inline-flex items-center gap-2 text-emerald-500/35 text-[9px] font-bold uppercase">
+          <div className="h-[1px] w-8 bg-emerald-500/10" />
+          <span>OR</span>
+          <div className="h-[1px] w-8 bg-emerald-500/10" />
         </div>
-        <div className="space-y-3">
-          <h3 className="text-xl font-black text-foreground">Still have questions?</h3>
-          <p className="text-sm text-muted-foreground font-medium">
+        <div className="space-y-1">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-white">Still have questions?</h3>
+          <p className="text-[10px] text-emerald-500/60 uppercase">
             Our support team is here to help you with anything you need.
           </p>
         </div>
         <Button 
           asChild
-          className="h-12 px-8 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20"
+          className="h-10 px-6 rounded-sm bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[10px] shadow-[0_0_8px_rgba(16,185,129,0.2)] transition-all font-mono"
         >
-          <Link href="/help/support" className="gap-2">
-            Contact Support
-            <ArrowRight className="size-4" />
+          <Link href="/help/support" className="gap-1.5 justify-center">
+            [ CONTACT_SUPPORT_PORTAL.EXE ]
+            <ArrowRight className="size-3.5" />
           </Link>
         </Button>
       </div>
