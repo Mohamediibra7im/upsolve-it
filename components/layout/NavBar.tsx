@@ -19,8 +19,6 @@ import {
   Compass,
   ExternalLink,
   Users,
-  Sun,
-  Moon,
   Trophy,
   BookOpen,
 } from "lucide-react";
@@ -36,7 +34,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
 
 const guestLinks = [{ href: "/docs", label: "Docs", icon: BookOpen }];
 
@@ -67,7 +64,6 @@ const NavBar = () => {
   const { user, logout } = useUser();
   const { incoming: incomingFriendRequests } = useFriendRequests(!!user);
   const friendRequestCount = incomingFriendRequests.length;
-  const { theme, setTheme } = useTheme();
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -280,20 +276,6 @@ const NavBar = () => {
 
         {/* Right actions */}
         <div className="flex-none flex items-center gap-3">
-          {/* Theme Toggle */}
-          <ClientOnly>
-            <button
-              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-              className="h-8 px-2.5 rounded-sm border border-emerald-500/20 bg-emerald-950/5 hover:bg-emerald-500/10 flex items-center justify-center text-emerald-500/60 hover:text-emerald-300 hover:border-emerald-500/40 hover:shadow-[0_0_8px_rgba(16,185,129,0.15)] transition-all duration-200 text-[9px] font-bold uppercase"
-              aria-label="Toggle theme"
-            >
-              <span className="flex items-center gap-1.5">
-                {theme === "light" ? <Sun size={11} className="text-amber-500" /> : <Moon size={11} className="text-indigo-400" />}
-                <span className="hidden sm:inline tracking-widest">{theme === "light" ? "LIGHT.SYS" : "DARK.SYS"}</span>
-              </span>
-            </button>
-          </ClientOnly>
-
           {/* User profile / Actions */}
           <ClientOnly>
             {user ? (

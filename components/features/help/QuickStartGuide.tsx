@@ -40,7 +40,7 @@ const quickStartSteps = [
       "After logging in, click on your profile avatar",
       "Select \"Sync Profile\" to update your latest data",
       "Review your statistics and performance metrics",
-      "Adjust theme settings (dark/light mode) if desired",
+      "Enjoy the premium dark terminal theme",
       "Explore the notification center (bell icon)",
     ],
     tips: [

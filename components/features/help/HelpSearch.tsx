@@ -58,7 +58,7 @@ const helpContent: SearchResult[] = [
   {
     id: "6",
     title: "Changing your PIN and account settings",
-    description: "How to update your PIN, change themes, and manage account preferences.",
+    description: "How to update your PIN and manage account preferences.",
     category: "Settings",
     tags: ["pin", "settings", "account", "security"],
     relevance: 0.8,
