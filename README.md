@@ -57,6 +57,12 @@ npm run dev
 | `npm run lint` | Run ESLint check for JSX validations |
 | `npm test` | Run frontend test suites |
 
+### Test dependency compatibility
+
+Tests use the SWC transformer supplied by `next/jest`. The test dependency overrides use jsdom 27.4 and test-exclude 8 to replace deprecated encoding and glob packages. Use Node 22.12 or newer; CI runs Node 22.
+
+The coverage configuration loader uses the compatible `js-yaml` 4 `load()` API, and brace-expansion 1 is pinned to its patched release. Native install-script approvals are limited to the reviewed versions in `allowScripts`; review a new version before approving its installer with npm 12's `npm install-scripts approve <package>`.
+
 ---
 
 ## 📂 Project Architecture

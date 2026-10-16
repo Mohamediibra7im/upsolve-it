@@ -51,7 +51,7 @@ export function clearRefreshCallback() {
  * Handles logout and redirects to home page
  * Calls server-side logout endpoint to revoke refresh token,
  * clears user from localStorage, calls logoutCallback if provided,
- * and performs delayed redirect to '/' only when pathname !== '/'
+ * and lets the registered React callback handle Next.js navigation
  */
 async function handleLogoutRedirect() {
   // 1. Clear client-side state immediately
@@ -65,12 +65,7 @@ async function handleLogoutRedirect() {
     }
   }
 
-  // 2. Perform redirect as soon as possible
-  if (globalThis.window && globalThis.location.pathname !== '/') {
-    globalThis.location.href = '/';
-  }
-
-  // 3. Call server-side logout in the background (fire and forget)
+  // 2. Call server-side logout in the background (fire and forget)
   // This revokes the refresh token on the server
   fetch(resolveApiUrl('/api/auth/logout'), {
     method: 'POST',

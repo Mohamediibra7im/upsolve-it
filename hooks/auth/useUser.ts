@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import useSWR from "swr";
+import { useRouter } from "next/navigation";
 import { User } from "@/types/User";
 import { Response, SuccessResponse, ErrorResponse } from "@/types/Response";
 import { setRefreshCallback, clearRefreshCallback, setLogoutCallback, clearLogoutCallback, resolveApiUrl } from "@/lib/apiClient";
@@ -7,6 +8,7 @@ import { setRefreshCallback, clearRefreshCallback, setLogoutCallback, clearLogou
 const USER_CACHE_KEY = "codeforces-user";
 
 const useUser = () => {
+  const router = useRouter();
   const [isReady, setIsReady] = useState(false);
 
   const {
@@ -42,13 +44,15 @@ const useUser = () => {
     });
     setLogoutCallback(() => {
       mutate(null, false);
+      router.replace("/");
+      router.refresh();
     });
 
     return () => {
       clearRefreshCallback();
       clearLogoutCallback();
     };
-  }, [mutate]);
+  }, [mutate, router]);
 
   const login = useCallback(
     async (codeforcesHandle: string, password: string): Promise<Response<User>> => {
