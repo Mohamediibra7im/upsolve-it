@@ -54,13 +54,26 @@ export default function AdminContactMessages() {
     setSending(true);
     setActionError(null);
     try {
-      await replyMessage(id, replyText.trim());
+      const { reply } = await replyMessage(id, replyText.trim());
+      await mutate(
+        (current) =>
+          current && {
+            ...current,
+            messages: current.messages.map((message) =>
+              message._id === id
+                ? { ...message, replies: [...(message.replies ?? []), reply] }
+                : message,
+            ),
+          },
+        { revalidate: false },
+      );
       setReplyText("");
       setReplyingTo(null);
-      await mutate();
-    } catch {
+    } catch (error) {
       setActionError(
-        "Could not send your reply. Your draft is still here; please try again.",
+        error instanceof Error
+          ? error.message
+          : "Could not send your reply. Your draft is still here; please try again.",
       );
     } finally {
       setSending(false);
@@ -190,6 +203,12 @@ export default function AdminContactMessages() {
                         New
                       </span>
                     )}
+                    {!!msg.replies?.length && (
+                      <span className="shrink-0 text-xs font-medium text-[#b5e3c4]">
+                        {msg.replies.length}{" "}
+                        {msg.replies.length === 1 ? "reply" : "replies"}
+                      </span>
+                    )}
                   </div>
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-xs font-medium text-[#929b98]">
                     <span
@@ -264,6 +283,49 @@ export default function AdminContactMessages() {
                       {msg.message}
                     </p>
                   </div>
+                  {!!msg.replies?.length && (
+                    <section aria-label="Sent replies" className="pt-3">
+                      <h3 className="text-sm font-medium text-[#f1f3ee]">
+                        Sent replies
+                      </h3>
+                      <ol className="mt-3 divide-y divide-[#2b3031]">
+                        {msg.replies.map((reply) => (
+                          <li
+                            key={reply.messageId}
+                            className="py-4 first:pt-0 last:pb-0"
+                          >
+                            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-xs">
+                              <span className="font-medium text-[#b5e3c4]">
+                                Upsolve.it Support
+                              </span>
+                              <time
+                                dateTime={reply.sentAt}
+                                className="text-[#929b98]"
+                              >
+                                {new Date(reply.sentAt).toLocaleString(
+                                  undefined,
+                                  {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: false,
+                                  },
+                                )}
+                              </time>
+                            </div>
+                            <p className="mt-1 break-words text-xs text-[#929b98]">
+                              Emailed to {reply.to}
+                            </p>
+                            <p className="mt-2 max-w-[72ch] whitespace-pre-wrap break-words text-sm leading-7 text-[#b6bdb9]">
+                              {reply.message}
+                            </p>
+                          </li>
+                        ))}
+                      </ol>
+                    </section>
+                  )}
                   <div className="flex flex-wrap items-center gap-2 pt-2">
                     {!msg.read && (
                       <Button
