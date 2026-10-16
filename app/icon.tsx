@@ -1,73 +1,18 @@
-import { ImageResponse } from 'next/og';
-
-// Image metadata
-export const size = {
-  width: 32,
-  height: 32,
-};
-export const contentType = 'image/png';
-
-// Image generation
+import { ImageResponse } from "next/og";
+export const size = { width: 64, height: 64 };
+export const contentType = "image/png";
 export default function Icon() {
   return new ImageResponse(
-    (
-      <div
-        style={{
-          background: '#050505',
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'relative',
-        }}
-      >
-        {/* Corner Reticles */}
-        <div style={{ position: 'absolute', top: 2, left: 2, width: 8, height: 2, background: '#007F5F', display: 'flex' }} />
-        <div style={{ position: 'absolute', top: 2, left: 2, width: 2, height: 8, background: '#007F5F', display: 'flex' }} />
-        
-        <div style={{ position: 'absolute', top: 2, right: 2, width: 8, height: 2, background: '#007F5F', display: 'flex' }} />
-        <div style={{ position: 'absolute', top: 2, right: 2, width: 2, height: 8, background: '#007F5F', display: 'flex' }} />
-
-        <div style={{ position: 'absolute', bottom: 2, left: 2, width: 8, height: 2, background: '#007F5F', display: 'flex' }} />
-        <div style={{ position: 'absolute', bottom: 2, left: 2, width: 2, height: 8, background: '#007F5F', display: 'flex' }} />
-
-        <div style={{ position: 'absolute', bottom: 2, right: 2, width: 8, height: 2, background: '#007F5F', display: 'flex' }} />
-        <div style={{ position: 'absolute', bottom: 2, right: 2, width: 2, height: 8, background: '#007F5F', display: 'flex' }} />
-
-        {/* Central Core U */}
-        <div
-          style={{
-            fontSize: 18,
-            fontWeight: 900,
-            color: 'white',
-            fontFamily: 'sans-serif',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transform: 'translateY(-1px)',
-          }}
-        >
-          U
-        </div>
-
-        {/* Status Pulse Dot */}
-        <div 
-          style={{ 
-            position: 'absolute', 
-            bottom: 8, 
-            right: 8, 
-            width: 4, 
-            height: 4, 
-            borderRadius: '50%', 
-            background: '#007F5F',
-            display: 'flex'
-          }} 
-        />
-      </div>
-    ),
-    {
-      ...size,
-    }
+    <svg width="64" height="64" viewBox="0 0 40 40" fill="none">
+      <rect width="40" height="40" rx="12" fill="#b5e3c4" />
+      <path
+        d="M10 12v12a7 7 0 0 0 14 0V10m-6 6 6-6 6 6"
+        stroke="#183123"
+        strokeWidth="4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>,
+    size,
   );
 }

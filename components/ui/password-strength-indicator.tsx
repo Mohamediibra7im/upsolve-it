@@ -1,61 +1,72 @@
 "use client";
 
 import { getPasswordStrengthLevel } from "@/utils/passwordValidation";
+import { cn } from "@/lib/utils";
 
-interface PasswordStrengthIndicatorProps {
-    password: string;
-    className?: string;
+const strengthLevels = {
+  weak: {
+    label: "Weak",
+    value: 1,
+    color: "bg-destructive",
+    text: "text-red-300",
+  },
+  fair: {
+    label: "Fair",
+    value: 2,
+    color: "bg-amber-400/80",
+    text: "text-amber-300",
+  },
+  good: {
+    label: "Good",
+    value: 3,
+    color: "bg-primary/65",
+    text: "text-primary",
+  },
+  strong: {
+    label: "Strong",
+    value: 4,
+    color: "bg-primary",
+    text: "text-primary",
+  },
+};
+
+export function PasswordStrengthIndicator({
+  password,
+  className,
+}: {
+  password: string;
+  className?: string;
+}) {
+  if (!password) return null;
+  const strength = strengthLevels[getPasswordStrengthLevel(password)];
+
+  return (
+    <div className={cn("space-y-2.5", className)}>
+      <div className="flex items-center justify-between gap-3 text-xs">
+        <span className="text-muted-foreground">Password strength</span>
+        <span className={cn("font-medium", strength.text)}>
+          {strength.label}
+        </span>
+      </div>
+      <div
+        role="meter"
+        aria-label="Password strength"
+        aria-valuemin={0}
+        aria-valuemax={4}
+        aria-valuenow={strength.value}
+        aria-valuetext={strength.label}
+        className="grid grid-cols-4 gap-1.5"
+      >
+        {[1, 2, 3, 4].map((segment) => (
+          <span
+            key={segment}
+            className={cn(
+              "h-1 rounded-full transition-colors",
+              segment <= strength.value ? strength.color : "bg-muted",
+            )}
+          />
+        ))}
+      </div>
+    </div>
+  );
 }
-
-export function PasswordStrengthIndicator({ password, className = "" }: PasswordStrengthIndicatorProps) {
-    const strength = getPasswordStrengthLevel(password);
-
-    const getStrengthColor = () => {
-        switch (strength) {
-            case 'weak': return 'bg-red-500';
-            case 'fair': return 'bg-orange-500';
-            case 'good': return 'bg-yellow-500';
-            case 'strong': return 'bg-green-500';
-            default: return 'bg-gray-300';
-        }
-    };
-
-    const getStrengthWidth = () => {
-        switch (strength) {
-            case 'weak': return 'w-1/4';
-            case 'fair': return 'w-2/4';
-            case 'good': return 'w-3/4';
-            case 'strong': return 'w-full';
-            default: return 'w-0';
-        }
-    };
-
-    if (!password) return null;
-
-    return (
-        <div className={`space-y-1 ${className}`}>
-            <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Password strength:</span>
-                <span className={`text-sm font-medium capitalize ${strength === 'weak' ? 'text-red-500' :
-                    strength === 'fair' ? 'text-orange-500' :
-                        strength === 'good' ? 'text-yellow-600' :
-                            'text-green-500'
-                    }`}>
-                    {strength}
-                </span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                    className={`h-2 rounded-full transition-all duration-300 ${getStrengthColor()} ${getStrengthWidth()}`}
-                />
-            </div>
-        </div>
-    );
-}
-
-
-
-
-
-
-

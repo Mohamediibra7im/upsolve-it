@@ -1,52 +1,51 @@
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 interface SpinnerProps {
-    className?: string
-    size?: "sm" | "md" | "lg"
+  className?: string;
+  size?: "sm" | "md" | "lg";
 }
 
 export function Spinner({ className, size = "md" }: SpinnerProps) {
-    const sizeClasses = {
-        sm: "size-4",
-        md: "size-6",
-        lg: "size-8",
-    }
+  const sizeClasses = {
+    sm: "size-4",
+    md: "size-6",
+    lg: "size-8",
+  };
 
-    return (
-        <div
-            className={cn(
-                "animate-spin rounded-full border-2 border-muted-foreground/20 border-t-current",
-                sizeClasses[size],
-                className
-            )}
-        />
-    )
+  return (
+    <div
+      aria-hidden="true"
+      className={cn(
+        "animate-spin rounded-full border-2 border-current border-r-transparent opacity-80",
+        sizeClasses[size],
+        className,
+      )}
+    />
+  );
 }
 
 interface LoadingButtonProps {
-    isLoading: boolean
-    children: React.ReactNode
-    loadingText?: string
-    className?: string
+  isLoading: boolean;
+  children: React.ReactNode;
+  loadingText?: string;
+  className?: string;
 }
 
 export function LoadingButton({
-    isLoading,
-    children,
-    loadingText,
-    className,
+  isLoading,
+  children,
+  loadingText,
+  className,
 }: LoadingButtonProps) {
-    return (
-        <div className={cn("flex items-center gap-2", className)}>
-            {isLoading && <Spinner size="sm" />}
-            {isLoading && loadingText ? loadingText : children}
-        </div>
-    )
+  return (
+    <div
+      className={cn(
+        "inline-flex items-center justify-center gap-2.5",
+        className,
+      )}
+    >
+      {isLoading && <Spinner size="sm" />}
+      {isLoading && loadingText ? loadingText : children}
+    </div>
+  );
 }
-
-
-
-
-
-
-

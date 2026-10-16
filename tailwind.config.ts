@@ -10,10 +10,10 @@ const config: Config = {
   theme: {
     extend: {
       screens: {
-        'xs': '475px',
+        xs: "475px",
       },
       fontFamily: {
-        sans: ["var(--font-inter)"],
+        sans: ["var(--font-host)", "sans-serif"],
         heading: ["var(--font-host)"],
         mono: ["var(--font-mono)"],
       },
@@ -67,19 +67,16 @@ const config: Config = {
       typography: {
         DEFAULT: {
           css: {
-            'blockquote p:first-of-type::before': { content: 'none' },
-            'blockquote p:last-of-type::after': { content: 'none' },
-            'blockquote::before': { content: 'none' },
-            'blockquote::after': { content: 'none' },
+            "blockquote p:first-of-type::before": { content: "none" },
+            "blockquote p:last-of-type::after": { content: "none" },
+            "blockquote::before": { content: "none" },
+            "blockquote::after": { content: "none" },
           },
         },
       },
     },
   },
-  plugins: [
-    require("tailwindcss-animate"),
-    require("@tailwindcss/typography"),
-  ],
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 };
 
 export default config;
