@@ -85,78 +85,62 @@ const Settings = ({ initialMode = "login" }: SettingsProps) => {
     }
   };
 
+  const inputClass =
+    "h-12 rounded-xl border-[#343b37] bg-[#131715] pl-11 pr-11 text-sm text-[#f1f3ee] placeholder:text-[#68746c] focus-visible:ring-[#b5e3c4]/40 focus-visible:ring-offset-0";
+  const inputIconClass =
+    "pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#747e79]";
+  const revealButtonClass =
+    "absolute right-2 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-[#929b98] transition-colors hover:text-[#f1f3ee] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b5e3c4]";
+
   return (
     <AuthShell
-      title={isLogin ? "Welcome Back" : "Create Account"}
+      title={isLogin ? "Welcome back." : "Your next chapter starts here."}
       subtitle={
         isLogin
-          ? "Sign in with your Codeforces handle and continue your training."
-          : "Register with your Codeforces handle to start tracking your progress."
+          ? "Pick up where you left off. Your next breakthrough is a little practice away."
+          : "Turn your Codeforces progress into a clear path forward. Start your free account."
       }
-      icon={<Shield className="size-5 text-emerald-400" />}
-      className="w-full"
+      icon={<Shield className="size-5" />}
       footer={
-        <div className="text-center space-y-4 font-mono">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-emerald-500/10" />
-            </div>
-            <div className="relative flex justify-center text-[7.5px] uppercase">
-              <span className="bg-[#060a08]/90 px-2 text-emerald-500/30">
-                OR
-              </span>
-            </div>
-          </div>
-
-          <button
-            onClick={handleToggleForm}
-            className="text-[9.5px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors uppercase tracking-wider"
-          >
-            {isLogin
-              ? "[ CREATE_NEW_IDENTITY.SYS ]"
-              : "[ CONNECT_EXISTING_IDENTITY.SH ]"}
-          </button>
-
-          <div className="pt-3 border-t border-emerald-500/10 text-[9px] uppercase tracking-wide">
-            <p className="text-emerald-500/40 mb-1.5">
-              Don&apos;t have a Codeforces account?
-            </p>
+        <div className="space-y-4 text-center text-xs leading-5 text-[#929b98]">
+          <p>
+            {isLogin ? "New to Upsolve.it? " : "Already have an account? "}
+            <button
+              onClick={handleToggleForm}
+              className="rounded-sm font-medium text-[#b5e3c4] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b5e3c4]"
+            >
+              {isLogin ? "Create an account" : "Log in"}
+            </button>
+          </p>
+          <p>
+            Need a Codeforces account?{" "}
             <Link
               href="https://codeforces.com/register"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1 font-bold"
+              className="text-[#c1cbc3] underline decoration-[#454d48] underline-offset-4 hover:text-[#b5e3c4]"
             >
-              [ REGISTER_ON_CODEFORCES ]
-              <ArrowRight className="size-3" />
+              Create one here
             </Link>
-          </div>
+          </p>
         </div>
       }
     >
-      <form ref={formRef} onSubmit={handleSubmit} className="space-y-5 font-mono">
-        <div className="flex items-center justify-between border-b border-emerald-500/10 pb-3 mb-1">
-          <div className="space-y-0.5">
-            <p className="text-xs font-bold uppercase tracking-wider text-emerald-300">
-              {isLogin ? "SIGN_IN.EXE" : "CREATE_ACCOUNT.SYS"}
-            </p>
-            <p className="text-[8px] text-emerald-500/40 uppercase tracking-wide">
-              {isLogin ? "VALIDATE_NEURAL_LINK" : "INITIALIZE_IDENTITY_DATABASE"}
-            </p>
-          </div>
-          <div className="rounded-sm border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 text-[8.5px] font-bold text-emerald-400 uppercase tracking-widest">
-            {isLogin ? "SECURE_CONN" : "NEW_RECORD"}
-          </div>
+      <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
+        <div className="mb-8">
+          <h2 className="font-heading text-2xl font-medium tracking-[-0.04em]">
+            {isLogin ? "Log in to your account" : "Create your account"}
+          </h2>
+          <p className="mt-2 text-[13px] leading-5 text-[#929b98]">
+            Use your Codeforces handle to get started.
+          </p>
         </div>
-
-        {/* Codeforces Handle Input */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <label
             htmlFor="codeforcesHandle"
-            className="text-[9px] font-bold uppercase tracking-wider text-emerald-500/50 flex items-center gap-1.5"
+            className="text-[13px] font-medium text-[#c1cbc3]"
           >
-            <User className="size-3 text-emerald-500/40" />
-            [ USER_CF_HANDLE ]:
+            Codeforces handle
           </label>
           <div className="relative">
             <Input
@@ -166,33 +150,31 @@ const Settings = ({ initialMode = "login" }: SettingsProps) => {
               onChange={(e) => setCodeforcesHandle(e.target.value)}
               required
               placeholder="e.g. tourist"
-              className="form-input pl-8 h-9 border border-emerald-500/20 bg-[#040604] text-emerald-300 placeholder-emerald-500/20 rounded-sm text-xs focus:border-emerald-500/50 outline-none transition-all"
+              className={inputClass}
+              autoComplete="username"
               autoCapitalize="none"
               autoCorrect="off"
               spellCheck={false}
             />
-            <User className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-emerald-500/30" />
+            <User className={inputIconClass} />
           </div>
         </div>
-
-        {/* Password Input */}
-        <div className="space-y-1.5">
-          <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-wider">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
             <label
               htmlFor="password"
-              className="text-emerald-500/50 flex items-center gap-1.5"
+              className="text-[13px] font-medium text-[#c1cbc3]"
             >
-              <Lock className="size-3 text-emerald-500/40" />
-              [ SECURITY_PASSWORD ]:
+              Password
             </label>
-            {isLogin ? (
+            {isLogin && (
               <Link
                 href="/reset-password"
-                className="text-emerald-500/45 hover:text-emerald-300 transition-colors"
+                className="text-xs text-[#929b98] transition-colors hover:text-[#b5e3c4]"
               >
-                [ RESET_PASSWORD.SYS ]
+                Forgot password?
               </Link>
-            ) : null}
+            )}
           </div>
           <div className="relative">
             <Input
@@ -201,35 +183,33 @@ const Settings = ({ initialMode = "login" }: SettingsProps) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder={isLogin ? "Enter password" : "Create password"}
-              className="form-input pl-8 pr-8 h-9 border border-emerald-500/20 bg-[#040604] text-emerald-300 placeholder-emerald-500/20 rounded-sm text-xs focus:border-emerald-500/50 outline-none transition-all"
+              placeholder={
+                isLogin ? "Enter your password" : "Create a strong password"
+              }
+              autoComplete={isLogin ? "current-password" : "new-password"}
+              className={inputClass}
             />
-            <Lock className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-emerald-500/30" />
+            <Lock className={inputIconClass} />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-emerald-500/30 hover:text-emerald-300 transition-colors"
+              className={revealButtonClass}
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              {showPassword ? (
-                <EyeOff className="size-3.5" />
-              ) : (
-                <Eye className="size-3.5" />
-              )}
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
-          {!isLogin ? <PasswordStrengthIndicator password={password} /> : null}
+          {!isLogin && (
+            <PasswordStrengthIndicator password={password} className="pt-1" />
+          )}
         </div>
-
-        {/* Confirm Password for Registration */}
-        {!isLogin ? (
-          <div className="space-y-1.5">
+        {!isLogin && (
+          <div className="space-y-2">
             <label
               htmlFor="confirmPassword"
-              className="text-[9px] font-bold uppercase tracking-wider text-emerald-500/50 flex items-center gap-1.5"
+              className="text-[13px] font-medium text-[#c1cbc3]"
             >
-              <Lock className="size-3 text-emerald-500/40" />
-              [ CONFIRM_SECURITY_PASSWORD ]:
+              Confirm password
             </label>
             <div className="relative">
               <Input
@@ -238,56 +218,57 @@ const Settings = ({ initialMode = "login" }: SettingsProps) => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                placeholder="Re-enter password"
-                className="form-input pl-8 pr-8 h-9 border border-emerald-500/20 bg-[#040604] text-emerald-300 placeholder-emerald-500/20 rounded-sm text-xs focus:border-emerald-500/50 outline-none transition-all"
+                placeholder="Re-enter your password"
+                autoComplete="new-password"
+                className={inputClass}
               />
-              <Lock className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-emerald-500/30" />
+              <Lock className={inputIconClass} />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-emerald-500/30 hover:text-emerald-300 transition-colors"
+                className={revealButtonClass}
                 aria-label={
-                  showConfirmPassword ? "Hide confirm password" : "Show confirm password"
+                  showConfirmPassword
+                    ? "Hide confirm password"
+                    : "Show confirm password"
                 }
               >
-                {showConfirmPassword ? (
-                  <EyeOff className="size-3.5" />
-                ) : (
-                  <Eye className="size-3.5" />
-                )}
+                {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
           </div>
-        ) : null}
-
-        {/* Error and Success Messages */}
-        {error ? (
-          <div className="p-2.5 rounded-sm bg-red-950/10 border border-red-500/20 text-red-400 text-[9px] uppercase tracking-wide text-center">
+        )}
+        {error && (
+          <div
+            role="alert"
+            className="rounded-xl border border-red-400/20 bg-red-400/5 p-3 text-[13px] leading-5 text-red-300"
+          >
             {error}
           </div>
-        ) : null}
-        {success ? (
-          <div className="p-2.5 rounded-sm bg-emerald-950/10 border border-emerald-500/20 text-emerald-400 text-[9px] uppercase tracking-wide text-center">
+        )}
+        {success && (
+          <div
+            role="status"
+            className="rounded-xl border border-[#b5e3c4]/20 bg-[#b5e3c4]/5 p-3 text-[13px] leading-5 text-[#b5e3c4]"
+          >
             {success}
           </div>
-        ) : null}
-
-        {/* Submit Button */}
+        )}
         <Button
           type="submit"
-          className="w-full h-10 rounded-sm bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[10px] font-mono shadow-[0_0_8px_rgba(16,185,129,0.2)] transition-all"
+          className="h-12 w-full rounded-xl bg-[#b5e3c4] text-sm font-semibold text-[#14241b] hover:bg-[#c7edd3]"
           disabled={isLoading}
         >
           {isLoading ? (
-            <div className="flex items-center gap-2">
-              <div className="size-3 border-2 border-emerald-950/30 border-t-emerald-950 rounded-full animate-spin" />
-              <span>{isLogin ? "VALIDATING..." : "CREATING..."}</span>
-            </div>
+            <>
+              <span className="size-4 animate-spin rounded-full border-2 border-[#14241b]/25 border-t-[#14241b]" />
+              {isLogin ? "Logging in…" : "Creating account…"}
+            </>
           ) : (
-            <div className="flex items-center gap-1.5 justify-center">
-              <span>{isLogin ? "EXECUTE_SIGN_IN.EXE" : "EXECUTE_REGISTRATION.SH"}</span>
-              <ArrowRight className="size-3.5" />
-            </div>
+            <>
+              {isLogin ? "Log in" : "Create free account"}
+              <ArrowRight size={16} />
+            </>
           )}
         </Button>
       </form>

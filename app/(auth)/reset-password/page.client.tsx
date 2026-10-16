@@ -19,9 +19,7 @@ import {
   ExternalLink,
   ArrowRight,
   ShieldCheck,
-  Terminal,
-  Activity,
-  RefreshCw
+  RefreshCw,
 } from "lucide-react";
 import { validatePassword } from "@/utils/passwordValidation";
 import { AuthShell } from "@/components/features/auth";
@@ -32,9 +30,9 @@ import { resolveApiUrl } from "@/lib/apiClient";
 export default function ResetPasswordPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [stage, setStage] = useState<"enterHandle" | "verify" | "resetPassword">(
-    "enterHandle"
-  );
+  const [stage, setStage] = useState<
+    "enterHandle" | "verify" | "resetPassword"
+  >("enterHandle");
   const [handle, setHandle] = useState("");
   const [verificationToken, setVerificationToken] = useState("");
   const [resetToken, setResetToken] = useState("");
@@ -85,7 +83,7 @@ export default function ResetPasswordPage() {
       }
     } catch (err) {
       console.error("Initiate reset error:", err);
-      setError("System connection error. Please try again later.");
+      setError("Unable to connect. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -111,7 +109,7 @@ export default function ResetPasswordPage() {
       }
     } catch (err) {
       console.error("Verify submission error:", err);
-      setError("Verification verification connection error.");
+      setError("Unable to connect. Please try verifying again.");
     } finally {
       setIsLoading(false);
     }
@@ -146,7 +144,7 @@ export default function ResetPasswordPage() {
           title: "Password Changed",
           description: "Your password has been updated successfully.",
           variant: "success",
-          durationMs: 4000
+          durationMs: 4000,
         });
 
         setTimeout(() => {
@@ -157,16 +155,16 @@ export default function ResetPasswordPage() {
       }
     } catch (err) {
       console.error("Password reset error:", err);
-      setError("Final reset system error.");
+      setError("Unable to reset your password. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const stageTitles = {
-    enterHandle: "IDENTIFY_ACCOUNT",
-    verify: "VERIFY_OWNERSHIP",
-    resetPassword: "SET_NEW_PASSWORD",
+    enterHandle: "Find your account",
+    verify: "Verify your account",
+    resetPassword: "Choose a new password",
   };
 
   const currentStep = {
@@ -175,78 +173,62 @@ export default function ResetPasswordPage() {
     resetPassword: 3,
   }[stage];
 
+  const inputClass =
+    "h-12 rounded-xl border-[#343b37] bg-[#131715] pl-11 pr-11 text-sm text-[#f1f3ee] placeholder:text-[#68746c] focus-visible:ring-[#b5e3c4]/40 focus-visible:ring-offset-0";
+  const buttonClass =
+    "h-12 w-full rounded-xl bg-[#b5e3c4] text-sm font-semibold text-[#14241b] hover:bg-[#c7edd3]";
+  const inputIconClass =
+    "pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#747e79]";
+  const revealButtonClass =
+    "absolute right-2 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-[#929b98] transition-colors hover:text-[#f1f3ee] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b5e3c4]";
+
   return (
     <AuthShell
-      title="Reset Password"
-      subtitle="Follow the steps below to verify your account and set a new password."
-      icon={<ShieldCheck className="size-5 text-emerald-400" />}
-      back={{ href: "/", label: "Back to Home" }}
-      className="min-h-[calc(100vh-4rem)]"
+      title="Let's get you back in."
+      subtitle="Verify your Codeforces account and set a new password to continue your practice."
+      icon={<ShieldCheck className="size-5" />}
+      back={{ href: "/login", label: "Back to login" }}
     >
-      <div className="space-y-6 font-mono text-emerald-400">
-        {/* Step Indicator */}
-        <div className="flex items-center justify-between border-b border-emerald-500/10 pb-3">
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-1.5 text-[8px] font-bold text-emerald-500/40 uppercase tracking-widest">
-              <span>RECOVERY_STAGE</span>
-              <span>{"//"}</span>
-              <span>STEP_{currentStep}_OF_3</span>
-            </div>
-            <p className="text-sm font-bold text-white uppercase tracking-wider">
-              {stageTitles[stage]}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-1">
-            {[1, 2, 3].map((s) => {
-              const isActive = s === currentStep;
-              const isCompleted = s < currentStep;
-
-              return (
-                <div
-                  key={s}
+      <div className="space-y-7 text-[#f1f3ee]">
+        <div>
+          <div className="mb-4 flex items-center justify-between">
+            <p className="text-xs text-[#929b98]">Step {currentStep} of 3</p>
+            <div className="flex gap-1.5" aria-hidden="true">
+              {[1, 2, 3].map((step) => (
+                <span
+                  key={step}
                   className={cn(
-                    "text-[9px] font-bold tracking-tighter px-1",
-                    isActive
-                      ? "text-emerald-300 font-extrabold"
-                      : isCompleted
-                      ? "text-emerald-500/30"
-                      : "text-emerald-500/15"
+                    "h-1 w-7 rounded-full",
+                    step <= currentStep ? "bg-[#b5e3c4]" : "bg-[#343b37]",
                   )}
-                >
-                  {isCompleted ? "[✓]" : isActive ? "[█]" : "[░]"}
-                </div>
-              );
-            })}
+                />
+              ))}
+            </div>
           </div>
+          <h2 className="font-heading text-2xl font-medium tracking-[-0.04em]">
+            {stageTitles[stage]}
+          </h2>
         </div>
-
         <AnimatePresence mode="wait">
           {stage === "enterHandle" && (
-            <motion.form 
+            <motion.form
               key="enterHandle"
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              onSubmit={handleStartVerification} 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onSubmit={handleStartVerification}
               className="space-y-5"
             >
-              <div className="p-4 rounded-sm bg-emerald-950/5 border border-emerald-500/10 space-y-1 text-[9px] uppercase tracking-wide">
-                <div className="flex items-center gap-1.5 text-emerald-400 font-bold mb-1">
-                  <Terminal size={12} className="animate-pulse" />
-                  <span>{"// VERIFICATION_LOGISTICS"}</span>
-                </div>
-                <p className="text-emerald-500/60 leading-relaxed">
-                  Enter your Codeforces handle. You will need to make a specific submission to prove you own the account.
-                </p>
-              </div>
-
-              <div className="space-y-1.5">
+              <p className="text-[13px] leading-6 text-[#929b98]">
+                Enter your Codeforces handle. We will ask you to make a specific
+                submission to confirm the account belongs to you.
+              </p>
+              <div className="space-y-2">
                 <label
                   htmlFor="handle"
-                  className="text-[9px] font-bold uppercase tracking-wider text-emerald-500/50"
+                  className="text-[13px] font-medium text-[#c1cbc3]"
                 >
-                  [ USER_CF_HANDLE ]:
+                  Codeforces handle
                 </label>
                 <div className="relative">
                   <Input
@@ -256,210 +238,222 @@ export default function ResetPasswordPage() {
                     value={handle}
                     onChange={(e) => setHandle(e.target.value)}
                     required
-                    className="form-input pl-8 h-9 border border-emerald-500/20 bg-[#040604] text-emerald-300 placeholder-emerald-500/20 rounded-sm text-xs focus:border-emerald-500/50 outline-none transition-all"
+                    className={inputClass}
+                    autoComplete="username"
                     autoCapitalize="none"
                     autoCorrect="off"
                     spellCheck={false}
                   />
-                  <User className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-emerald-500/30" />
+                  <User className={inputIconClass} />
                 </div>
               </div>
-
               <Button
                 type="submit"
-                className="w-full h-10 rounded-sm bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[10px] shadow-[0_0_8px_rgba(16,185,129,0.2)] transition-all"
+                className={buttonClass}
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <RefreshCw className="size-3.5 animate-spin" />
-                    <span>STARTING_HANDSHAKE...</span>
-                  </div>
+                  <>
+                    <RefreshCw className="size-4 animate-spin" />
+                    Starting verification…
+                  </>
                 ) : (
-                  <div className="flex items-center gap-1.5 justify-center">
-                    <span>EXECUTE_INITIALIZE.EXE</span> <ArrowRight size={12} />
-                  </div>
+                  <>
+                    Continue
+                    <ArrowRight size={16} />
+                  </>
                 )}
               </Button>
             </motion.form>
           )}
-
           {stage === "verify" && (
-            <motion.div 
+            <motion.div
               key="verify"
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              className="space-y-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="space-y-5"
             >
-              <div className="space-y-5">
-                <div className="p-5 rounded-sm bg-red-950/5 border border-red-500/20 space-y-3 text-center text-[10px] uppercase tracking-wide">
-                  <div className="size-10 rounded-sm bg-red-950/10 flex items-center justify-center text-red-400 mx-auto border border-red-500/20 animate-pulse">
-                    <AlertTriangle size={18} />
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="font-bold text-red-400">ACTION REQUIRED // PROOF OF IDENTITY</h3>
-                    <p className="text-[9px] text-emerald-500/60 leading-relaxed max-w-xs mx-auto">
-                      Navigate to{" "}
-                      <a 
-                        href="https://codeforces.com/problemset/problem/4/A" 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-emerald-400 hover:text-emerald-300 font-bold inline-flex items-center gap-1 underline decoration-emerald-500/20"
-                      >
-                        PROBLEM 4A <ExternalLink size={10} />
-                      </a>{" "}
-                      and submit code that results in a <span className="text-red-400 font-bold">Compilation Error</span>.
-                    </p>
-                  </div>
+              <div className="rounded-2xl border border-[#d3b98b]/20 bg-[#d3b98b]/5 p-5">
+                <div className="mb-3 flex items-center gap-2 text-[#d3b98b]">
+                  <AlertTriangle size={17} />
+                  <h3 className="text-sm font-medium">Confirm your account</h3>
                 </div>
-
-                <div className="p-4 rounded-sm border border-emerald-500/10 bg-emerald-950/5 text-center space-y-1 font-mono uppercase tracking-wider">
-                  <div className="text-[8px] font-bold text-emerald-500/35 flex items-center justify-center gap-1.5">
-                    <Clock size={10} /> TIME_REMAINING_FOR_SUBMISSION
-                  </div>
-                  <div className="text-3xl font-bold text-emerald-300 tabular-nums">
-                    {Math.floor(countdown / 60)}:
-                    {(countdown % 60).toString().padStart(2, "0")}
-                  </div>
-                </div>
+                <p className="text-[13px] leading-6 text-[#b6bdb9]">
+                  Open{" "}
+                  <a
+                    href="https://codeforces.com/problemset/problem/4/A"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[#b5e3c4] underline underline-offset-4"
+                  >
+                    Problem 4A
+                    <ExternalLink size={12} />
+                  </a>{" "}
+                  and submit code that results in a{" "}
+                  <span className="font-medium text-[#f1f3ee]">
+                    Compilation Error
+                  </span>
+                  .
+                </p>
               </div>
-
+              <div className="flex items-center justify-between rounded-xl border border-[#2b3031] bg-[#131715] px-4 py-3">
+                <span className="flex items-center gap-2 text-xs text-[#929b98]">
+                  <Clock size={14} />
+                  Time remaining
+                </span>
+                <span className="text-2xl font-medium tabular-nums tracking-tight text-[#b5e3c4]">
+                  {Math.floor(countdown / 60)}:
+                  {(countdown % 60).toString().padStart(2, "0")}
+                </span>
+              </div>
               <Button
                 onClick={handleVerify}
-                className="w-full h-10 rounded-sm bg-emerald-600 text-white font-bold uppercase tracking-widest text-[10px] hover:bg-emerald-500 hover:text-emerald-950 transition-all"
+                className={buttonClass}
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <RefreshCw className="size-3.5 animate-spin" />
-                    <span>CHECKING_SUBMISSIONS...</span>
-                  </div>
+                  <>
+                    <RefreshCw className="size-4 animate-spin" />
+                    Checking submission…
+                  </>
                 ) : (
-                  <div className="flex items-center gap-1.5 justify-center">
-                    <span>EXECUTE_VERIFICATION.SYS</span> <Shield size={12} />
-                  </div>
+                  <>
+                    <Shield size={16} />
+                    Verify submission
+                  </>
                 )}
               </Button>
             </motion.div>
           )}
-
           {stage === "resetPassword" && (
-            <motion.form 
+            <motion.form
               key="resetPassword"
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              onSubmit={handleResetPassword} 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onSubmit={handleResetPassword}
               className="space-y-5"
             >
-              <div className="p-4 rounded-sm bg-emerald-500/5 border border-emerald-500/20 text-center space-y-2 uppercase tracking-wide">
-                <div className="size-10 rounded-sm bg-emerald-500/10 flex items-center justify-center text-emerald-400 mx-auto border border-emerald-500/20">
-                  <CheckCircle2 size={16} />
-                </div>
-                <div className="space-y-0.5">
-                  <h3 className="text-xs font-bold text-emerald-300">IDENTITY_CONFIRMED</h3>
-                  <p className="text-[9px] text-emerald-500/60">
-                    SETTING NEW PASSWORD FOR <span className="text-emerald-300 font-bold">{handle}</span>
+              <div className="flex items-start gap-3 rounded-xl border border-[#b5e3c4]/15 bg-[#b5e3c4]/5 p-4">
+                <CheckCircle2
+                  size={18}
+                  className="mt-0.5 shrink-0 text-[#b5e3c4]"
+                />
+                <div>
+                  <p className="text-sm font-medium text-[#b5e3c4]">
+                    Account verified
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-[#929b98]">
+                    Choose a new password for {handle}.
                   </p>
                 </div>
               </div>
-
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <label htmlFor="newPassword" className="text-[9px] font-bold uppercase tracking-wider text-emerald-500/50">
-                    [ NEW_PASSWORD ]:
-                  </label>
-                  <div className="relative">
-                    <Input
-                      id="newPassword"
-                      type={showNewPassword ? "text" : "password"}
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Enter new password"
-                      required
-                      className="form-input pl-8 pr-8 h-9 border border-emerald-500/20 bg-[#040604] text-emerald-300 placeholder-emerald-500/20 rounded-sm text-xs focus:border-emerald-500/50 outline-none transition-all"
-                    />
-                    <Lock className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-emerald-500/30" />
-                    <button
-                      type="button"
-                      onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-emerald-500/30 hover:text-emerald-300 transition-colors"
-                    >
-                      {showNewPassword ? <EyeOff size={14} /> : <Eye size={14} />}
-                    </button>
-                  </div>
-                  <div className="px-1 pt-1">
-                    <PasswordStrengthIndicator password={newPassword} />
-                  </div>
+              <div className="space-y-2">
+                <label
+                  htmlFor="newPassword"
+                  className="text-[13px] font-medium text-[#c1cbc3]"
+                >
+                  New password
+                </label>
+                <div className="relative">
+                  <Input
+                    id="newPassword"
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Create a strong password"
+                    autoComplete="new-password"
+                    required
+                    className={inputClass}
+                  />
+                  <Lock className={inputIconClass} />
+                  <button
+                    type="button"
+                    aria-label={
+                      showNewPassword ? "Hide password" : "Show password"
+                    }
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className={revealButtonClass}
+                  >
+                    {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
-
-                <div className="space-y-1.5">
-                  <label htmlFor="confirmNewPassword" className="text-[9px] font-bold uppercase tracking-wider text-emerald-500/50">
-                    [ CONFIRM_NEW_PASSWORD ]:
-                  </label>
-                  <div className="relative">
-                    <Input
-                      id="confirmNewPassword"
-                      type={showConfirmPassword ? "text" : "password"}
-                      value={confirmNewPassword}
-                      onChange={(e) => setConfirmNewPassword(e.target.value)}
-                      placeholder="Re-enter password"
-                      required
-                      className="form-input pl-8 pr-8 h-9 border border-emerald-500/20 bg-[#040604] text-emerald-300 placeholder-emerald-500/20 rounded-sm text-xs focus:border-emerald-500/50 outline-none transition-all"
-                    />
-                    <Lock className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-emerald-500/30" />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-emerald-500/30 hover:text-emerald-300 transition-colors"
-                    >
-                      {showConfirmPassword ? <EyeOff size={14} /> : <Eye size={14} />}
-                    </button>
-                  </div>
+                <PasswordStrengthIndicator
+                  password={newPassword}
+                  className="pt-1"
+                />
+              </div>
+              <div className="space-y-2">
+                <label
+                  htmlFor="confirmNewPassword"
+                  className="text-[13px] font-medium text-[#c1cbc3]"
+                >
+                  Confirm new password
+                </label>
+                <div className="relative">
+                  <Input
+                    id="confirmNewPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmNewPassword}
+                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                    placeholder="Re-enter your password"
+                    autoComplete="new-password"
+                    required
+                    className={inputClass}
+                  />
+                  <Lock className={inputIconClass} />
+                  <button
+                    type="button"
+                    aria-label={
+                      showConfirmPassword
+                        ? "Hide confirm password"
+                        : "Show confirm password"
+                    }
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className={revealButtonClass}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff size={16} />
+                    ) : (
+                      <Eye size={16} />
+                    )}
+                  </button>
                 </div>
               </div>
-
               <Button
                 type="submit"
-                className="w-full h-10 rounded-sm bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[10px] shadow-[0_0_8px_rgba(16,185,129,0.2)] transition-all"
+                className={buttonClass}
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <RefreshCw className="size-3.5 animate-spin" />
-                    <span>UPDATING_RECORD...</span>
-                  </div>
+                  <>
+                    <RefreshCw className="size-4 animate-spin" />
+                    Updating password…
+                  </>
                 ) : (
-                  <div className="flex items-center gap-1.5 justify-center">
-                    <span>EXECUTE_PASSWORD_RESET.SYS</span> <KeyRound size={12} />
-                  </div>
+                  <>
+                    <KeyRound size={16} />
+                    Reset password
+                  </>
                 )}
               </Button>
             </motion.form>
           )}
         </AnimatePresence>
-
         {error && (
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-sm bg-red-950/10 border border-red-500/20 text-center space-y-2 uppercase tracking-wide"
+          <div
+            role="alert"
+            className="rounded-xl border border-red-400/20 bg-red-400/5 p-4"
           >
-            <div className="flex items-center justify-center gap-1.5 text-red-400">
-              <Activity size={12} />
-              <span className="text-[8px] font-bold uppercase tracking-widest">Error Logged</span>
-            </div>
-            <p className="text-[10px] text-red-400/90 leading-relaxed">{error}</p>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-7 text-[8px] font-bold uppercase tracking-wider text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/5 rounded-sm"
+            <p className="text-[13px] leading-5 text-red-300">{error}</p>
+            <button
               onClick={() => setError(null)}
+              className="mt-2 rounded-sm text-xs font-medium text-[#b6bdb9] hover:text-[#f1f3ee]"
             >
-              [ ACKNOWLEDGE_ERROR.EXE ]
-            </Button>
-          </motion.div>
+              Dismiss
+            </button>
+          </div>
         )}
       </div>
     </AuthShell>

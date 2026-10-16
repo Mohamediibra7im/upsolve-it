@@ -2,8 +2,10 @@
 
 import type React from "react";
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
+import { ArrowLeft, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import StudioMascot from "@/components/shared/StudioMascot";
+import Brand from "@/components/layout/Brand";
 
 type AuthShellProps = {
   title: string;
@@ -25,75 +27,81 @@ export default function AuthShell({
   className,
 }: AuthShellProps) {
   return (
-    <section className={cn("relative w-full font-mono text-emerald-400 bg-[#040604] py-8 min-h-[calc(100vh-4rem)] flex items-center justify-center select-none", className)}>
-      {/* Background terminal grid lines */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,.015)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,.015)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,black_45%,transparent_100%)]" />
-
-      {/* Terminal Scanline overlay */}
-      <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.03] pointer-events-none z-50" />
-
-      <div className="mx-auto w-full max-w-4xl px-4 relative z-10">
-        {back ? (
-          <Link
-            href={back.href}
-            className="mb-4 inline-flex items-center gap-1 text-[10px] font-bold uppercase text-emerald-500/60 hover:text-emerald-300 transition-colors"
-          >
-            [ {back.label.toUpperCase().replace(/ /g, "_")} ]
+    <section
+      className={cn(
+        "flex min-h-screen w-full items-center justify-center bg-[#101214] px-5 py-8 font-sans text-[#f1f3ee] sm:px-8 sm:py-12",
+        className,
+      )}
+    >
+      <div className="mx-auto w-full max-w-[1000px]">
+        <div className="mb-8 flex items-center justify-between">
+          <Link href="/" aria-label="Upsolve.it home">
+            <Brand />
           </Link>
-        ) : null}
-
-        <Card className="overflow-hidden rounded-sm border border-emerald-500/20 bg-[#060a08]/40 backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.6)]">
-          <div className="grid lg:grid-cols-12 font-mono">
-            {/* Left Console Panel */}
-            <div className="relative lg:col-span-5 border-b lg:border-b-0 lg:border-r border-emerald-500/15">
-              <div className="relative p-6 sm:p-8 lg:min-h-[30rem] flex flex-col justify-between h-full bg-emerald-950/[0.02]">
-                <div className="space-y-6">
-                  {/* Status header */}
-                  <div className="flex items-center justify-between border-b border-emerald-500/10 pb-2 text-[8px] text-emerald-500/35 font-bold uppercase tracking-widest">
-                    <span>SYS_ACCESS // PORTAL</span>
-                    <span>ACTIVE</span>
+          {back && (
+            <Link
+              href={back.href}
+              className="inline-flex items-center gap-2 rounded-lg text-xs text-[#929b98] transition-colors hover:text-[#f1f3ee]"
+            >
+              <ArrowLeft size={14} />
+              {back.label}
+            </Link>
+          )}
+        </div>
+        <div className="overflow-hidden rounded-[24px] border border-[#2b3031] bg-[#191c1e]">
+          <div className="grid lg:grid-cols-12">
+            <div className="flex flex-col justify-between border-b border-[#2b3031] bg-[#1d2420] p-6 sm:p-8 lg:p-10 lg:col-span-5 lg:min-h-[36rem] lg:border-b-0 lg:border-r">
+              <div>
+                {icon && (
+                  <div className="mb-8 hidden size-12 lg:flex items-center justify-center rounded-2xl border border-[#b5e3c4]/15 bg-[#b5e3c4]/10 text-[#b5e3c4] [&_svg]:text-[#b5e3c4]">
+                    {icon}
                   </div>
-
-                  {icon ? (
-                    <div className="size-10 rounded-sm bg-emerald-500/5 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                      {icon}
-                    </div>
-                  ) : null}
-
-                  <div className="space-y-2">
-                    <h1 className="text-xl font-bold uppercase tracking-wide text-white leading-none">
-                      {title}
-                    </h1>
-                    {subtitle ? (
-                      <p className="text-[10px] text-emerald-500/60 leading-relaxed uppercase">
-                        {subtitle}
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-
-                <div className="mt-8 hidden lg:block">
-                  <div className="rounded-sm border border-emerald-500/10 bg-[#040604]/60 p-3.5">
-                    <p className="text-[8px] font-bold text-emerald-500/40 uppercase tracking-wider">
-                      {"// SYSTEM_COMPATIBILITY_INFO"}
+                )}
+                <h1 className="max-w-xs font-heading text-[30px] font-medium leading-[1.15] tracking-[-0.05em] sm:text-[36px] lg:text-[40px]">
+                  {title}
+                </h1>
+                {subtitle && (
+                  <p className="mt-3 max-w-[290px] text-[13px] leading-6 sm:mt-4 sm:text-sm text-[#a0aaa3]">
+                    {subtitle}
+                  </p>
+                )}
+              </div>
+              <div className="mt-8 hidden lg:block">
+                <StudioMascot pose="welcome" className="mb-5 w-36" />
+                <div className="mb-6 space-y-3">
+                  {[
+                    "Find your next challenge",
+                    "Build a consistent practice",
+                    "See how far you have come",
+                  ].map((benefit) => (
+                    <p
+                      key={benefit}
+                      className="flex items-center gap-2.5 text-[13px] text-[#c1cbc3]"
+                    >
+                      <Check size={14} className="text-[#b5e3c4]" />
+                      {benefit}
                     </p>
-                    <p className="mt-1.5 text-[9px] leading-relaxed text-emerald-500/60 uppercase">
-                      Use the same handle as your <span className="text-emerald-300 font-bold">codeforces.com</span> profile so your progress sync works instantly.
-                    </p>
-                  </div>
+                  ))}
                 </div>
+                <p className="border-t border-[#b5e3c4]/10 pt-5 text-xs leading-5 text-[#829087]">
+                  Connect with your Codeforces handle to bring your progress
+                  into one place.
+                </p>
               </div>
             </div>
-
-            {/* Right Form Panel */}
-            <CardContent className="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between min-h-[30rem]">
-              <div className="w-full">
-                {children}
-              </div>
-              {footer ? <div className="mt-6 pt-4 border-t border-emerald-500/10">{footer}</div> : null}
-            </CardContent>
+            <div className="flex flex-col justify-center p-6 sm:p-8 lg:col-span-7 lg:p-12">
+              <div className="w-full">{children}</div>
+              {footer && (
+                <div className="mt-7 border-t border-[#2b3031] pt-6">
+                  {footer}
+                </div>
+              )}
+            </div>
           </div>
-        </Card>
+        </div>
+        <p className="mt-7 text-center text-xs text-[#747e79]">
+          A little more practice. A better problem solver.
+        </p>
       </div>
     </section>
   );
