@@ -17,7 +17,7 @@ import {
   Globe,
   Settings,
   FileText,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 import { useAdminRoadmapTopics } from "@/hooks/admin/useAdminRoadmap";
 import { apiClient } from "@/lib/apiClient";
@@ -42,14 +42,15 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/providers/Toast";
 import { cn } from "@/lib/utils";
-import Loader from "@/components/shared/Loader";
+import { AdminState, AdminRetry } from "@/components/features/admin/AdminState";
+import { useAdminConfirmation } from "@/components/features/admin/useAdminConfirmation";
 import type { RoadmapResource, RoadmapProblem } from "@/types/Roadmap";
 
 function extractVideoTitle(url: string): Promise<string> {
   return new Promise(async (resolve) => {
     try {
       const oembedRes = await fetch(
-        `https://noembed.com/embed?url=${encodeURIComponent(url)}`
+        `https://noembed.com/embed?url=${encodeURIComponent(url)}`,
       );
       const data = await oembedRes.json();
       if (data && data.title) {
@@ -67,11 +68,15 @@ function extractCfProblemId(url: string): string {
   try {
     const u = new URL(url);
     if (u.hostname.includes("codeforces.com")) {
-      const contestMatch = url.match(/contest\/(\d+)\/problem\/([A-Za-z0-9]+)/i);
+      const contestMatch = url.match(
+        /contest\/(\d+)\/problem\/([A-Za-z0-9]+)/i,
+      );
       if (contestMatch) {
         return `${contestMatch[1]}-${contestMatch[2]}`.toUpperCase();
       }
-      const problemsetMatch = url.match(/problemset\/problem\/(\d+)\/([A-Za-z0-9]+)/i);
+      const problemsetMatch = url.match(
+        /problemset\/problem\/(\d+)\/([A-Za-z0-9]+)/i,
+      );
       if (problemsetMatch) {
         return `${problemsetMatch[1]}-${problemsetMatch[2]}`.toUpperCase();
       }
@@ -108,16 +113,23 @@ function ResourceTable({
   onDelete,
 }: ResourceTableProps) {
   return (
-    <div className="rounded-[2rem] border border-border/40 bg-card/40 backdrop-blur-xl overflow-hidden">
-      <div className="flex flex-wrap items-center justify-between border-b border-border/40 px-8 py-5 gap-4">
+    <div className="rounded-[20px] border border-[#2b3031] bg-[#191c1e]  overflow-hidden">
+      <div className="flex flex-wrap items-center justify-between border-b border-[#2b3031] px-5 sm:px-7 py-5 gap-4">
         <div className="flex items-center gap-3">
           <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
             <BookOpen size={18} />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-black text-foreground">{title}</h2>
-              <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider border", badgeColor)}>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-lg font-medium text-foreground font-heading tracking-tight">
+                {title}
+              </h2>
+              <span
+                className={cn(
+                  "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border",
+                  badgeColor,
+                )}
+              >
                 {badgeText}
               </span>
             </div>
@@ -126,7 +138,7 @@ function ResourceTable({
         </div>
         <Button
           onClick={onAdd}
-          className="rounded-xl bg-primary text-xs font-black uppercase tracking-[0.1em] text-primary-foreground gap-2"
+          className="rounded-xl bg-primary text-[13px] font-medium text-primary-foreground gap-2"
         >
           <Plus size={16} />
           {addButtonText}
@@ -139,47 +151,65 @@ function ResourceTable({
       ) : (
         <div className="overflow-x-auto">
           <Table>
-            <TableHeader className="bg-background/30">
+            <TableHeader className="bg-[#101214]">
               <TableRow>
-                <TableHead className="px-6 py-4 w-12 text-[10px] font-black uppercase tracking-widest">#</TableHead>
-                <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest">Title</TableHead>
-                <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-center">Lang</TableHead>
-                <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-center">Type</TableHead>
-                <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-center">Weight</TableHead>
-                <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-center">XP</TableHead>
-                <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-right">Actions</TableHead>
+                <TableHead className="px-6 py-4 w-12 text-xs font-medium">
+                  #
+                </TableHead>
+                <TableHead className="px-6 py-4 text-xs font-medium">
+                  Title
+                </TableHead>
+                <TableHead className="px-6 py-4 text-xs font-medium text-center">
+                  Lang
+                </TableHead>
+                <TableHead className="px-6 py-4 text-xs font-medium text-center">
+                  Type
+                </TableHead>
+                <TableHead className="px-6 py-4 text-xs font-medium text-center">
+                  Weight
+                </TableHead>
+                <TableHead className="px-6 py-4 text-xs font-medium text-center">
+                  XP
+                </TableHead>
+                <TableHead className="px-6 py-4 text-xs font-medium text-right">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {list.map((res, i) => (
-                <TableRow key={res._id} className="hover:bg-card/30">
-                  <TableCell className="px-6 py-4 font-mono text-xs font-bold text-muted-foreground">
+                <TableRow key={res._id} className="hover:bg-[#191c1e]">
+                  <TableCell className="px-6 py-4 font-sans text-[13px] font-medium text-muted-foreground">
                     {i + 1}
                   </TableCell>
                   <TableCell className="px-6 py-4">
                     <div className="flex flex-col">
-                      <span className="text-sm font-bold text-foreground">{res.title}</span>
+                      <span className="text-sm font-medium text-foreground">
+                        {res.title}
+                      </span>
                       <a
                         href={res.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[11px] text-primary hover:underline flex items-center gap-1 mt-1 truncate max-w-sm"
+                        className="text-[13px] text-primary hover:underline flex items-center gap-1 mt-1 truncate max-w-sm"
                       >
                         {res.url}
                         <ExternalLink size={10} />
                       </a>
                       {res.description && (
-                        <span className="text-[10px] text-muted-foreground/60 mt-1 italic">{res.description}</span>
+                        <span className="text-xs text-[#929b98] mt-1 italic">
+                          {res.description}
+                        </span>
                       )}
                     </div>
                   </TableCell>
                   <TableCell className="px-6 py-4 text-center">
                     <span
                       className={cn(
-                        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold border",
+                        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium border",
                         res.language === "Arabic"
                           ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                          : "bg-sky-500/10 text-sky-400 border-sky-500/20"
+                          : "bg-sky-500/10 text-sky-400 border-sky-500/20",
                       )}
                     >
                       <Globe size={10} />
@@ -192,11 +222,16 @@ function ResourceTable({
                     </span>
                   </TableCell>
                   <TableCell className="px-6 py-4 text-center">
-                    <span className={cn("text-xs font-bold", res.weight === 0 ? "text-muted-foreground/40" : "text-emerald-400")}>
+                    <span
+                      className={cn(
+                        "text-xs font-medium",
+                        res.weight === 0 ? "text-[#929b98]" : "text-[#b5e3c4]",
+                      )}
+                    >
                       {res.weight === 0 ? "Optional" : `${res.weight} pts`}
                     </span>
                   </TableCell>
-                  <TableCell className="px-6 py-4 text-center text-xs font-bold text-primary">
+                  <TableCell className="px-6 py-4 text-center text-[13px] font-medium text-primary">
                     +{res.xpReward} XP
                   </TableCell>
                   <TableCell className="px-6 py-4 text-right">
@@ -204,16 +239,18 @@ function ResourceTable({
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label={`Edit ${res.title}`}
                         onClick={() => onEdit(res)}
-                        className="h-8 w-8 rounded-lg hover:bg-secondary"
+                        className="h-10 w-10 rounded-lg hover:bg-secondary"
                       >
                         <Edit2 size={12} className="text-muted-foreground" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label={`Delete ${res.title}`}
                         onClick={() => onDelete(res._id)}
-                        className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10"
+                        className="h-10 w-10 rounded-lg text-destructive hover:bg-destructive/10"
                       >
                         <Trash2 size={12} />
                       </Button>
@@ -234,6 +271,7 @@ export default function AdminSessionDetailClient() {
   const levelId = params?.levelId ?? "";
   const topicId = params?.topicId ?? "";
   const { toast } = useToast();
+  const { askConfirmation, confirmationDialog } = useAdminConfirmation();
 
   const {
     topics,
@@ -249,20 +287,28 @@ export default function AdminSessionDetailClient() {
     updateTopic,
   } = useAdminRoadmapTopics(levelId);
 
-  const [activeTab, setActiveTab] = useState<"resources" | "problems">("resources");
+  const [activeTab, setActiveTab] = useState<"resources" | "problems">(
+    "resources",
+  );
   const [isPageLoading, setIsPageLoading] = useState(true);
+  const [pageError, setPageError] = useState(false);
   const [topicData, setTopicData] = useState<any>(null);
 
   // Modal States
   const [isResourceDialogOpen, setIsResourceDialogOpen] = useState(false);
   const [isProblemDialogOpen, setIsProblemDialogOpen] = useState(false);
-  const [editingResource, setEditingResource] = useState<RoadmapResource | null>(null);
-  const [editingProblem, setEditingProblem] = useState<RoadmapProblem | null>(null);
+  const [editingResource, setEditingResource] =
+    useState<RoadmapResource | null>(null);
+  const [editingProblem, setEditingProblem] = useState<RoadmapProblem | null>(
+    null,
+  );
 
   // Resource Form States
   const [resTitle, setResTitle] = useState("");
   const [resDescription, setResDescription] = useState("");
-  const [resLanguage, setResLanguage] = useState<"Arabic" | "English">("Arabic");
+  const [resLanguage, setResLanguage] = useState<"Arabic" | "English">(
+    "Arabic",
+  );
   const [resType, setResType] = useState<RoadmapResource["type"]>("Video");
   const [resUrl, setResUrl] = useState("");
   const [resWeight, setResWeight] = useState(1);
@@ -285,7 +331,9 @@ export default function AdminSessionDetailClient() {
   const [isImporting, setIsImporting] = useState(false);
 
   // Checkbox Selection for problems
-  const [selectedProblems, setSelectedProblems] = useState<Set<string>>(new Set());
+  const [selectedProblems, setSelectedProblems] = useState<Set<string>>(
+    new Set(),
+  );
 
   // Group Settings
   const [groupLinks, setGroupLinks] = useState("");
@@ -296,14 +344,16 @@ export default function AdminSessionDetailClient() {
   const loadTopicData = useCallback(async () => {
     if (!levelId || !topicId) return;
     setIsPageLoading(true);
+    setPageError(false);
     try {
       const res = await apiClient.get<any>(
-        `/api/roadmap/levels/${levelId}/topics/${topicId}`
+        `/api/roadmap/levels/${levelId}/topics/${topicId}`,
       );
       if (res) {
         setTopicData(res);
       }
     } catch (err) {
+      setPageError(true);
       console.error("Failed to load topic details:", err);
       toast({
         title: "Error",
@@ -325,10 +375,13 @@ export default function AdminSessionDetailClient() {
       const raw = topicData.topic.groupLinks;
       setGroupLinks(
         Array.isArray(raw)
-          ? raw.map((g: any) => g?.link ?? g?.toString() ?? "").filter(Boolean).join("\n")
+          ? raw
+              .map((g: any) => g?.link ?? g?.toString() ?? "")
+              .filter(Boolean)
+              .join("\n")
           : typeof raw === "string"
             ? raw
-            : ""
+            : "",
       );
       setGroupNote(topicData.topic.groupNote || "");
     }
@@ -337,7 +390,7 @@ export default function AdminSessionDetailClient() {
   // Watch URL for Video Title auto-fetch
   useEffect(() => {
     if (resType !== "Video" || !resUrl || editingResource) return;
-    
+
     // Check if it looks like a youtube URL
     if (!resUrl.includes("youtu")) return;
 
@@ -400,27 +453,41 @@ export default function AdminSessionDetailClient() {
   };
 
   const handleDeleteResource = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this resource?")) return;
+    if (
+      !(await askConfirmation({
+        title: "Delete this resource?",
+        description: "This permanently removes the resource from this session.",
+        confirmLabel: "Delete resource",
+      }))
+    )
+      return;
     try {
       await deleteResource(id);
-      toast({ title: "Deleted", description: "Resource deleted successfully", variant: "success" });
+      toast({
+        title: "Deleted",
+        description: "Resource deleted successfully",
+        variant: "success",
+      });
       await loadTopicData();
     } catch (_err: unknown) {
-      toast({ title: "Error", description: "Failed to delete resource", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Failed to delete resource",
+        variant: "destructive",
+      });
     }
   };
 
   const handleOpenCreateResource = (
     presetLang: "Arabic" | "English" = "Arabic",
     presetType: RoadmapResource["type"] = "Video",
-    presetWeight: number = 1
+    presetWeight: number = 1,
   ) => {
     resetResourceForm(presetLang);
     setResType(presetType);
     setResWeight(presetWeight);
     setIsResourceDialogOpen(true);
   };
-
 
   const handleResourceSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -432,17 +499,26 @@ export default function AdminSessionDetailClient() {
       url: resUrl,
       weight: Number(resWeight),
       xpReward: Number(resXpReward),
-      videoCompletionThresholdPct: resType === "Video" ? Number(resVideoThreshold) : undefined,
+      videoCompletionThresholdPct:
+        resType === "Video" ? Number(resVideoThreshold) : undefined,
       orderIndex: Number(resOrderIndex),
     };
 
     try {
       if (editingResource) {
         await updateResource(editingResource._id, payload);
-        toast({ title: "Updated", description: "Resource updated successfully", variant: "success" });
+        toast({
+          title: "Updated",
+          description: "Resource updated successfully",
+          variant: "success",
+        });
       } else {
         await addResource(topicId, payload);
-        toast({ title: "Created", description: "Resource created successfully", variant: "success" });
+        toast({
+          title: "Created",
+          description: "Resource created successfully",
+          variant: "success",
+        });
       }
       setIsResourceDialogOpen(false);
       resetResourceForm();
@@ -456,7 +532,6 @@ export default function AdminSessionDetailClient() {
     }
   };
 
-
   // Problem Form Helpers
   const resetProblemForm = () => {
     setProbName("");
@@ -466,7 +541,6 @@ export default function AdminSessionDetailClient() {
     setProbOrderIndex(topicData?.problems?.length ?? 0);
     setEditingProblem(null);
   };
-
 
   const handleOpenEditProblem = (p: RoadmapProblem) => {
     setEditingProblem(p);
@@ -491,10 +565,18 @@ export default function AdminSessionDetailClient() {
     try {
       if (editingProblem) {
         await updateProblem(editingProblem._id, payload);
-        toast({ title: "Updated", description: "Problem updated successfully", variant: "success" });
+        toast({
+          title: "Updated",
+          description: "Problem updated successfully",
+          variant: "success",
+        });
       } else {
         await addProblem(topicId, payload);
-        toast({ title: "Created", description: "Problem added successfully", variant: "success" });
+        toast({
+          title: "Created",
+          description: "Problem added successfully",
+          variant: "success",
+        });
       }
       setIsProblemDialogOpen(false);
       resetProblemForm();
@@ -509,13 +591,28 @@ export default function AdminSessionDetailClient() {
   };
 
   const handleDeleteProblem = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this problem?")) return;
+    if (
+      !(await askConfirmation({
+        title: "Delete this problem?",
+        description: "This permanently removes the problem from this session.",
+        confirmLabel: "Delete problem",
+      }))
+    )
+      return;
     try {
       await deleteProblem(id);
-      toast({ title: "Deleted", description: "Problem deleted successfully", variant: "success" });
+      toast({
+        title: "Deleted",
+        description: "Problem deleted successfully",
+        variant: "success",
+      });
       await loadTopicData();
     } catch (_err: unknown) {
-      toast({ title: "Error", description: "Failed to delete problem", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Failed to delete problem",
+        variant: "destructive",
+      });
     }
   };
 
@@ -527,10 +624,18 @@ export default function AdminSessionDetailClient() {
         groupLinks: groupLinks || undefined,
         groupNote: groupNote || undefined,
       });
-      toast({ title: "Saved", description: "Group settings updated successfully", variant: "success" });
+      toast({
+        title: "Saved",
+        description: "Group settings updated successfully",
+        variant: "success",
+      });
       await loadTopicData();
     } catch (_err: unknown) {
-      toast({ title: "Error", description: "Failed to save group settings", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Failed to save group settings",
+        variant: "destructive",
+      });
     } finally {
       setIsSavingGroupSettings(false);
     }
@@ -556,7 +661,15 @@ export default function AdminSessionDetailClient() {
   };
 
   const handleDeleteSelected = async () => {
-    if (!confirm(`Delete ${selectedProblems.size} selected problem(s)?`)) return;
+    if (
+      !(await askConfirmation({
+        title: `Delete ${selectedProblems.size} selected problems?`,
+        description:
+          "This permanently removes the selected problems from this session.",
+        confirmLabel: "Delete selected",
+      }))
+    )
+      return;
     try {
       await deleteProblems(Array.from(selectedProblems));
       toast({
@@ -578,7 +691,10 @@ export default function AdminSessionDetailClient() {
   // Markdown Import Parser
   const handleBulkMarkdownSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const lines = bulkMarkdown.split("\n").map((l) => l.trim()).filter(Boolean);
+    const lines = bulkMarkdown
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
     const rows: string[][] = [];
 
     for (const line of lines) {
@@ -593,7 +709,8 @@ export default function AdminSessionDetailClient() {
     if (rows.length === 0) {
       toast({
         title: "Parsing Failed",
-        description: "Make sure markdown table rows start and end with '|' characters.",
+        description:
+          "Make sure markdown table rows start and end with '|' characters.",
         variant: "destructive",
       });
       return;
@@ -611,26 +728,38 @@ export default function AdminSessionDetailClient() {
           cell.toLowerCase().includes("name") ||
           cell.toLowerCase().includes("title") ||
           cell.toLowerCase().includes("link") ||
-          cell.toLowerCase().includes("url")
+          cell.toLowerCase().includes("url"),
       );
 
       let dataRows = rows;
       if (isHeader) {
         headerRow.forEach((cell, idx) => {
           const lower = cell.toLowerCase();
-          if (lower.includes("name") || lower.includes("title") || lower.includes("problem")) {
+          if (
+            lower.includes("name") ||
+            lower.includes("title") ||
+            lower.includes("problem")
+          ) {
             nameColIdx = idx;
           } else if (lower.includes("link") || lower.includes("url")) {
             linkColIdx = idx;
           }
         });
         dataRows = rows.slice(1);
-        if (dataRows.length > 0 && dataRows[0].every((cell) => cell.includes("-") || cell === "")) {
+        if (
+          dataRows.length > 0 &&
+          dataRows[0].every((cell) => cell.includes("-") || cell === "")
+        ) {
           dataRows = dataRows.slice(1);
         }
       }
 
-      const problemsToAdd: Array<{ name: string; url: string; xpReward: number; cfProblemId: string }> = [];
+      const problemsToAdd: Array<{
+        name: string;
+        url: string;
+        xpReward: number;
+        cfProblemId: string;
+      }> = [];
 
       for (const row of dataRows) {
         if (row.length < 2) continue;
@@ -693,12 +822,18 @@ export default function AdminSessionDetailClient() {
   const handleContestImport = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!importContestId || isNaN(Number(importContestId))) {
-      toast({ title: "Error", description: "Please enter a valid numeric contest ID", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Please enter a valid numeric contest ID",
+        variant: "destructive",
+      });
       return;
     }
     setIsImporting(true);
     try {
-      const res: any = await importProblems(topicId, { contestId: Number(importContestId) });
+      const res: any = await importProblems(topicId, {
+        contestId: Number(importContestId),
+      });
       toast({
         title: "Contest Imported",
         description: `Successfully imported ${res.inserted || 0} problems. Skipped ${res.skipped || 0}.`,
@@ -719,7 +854,10 @@ export default function AdminSessionDetailClient() {
 
   const totalLearningWeight = useMemo(() => {
     const list = topicData?.resources ?? [];
-    return list.reduce((sum: number, r: RoadmapResource) => sum + (r.weight ?? 0), 0);
+    return list.reduce(
+      (sum: number, r: RoadmapResource) => sum + (r.weight ?? 0),
+      0,
+    );
   }, [topicData?.resources]);
 
   const resourcesList: RoadmapResource[] = useMemo(
@@ -727,11 +865,15 @@ export default function AdminSessionDetailClient() {
     [topicData?.resources],
   );
   const arabicMainResources = useMemo(() => {
-    return resourcesList.filter((r) => r.language === "Arabic" && r.type === "Video");
+    return resourcesList.filter(
+      (r) => r.language === "Arabic" && r.type === "Video",
+    );
   }, [resourcesList]);
 
   const arabicGeneralResources = useMemo(() => {
-    return resourcesList.filter((r) => r.language === "Arabic" && r.type !== "Video");
+    return resourcesList.filter(
+      (r) => r.language === "Arabic" && r.type !== "Video",
+    );
   }, [resourcesList]);
 
   const englishResources = useMemo(() => {
@@ -741,17 +883,40 @@ export default function AdminSessionDetailClient() {
   const problemsList: RoadmapProblem[] = topicData?.problems ?? [];
 
   if (isPageLoading) {
-    return <Loader message="Loading session details..." />;
+    return (
+      <AdminState
+        tone="loading"
+        title="Loading session details…"
+        description="Preparing your resources and practice problems."
+      />
+    );
+  }
+
+  if (pageError) {
+    return (
+      <AdminState
+        tone="error"
+        title="Could not load this session"
+        description="The session details are temporarily unavailable. Please try again."
+        action={<AdminRetry onRetry={loadTopicData} />}
+      />
+    );
   }
 
   if (!topicData?.topic) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4">
-        <p className="text-muted-foreground text-sm">Session not found.</p>
-        <Link href={`/admin/roadmap/${levelId}`} className="text-primary hover:underline text-xs font-bold uppercase">
-          ← Back to Sessions
-        </Link>
-      </div>
+      <AdminState
+        icon={BookOpen}
+        title="Session not found"
+        description="This session may have been removed. Return to the level to choose another."
+        action={
+          <Button asChild variant="outline" className="h-11 rounded-xl">
+            <Link href={`/admin/roadmap/${levelId}`}>
+              <ArrowLeft size={16} /> Back to sessions
+            </Link>
+          </Button>
+        }
+      />
     );
   }
 
@@ -761,80 +926,91 @@ export default function AdminSessionDetailClient() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Link
           href={`/admin/roadmap/${levelId}`}
-          className="inline-flex items-center gap-2 rounded-2xl border border-border/40 bg-card/30 px-4 py-2.5 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground transition hover:border-primary/40 hover:text-primary hover:scale-[1.02] active:scale-95"
+          className="inline-flex items-center gap-2 rounded-2xl border border-[#2b3031] bg-[#191c1e] px-4 py-2.5 text-xs font-medium text-muted-foreground transition hover:border-primary/40 hover:text-primary  "
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Sessions
         </Link>
 
-        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground bg-card/25 border border-border/40 px-4 py-2 rounded-2xl">
+        <div className="text-xs font-medium text-muted-foreground bg-[#191c1e] border border-[#2b3031] px-4 py-2 rounded-2xl">
           Session Editor
         </div>
       </div>
 
       {/* TOPIC HERO */}
-      <section className="relative overflow-hidden rounded-[2.5rem] border border-border/40 bg-card/25 p-8 sm:p-10 backdrop-blur-xl">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-10 right-0 h-40 w-40 rounded-full bg-primary/5 blur-[80px]" />
-          <div className="absolute bottom-0 left-10 h-32 w-32 rounded-full bg-emerald-500/5 blur-[60px]" />
-        </div>
-
+      <section className="relative overflow-hidden rounded-[20px] border border-[#2b3031] bg-[#191c1e] p-6 sm:p-8 ">
         <div className="relative z-10 space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1.5 text-[9px] font-black uppercase tracking-[0.25em] text-primary">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1.5 text-xs font-medium text-primary">
             <Settings className="h-3.5 w-3.5" />
             Session #{topicData.topic.orderIndex}
           </div>
-          <h1 className="text-3xl sm:text-4xl font-heading font-black uppercase tracking-tight text-foreground leading-tight">
+          <h1 className="text-3xl sm:text-4xl font-heading font-medium tracking-tight text-foreground leading-tight">
             {topicData.topic.title}
           </h1>
           {topicData.topic.description && (
-            <p className="text-sm text-muted-foreground/80 max-w-3xl leading-relaxed">
+            <p className="text-sm text-[#929b98] max-w-3xl leading-relaxed">
               {topicData.topic.description}
             </p>
           )}
-          
+
           <div className="flex flex-wrap gap-4 pt-2 text-xs">
-            <div className="bg-background/40 border border-border/20 px-3.5 py-2 rounded-xl">
-              <span className="text-muted-foreground block text-[9px] font-black uppercase">Req. Learning</span>
-              <span className="font-bold text-foreground">{topicData.topic.requiredLearningPct}%</span>
+            <div className="bg-[#101214] border border-[#2b3031] px-3.5 py-2 rounded-xl">
+              <span className="text-muted-foreground block text-xs font-medium">
+                Req. Learning
+              </span>
+              <span className="font-medium text-foreground">
+                {topicData.topic.requiredLearningPct}%
+              </span>
             </div>
-            <div className="bg-background/40 border border-border/20 px-3.5 py-2 rounded-xl">
-              <span className="text-muted-foreground block text-[9px] font-black uppercase">Req. Problems</span>
-              <span className="font-bold text-foreground">{topicData.topic.requiredProblemPct}%</span>
+            <div className="bg-[#101214] border border-[#2b3031] px-3.5 py-2 rounded-xl">
+              <span className="text-muted-foreground block text-xs font-medium">
+                Req. Problems
+              </span>
+              <span className="font-medium text-foreground">
+                {topicData.topic.requiredProblemPct}%
+              </span>
             </div>
-            <div className="bg-background/40 border border-border/20 px-3.5 py-2 rounded-xl">
-              <span className="text-muted-foreground block text-[9px] font-black uppercase">XP Reward</span>
-              <span className="font-bold text-primary">+{topicData.topic.topicXpReward} XP</span>
+            <div className="bg-[#101214] border border-[#2b3031] px-3.5 py-2 rounded-xl">
+              <span className="text-muted-foreground block text-xs font-medium">
+                XP Reward
+              </span>
+              <span className="font-medium text-primary">
+                +{topicData.topic.topicXpReward} XP
+              </span>
             </div>
-            <div className="bg-background/40 border border-border/20 px-3.5 py-2 rounded-xl">
-              <span className="text-muted-foreground block text-[9px] font-black uppercase">Total Learning Weight</span>
-              <span className="font-bold text-emerald-400">{totalLearningWeight} pts</span>
+            <div className="bg-[#101214] border border-[#2b3031] px-3.5 py-2 rounded-xl">
+              <span className="text-muted-foreground block text-xs font-medium">
+                Total Learning Weight
+              </span>
+              <span className="font-medium text-[#b5e3c4]">
+                {totalLearningWeight} pts
+              </span>
             </div>
           </div>
         </div>
       </section>
 
       {/* TABS SELECTOR */}
-      <div className="flex max-w-lg mx-auto rounded-2xl border border-border/40 bg-card/40 p-1">
+      <div className="flex max-w-xl rounded-2xl border border-[#2b3031] bg-[#191c1e] p-1">
         <button
           onClick={() => setActiveTab("resources")}
           className={cn(
-            "flex-1 rounded-xl py-3.5 text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2",
+            "flex-1 rounded-xl py-3.5 text-xs font-medium transition-all flex items-center justify-center gap-2",
             activeTab === "resources"
               ? "bg-primary text-primary-foreground shadow"
-              : "text-muted-foreground hover:text-foreground"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           <BookOpen className="h-3.5 w-3.5" />
-          Learning Resources ({resourcesList.length})
+          Resources ({resourcesList.length})
         </button>
         <button
           onClick={() => setActiveTab("problems")}
           className={cn(
-            "flex-1 rounded-xl py-3.5 text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2",
+            "flex-1 rounded-xl py-3.5 text-xs font-medium transition-all flex items-center justify-center gap-2",
             activeTab === "problems"
               ? "bg-primary text-primary-foreground shadow"
-              : "text-muted-foreground hover:text-foreground"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           <Target className="h-3.5 w-3.5" />
@@ -890,29 +1066,37 @@ export default function AdminSessionDetailClient() {
       {activeTab === "problems" && (
         <div className="space-y-6 animate-in fade-in duration-300">
           {/* GROUP SETTINGS */}
-          <div className="rounded-[2rem] border border-border/40 bg-card/40 p-6 sm:p-8 backdrop-blur-xl">
-            <div className="flex items-center gap-2.5 text-xs font-black uppercase tracking-[0.2em] text-emerald-400 border-b border-border/30 pb-4 mb-5">
+          <div className="rounded-[20px] border border-[#2b3031] bg-[#191c1e] p-6 sm:p-8 ">
+            <div className="flex items-center gap-2.5 text-xs font-medium text-[#b5e3c4] border-b border-[#2b3031] pb-4 mb-5">
               <Settings size={18} />
               Codeforces Group Settings
             </div>
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground">Codeforces Group / Contest URL(s)</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  Codeforces Group / Contest URL(s)
+                </label>
                 <textarea
                   value={groupLinks}
                   onChange={(e) => setGroupLinks(e.target.value)}
-                  className="w-full rounded-xl border border-border/60 bg-background/50 px-4 py-3 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+                  className="w-full rounded-xl border border-[#2b3031] bg-[#101214] px-4 py-3 text-[13px] text-foreground placeholder:text-[#929b98] focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
                   rows={3}
-                  placeholder={"https://codeforces.com/group/xxxxx\nhttps://codeforces.com/group/yyyyy"}
+                  placeholder={
+                    "https://codeforces.com/group/xxxxx\nhttps://codeforces.com/group/yyyyy"
+                  }
                 />
-                <p className="text-[10px] text-muted-foreground/50">Separate multiple links with a new line</p>
+                <p className="text-xs text-[#929b98]">
+                  Separate multiple links with a new line
+                </p>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground">Group Join Note / Notice</label>
+                <label className="text-xs font-medium text-muted-foreground">
+                  Group Join Note / Notice
+                </label>
                 <textarea
                   value={groupNote}
                   onChange={(e) => setGroupNote(e.target.value)}
-                  className="w-full rounded-xl border border-border/60 bg-background/50 px-4 py-3 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+                  className="w-full rounded-xl border border-[#2b3031] bg-[#101214] px-4 py-3 text-[13px] text-foreground placeholder:text-[#929b98] focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
                   rows={2}
                   placeholder="e.g. You Must Join this Codeforces Group First"
                 />
@@ -921,7 +1105,7 @@ export default function AdminSessionDetailClient() {
                 type="button"
                 onClick={handleSaveGroupSettings}
                 disabled={isSavingGroupSettings}
-                className="w-full rounded-xl bg-primary text-primary-foreground font-black uppercase text-xs h-10"
+                className="w-full rounded-xl bg-primary text-primary-foreground font-medium text-[13px] h-10"
               >
                 {isSavingGroupSettings ? "Saving..." : "Save Sheet Settings"}
               </Button>
@@ -931,15 +1115,17 @@ export default function AdminSessionDetailClient() {
           {/* BULK CF IMPORT & MANUAL ADD COMBINED ROW */}
           <div className="grid gap-6 sm:grid-cols-2">
             {/* MANUAL ADD SINGLE */}
-            <div className="rounded-[2rem] border border-border/40 bg-card/40 p-6 sm:p-8 backdrop-blur-xl">
-              <div className="flex items-center gap-2.5 text-xs font-black uppercase tracking-[0.2em] text-primary border-b border-border/30 pb-4 mb-4">
+            <div className="rounded-[20px] border border-[#2b3031] bg-[#191c1e] p-6 sm:p-8 ">
+              <div className="flex items-center gap-2.5 text-xs font-medium text-primary border-b border-[#2b3031] pb-4 mb-4">
                 <PlusCircle size={18} />
                 Add Single Problem
               </div>
               <form onSubmit={handleProblemSubmit} className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground">Problem Title</label>
+                    <label className="text-xs font-medium text-muted-foreground">
+                      Problem Title
+                    </label>
                     <Input
                       value={probName}
                       onChange={(e) => setProbName(e.target.value)}
@@ -949,7 +1135,9 @@ export default function AdminSessionDetailClient() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground">Problem URL</label>
+                    <label className="text-xs font-medium text-muted-foreground">
+                      Problem URL
+                    </label>
                     <Input
                       value={probUrl}
                       onChange={(e) => setProbUrl(e.target.value)}
@@ -962,7 +1150,9 @@ export default function AdminSessionDetailClient() {
 
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground">CF ID (Auto)</label>
+                    <label className="text-xs font-medium text-muted-foreground">
+                      CF ID (Auto)
+                    </label>
                     <Input
                       value={probCfProblemId}
                       onChange={(e) => setProbCfProblemId(e.target.value)}
@@ -971,7 +1161,9 @@ export default function AdminSessionDetailClient() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground">XP Reward</label>
+                    <label className="text-xs font-medium text-muted-foreground">
+                      XP Reward
+                    </label>
                     <Input
                       type="number"
                       value={probXpReward}
@@ -981,18 +1173,25 @@ export default function AdminSessionDetailClient() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground">Order</label>
+                    <label className="text-xs font-medium text-muted-foreground">
+                      Order
+                    </label>
                     <Input
                       type="number"
                       value={probOrderIndex}
-                      onChange={(e) => setProbOrderIndex(Number(e.target.value))}
+                      onChange={(e) =>
+                        setProbOrderIndex(Number(e.target.value))
+                      }
                       className="rounded-xl"
                       required
                     />
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full rounded-xl bg-primary text-primary-foreground font-black uppercase text-xs h-10 mt-2">
+                <Button
+                  type="submit"
+                  className="w-full rounded-xl bg-primary text-primary-foreground font-medium text-[13px] h-10 mt-2"
+                >
                   <PlusCircle size={14} className="mr-2" />
                   Add Problem
                 </Button>
@@ -1000,19 +1199,22 @@ export default function AdminSessionDetailClient() {
             </div>
 
             {/* CODEFORCES CONTEST IMPORT */}
-            <div className="rounded-[2rem] border border-border/40 bg-card/40 p-6 sm:p-8 backdrop-blur-xl flex flex-col justify-between">
+            <div className="rounded-[20px] border border-[#2b3031] bg-[#191c1e] p-6 sm:p-8  flex flex-col justify-between">
               <div>
-                <div className="flex items-center gap-2.5 text-xs font-black uppercase tracking-[0.2em] text-emerald-400 border-b border-border/30 pb-4 mb-4">
+                <div className="flex items-center gap-2.5 text-xs font-medium text-[#b5e3c4] border-b border-[#2b3031] pb-4 mb-4">
                   <RefreshCw size={18} />
                   Import Contest from Codeforces
                 </div>
-                <p className="text-[11px] text-muted-foreground mb-4">
-                  Enter a numeric contest ID (e.g. 1950) to instantly import all problems. This connects CF Syncing automatically.
+                <p className="text-[13px] text-muted-foreground mb-4">
+                  Enter a numeric contest ID (e.g. 1950) to instantly import all
+                  problems. This connects CF Syncing automatically.
                 </p>
               </div>
               <form onSubmit={handleContestImport} className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground">Codeforces Contest ID</label>
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Codeforces Contest ID
+                  </label>
                   <Input
                     value={importContestId}
                     onChange={(e) => setImportContestId(e.target.value)}
@@ -1024,11 +1226,14 @@ export default function AdminSessionDetailClient() {
                 <Button
                   type="submit"
                   disabled={isImporting || !importContestId}
-                  className="w-full rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-black uppercase text-xs h-10"
+                  className="w-full rounded-xl bg-[#b5e3c4] hover:bg-[#b5e3c4] text-black font-medium text-[13px] h-10"
                 >
                   {isImporting ? (
                     <>
-                      <RefreshCw size={14} className="mr-2 animate-spin text-black" />
+                      <RefreshCw
+                        size={14}
+                        className="mr-2 animate-spin text-black"
+                      />
                       Importing from CF API...
                     </>
                   ) : (
@@ -1040,10 +1245,10 @@ export default function AdminSessionDetailClient() {
           </div>
 
           {/* LIST OF PROBLEMS */}
-          <div className="rounded-[2rem] border border-border/40 bg-card/40 backdrop-blur-xl overflow-hidden">
-            <div className="p-6 sm:p-8 border-b border-border/30">
+          <div className="rounded-[20px] border border-[#2b3031] bg-[#191c1e]  overflow-hidden">
+            <div className="p-6 sm:p-8 border-b border-[#2b3031]">
               <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-2.5 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
+                <div className="flex items-center gap-2.5 text-xs font-medium text-muted-foreground">
                   <Award size={18} className="text-amber-500" />
                   Topic Practice Problems ({problemsList.length})
                 </div>
@@ -1057,15 +1262,15 @@ export default function AdminSessionDetailClient() {
             ) : (
               <div className="overflow-x-auto">
                 {selectedProblems.size > 0 && (
-                  <div className="flex items-center gap-3 px-6 py-3 border-b border-border/30 bg-primary/5">
-                    <span className="text-xs font-bold text-primary">
+                  <div className="flex items-center gap-3 px-6 py-3 border-b border-[#2b3031] bg-primary/5">
+                    <span className="text-xs font-medium text-primary">
                       {selectedProblems.size} selected
                     </span>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={handleDeleteSelected}
-                      className="rounded-xl text-destructive hover:bg-destructive/10 text-xs font-black uppercase tracking-[0.1em] gap-1.5"
+                      className="rounded-xl text-destructive hover:bg-destructive/10 text-[13px] font-medium gap-1.5"
                     >
                       <Trash2 size={12} />
                       Delete Selected
@@ -1074,29 +1279,42 @@ export default function AdminSessionDetailClient() {
                       variant="ghost"
                       size="sm"
                       onClick={() => setSelectedProblems(new Set())}
-                      className="rounded-xl text-muted-foreground hover:text-foreground text-xs font-black uppercase tracking-[0.1em]"
+                      className="rounded-xl text-muted-foreground hover:text-foreground text-[13px] font-medium"
                     >
                       Clear
                     </Button>
                   </div>
                 )}
                 <Table>
-                  <TableHeader className="bg-background/30">
+                  <TableHeader className="bg-[#101214]">
                     <TableRow>
                       <TableHead className="px-6 py-4 w-10">
                         <input
                           type="checkbox"
-                          checked={problemsList.length > 0 && selectedProblems.size === problemsList.length}
+                          checked={
+                            problemsList.length > 0 &&
+                            selectedProblems.size === problemsList.length
+                          }
                           onChange={toggleSelectAll}
                           aria-label="Select all problems"
-                          className="h-4 w-4 rounded border-border/60 accent-primary cursor-pointer"
+                          className="h-4 w-4 rounded border-[#2b3031] accent-primary cursor-pointer"
                         />
                       </TableHead>
-                      <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest w-12">#</TableHead>
-                      <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest">Title</TableHead>
-                      <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest">CF ID</TableHead>
-                      <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-center">XP Reward</TableHead>
-                      <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-right">Actions</TableHead>
+                      <TableHead className="px-6 py-4 text-xs font-medium w-12">
+                        #
+                      </TableHead>
+                      <TableHead className="px-6 py-4 text-xs font-medium">
+                        Title
+                      </TableHead>
+                      <TableHead className="px-6 py-4 text-xs font-medium">
+                        CF ID
+                      </TableHead>
+                      <TableHead className="px-6 py-4 text-xs font-medium text-center">
+                        XP Reward
+                      </TableHead>
+                      <TableHead className="px-6 py-4 text-xs font-medium text-right">
+                        Actions
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1104,8 +1322,8 @@ export default function AdminSessionDetailClient() {
                       <TableRow
                         key={p._id}
                         className={cn(
-                          "hover:bg-card/30",
-                          selectedProblems.has(p._id) && "bg-primary/5"
+                          "hover:bg-[#191c1e]",
+                          selectedProblems.has(p._id) && "bg-primary/5",
                         )}
                       >
                         <TableCell className="px-6 py-3">
@@ -1114,13 +1332,13 @@ export default function AdminSessionDetailClient() {
                             checked={selectedProblems.has(p._id)}
                             onChange={() => toggleProblemSelection(p._id)}
                             aria-label={`Select problem ${p.name}`}
-                            className="h-4 w-4 rounded border-border/60 accent-primary cursor-pointer"
+                            className="h-4 w-4 rounded border-[#2b3031] accent-primary cursor-pointer"
                           />
                         </TableCell>
-                        <TableCell className="px-6 py-3 font-mono text-xs font-bold text-muted-foreground">
+                        <TableCell className="px-6 py-3 font-sans text-[13px] font-medium text-muted-foreground">
                           {p.orderIndex}
                         </TableCell>
-                        <TableCell className="px-6 py-3 text-sm font-bold text-foreground">
+                        <TableCell className="px-6 py-3 text-sm font-medium text-foreground">
                           {p.name}
                         </TableCell>
                         <TableCell className="px-6 py-3">
@@ -1134,7 +1352,7 @@ export default function AdminSessionDetailClient() {
                             <ExternalLink size={10} />
                           </a>
                         </TableCell>
-                        <TableCell className="px-6 py-3 text-center text-xs font-bold text-primary">
+                        <TableCell className="px-6 py-3 text-center text-[13px] font-medium text-primary">
                           +{p.xpReward} XP
                         </TableCell>
                         <TableCell className="px-6 py-3 text-right">
@@ -1142,16 +1360,21 @@ export default function AdminSessionDetailClient() {
                             <Button
                               variant="ghost"
                               size="icon"
+                              aria-label={`Edit ${p.name}`}
                               onClick={() => handleOpenEditProblem(p)}
-                              className="h-8 w-8 rounded-lg hover:bg-secondary"
+                              className="h-10 w-10 rounded-lg hover:bg-secondary"
                             >
-                              <Edit2 size={12} className="text-muted-foreground" />
+                              <Edit2
+                                size={12}
+                                className="text-muted-foreground"
+                              />
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
+                              aria-label={`Delete ${p.name}`}
                               onClick={() => handleDeleteProblem(p._id)}
-                              className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10"
+                              className="h-10 w-10 rounded-lg text-destructive hover:bg-destructive/10"
                             >
                               <Trash2 size={12} />
                             </Button>
@@ -1166,29 +1389,31 @@ export default function AdminSessionDetailClient() {
           </div>
 
           {/* BULK ADD VIA MARKDOWN */}
-          <div className="rounded-[2rem] border border-amber-500/20 bg-amber-500/[0.02] p-6 sm:p-8 backdrop-blur-xl">
+          <div className="rounded-[20px] border border-amber-500/20 bg-amber-500/[0.02] p-6 sm:p-8 ">
             <form onSubmit={handleBulkMarkdownSubmit} className="space-y-4">
-              <div className="flex items-center gap-2.5 text-xs font-black uppercase tracking-[0.2em] text-amber-500 border-b border-amber-500/15 pb-4">
+              <div className="flex items-center gap-2.5 text-xs font-medium text-amber-500 border-b border-amber-500/15 pb-4">
                 <FileText size={18} />
                 Bulk Add Problems (Markdown Table)
               </div>
 
-              <p className="text-[11px] text-muted-foreground">
-                Paste a markdown table containing <b>Name</b> and <b>Link</b> columns. The parser will extract URLs and names, and auto-detect Codeforces problem IDs.
+              <p className="text-[13px] text-muted-foreground">
+                Paste a markdown table containing <b>Name</b> and <b>Link</b>{" "}
+                columns. The parser will extract URLs and names, and auto-detect
+                Codeforces problem IDs.
               </p>
 
               <Textarea
                 value={bulkMarkdown}
                 onChange={(e) => setBulkMarkdown(e.target.value)}
                 placeholder={`| Problem Name | Link |\n| --- | --- |\n| Binary Search | https://codeforces.com/contest/1234/problem/A |\n| Two Pointers | https://codeforces.com/contest/1234/problem/B |`}
-                className="font-mono text-xs rounded-xl min-h-[140px] border-amber-500/20 focus-visible:ring-amber-500/40"
+                className="font-sans text-[13px] rounded-xl min-h-[140px] border-amber-500/20 focus-visible:ring-amber-500/40"
                 required
               />
 
               <Button
                 type="submit"
                 disabled={isBulkAdding || !bulkMarkdown.trim()}
-                className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-black uppercase text-xs h-10"
+                className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-medium text-[13px] h-10"
               >
                 {isBulkAdding ? (
                   <>
@@ -1199,19 +1424,20 @@ export default function AdminSessionDetailClient() {
                   "Import Markdown Table"
                 )}
               </Button>
-              </form>
-            </div>
+            </form>
+          </div>
 
           {/* NEXT TOPIC */}
           {(() => {
             const currentIndex = topics.findIndex((t) => t._id === topicId);
-            const nextTopic = currentIndex !== -1 ? topics[currentIndex + 1] : null;
+            const nextTopic =
+              currentIndex !== -1 ? topics[currentIndex + 1] : null;
             if (!nextTopic) return null;
             return (
               <div className="flex justify-end">
                 <Link
                   href={`/admin/roadmap/${levelId}/sessions/${nextTopic._id}`}
-                  className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-primary hover:text-emerald-500 transition duration-300"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-[#b5e3c4] transition duration-300"
                 >
                   Next: {nextTopic.title}
                   <ChevronRight size={14} />
@@ -1223,22 +1449,33 @@ export default function AdminSessionDetailClient() {
       )}
 
       {/* RESOURCE FORM DIALOG */}
-      <Dialog open={isResourceDialogOpen} onOpenChange={setIsResourceDialogOpen}>
-        <DialogContent className="max-w-md bg-card border-border text-foreground">
+      <Dialog
+        open={isResourceDialogOpen}
+        onOpenChange={setIsResourceDialogOpen}
+      >
+        <DialogContent className="max-w-md rounded-[20px] bg-[#191c1e] border-[#2b3031] text-[#f1f3ee] w-[calc(100vw-2rem)] max-h-[90dvh] overflow-y-auto">
           <form onSubmit={handleResourceSubmit}>
             <DialogHeader>
-              <DialogTitle>{editingResource ? "Edit Resource" : "Create Learning Resource"}</DialogTitle>
-              <DialogDescription>Setup resource URL, weight, and completion rules.</DialogDescription>
+              <DialogTitle>
+                {editingResource ? "Edit Resource" : "Create Learning Resource"}
+              </DialogTitle>
+              <DialogDescription>
+                Setup resource URL, weight, and completion rules.
+              </DialogDescription>
             </DialogHeader>
 
             <div className="py-4 space-y-4 text-left">
               <div className="grid grid-cols-3 items-center gap-4">
-                <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Language</label>
+                <label className="text-xs font-medium text-muted-foreground text-right">
+                  Language
+                </label>
                 <select
                   title="Resource Language"
                   value={resLanguage}
-                  onChange={(e) => setResLanguage(e.target.value as "Arabic" | "English")}
-                  className="col-span-2 rounded-xl border border-border/40 bg-background/50 px-3 py-2 text-xs focus:outline-none"
+                  onChange={(e) =>
+                    setResLanguage(e.target.value as "Arabic" | "English")
+                  }
+                  className="col-span-2 rounded-xl border border-[#2b3031] bg-[#101214] px-3 py-2 text-xs focus:outline-none"
                 >
                   <option value="Arabic">Arabic</option>
                   <option value="English">English</option>
@@ -1246,12 +1483,16 @@ export default function AdminSessionDetailClient() {
               </div>
 
               <div className="grid grid-cols-3 items-center gap-4">
-                <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Type</label>
+                <label className="text-xs font-medium text-muted-foreground text-right">
+                  Type
+                </label>
                 <select
                   title="Resource Type"
                   value={resType}
-                  onChange={(e) => setResType(e.target.value as RoadmapResource["type"])}
-                  className="col-span-2 rounded-xl border border-border/40 bg-background/50 px-3 py-2 text-xs focus:outline-none"
+                  onChange={(e) =>
+                    setResType(e.target.value as RoadmapResource["type"])
+                  }
+                  className="col-span-2 rounded-xl border border-[#2b3031] bg-[#101214] px-3 py-2 text-xs focus:outline-none"
                 >
                   <option value="Video">Video</option>
                   <option value="Article">Article</option>
@@ -1264,7 +1505,9 @@ export default function AdminSessionDetailClient() {
               </div>
 
               <div className="grid grid-cols-3 items-center gap-4">
-                <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Resource URL</label>
+                <label className="text-xs font-medium text-muted-foreground text-right">
+                  Resource URL
+                </label>
                 <div className="col-span-2 relative">
                   <Input
                     value={resUrl}
@@ -1274,7 +1517,7 @@ export default function AdminSessionDetailClient() {
                     required
                   />
                   {isFetchingVideoMeta && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-bold text-primary animate-pulse">
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-primary">
                       Fetching Title...
                     </span>
                   )}
@@ -1282,7 +1525,9 @@ export default function AdminSessionDetailClient() {
               </div>
 
               <div className="grid grid-cols-3 items-center gap-4">
-                <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Title</label>
+                <label className="text-xs font-medium text-muted-foreground text-right">
+                  Title
+                </label>
                 <Input
                   value={resTitle}
                   onChange={(e) => setResTitle(e.target.value)}
@@ -1293,7 +1538,9 @@ export default function AdminSessionDetailClient() {
               </div>
 
               <div className="grid grid-cols-3 items-center gap-4">
-                <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Description</label>
+                <label className="text-xs font-medium text-muted-foreground text-right">
+                  Description
+                </label>
                 <Textarea
                   value={resDescription}
                   onChange={(e) => setResDescription(e.target.value)}
@@ -1303,7 +1550,9 @@ export default function AdminSessionDetailClient() {
               </div>
 
               <div className="grid grid-cols-3 items-center gap-4">
-                <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Progress Weight</label>
+                <label className="text-xs font-medium text-muted-foreground text-right">
+                  Progress Weight
+                </label>
                 <div className="col-span-2 space-y-1">
                   <Input
                     type="number"
@@ -1313,14 +1562,17 @@ export default function AdminSessionDetailClient() {
                     min={0}
                     required
                   />
-                  <span className="text-[10px] text-muted-foreground/60 block leading-tight">
-                    Weight used to compute learning progress. Arabic optional resources should be set to 0.
+                  <span className="text-xs text-[#929b98] block leading-tight">
+                    Weight used to compute learning progress. Arabic optional
+                    resources should be set to 0.
                   </span>
                 </div>
               </div>
 
               <div className="grid grid-cols-3 items-center gap-4">
-                <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">XP Reward</label>
+                <label className="text-xs font-medium text-muted-foreground text-right">
+                  XP Reward
+                </label>
                 <Input
                   type="number"
                   value={resXpReward}
@@ -1332,11 +1584,15 @@ export default function AdminSessionDetailClient() {
 
               {resType === "Video" && (
                 <div className="grid grid-cols-3 items-center gap-4">
-                  <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Video Watch % Threshold</label>
+                  <label className="text-xs font-medium text-muted-foreground text-right">
+                    Video Watch % Threshold
+                  </label>
                   <Input
                     type="number"
                     value={resVideoThreshold}
-                    onChange={(e) => setResVideoThreshold(Number(e.target.value))}
+                    onChange={(e) =>
+                      setResVideoThreshold(Number(e.target.value))
+                    }
                     className="col-span-2 rounded-xl"
                     min={1}
                     max={100}
@@ -1346,7 +1602,9 @@ export default function AdminSessionDetailClient() {
               )}
 
               <div className="grid grid-cols-3 items-center gap-4">
-                <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Order Index</label>
+                <label className="text-xs font-medium text-muted-foreground text-right">
+                  Order Index
+                </label>
                 <Input
                   type="number"
                   value={resOrderIndex}
@@ -1358,8 +1616,20 @@ export default function AdminSessionDetailClient() {
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={() => setIsResourceDialogOpen(false)} className="rounded-xl">Cancel</Button>
-              <Button type="submit" className="rounded-xl bg-primary text-primary-foreground">Save Resource</Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsResourceDialogOpen(false)}
+                className="rounded-xl"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="rounded-xl bg-primary text-primary-foreground"
+              >
+                Save Resource
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -1367,16 +1637,22 @@ export default function AdminSessionDetailClient() {
 
       {/* PROBLEM FORM DIALOG */}
       <Dialog open={isProblemDialogOpen} onOpenChange={setIsProblemDialogOpen}>
-        <DialogContent className="max-w-md bg-card border-border text-foreground">
+        <DialogContent className="max-w-md rounded-[20px] bg-[#191c1e] border-[#2b3031] text-[#f1f3ee] w-[calc(100vw-2rem)] max-h-[90dvh] overflow-y-auto">
           <form onSubmit={handleProblemSubmit}>
             <DialogHeader>
-              <DialogTitle>{editingProblem ? "Edit Problem" : "Add Practice Problem"}</DialogTitle>
-              <DialogDescription>Configure problem parameters.</DialogDescription>
+              <DialogTitle>
+                {editingProblem ? "Edit Problem" : "Add Practice Problem"}
+              </DialogTitle>
+              <DialogDescription>
+                Configure problem parameters.
+              </DialogDescription>
             </DialogHeader>
 
             <div className="py-4 space-y-4 text-left">
               <div className="grid grid-cols-3 items-center gap-4">
-                <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Problem URL</label>
+                <label className="text-xs font-medium text-muted-foreground text-right">
+                  Problem URL
+                </label>
                 <Input
                   value={probUrl}
                   onChange={(e) => setProbUrl(e.target.value)}
@@ -1387,7 +1663,9 @@ export default function AdminSessionDetailClient() {
               </div>
 
               <div className="grid grid-cols-3 items-center gap-4">
-                <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Problem Title</label>
+                <label className="text-xs font-medium text-muted-foreground text-right">
+                  Problem Title
+                </label>
                 <Input
                   value={probName}
                   onChange={(e) => setProbName(e.target.value)}
@@ -1398,7 +1676,9 @@ export default function AdminSessionDetailClient() {
               </div>
 
               <div className="grid grid-cols-3 items-center gap-4">
-                <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">CF Problem ID</label>
+                <label className="text-xs font-medium text-muted-foreground text-right">
+                  CF Problem ID
+                </label>
                 <Input
                   value={probCfProblemId}
                   onChange={(e) => setProbCfProblemId(e.target.value)}
@@ -1408,7 +1688,9 @@ export default function AdminSessionDetailClient() {
               </div>
 
               <div className="grid grid-cols-3 items-center gap-4">
-                <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">XP Reward</label>
+                <label className="text-xs font-medium text-muted-foreground text-right">
+                  XP Reward
+                </label>
                 <Input
                   type="number"
                   value={probXpReward}
@@ -1419,7 +1701,9 @@ export default function AdminSessionDetailClient() {
               </div>
 
               <div className="grid grid-cols-3 items-center gap-4">
-                <label className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground text-right">Order Index</label>
+                <label className="text-xs font-medium text-muted-foreground text-right">
+                  Order Index
+                </label>
                 <Input
                   type="number"
                   value={probOrderIndex}
@@ -1431,12 +1715,25 @@ export default function AdminSessionDetailClient() {
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={() => setIsProblemDialogOpen(false)} className="rounded-xl">Cancel</Button>
-              <Button type="submit" className="rounded-xl bg-primary text-primary-foreground">Save Problem</Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsProblemDialogOpen(false)}
+                className="rounded-xl"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="rounded-xl bg-primary text-primary-foreground"
+              >
+                Save Problem
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
+      {confirmationDialog}
     </div>
   );
 }

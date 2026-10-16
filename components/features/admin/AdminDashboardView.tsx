@@ -49,23 +49,23 @@ type TooltipPayload = {
 };
 
 const toneClasses: Record<Tone, string> = {
-  blue: "border-sky-500/20 bg-sky-950/10 text-sky-400",
-  emerald: "border-emerald-500/20 bg-emerald-950/10 text-emerald-400",
-  amber: "border-amber-500/20 bg-amber-955/10 text-amber-400",
-  rose: "border-rose-500/20 bg-rose-955/10 text-rose-400",
-  violet: "border-purple-500/20 bg-purple-955/10 text-purple-400",
-  cyan: "border-cyan-500/20 bg-cyan-955/10 text-cyan-400",
+  blue: "border-sky-500/20 bg-sky-950/10 text-[#9fb8c7]",
+  emerald: "border-[#2b3031] bg-[#131715] text-[#b5e3c4]",
+  amber: "border-amber-500/20 bg-amber-400/5 text-amber-400",
+  rose: "border-rose-500/20 bg-rose-400/5 text-[#cb9390]",
+  violet: "border-purple-500/20 bg-purple-400/5 text-[#b5acd5]",
+  cyan: "border-cyan-500/20 bg-cyan-400/5 text-[#a4c7c3]",
 };
 
 const chartColors = {
-  users: "#38bdf8",
-  sessions: "#10b981",
-  upsolves: "#f59e0b",
-  admins: "#ef4444",
-  members: "#10b981",
-  ratings: "#a855f7",
-  solved: "#10b981",
-  volume: "#3b82f6",
+  users: "#9fb8c7",
+  sessions: "#b5e3c4",
+  upsolves: "#d3b98b",
+  admins: "#cb9390",
+  members: "#b5e3c4",
+  ratings: "#b5acd5",
+  solved: "#b5e3c4",
+  volume: "#9fb8c7",
 };
 
 const roleColors = [chartColors.members, chartColors.admins];
@@ -86,10 +86,10 @@ function ChartTooltip({
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-none border border-emerald-500/30 bg-[#060a08] px-3 py-2 text-[9px] font-mono shadow-[0_4px_12px_rgba(0,0,0,0.5)] text-emerald-400">
+    <div className="rounded-xl border border-[#2b3031] bg-[#191c1e] px-3 py-2 text-xs font-sans text-[#b5e3c4]">
       {label && (
-        <div className="mb-1 font-bold border-b border-emerald-500/10 pb-0.5 uppercase tracking-wider text-emerald-300">
-          NODE: {label}
+        <div className="mb-1 font-medium border-b border-[#2b3031] pb-0.5 text-[#f1f3ee]">
+          {label}
         </div>
       )}
       <div className="space-y-1">
@@ -98,10 +98,8 @@ function ChartTooltip({
             key={`${item.name}-${item.value}`}
             className="flex min-w-[140px] items-center justify-between gap-4"
           >
-            <span className="font-bold uppercase tracking-widest opacity-60">
-              {item.name}
-            </span>
-            <span className="font-bold text-emerald-300">
+            <span className="font-medium opacity-60">{item.name}</span>
+            <span className="font-medium text-[#f1f3ee]">
               {typeof item.value === "number"
                 ? formatNumber(item.value)
                 : item.value}
@@ -120,7 +118,8 @@ function MetricValue({
   loading: boolean;
   children: ReactNode;
 }) {
-  if (loading) return <Skeleton className="h-6 w-16 bg-emerald-500/10 rounded-none" />;
+  if (loading)
+    return <Skeleton className="h-6 w-16 bg-[#b5e3c4]/[0.06] rounded-xl" />;
   return <>{children}</>;
 }
 
@@ -136,18 +135,21 @@ function ChartPanel({
   children: ReactNode;
 }) {
   return (
-    <Card className="rounded-none border-emerald-500/15 bg-[#060a08]/30 p-5 shadow-md font-mono">
+    <Card className="rounded-[20px] border-[#2b3031] bg-[#191c1e] p-5 shadow-none font-sans">
       <div className="mb-4 flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-2">
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-none border border-emerald-500/20 bg-emerald-950/10 text-emerald-400">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-[#2b3031] bg-[#131715] text-[#b5e3c4]">
             {icon}
           </div>
-          <h3 className="truncate text-xs font-bold uppercase tracking-widest text-emerald-300">
+          <h3 className="text-base font-medium leading-5 text-[#f1f3ee] font-heading tracking-tight">
             {title}
           </h3>
         </div>
         {value && (
-          <Badge variant="outline" className="shrink-0 rounded-none border-emerald-500/25 text-emerald-400 font-bold text-[9px] uppercase tracking-wider bg-transparent">
+          <Badge
+            variant="outline"
+            className="shrink-0 rounded-xl border-[#2b3031] text-[#b5e3c4] font-medium text-xs bg-transparent"
+          >
             {value}
           </Badge>
         )}
@@ -177,28 +179,28 @@ export function AdminDashboardView({
 
   const kpis = [
     {
-      label: "TOTAL_USERS.DB",
+      label: "Total members",
       value: formatNumber(stats.totalUsers),
       detail: `${formatNumber(stats.recentlyJoinedUsers)} joined in 30 days`,
       icon: Users,
       tone: "blue" as const,
     },
     {
-      label: "ACTIVE_USERS.SYS",
+      label: "Active members",
       value: formatNumber(stats.activeUsers),
       detail: "Active within 30 days",
       icon: Activity,
       tone: "emerald" as const,
     },
     {
-      label: "PRACTICE_SESSIONS.LOG",
+      label: "Practice sessions",
       value: formatNumber(stats.totalTrainings),
       detail: `${formatNumber(stats.completedTrainings)} completed`,
       icon: LineChart,
       tone: "violet" as const,
     },
     {
-      label: "SOLVE_RATE.PCT",
+      label: "Solve rate",
       value: `${stats.solvingRate}%`,
       detail: `${formatNumber(stats.solvedTrainingProblems)} / ${formatNumber(
         stats.totalTrainingProblems,
@@ -207,14 +209,14 @@ export function AdminDashboardView({
       tone: "amber" as const,
     },
     {
-      label: "ROADMAP_LEVELS.MAP",
+      label: "Roadmap levels",
       value: formatNumber(stats.totalLevels),
       detail: `${formatNumber(stats.totalLevelsCompleted)} levels completed`,
       icon: CheckCircle2,
       tone: "cyan" as const,
     },
     {
-      label: "PEAK_PERFORMANCE.VAL",
+      label: "Best performance",
       value: formatNumber(stats.bestPerformance),
       detail: `${formatNumber(stats.averagePerformance)} average`,
       icon: Trophy,
@@ -226,48 +228,55 @@ export function AdminDashboardView({
     <m.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-6 font-mono text-emerald-400"
+      className="space-y-6 font-sans text-[#f1f3ee]"
     >
-      <Card className="rounded-none border-emerald-500/15 bg-[#060a08]/30 p-5 shadow-md">
+      <Card className="rounded-[20px] border-[#2b3031] bg-[#191c1e] p-5 shadow-none">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge className="gap-1 rounded-none border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 font-bold text-[9px] uppercase tracking-wider">
+              <Badge className="gap-1 rounded-xl border border-[#2b3031] bg-[#b5e3c4]/[0.06] text-[#b5e3c4] font-medium text-xs">
                 <ShieldCheck className="size-3" />
-                LIVE_TELEMETRY.SYS
+                Platform overview
               </Badge>
-              <Badge variant="outline" className="gap-1 rounded-none border-emerald-500/20 text-emerald-500/50 font-bold text-[9px] uppercase tracking-wider bg-transparent">
+              <Badge
+                variant="outline"
+                className="gap-1 rounded-xl border-[#2b3031] text-[#929b98] font-medium text-xs bg-transparent"
+              >
                 <Gauge className="size-3" />
                 {completionRate}% sessions completed
               </Badge>
             </div>
             <div>
-              <h2 className="text-lg font-bold tracking-widest text-emerald-300 uppercase">
-                ADMIN_HUB_DASHBOARD
+              <h2 className="text-2xl font-medium text-[#f1f3ee] font-heading tracking-[-0.04em]">
+                Community overview
               </h2>
-              <p className="mt-1 max-w-2xl text-[10px] font-bold text-emerald-500/40 uppercase tracking-wider">
-                Platform activity, user growth, and training health monitors.
+              <p className="mt-1 max-w-2xl text-xs font-medium text-[#929b98]">
+                Follow member growth, training activity, and problem-solving
+                progress.
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3 text-center lg:min-w-[420px]">
             {[
-              { label: "ADMIN_SHARE", value: `${adminShare}%` },
-              { label: "AVG_RATING", value: formatNumber(stats.averageRating) },
+              { label: "Admin share", value: `${adminShare}%` },
               {
-                label: "OPEN_SESSIONS",
+                label: "Average rating",
+                value: formatNumber(stats.averageRating),
+              },
+              {
+                label: "Open sessions",
                 value: formatNumber(stats.activeTrainings),
               },
             ].map((item) => (
               <div
                 key={item.label}
-                className="rounded-none border border-emerald-500/10 bg-[#040604]/50 px-3 py-2.5"
+                className="rounded-xl border border-[#2b3031] bg-[#101214] px-3 py-2.5"
               >
-                <div className="text-[8px] font-bold uppercase tracking-widest text-emerald-500/35">
+                <div className="text-xs font-medium text-[#929b98]">
                   {item.label}
                 </div>
-                <div className="mt-1 text-sm font-bold tracking-wider text-emerald-300">
+                <div className="mt-1 text-sm font-medium text-[#f1f3ee]">
                   <MetricValue loading={statsLoading}>{item.value}</MetricValue>
                 </div>
               </div>
@@ -280,23 +289,23 @@ export function AdminDashboardView({
         {kpis.map((stat) => (
           <Card
             key={stat.label}
-            className="rounded-none border-emerald-500/15 bg-[#060a08]/30 p-5 shadow-md transition-all hover:border-emerald-500/30"
+            className="rounded-[20px] border-[#2b3031] bg-[#191c1e] p-5 shadow-none transition-all hover:border-[#2b3031]"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <div className="text-[8px] font-bold uppercase tracking-widest text-emerald-500/35">
+                <div className="text-xs font-medium text-[#929b98]">
                   {stat.label}
                 </div>
-                <div className="mt-3 text-2xl font-bold tracking-wider text-emerald-300 leading-none">
+                <div className="mt-3 text-2xl font-medium text-[#f1f3ee] leading-none">
                   <MetricValue loading={statsLoading}>{stat.value}</MetricValue>
                 </div>
-                <div className="mt-2.5 truncate text-[9px] font-bold text-emerald-500/40 uppercase">
+                <div className="mt-2.5 truncate text-xs font-medium text-[#929b98]">
                   {stat.detail}
                 </div>
               </div>
               <div
                 className={cn(
-                  "flex size-9 shrink-0 items-center justify-center rounded-none border bg-transparent",
+                  "flex size-9 shrink-0 items-center justify-center rounded-xl border bg-transparent",
                   toneClasses[stat.tone],
                 )}
               >
@@ -310,31 +319,31 @@ export function AdminDashboardView({
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.55fr)]">
         <ChartPanel
           icon={<LineChart className="size-3.5" />}
-          title="SYS_ACTIVITY // 7_DAY_TREND"
+          title="Activity over the last 7 days"
           value={`${formatNumber(stats.activeUsers)} active`}
         >
           {statsLoading ? (
-            <Skeleton className="h-[320px] w-full rounded-none bg-emerald-500/5" />
+            <Skeleton className="h-[320px] w-full rounded-xl bg-[#b5e3c4]/[0.06]" />
           ) : (
-            <div className="h-[320px] min-w-0 font-mono text-[9px]">
+            <div className="h-[320px] min-w-0 font-sans text-xs">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={stats.activityTrend}
-                  margin={{ top: 10, right: 16, left: -20, bottom: 0 }}
+                  margin={{ top: 10, right: 16, left: 0, bottom: 0 }}
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
                     vertical={false}
-                    stroke="rgba(16, 185, 129, 0.05)"
+                    stroke="#2b3031"
                   />
                   <XAxis
                     dataKey="label"
                     tickLine={false}
                     axisLine={false}
                     tick={{
-                      fontSize: 8,
-                      fill: "rgba(16, 185, 129, 0.4)",
-                      fontFamily: "monospace",
+                      fontSize: 11,
+                      fill: "#929b98",
+                      fontFamily: "inherit",
                     }}
                   />
                   <YAxis
@@ -343,9 +352,9 @@ export function AdminDashboardView({
                     axisLine={false}
                     width={34}
                     tick={{
-                      fontSize: 8,
-                      fill: "rgba(16, 185, 129, 0.4)",
-                      fontFamily: "monospace",
+                      fontSize: 11,
+                      fill: "#929b98",
+                      fontFamily: "inherit",
                     }}
                   />
                   <Tooltip content={<ChartTooltip />} />
@@ -384,11 +393,11 @@ export function AdminDashboardView({
 
         <ChartPanel
           icon={<Users className="size-3.5" />}
-          title="REGISTRY_ROLES"
+          title="Community roles"
           value={`${adminShare}% admin`}
         >
           {statsLoading ? (
-            <Skeleton className="h-[320px] w-full rounded-none bg-emerald-500/5" />
+            <Skeleton className="h-[320px] w-full rounded-xl bg-[#b5e3c4]/[0.06]" />
           ) : (
             <div className="grid h-[320px] grid-rows-[1fr_auto] gap-4">
               {hasRoleData ? (
@@ -401,7 +410,7 @@ export function AdminDashboardView({
                       innerRadius={58}
                       outerRadius={80}
                       paddingAngle={4}
-                      stroke="#060a08"
+                      stroke="#191c1e"
                       strokeWidth={2}
                     >
                       {roleData.map((entry, index) => (
@@ -415,24 +424,24 @@ export function AdminDashboardView({
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="flex items-center justify-center rounded-none border border-dashed border-emerald-500/10 text-[10px] font-bold text-emerald-500/30 uppercase tracking-widest">
-                  [ NO_USERS_DETECTED ]
+                <div className="flex items-center justify-center rounded-xl border border-dashed border-[#2b3031] text-xs font-medium text-[#929b98]">
+                  No members yet
                 </div>
               )}
               <div className="grid grid-cols-2 gap-2">
                 {roleData.map((item, index) => (
                   <div
                     key={item.name}
-                    className="rounded-none border border-emerald-500/10 bg-[#040604]/50 px-3 py-2"
+                    className="rounded-xl border border-[#2b3031] bg-[#101214] px-3 py-2"
                   >
-                    <div className="flex items-center gap-2 text-[8px] font-bold uppercase tracking-widest text-emerald-500/40">
+                    <div className="flex items-center gap-2 text-xs font-medium text-[#929b98]">
                       <span
-                        className="size-2 rounded-none"
+                        className="size-2 rounded-xl"
                         style={{ backgroundColor: roleColors[index] }}
                       />
                       {item.name}
                     </div>
-                    <div className="mt-1 text-sm font-bold text-emerald-300">
+                    <div className="mt-1 text-sm font-medium text-[#f1f3ee]">
                       {formatNumber(item.value)}
                     </div>
                   </div>
@@ -446,31 +455,31 @@ export function AdminDashboardView({
       <div className="grid gap-6 xl:grid-cols-2">
         <ChartPanel
           icon={<BarChart3 className="size-3.5" />}
-          title="RATING_DISTRIBUTION"
+          title="Rating distribution"
           value={`${formatNumber(stats.totalUsers)} users`}
         >
           {statsLoading ? (
-            <Skeleton className="h-[300px] w-full rounded-none bg-emerald-500/5" />
+            <Skeleton className="h-[300px] w-full rounded-xl bg-[#b5e3c4]/[0.06]" />
           ) : (
             <div className="h-[300px] min-w-0">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={stats.ratingBands}
-                  margin={{ top: 10, right: 16, left: -20, bottom: 0 }}
+                  margin={{ top: 10, right: 16, left: 0, bottom: 0 }}
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
                     vertical={false}
-                    stroke="rgba(16, 185, 129, 0.05)"
+                    stroke="#2b3031"
                   />
                   <XAxis
                     dataKey="label"
                     tickLine={false}
                     axisLine={false}
                     tick={{
-                      fontSize: 8,
-                      fill: "rgba(16, 185, 129, 0.4)",
-                      fontFamily: "monospace",
+                      fontSize: 11,
+                      fill: "#929b98",
+                      fontFamily: "inherit",
                     }}
                   />
                   <YAxis
@@ -479,9 +488,9 @@ export function AdminDashboardView({
                     axisLine={false}
                     width={34}
                     tick={{
-                      fontSize: 8,
-                      fill: "rgba(16, 185, 129, 0.4)",
-                      fontFamily: "monospace",
+                      fontSize: 11,
+                      fill: "#929b98",
+                      fontFamily: "inherit",
                     }}
                   />
                   <Tooltip content={<ChartTooltip />} />
@@ -499,31 +508,31 @@ export function AdminDashboardView({
 
         <ChartPanel
           icon={<Zap className="size-3.5" />}
-          title="TRAINING_MODES"
+          title="Training modes"
           value={`${stats.solvingRate}% solve rate`}
         >
           {statsLoading ? (
-            <Skeleton className="h-[300px] w-full rounded-none bg-emerald-500/5" />
+            <Skeleton className="h-[300px] w-full rounded-xl bg-[#b5e3c4]/[0.06]" />
           ) : (
             <div className="h-[300px] min-w-0">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={stats.trainingModes}
-                  margin={{ top: 10, right: 16, left: -20, bottom: 0 }}
+                  margin={{ top: 10, right: 16, left: 0, bottom: 0 }}
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
                     vertical={false}
-                    stroke="rgba(16, 185, 129, 0.05)"
+                    stroke="#2b3031"
                   />
                   <XAxis
                     dataKey="label"
                     tickLine={false}
                     axisLine={false}
                     tick={{
-                      fontSize: 8,
-                      fill: "rgba(16, 185, 129, 0.4)",
-                      fontFamily: "monospace",
+                      fontSize: 11,
+                      fill: "#929b98",
+                      fontFamily: "inherit",
                     }}
                   />
                   <YAxis
@@ -532,9 +541,9 @@ export function AdminDashboardView({
                     axisLine={false}
                     width={34}
                     tick={{
-                      fontSize: 8,
-                      fill: "rgba(16, 185, 129, 0.4)",
-                      fontFamily: "monospace",
+                      fontSize: 11,
+                      fill: "#929b98",
+                      fontFamily: "inherit",
                     }}
                   />
                   <Tooltip content={<ChartTooltip />} />
@@ -557,11 +566,11 @@ export function AdminDashboardView({
         </ChartPanel>
       </div>
 
-      <Card className="rounded-none border-emerald-500/15 bg-[#060a08]/30 p-5 shadow-md">
+      <Card className="rounded-[20px] border-[#2b3031] bg-[#191c1e] p-5 shadow-none">
         <div className="mb-4 flex items-center gap-2">
-          <UserPlus className="size-3.5 text-emerald-500/40" />
-          <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-300">
-            SYSTEM_OPERATIONS_SNAPSHOT
+          <UserPlus className="size-3.5 text-[#929b98]" />
+          <h3 className="text-base font-medium text-[#f1f3ee] font-heading tracking-tight">
+            Platform at a glance
           </h3>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -601,12 +610,12 @@ export function AdminDashboardView({
           ].map((item) => (
             <div
               key={item.label}
-              className="rounded-none border border-emerald-500/10 bg-[#040604]/50 px-4 py-3"
+              className="rounded-xl border border-[#2b3031] bg-[#101214] px-4 py-3"
             >
-              <div className="text-[8px] font-bold uppercase tracking-widest text-emerald-500/35">
+              <div className="text-xs font-medium text-[#929b98]">
                 {item.label}
               </div>
-              <div className="mt-1 text-sm font-bold tracking-wider text-emerald-300">
+              <div className="mt-1 text-sm font-medium text-[#f1f3ee]">
                 <MetricValue loading={statsLoading}>{item.value}</MetricValue>
               </div>
             </div>

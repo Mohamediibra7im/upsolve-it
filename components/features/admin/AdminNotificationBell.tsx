@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, MailQuestion } from "lucide-react";
+import { Bell, MailQuestion, Loader2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
+  DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { useUnreadContact } from "@/hooks/admin";
 
@@ -27,7 +28,7 @@ function timeAgo(iso: string): string {
  * the latest messages, each linking to the contact inbox.
  */
 export function AdminNotificationBell() {
-  const { count, items } = useUnreadContact();
+  const { count, items, isLoading, isError } = useUnreadContact();
   const hasUnread = count > 0;
 
   return (
@@ -36,11 +37,11 @@ export function AdminNotificationBell() {
         <button
           type="button"
           aria-label={`Notifications${hasUnread ? ` (${count} unread)` : ""}`}
-          className="relative flex size-9 items-center justify-center rounded-sm border border-emerald-500/15 bg-transparent text-emerald-500/60 hover:text-emerald-300 hover:bg-emerald-500/5 transition-colors"
+          className="relative flex size-9 items-center justify-center rounded-xl border border-[#2b3031] bg-transparent text-[#929b98] hover:text-[#f1f3ee] hover:bg-[#b5e3c4]/[0.06] transition-colors"
         >
           <Bell size={14} />
           {hasUnread && (
-            <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 flex items-center justify-center rounded-sm bg-emerald-500 text-[8px] font-bold text-black tabular-nums">
+            <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 flex items-center justify-center rounded-xl bg-[#b5e3c4] text-xs font-medium text-black tabular-nums">
               {count > 99 ? "99+" : count}
             </span>
           )}
@@ -48,58 +49,77 @@ export function AdminNotificationBell() {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-80 rounded-sm border-emerald-500/20 bg-[#060a08] p-0 font-mono text-emerald-400 z-[150]"
+        className="w-[min(20rem,calc(100vw-2rem))] rounded-2xl border-[#2b3031] bg-[#191c1e] p-0 font-sans text-[#b5e3c4] z-[150]"
       >
-        <div className="flex items-center justify-between border-b border-emerald-500/15 px-3 py-2.5">
-          <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-300">
-            Unread Support
+        <div className="flex items-center justify-between border-b border-[#2b3031] px-3 py-2.5">
+          <span className="text-xs font-medium text-[#f1f3ee]">
+            Support messages
           </span>
-          <span className="text-[9px] font-bold text-emerald-500/40 tabular-nums">
-            {count} PENDING
+          <span className="text-xs font-medium text-[#929b98] tabular-nums">
+            {count} unread
           </span>
         </div>
 
-        {items.length === 0 ? (
-          <div className="px-3 py-6 text-center text-[9px] font-bold uppercase tracking-widest text-emerald-500/30">
-            [ INBOX_CLEAR ]
+        {isLoading ? (
+          <div
+            role="status"
+            className="flex items-center justify-center gap-2 px-4 py-8 text-sm text-[#929b98]"
+          >
+            <Loader2 size={16} className="motion-safe:animate-spin" />
+            Loading messages…
+          </div>
+        ) : isError ? (
+          <p
+            role="alert"
+            className="px-4 py-8 text-center text-sm leading-6 text-[#929b98]"
+          >
+            Messages are temporarily unavailable. Open the inbox to try again.
+          </p>
+        ) : items.length === 0 ? (
+          <div className="px-3 py-6 text-center text-xs font-medium text-[#929b98]">
+            You are all caught up
           </div>
         ) : (
           <ul className="max-h-80 overflow-y-auto">
             {items.map((msg) => (
               <li key={msg._id}>
-                <Link
-                  href="/admin/contact"
-                  className="flex items-start gap-2.5 border-b border-emerald-500/5 px-3 py-2.5 hover:bg-emerald-500/5 transition-colors"
-                >
-                  <MailQuestion
-                    size={12}
-                    className="mt-0.5 shrink-0 text-emerald-500/40"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="truncate text-[10px] font-bold text-emerald-300">
-                        {msg.name}
-                      </span>
-                      <span className="shrink-0 text-[8px] font-bold text-emerald-500/35 tabular-nums">
-                        {timeAgo(msg.createdAt)}
-                      </span>
+                <DropdownMenuItem asChild className="rounded-none p-0">
+                  <Link
+                    href="/admin/contact"
+                    className="flex items-start gap-2.5 border-b border-[#2b3031] px-3 py-2.5 hover:bg-[#b5e3c4]/[0.06] transition-colors"
+                  >
+                    <MailQuestion
+                      size={12}
+                      className="mt-0.5 shrink-0 text-[#929b98]"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="truncate text-xs font-medium text-[#f1f3ee]">
+                          {msg.name}
+                        </span>
+                        <span className="shrink-0 text-xs font-medium text-[#929b98] tabular-nums">
+                          {timeAgo(msg.createdAt)}
+                        </span>
+                      </div>
+                      <div className="truncate text-xs font-medium text-[#929b98]">
+                        {msg.subject}
+                      </div>
                     </div>
-                    <div className="truncate text-[9px] font-bold text-emerald-500/50">
-                      {msg.subject}
-                    </div>
-                  </div>
-                </Link>
+                  </Link>
+                </DropdownMenuItem>
               </li>
             ))}
           </ul>
         )}
 
-        <Link
-          href="/admin/contact"
-          className="block border-t border-emerald-500/15 px-3 py-2.5 text-center text-[9px] font-bold uppercase tracking-widest text-emerald-400 hover:bg-emerald-500/5 transition-colors"
-        >
-          [ OPEN_INBOX.SH ]
-        </Link>
+        <DropdownMenuItem asChild className="rounded-none p-0">
+          <Link
+            href="/admin/contact"
+            className="block border-t border-[#2b3031] px-3 py-2.5 text-center text-xs font-medium text-[#b5e3c4] hover:bg-[#b5e3c4]/[0.06] transition-colors"
+          >
+            Open support inbox
+          </Link>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

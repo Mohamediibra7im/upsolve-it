@@ -1,5 +1,9 @@
 "use client";
 
+import { useAdminConfirmation } from "./useAdminConfirmation";
+
+import { AdminState, AdminRetry } from "./AdminState";
+
 import { useState } from "react";
 import { m, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -21,17 +25,18 @@ import {
   Check,
   Sparkles,
   Link as LinkIcon,
-  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Mode = "list" | "create" | "edit";
 
 export default function AdminSuggestions() {
-  const { suggestions, isLoading, mutate } = useSuggestionsAdmin();
+  const { suggestions, isLoading, isError, mutate } = useSuggestionsAdmin();
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [mode, setMode] = useState<Mode>("list");
   const [editing, setEditing] = useState<Suggestion | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { askConfirmation, confirmationDialog } = useAdminConfirmation();
 
   const [form, setForm] = useState({
     title: "",
@@ -43,14 +48,23 @@ export default function AdminSuggestions() {
   });
 
   const resetForm = () =>
-    setForm({ title: "", description: "", url: "", category: "", isActive: true, order: 0 });
+    setForm({
+      title: "",
+      description: "",
+      url: "",
+      category: "",
+      isActive: true,
+      order: 0,
+    });
 
   const startCreate = () => {
+    setActionError(null);
     resetForm();
     setMode("create");
   };
 
   const startEdit = (s: Suggestion) => {
+    setActionError(null);
     setForm({
       title: s.title,
       description: s.description,
@@ -65,272 +79,357 @@ export default function AdminSuggestions() {
 
   const handleSubmit = async () => {
     if (!form.title || !form.url) return;
-    if (mode === "create") {
-      await createSuggestion(form);
-    } else if (editing) {
-      await updateSuggestion(editing._id, form);
+    setActionError(null);
+    setIsSaving(true);
+    try {
+      if (mode === "create") {
+        await createSuggestion(form);
+      } else if (editing) {
+        await updateSuggestion(editing._id, form);
+      }
+      await mutate();
+      setMode("list");
+      setEditing(null);
+      resetForm();
+    } catch {
+      setActionError(
+        "Could not save this resource. Your changes are still here; please try again.",
+      );
+    } finally {
+      setIsSaving(false);
     }
-    await mutate();
-    setMode("list");
-    setEditing(null);
-    resetForm();
   };
 
   const handleDelete = async (id: string) => {
-    await deleteSuggestion(id);
-    await mutate();
-    setDeletingId(null);
+    if (
+      !(await askConfirmation({
+        title: "Delete this resource?",
+        description:
+          "This permanently removes the resource. It will no longer be available to your members.",
+        confirmLabel: "Delete resource",
+      }))
+    )
+      return;
+    setActionError(null);
+    try {
+      await deleteSuggestion(id);
+      await mutate();
+    } catch {
+      setActionError("Could not delete this resource. Please try again.");
+    }
   };
 
   const toggleActive = async (s: Suggestion) => {
-    await updateSuggestion(s._id, { isActive: !s.isActive });
-    await mutate();
+    setActionError(null);
+    try {
+      await updateSuggestion(s._id, { isActive: !s.isActive });
+      await mutate();
+    } catch {
+      setActionError(
+        "Could not change this resource’s visibility. Please try again.",
+      );
+    }
   };
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 space-y-4 font-mono text-emerald-400">
-        <Loader2 className="size-8 animate-spin text-emerald-400" />
-        <p className="text-[10px] font-bold uppercase tracking-widest animate-pulse">SUGGESTIONS_SYNCHRONIZING.SYS...</p>
-      </div>
+      <AdminState
+        tone="loading"
+        title="Loading resources…"
+        description="Getting your workspace ready."
+      />
+    );
+  }
+
+  if (isError) {
+    return (
+      <AdminState
+        tone="error"
+        title="Could not load resources"
+        description="Your recommended resources are temporarily unavailable."
+        action={<AdminRetry onRetry={() => mutate()} />}
+      />
     );
   }
 
   return (
-    <div className="space-y-8 font-mono text-emerald-400">
+    <div className="space-y-8 font-sans text-[#f1f3ee]">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-emerald-500/40 font-bold text-[9px] uppercase tracking-widest">
-            <LinkIcon size={12} className="text-emerald-400" />
-            SYSOP_DIRECTORY // PLATFORM_SUGGESTIONS
+          <div className="flex items-center gap-2 text-[#929b98] font-medium text-xs">
+            <LinkIcon size={12} className="text-[#b5e3c4]" />
+            Recommended resources
           </div>
-          <h2 className="text-lg font-bold tracking-widest text-emerald-300 uppercase">Suggested Resources</h2>
-          <p className="text-[10px] text-emerald-500/40 font-bold uppercase tracking-wider">
-            Manage suggested websites, reference logs, and training tools.
+          <h2 className="text-2xl font-medium text-[#f1f3ee] font-heading tracking-[-0.04em]">
+            Suggested Resources
+          </h2>
+          <p className="text-xs text-[#929b98] font-medium">
+            Curate useful websites, guides, and tools for your community.
           </p>
         </div>
         {mode === "list" && (
           <Button
             onClick={startCreate}
-            className="h-8 px-4 rounded-none bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[9px] font-mono shadow-[0_0_15px_rgba(16,185,129,0.25)] border-transparent"
+            className="h-10 px-4 rounded-xl bg-[#b5e3c4] hover:bg-[#b5e3c4] text-[#14241b] font-medium text-[13px] font-sans border-transparent"
           >
             <Plus className="mr-1.5 size-3.5" />
-            <span>[ ADD_SUGGESTION.BAT ]</span>
+            <span>Add resource</span>
           </Button>
         )}
       </div>
 
+      {actionError && (
+        <p
+          role="alert"
+          className="rounded-xl border border-[#cb9390]/20 bg-[#cb9390]/5 p-4 text-sm leading-6 text-[#dfb4b0]"
+        >
+          {actionError}
+        </p>
+      )}
       {mode !== "list" && (
         <m.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-none border border-emerald-500/15 bg-[#060a08]/30 p-6 space-y-5 shadow-2xl"
+          className="rounded-[20px] border border-[#2b3031] bg-[#191c1e] p-6 sm:p-8 space-y-6 shadow-none"
         >
-          <div className="flex items-center justify-between border-b border-emerald-500/10 pb-2">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-emerald-300">
-              {mode === "create" ? "CREATE_SUGGESTION_NODE" : "EDIT_SUGGESTION_NODE"}
+          <div className="flex items-center justify-between border-b border-[#2b3031] pb-2">
+            <h2 className="text-2xl font-medium text-[#f1f3ee] font-heading tracking-[-0.04em]">
+              {mode === "create" ? "Add a resource" : "Edit resource"}
             </h2>
             <button
-              onClick={() => { setMode("list"); setEditing(null); resetForm(); }}
-              className="size-7 rounded-none border border-emerald-500/15 bg-transparent hover:bg-emerald-500/10 flex items-center justify-center text-emerald-500/60 hover:text-emerald-300 transition-all shrink-0"
+              onClick={() => {
+                setMode("list");
+                setEditing(null);
+                resetForm();
+              }}
+              className="size-10 rounded-xl border border-[#2b3031] bg-transparent hover:bg-[#b5e3c4]/[0.06] flex items-center justify-center text-[#929b98] hover:text-[#f1f3ee] transition-all shrink-0"
             >
               <X className="size-3.5" />
             </button>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-5 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <label className="block text-[9px] font-bold text-emerald-500/40 uppercase tracking-widest">TITLE_REF *</label>
+              <label className="block text-xs font-medium text-[#929b98]">
+                Title *
+              </label>
               <input
+                aria-label="Resource title"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="w-full h-8 px-3 rounded-none border border-emerald-500/15 bg-[#040604]/50 text-emerald-300 text-xs font-mono placeholder:text-emerald-500/20 focus:outline-none focus:border-emerald-500/45 focus:ring-0"
+                className="w-full h-10 px-3 rounded-xl border border-[#2b3031] bg-[#101214] text-[#f1f3ee] text-[13px] font-sans placeholder:text-[#929b98] focus:outline-none focus:border-[#2b3031] focus:ring-2 focus:ring-[#b5e3c4]/30"
                 placeholder="Codeforces"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="block text-[9px] font-bold text-emerald-500/40 uppercase tracking-widest">URL_REF *</label>
+              <label className="block text-xs font-medium text-[#929b98]">
+                URL *
+              </label>
               <input
+                aria-label="Resource URL"
                 value={form.url}
                 onChange={(e) => setForm({ ...form, url: e.target.value })}
-                className="w-full h-8 px-3 rounded-none border border-emerald-500/15 bg-[#040604]/50 text-emerald-300 text-xs font-mono placeholder:text-emerald-500/20 focus:outline-none focus:border-emerald-500/45 focus:ring-0"
+                className="w-full h-10 px-3 rounded-xl border border-[#2b3031] bg-[#101214] text-[#f1f3ee] text-[13px] font-sans placeholder:text-[#929b98] focus:outline-none focus:border-[#2b3031] focus:ring-2 focus:ring-[#b5e3c4]/30"
                 placeholder="https://codeforces.com"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="block text-[9px] font-bold text-emerald-500/40 uppercase tracking-widest">CATEGORY_TAG</label>
+              <label className="block text-xs font-medium text-[#929b98]">
+                Category
+              </label>
               <input
+                aria-label="Category"
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="w-full h-8 px-3 rounded-none border border-emerald-500/15 bg-[#040604]/50 text-emerald-300 text-xs font-mono placeholder:text-emerald-500/20 focus:outline-none focus:border-emerald-500/45 focus:ring-0"
+                className="w-full h-10 px-3 rounded-xl border border-[#2b3031] bg-[#101214] text-[#f1f3ee] text-[13px] font-sans placeholder:text-[#929b98] focus:outline-none focus:border-[#2b3031] focus:ring-2 focus:ring-[#b5e3c4]/30"
                 placeholder="Practice"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="block text-[9px] font-bold text-emerald-500/40 uppercase tracking-widest">ORDER_INDEX</label>
+              <label className="block text-xs font-medium text-[#929b98]">
+                Order
+              </label>
               <input
                 type="number"
+                aria-label="Display order"
                 value={form.order}
-                onChange={(e) => setForm({ ...form, order: Number(e.target.value) })}
-                className="w-full h-8 px-3 rounded-none border border-emerald-500/15 bg-[#040604]/50 text-emerald-300 text-xs font-mono focus:outline-none focus:border-emerald-500/45 focus:ring-0"
+                onChange={(e) =>
+                  setForm({ ...form, order: Number(e.target.value) })
+                }
+                className="w-full h-10 px-3 rounded-xl border border-[#2b3031] bg-[#101214] text-[#f1f3ee] text-[13px] font-sans focus:outline-none focus:border-[#2b3031] focus:ring-2 focus:ring-[#b5e3c4]/30"
               />
             </div>
             <div className="space-y-1.5 sm:col-span-2">
-              <label className="block text-[9px] font-bold text-emerald-500/40 uppercase tracking-widest">DESCRIPTION_LOG</label>
+              <label className="block text-xs font-medium text-[#929b98]">
+                Description
+              </label>
               <input
+                aria-label="Resource description"
                 value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                className="w-full h-8 px-3 rounded-none border border-emerald-500/15 bg-[#040604]/50 text-emerald-300 text-xs font-mono placeholder:text-emerald-500/20 focus:outline-none focus:border-emerald-500/45 focus:ring-0"
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
+                className="w-full h-10 px-3 rounded-xl border border-[#2b3031] bg-[#101214] text-[#f1f3ee] text-[13px] font-sans placeholder:text-[#929b98] focus:outline-none focus:border-[#2b3031] focus:ring-2 focus:ring-[#b5e3c4]/30"
                 placeholder="Brief description..."
               />
             </div>
           </div>
 
           <div className="flex items-center gap-2 pt-1">
-            <label className="inline-flex items-center gap-2 text-[9px] font-bold text-emerald-500/50 cursor-pointer select-none uppercase border border-emerald-500/15 h-8 px-3 bg-[#060a08]/30 hover:bg-emerald-500/5 transition-all">
+            <label className="inline-flex items-center gap-2 text-xs font-medium text-[#929b98] cursor-pointer border border-[#2b3031] h-10 px-3 bg-[#191c1e] hover:bg-[#b5e3c4]/[0.06] transition-all">
               <input
                 type="checkbox"
                 checked={form.isActive}
-                onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-                className="size-3.5 border-emerald-500/20 text-emerald-500 bg-transparent rounded-none focus:ring-0 accent-emerald-500"
+                onChange={(e) =>
+                  setForm({ ...form, isActive: e.target.checked })
+                }
+                className="size-3.5 border-[#2b3031] text-[#b5e3c4] bg-transparent rounded-xl focus:ring-2 focus:ring-[#b5e3c4]/30 accent-[#b5e3c4]"
               />
-              <span>[ ACTIVE_STATUS ]</span>
+              <span>Visible to members</span>
             </label>
           </div>
 
           <div className="flex gap-2 pt-1">
             <Button
               onClick={handleSubmit}
-              disabled={!form.title || !form.url}
-              className="h-8 px-4 rounded-none bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[9px] font-mono shadow-[0_0_15px_rgba(16,185,129,0.25)] border-transparent"
+              disabled={isSaving || !form.title || !form.url}
+              className="h-10 px-4 rounded-xl bg-[#b5e3c4] hover:bg-[#b5e3c4] text-[#14241b] font-medium text-[13px] font-sans border-transparent"
             >
               <Check className="size-3 mr-1.5" />
-              <span>[ {mode === "create" ? "CREATE_SUGGESTION.EXE" : "COMMIT_CHANGES.EXE"} ]</span>
+              <span>
+                {isSaving
+                  ? "Saving…"
+                  : mode === "create"
+                    ? "Add resource"
+                    : "Save changes"}
+              </span>
             </Button>
             <Button
               variant="outline"
-              onClick={() => { setMode("list"); setEditing(null); resetForm(); }}
-              className="h-8 px-3 rounded-none border border-emerald-500/15 text-emerald-400 hover:bg-emerald-500/10 font-mono text-[9px] uppercase tracking-widest"
+              onClick={() => {
+                setMode("list");
+                setEditing(null);
+                resetForm();
+              }}
+              className="h-10 px-3 rounded-xl border border-[#2b3031] text-[#b5e3c4] hover:bg-[#b5e3c4]/[0.06] font-sans text-[13px]"
             >
-              [ CANCEL ]
+              Cancel
             </Button>
           </div>
         </m.div>
       )}
 
       {/* Empty State */}
-      {suggestions.length === 0 && (
+      {mode === "list" && suggestions.length === 0 && (
         <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex flex-col items-center justify-center py-20 text-center rounded-none border border-dashed border-emerald-500/10 space-y-4"
+          className="flex flex-col items-center justify-center py-20 text-center rounded-xl border border-dashed border-[#2b3031] space-y-4"
         >
-          <div className="size-12 rounded-none bg-emerald-955/15 border border-emerald-500/20 flex items-center justify-center">
-            <Sparkles size={20} className="text-emerald-400 animate-pulse" />
+          <div className="size-12 rounded-xl bg-[#131715] border border-[#2b3031] flex items-center justify-center">
+            <Sparkles size={20} className="text-[#b5e3c4]" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-300">
-              NO_SUGGESTIONS_CONFIGURED
+            <h3 className="text-base font-medium text-[#f1f3ee] font-heading tracking-tight">
+              Share your first resource
             </h3>
-            <p className="text-[9px] text-emerald-500/30 uppercase max-w-[240px] mx-auto">
-              Create platform resources cards to populate user dashboards.
+            <p className="text-xs text-[#929b98] max-w-[240px] mx-auto">
+              Add a useful guide or tool for your members to explore.
             </p>
           </div>
           <Button
             onClick={startCreate}
-            className="h-8 px-4 rounded-none bg-transparent border border-emerald-500/15 hover:bg-emerald-500/10 text-emerald-400 font-bold uppercase tracking-widest text-[9px] font-mono"
+            className="h-10 px-4 rounded-xl bg-transparent border border-[#2b3031] hover:bg-[#b5e3c4]/[0.06] text-[#b5e3c4] font-medium text-[13px] font-sans"
           >
             <Plus size={12} className="mr-1.5 shrink-0" />
-            <span>[ INITIALIZE_SUGGESTION.BAT ]</span>
+            <span>Add a resource</span>
           </Button>
         </m.div>
       )}
 
-      <div className="space-y-4">
-        <AnimatePresence mode="popLayout">
-          {suggestions.map((s) => (
-            <m.div
-              key={s._id}
-              layout
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="flex items-center justify-between gap-4 p-4 rounded-none border border-emerald-500/15 bg-[#060a08]/30 hover:border-emerald-500/35 hover:bg-[#060a08]/40 transition-colors"
-            >
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-bold text-emerald-300 truncate tracking-wide">{s.title}</h3>
-                  <a
-                    href={s.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-emerald-500/40 hover:text-emerald-300 transition-colors"
-                  >
-                    <ArrowUpRight className="size-3.5" />
-                  </a>
-                </div>
-                <p className="text-[10px] text-emerald-500/40 uppercase mt-0.5 truncate">{s.description}</p>
-                <div className="flex items-center gap-2 mt-2">
-                  {s.category && (
-                    <span className="text-[8px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-955/15 border border-emerald-500/15 px-1.5 py-0.5 rounded-none">
-                      [{s.category}]
-                    </span>
-                  )}
-                  <span className={cn(
-                    "text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-none border",
-                    s.isActive ? "text-emerald-400 border-emerald-500/20 bg-emerald-500/5" : "text-emerald-500/40 border-emerald-500/10 bg-transparent"
-                  )}>
-                    {s.isActive ? "[ACTIVE]" : "[INACTIVE]"}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => toggleActive(s)}
-                  className={cn(
-                    "size-7 rounded-none border flex items-center justify-center transition-colors",
-                    s.isActive
-                      ? "text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/15"
-                      : "text-emerald-500/40 border-emerald-500/10 hover:bg-emerald-500/5"
-                  )}
-                >
-                  {s.isActive ? <Eye size={12} /> : <EyeOff size={12} />}
-                </button>
-                <button
-                  onClick={() => startEdit(s)}
-                  className="size-7 rounded-none border border-emerald-500/15 hover:bg-emerald-500/10 flex items-center justify-center text-emerald-450 transition-colors"
-                >
-                  <Pencil size={12} />
-                </button>
-                {deletingId === s._id ? (
+      {mode === "list" && (
+        <div className="space-y-4">
+          <AnimatePresence mode="popLayout">
+            {suggestions.map((s) => (
+              <m.div
+                key={s._id}
+                layout
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="flex flex-col items-stretch justify-between gap-4 p-5 sm:flex-row sm:items-center rounded-[20px] border border-[#2b3031] bg-[#191c1e] hover:border-[#2b3031] hover:bg-[#191c1e] transition-colors"
+              >
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => void handleDelete(s._id)}
-                      className="h-7 px-2 rounded-none border border-red-500/25 bg-red-955/10 text-red-400 hover:bg-red-500/20 text-[8px] font-bold uppercase transition-all"
+                    <h3 className="text-base font-medium text-[#f1f3ee] truncate font-heading tracking-tight">
+                      {s.title}
+                    </h3>
+                    <a
+                      aria-label={`Open ${s.title}`}
+                      href={s.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#929b98] hover:text-[#f1f3ee] transition-colors"
                     >
-                      [ CONFIRM ]
-                    </button>
-                    <button
-                      onClick={() => setDeletingId(null)}
-                      className="size-7 rounded-none border border-emerald-500/15 hover:bg-emerald-500/10 flex items-center justify-center text-emerald-400 transition-colors"
-                    >
-                      <X size={12} />
-                    </button>
+                      <ArrowUpRight className="size-3.5" />
+                    </a>
                   </div>
-                ) : (
+                  <p className="text-sm leading-6 text-[#929b98] mt-1 line-clamp-2">
+                    {s.description}
+                  </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    {s.category && (
+                      <span className="text-xs font-medium text-[#b5e3c4] bg-[#131715] border border-[#2b3031] px-1.5 py-0.5 rounded-xl">
+                        {s.category}
+                      </span>
+                    )}
+                    <span
+                      className={cn(
+                        "text-xs font-medium px-1.5 py-0.5 rounded-xl border",
+                        s.isActive
+                          ? "text-[#b5e3c4] border-[#2b3031] bg-[#b5e3c4]/[0.06]"
+                          : "text-[#929b98] border-[#2b3031] bg-transparent",
+                      )}
+                    >
+                      {s.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0 border-t border-[#2b3031] pt-4 sm:border-0 sm:pt-0">
                   <button
-                    onClick={() => setDeletingId(s._id)}
-                    className="size-7 rounded-none border border-red-500/15 hover:bg-red-955/10 flex items-center justify-center text-red-455 hover:text-red-400 transition-colors"
+                    aria-label={`${s.isActive ? "Hide" : "Show"} ${s.title}`}
+                    onClick={() => toggleActive(s)}
+                    className={cn(
+                      "size-10 rounded-xl border flex items-center justify-center transition-colors",
+                      s.isActive
+                        ? "text-[#b5e3c4] border-[#2b3031] hover:bg-[#b5e3c4]/[0.06]"
+                        : "text-[#929b98] border-[#2b3031] hover:bg-[#b5e3c4]/[0.06]",
+                    )}
                   >
-                    <Trash2 size={12} />
+                    {s.isActive ? <Eye size={12} /> : <EyeOff size={12} />}
                   </button>
-                )}
-              </div>
-            </m.div>
-          ))}
-        </AnimatePresence>
-      </div>
+                  <button
+                    aria-label={`Edit ${s.title}`}
+                    onClick={() => startEdit(s)}
+                    className="size-10 rounded-xl border border-[#2b3031] hover:bg-[#b5e3c4]/[0.06] flex items-center justify-center text-[#b5e3c4] transition-colors"
+                  >
+                    <Pencil size={12} />
+                  </button>
+                  <button
+                    aria-label={`Delete ${s.title}`}
+                    onClick={() => void handleDelete(s._id)}
+                    className="flex size-10 items-center justify-center rounded-xl border border-[#cb9390]/20 text-[#cb9390] transition-colors hover:bg-[#cb9390]/10"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              </m.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      )}
+      {confirmationDialog}
     </div>
   );
 }

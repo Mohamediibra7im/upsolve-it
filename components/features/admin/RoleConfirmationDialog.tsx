@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Dialog,
@@ -7,17 +7,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Crown, User as UserIcon, AlertTriangle, Loader2 } from 'lucide-react';
-import { User } from '@/types/User';
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Crown, User as UserIcon, AlertTriangle, Loader2 } from "lucide-react";
+import { User } from "@/types/User";
 
 interface ConfirmationDialog {
   open: boolean;
   user: User | null;
-  newRole: 'admin' | 'user' | null;
+  newRole: "admin" | "user" | null;
 }
 
 interface RoleConfirmationDialogProps {
@@ -27,85 +27,112 @@ interface RoleConfirmationDialogProps {
   handleConfirmRoleChange: () => void;
 }
 
-export function RoleConfirmationDialog({ 
-  confirmDialog, 
-  setConfirmDialog, 
-  updating, 
-  handleConfirmRoleChange 
+export function RoleConfirmationDialog({
+  confirmDialog,
+  setConfirmDialog,
+  updating,
+  handleConfirmRoleChange,
 }: Readonly<RoleConfirmationDialogProps>) {
-  const isPromotion = confirmDialog.newRole === 'admin';
-  
+  const isPromotion = confirmDialog.newRole === "admin";
+
   const roleConfig = {
-    title: isPromotion ? 'PROMOTION: GRANT ADMIN RIGHTS' : 'DEMOTION: REVOKE ADMIN RIGHTS',
-    actionText: isPromotion ? 'CONFIRM_PROMOTION.EXE' : 'CONFIRM_DEMOTION.EXE',
-    loadingText: isPromotion ? 'PROMOTING...' : 'DEMOTING...',
-    description: isPromotion 
-      ? 'This user will gain administrative privileges and access to all admin tools.'
-      : 'This user will lose administrative privileges and be restricted to regular user bounds.',
+    title: isPromotion ? "Grant admin access?" : "Remove admin access?",
+    actionText: isPromotion ? "Grant access" : "Remove access",
+    loadingText: isPromotion ? "Updating…" : "Updating…",
+    description: isPromotion
+      ? "This user will gain administrative privileges and access to all admin tools."
+      : "This user will lose administrative privileges and be restricted to a standard member account.",
     icon: isPromotion ? Crown : UserIcon,
-    colorClass: isPromotion ? 'text-amber-400' : 'text-red-400',
-    bgColorClass: isPromotion ? 'border-amber-500/20 bg-amber-955/10' : 'border-red-500/20 bg-red-955/10',
+    colorClass: isPromotion ? "text-[#d3b98b]" : "text-[#cb9390]",
+    bgColorClass: isPromotion
+      ? "border-amber-500/20 bg-amber-400/5"
+      : "border-red-500/20 bg-red-400/5",
     bannerColorClass: isPromotion
-      ? 'text-amber-400 bg-amber-955/10 border-amber-500/20'
-      : 'text-red-400 bg-red-955/10 border-red-500/20',
+      ? "text-[#d3b98b] bg-amber-400/5 border-amber-500/20"
+      : "text-[#cb9390] bg-red-400/5 border-red-500/20",
     buttonColorClass: isPromotion
-      ? 'bg-amber-500 text-amber-950 hover:bg-amber-400 font-bold border-transparent'
-      : 'bg-red-600 text-red-50 hover:bg-red-500 font-bold border-transparent'
+      ? "bg-[#d3b98b] text-[#28241b] hover:bg-[#e0ca9f] font-medium border-transparent"
+      : "bg-[#cb9390] text-[#281b1a] hover:bg-[#deb0ad] font-medium border-transparent",
   };
 
   const Icon = roleConfig.icon;
 
   return (
-    <Dialog open={confirmDialog.open} onOpenChange={(open) => !open && setConfirmDialog({ open: false, user: null, newRole: null })}>
-      <DialogContent className="w-[95vw] max-w-md mx-auto sm:w-full rounded-none border border-emerald-500/25 bg-[#060a08] font-mono text-emerald-400">
+    <Dialog
+      open={confirmDialog.open}
+      onOpenChange={(open) =>
+        !open && setConfirmDialog({ open: false, user: null, newRole: null })
+      }
+    >
+      <DialogContent className="max-w-md mx-auto rounded-[20px] border border-[#2b3031] bg-[#191c1e] font-sans text-[#b5e3c4] w-[calc(100vw-2rem)] max-h-[90dvh] overflow-y-auto">
         <DialogHeader className="space-y-3 sm:space-y-4">
           <div className="flex justify-center mb-1">
-            <div className={`p-3 border rounded-none ${roleConfig.bgColorClass}`}>
+            <div className={`p-3 border rounded-xl ${roleConfig.bgColorClass}`}>
               <Icon className="size-6 shrink-0" />
             </div>
           </div>
-          <DialogTitle className={`text-sm font-bold tracking-widest text-center uppercase ${roleConfig.colorClass}`}>
+          <DialogTitle
+            className={`text-2xl font-heading text-center font-medium tracking-[-0.04em] ${roleConfig.colorClass}`}
+          >
             {roleConfig.title}
           </DialogTitle>
           <DialogDescription asChild>
-            <div className="space-y-4 text-emerald-400/80">
-              <div className="bg-[#040604]/60 border border-emerald-500/10 p-3 sm:p-4 rounded-none">
+            <div className="space-y-4 text-[#929b98]">
+              <div className="bg-[#101214] border border-[#2b3031] p-3 sm:p-4 rounded-xl">
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                  <Avatar className="size-8 sm:h-10 sm:w-10 rounded-none border border-emerald-500/20">
-                    <AvatarImage src={confirmDialog.user?.avatar} alt={confirmDialog.user?.codeforcesHandle} />
-                    <AvatarFallback className="bg-emerald-955/15 text-emerald-500/40 text-xs sm:text-sm rounded-none">
-                      {confirmDialog.user?.codeforcesHandle?.slice(0, 2).toUpperCase() || 'UN'}
+                  <Avatar className="size-10 sm:h-10 sm:w-10 rounded-xl border border-[#2b3031]">
+                    <AvatarImage
+                      src={confirmDialog.user?.avatar}
+                      alt={confirmDialog.user?.codeforcesHandle}
+                    />
+                    <AvatarFallback className="bg-[#131715] text-[#929b98] text-xs sm:text-sm rounded-xl">
+                      {confirmDialog.user?.codeforcesHandle
+                        ?.slice(0, 2)
+                        .toUpperCase() || "UN"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="text-center sm:text-left">
-                    <p className="font-bold text-emerald-300 text-sm tracking-wider">
-                      {confirmDialog.user?.codeforcesHandle || 'UNKNOWN_USER'}
+                    <p className="font-medium text-[#f1f3ee] text-sm break-all">
+                      {confirmDialog.user?.codeforcesHandle || "Unknown member"}
                     </p>
-                    <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 text-[9px] font-bold mt-1 text-emerald-500/40 uppercase">
-                      <Badge variant="outline" className="text-[9px] rounded-none border-emerald-500/15 text-emerald-500/50 bg-transparent">
-                        CURRENT: {confirmDialog.user?.role}
+                    <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 text-xs font-medium mt-1 text-[#929b98]">
+                      <Badge
+                        variant="outline"
+                        className="text-xs rounded-xl border-[#2b3031] text-[#929b98] bg-transparent"
+                      >
+                        Current role: {confirmDialog.user?.role}
                       </Badge>
                       <span className="hidden sm:inline">{"->"}</span>
                       <span className="sm:hidden">|</span>
-                      <Badge variant="outline" className="text-[9px] rounded-none border-emerald-500/15 text-emerald-500/50 bg-transparent">
-                        NEW: {confirmDialog.newRole}
+                      <Badge
+                        variant="outline"
+                        className="text-xs rounded-xl border-[#2b3031] text-[#929b98] bg-transparent"
+                      >
+                        New role: {confirmDialog.newRole}
                       </Badge>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className={`flex items-start gap-2.5 p-3 border rounded-none text-left ${roleConfig.bannerColorClass}`}>
+              <div
+                className={`flex items-start gap-2.5 p-3 border rounded-xl text-left ${roleConfig.bannerColorClass}`}
+              >
                 <span className="mt-0.5 shrink-0">
-                  {isPromotion ? <Crown className="size-4" /> : <AlertTriangle className="size-4" />}
+                  {isPromotion ? (
+                    <Crown className="size-4" />
+                  ) : (
+                    <AlertTriangle className="size-4" />
+                  )}
                 </span>
-                <span className="text-[10px] font-bold uppercase tracking-wide leading-relaxed">
+                <span className="text-[13px] leading-6">
                   {roleConfig.description}
                 </span>
               </div>
 
-              <p className="text-[10px] font-bold text-center uppercase tracking-widest text-emerald-300">
-                Are you sure you want to {isPromotion ? 'promote' : 'demote'} this user node?
+              <p className="text-xs font-medium text-center text-[#f1f3ee]">
+                Are you sure you want to {isPromotion ? "promote" : "demote"}{" "}
+                this member?
               </p>
             </div>
           </DialogDescription>
@@ -113,16 +140,18 @@ export function RoleConfirmationDialog({
         <DialogFooter className="flex flex-col sm:flex-row gap-3 sm:justify-center pt-2">
           <Button
             variant="outline"
-            onClick={() => setConfirmDialog({ open: false, user: null, newRole: null })}
+            onClick={() =>
+              setConfirmDialog({ open: false, user: null, newRole: null })
+            }
             disabled={updating !== null}
-            className="w-full sm:w-auto order-2 sm:order-1 rounded-none border border-emerald-500/15 hover:bg-emerald-500/10 text-emerald-400 font-mono text-[9px] uppercase tracking-widest"
+            className="w-full sm:w-auto order-2 sm:order-1 h-11 rounded-xl border border-[#2b3031] hover:bg-[#b5e3c4]/[0.06] text-[#b5e3c4] font-sans text-[13px]"
           >
-            [ CANCEL ]
+            Cancel
           </Button>
           <Button
             onClick={handleConfirmRoleChange}
             disabled={updating !== null}
-            className={`w-full sm:w-auto order-1 sm:order-2 rounded-none font-mono text-[9px] uppercase tracking-widest ${roleConfig.buttonColorClass}`}
+            className={`w-full sm:w-auto order-1 sm:order-2 h-11 rounded-xl font-sans text-sm ${roleConfig.buttonColorClass}`}
           >
             {updating === null ? (
               <>

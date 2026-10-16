@@ -1,37 +1,47 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Crown, Bell, Users, Shield, Settings, Home, MailQuestion } from 'lucide-react';
-import {useUser} from '@/hooks/auth';
-import Loader from '@/components/shared/Loader';
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Crown,
+  Bell,
+  Users,
+  Shield,
+  Settings,
+  Home,
+  MailQuestion,
+} from "lucide-react";
+import { useUser } from "@/hooks/auth";
+import Loader from "@/components/shared/Loader";
 
 const adminPages = [
   {
-    href: '/admin/notifications',
-    label: 'Notifications',
+    href: "/admin/notifications",
+    label: "Notifications",
     icon: Bell,
-    description: 'Manage system notifications'
+    description: "Manage system notifications",
   },
   {
-    href: '/admin/contact',
-    label: 'Contact Messages',
+    href: "/admin/contact",
+    label: "Contact Messages",
     icon: MailQuestion,
-    description: 'View and manage support messages'
+    description: "View and manage support messages",
   },
   {
-    href: '/admin/users',
-    label: 'User Management',
+    href: "/admin/users",
+    label: "User Management",
     icon: Users,
-    description: 'Manage user roles and permissions'
+    description: "Manage user roles and permissions",
   },
 ];
 
-export default function AdminLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function AdminLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   const { user, isLoading } = useUser();
   const router = useRouter();
   const pathname = usePathname();
@@ -40,12 +50,12 @@ export default function AdminLayout({ children }: Readonly<{ children: React.Rea
   useEffect(() => {
     if (!isLoading) {
       if (!user) {
-        router.push('/');
+        router.push("/");
         return;
       }
 
-      if (user.role !== 'admin') {
-        router.push('/');
+      if (user.role !== "admin") {
+        router.push("/");
         return;
       }
 
@@ -62,20 +72,22 @@ export default function AdminLayout({ children }: Readonly<{ children: React.Rea
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-[#101214] text-[#f1f3ee]">
       <div className="container mx-auto p-6 space-y-6">
         {/* Admin Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <div className="flex items-center space-x-3">
-              <div className="p-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500">
-                <Crown className="size-6 text-white" />
+              <div className="p-2 rounded-xl bg-[#b5e3c4]/10 text-[#b5e3c4]">
+                <Crown className="size-6 text-[#b5e3c4]" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                <h1 className="text-4xl font-medium font-heading tracking-[-0.04em]">
                   Admin Panel
                 </h1>
-                <p className="text-muted-foreground">Manage your application with advanced controls</p>
+                <p className="text-muted-foreground">
+                  Manage your application with advanced controls
+                </p>
               </div>
             </div>
           </div>
@@ -86,7 +98,7 @@ export default function AdminLayout({ children }: Readonly<{ children: React.Rea
                 <span>Back to App</span>
               </Link>
             </Button>
-            <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1">
+            <Badge className="bg-[#b5e3c4]/10 text-[#b5e3c4] px-3 py-1">
               <Shield className="size-3 mr-1" />
               Admin
             </Badge>
@@ -94,9 +106,9 @@ export default function AdminLayout({ children }: Readonly<{ children: React.Rea
         </div>
 
         {/* Admin Navigation */}
-        <Card className="border-0 shadow-lg bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm">
-          <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
-            <CardTitle className="flex items-center space-x-2">
+        <Card className="shadow-none rounded-[20px] border border-[#2b3031] bg-[#191c1e]">
+          <CardHeader className="">
+            <CardTitle className="flex items-center space-x-2 font-heading tracking-tight">
               <Settings className="size-5" />
               <span>Quick Navigation</span>
             </CardTitle>
@@ -109,18 +121,22 @@ export default function AdminLayout({ children }: Readonly<{ children: React.Rea
                 return (
                   <Button
                     key={page.href}
-                    variant={isActive ? 'default' : 'outline'}
+                    variant={isActive ? "default" : "outline"}
                     asChild
-                    className={`h-auto p-4 justify-start ${isActive
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0'
-                      : 'hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-900/20 dark:hover:to-pink-900/20'
+                    className={`h-auto p-4 justify-start ${
+                      isActive ? "bg-[#b5e3c4] text-[#14241b] border-0" : ""
                     }`}
                   >
-                    <Link href={page.href} className="flex items-center space-x-3 w-full">
+                    <Link
+                      href={page.href}
+                      className="flex items-center space-x-3 w-full"
+                    >
                       <Icon className="size-5" />
-                      <div className="text-left">
+                      <div className="min-w-0 text-left">
                         <div className="font-semibold">{page.label}</div>
-                        <div className={`text-sm ${isActive ? 'text-white/80' : 'text-muted-foreground'}`}>
+                        <div
+                          className={`text-sm ${isActive ? "text-[#14241b]/80" : "text-muted-foreground"}`}
+                        >
                           {page.description}
                         </div>
                       </div>
@@ -133,17 +149,8 @@ export default function AdminLayout({ children }: Readonly<{ children: React.Rea
         </Card>
 
         {/* Page Content */}
-        <div className="space-y-6">
-          {children}
-        </div>
+        <div className="space-y-6">{children}</div>
       </div>
     </div>
   );
 }
-
-
-
-
-
-
-
