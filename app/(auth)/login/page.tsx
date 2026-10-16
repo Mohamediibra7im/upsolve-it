@@ -2,8 +2,9 @@ import ClientPage from "./page.client";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Secure Login | Upsolve.it",
-  description: "Access your training dashboard and sync your Codeforces progress.",
+  title: "Log in",
+  description:
+    "Log in to continue your Codeforces practice and review your progress.",
 };
 
 export default function Page(props: any) {

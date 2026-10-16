@@ -1,7 +1,6 @@
 import "./globals.css";
 import localFont from "next/font/local";
 import type React from "react";
-import Script from "next/script";
 import type { Viewport } from "next";
 import AuthGuard from "@/components/providers/AuthGuard";
 import ThemeProvider from "@/components/providers/ThemeProvider";
@@ -33,42 +32,6 @@ export const viewport: Viewport = {
   initialScale: 1,
   themeColor: "#101214",
   colorScheme: "dark",
-};
-
-const structuredData = {
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  name: "Upsolve.it",
-  description:
-    "The ultimate command center for competitive programmers. Master Codeforces with intelligent practice sessions, track your evolution, and dominate the competitive programming ladder.",
-  url: "https://upsolve-it.hnuicpc.tech",
-  applicationCategory: "EducationalApplication",
-  operatingSystem: "Web Browser",
-  offers: {
-    "@type": "Offer",
-    price: "0",
-    priceCurrency: "USD",
-  },
-  author: {
-    "@type": "Person",
-    name: "Mohammed Ibrahim",
-  },
-  keywords:
-    "Upsolve.it, Codeforces, competitive programming, virtual contest, practice problems, algorithm practice, upsolve, HNU ICPC",
-  featureList: [
-    "Custom virtual contests",
-    "Problem rating selection",
-    "Progress tracking",
-    "Statistics and analytics",
-    "Upsolving list",
-    "Tag-based problem selection",
-    "Problem statistics",
-    "Rating tracking",
-    "Problem analytics",
-    "Practice sessions",
-    "Problem analytics",
-
-  ],
 };
 
 export default function RootLayout({
@@ -114,11 +77,6 @@ export default function RootLayout({
           </ToastProvider>
         </ThemeProvider>
         <Analytics />
-        <Script
-          id="structured-data"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, '\\u003c') }}
-        />
       </body>
     </html>
   );

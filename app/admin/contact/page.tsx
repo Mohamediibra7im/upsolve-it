@@ -2,8 +2,9 @@ import AdminContactMessages from "@/components/features/admin/AdminContactMessag
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Contact Messages | Admin Hub",
-  description: "View and manage incoming support messages.",
+  title: "Support inbox",
+  description:
+    "Read community questions and feedback, and manage support replies.",
 };
 
 export default function AdminContactRoute() {

@@ -1,9 +1,12 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
+import { NO_INDEX_ROBOTS } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Topic Problems | Upsolve.it",
-  description: "Practice problems matching your roadmap level and topic.",
+  title: "Session problems",
+  description:
+    "Practice the problems in this learning session and track your completed solves.",
+  robots: NO_INDEX_ROBOTS,
 };
 
 export default async function Page({

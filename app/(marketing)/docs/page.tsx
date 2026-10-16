@@ -1,20 +1,9 @@
+import { publicPageMetadata } from "@/lib/seo";
 import fs from "fs";
 import path from "path";
 import ClientPage from "./page.client";
-import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Documentation | Upsolve.it",
-  description:
-    "Master the Upsolve.it platform. Read the comprehensive user guide covering training sessions, upsolving, notification systems, statistics, and more.",
-  keywords: [
-    "Upsolve.it documentation",
-    "competitive programming guide",
-    "Codeforces tracker training",
-    "how to upsolve",
-    "CP statistics analytics",
-  ],
-};
+export const metadata = publicPageMetadata("/docs");
 
 const stripEmojis = (str: string) => {
   return str.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD00-\uDFFF]/g, "");

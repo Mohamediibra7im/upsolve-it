@@ -2,8 +2,9 @@ import ClientPage from "./page.client";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Levels Management | Upsolve.it Admin",
-  description: "Manage difficulty levels and curriculum.",
+  title: "Training level settings",
+  description:
+    "Configure training difficulty, target ratings, and session durations.",
 };
 
 export default function Page(props: any) {

@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
+import { publicPageMetadata } from "@/lib/seo";
 import { HelpCenter } from "@/components/features/help";
 
-export const metadata: Metadata = {
-  title: 'Help Center | Upsolve.it',
-  description: 'Get help and learn how to use Upsolve.it effectively. Find tutorials, FAQs, and support resources.',
-};
+export const metadata = publicPageMetadata("/help");
 
 export default function HelpPage() {
   return (

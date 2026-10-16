@@ -2,8 +2,8 @@ import AdminWhatsNew from "@/components/features/admin/AdminWhatsNew";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "What's New Management | Admin Hub",
-  description: "Create, edit, delete, and publish platform release notes and changelog entries.",
+  title: "Product update management",
+  description: "Write, preview, and publish product updates for the community.",
 };
 
 export default function AdminWhatsNewRoute() {

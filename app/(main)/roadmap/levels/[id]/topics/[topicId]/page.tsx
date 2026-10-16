@@ -1,9 +1,12 @@
 import ClientPage from "./page.client";
 import type { Metadata } from "next";
+import { NO_INDEX_ROBOTS } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Roadmap Topic | Upsolve.it",
-  description: "Interactive learning materials and problems for your roadmap topic.",
+  title: "Learning session",
+  description:
+    "Study this session’s resources and build understanding with related practice problems.",
+  robots: NO_INDEX_ROBOTS,
 };
 
 export default function Page(props: any) {

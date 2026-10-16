@@ -1,9 +1,12 @@
 import ClientPage from "./page.client";
 import type { Metadata } from "next";
+import { NO_INDEX_ROBOTS } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Analytics & Statistics | Upsolve.it",
-  description: "Detailed analysis of your competitive programming rating, speed, accuracy, and performance.",
+  title: "Your statistics",
+  description:
+    "Review your practice activity, problem-solving progress, and training results.",
+  robots: NO_INDEX_ROBOTS,
 };
 
 export default function Page(props: any) {

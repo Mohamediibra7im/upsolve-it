@@ -2,8 +2,9 @@ import ClientPage from "./page.client";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Logs | Upsolve.it Admin",
-  description: "View platform activity logs.",
+  title: "Activity log",
+  description:
+    "Review administrative activity and changes across the platform.",
 };
 
 export default function Page(props: any) {

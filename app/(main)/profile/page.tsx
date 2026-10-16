@@ -1,9 +1,12 @@
 import ClientPage from "./page.client";
 import type { Metadata } from "next";
+import { NO_INDEX_ROBOTS } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "User Profile | Upsolve.it",
-  description: "View your profile, handle details, and competitive programming statistics.",
+  title: "Your profile",
+  description:
+    "Manage your Codeforces profile, account details, and practice preferences.",
+  robots: NO_INDEX_ROBOTS,
 };
 
 export default function Page(props: any) {

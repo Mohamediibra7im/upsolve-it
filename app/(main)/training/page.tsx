@@ -1,9 +1,12 @@
 import ClientPage from "./page.client";
 import type { Metadata } from "next";
+import { NO_INDEX_ROBOTS } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Training Center | Upsolve.it",
-  description: "Practice virtual contests, choose problem ratings, and track training sessions.",
+  title: "Training",
+  description:
+    "Build a focused practice session with Codeforces problems suited to your goals.",
+  robots: NO_INDEX_ROBOTS,
 };
 
 export default function Page(props: any) {
