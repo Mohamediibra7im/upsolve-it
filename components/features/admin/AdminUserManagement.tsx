@@ -3,7 +3,7 @@
 import { AdminState, AdminRetry } from "./AdminState";
 
 import { useState, useEffect, useMemo } from "react";
-import Image from "next/image";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -307,20 +307,9 @@ export default function AdminUserManagement() {
                   key={u._id}
                   className="size-5 rounded-xl border border-[#2b3031] bg-[#131715] overflow-hidden shrink-0"
                 >
-                  {u.avatar ? (
-                    <Image
-                      src={u.avatar}
-                      alt=""
-                      width={20}
-                      height={20}
-                      unoptimized
-                      className="size-full object-cover"
-                    />
-                  ) : (
-                    <span className="flex size-full items-center justify-center text-[10px] font-medium text-[#b5e3c4]">
+                  <Avatar className="size-full rounded-[inherit] border-0"><AvatarImage src={u.avatar} alt={u.codeforcesHandle} /><AvatarFallback><span className="flex size-full items-center justify-center text-[10px] font-medium text-[#b5e3c4]">
                       {u.codeforcesHandle?.[0]}
-                    </span>
-                  )}
+                    </span></AvatarFallback></Avatar>
                 </div>
               ))}
             </div>

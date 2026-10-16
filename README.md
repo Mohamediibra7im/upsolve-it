@@ -57,6 +57,14 @@ npm run dev
 | `npm run lint` | Run ESLint check for JSX validations |
 | `npm test` | Run frontend test suites |
 
+### Profile photos
+
+Codeforces avatars use `/api/profile-image`, which accepts only public image paths on `userpic.codeforces.org`, validates image bytes, and caches successful photos for 24 hours with stale delivery during revalidation. Failed downloads are not cached. Avatars show initials during failures and retry twice; unavailable upstream photos cannot be recreated.
+
+### Local dependency security backport
+
+`vendor/braces` is an MIT-licensed local backport of braces 3.0.3 with bounded nesting and AST cycle checks. It is installed as an explicit local dependency and override; `.npmrc` packs local dependencies so CI installs their dependencies correctly. `npm run test:dependencies` checks the actual chokidar and micromatch consumers. Replace this backport only after verifying an upstream fix against those tests. CI and deployment audit development dependencies as well as production dependencies.
+
 ### Test dependency compatibility
 
 Tests use the SWC transformer supplied by `next/jest`. The test dependency overrides use jsdom 27.4 and test-exclude 8 to replace deprecated encoding and glob packages. Use Node 22.12 or newer; CI runs Node 22.

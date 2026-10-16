@@ -1,4 +1,4 @@
 {
   "installCommand": "env -u npm_config_cache_dir -u NPM_CONFIG_CACHE_DIR npm ci --include=dev",
-  "buildCommand": "env -u npm_config_cache_dir -u NPM_CONFIG_CACHE_DIR sh -c 'NODE_ENV=test npm test -- --runInBand && npm run lint && npx tsc --noEmit --incremental false && npm run build'"
+  "buildCommand": "env -u npm_config_cache_dir -u NPM_CONFIG_CACHE_DIR sh -c 'npm audit --audit-level=moderate && NODE_ENV=test npm test -- --runInBand && npm run lint && npx tsc --noEmit --incremental false && npm run build'"
 }

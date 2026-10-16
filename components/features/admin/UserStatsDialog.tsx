@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -81,18 +81,7 @@ export function UserStatsDialog({
                   animate={{ scale: 1, opacity: 1 }}
                   className="mb-4 size-16 rounded-xl bg-[#191c1e] border border-[#2b3031] shadow-none flex items-center justify-center p-0 overflow-hidden shrink-0"
                 >
-                  {userStats.user.avatar ? (
-                    <Image
-                      src={userStats.user.avatar}
-                      alt=""
-                      width={64}
-                      height={64}
-                      unoptimized
-                      className="size-full object-cover"
-                    />
-                  ) : (
-                    <BarChart className="size-10 text-[#b5e3c4]" />
-                  )}
+                  <Avatar className="size-full rounded-[inherit] border-0"><AvatarImage src={userStats.user.avatar} alt={userStats.user.codeforcesHandle} /><AvatarFallback><BarChart className="size-10 text-[#b5e3c4]" /></AvatarFallback></Avatar>
                 </m.div>
 
                 <div className="space-y-1.5">

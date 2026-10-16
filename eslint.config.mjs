@@ -7,6 +7,7 @@ const eslintConfig = [
   {
     ignores: [
       "components/ui/**",
+      "vendor/**",
       "lib/utils.ts",
       ".next/**",
       "out/**",

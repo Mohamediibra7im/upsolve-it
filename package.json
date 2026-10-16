@@ -7,9 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
-    "test": "jest",
+    "test": "npm run test:dependencies && jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:dependencies": "node --test test/dependencies/*.test.cjs"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.1",
@@ -53,6 +54,7 @@
     "@types/nodemailer": "^8.0.0",
     "@types/react": "^19.2.16",
     "@types/react-dom": "^19.2.3",
+    "braces": "file:vendor/braces",
     "eslint": "^9.21.0",
     "eslint-config-next": "^16.3.8",
     "eslint-config-prettier": "^9.1.0",
@@ -81,7 +83,8 @@
     },
     "test-exclude": "^8.0.0",
     "brace-expansion@1": "^1.1.21",
-    "js-yaml@3": "^4.3.2"
+    "js-yaml@3": "^4.3.2",
+    "braces": "$braces"
   },
   "allowScripts": {
     "unrs-resolver@1.12.2": true,

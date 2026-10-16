@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import Image from "next/image";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import useSWR from "swr";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -164,7 +164,7 @@ export function UserProfileDialog({
               <section className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex min-w-0 items-center gap-4">
                   <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-primary/10 font-heading text-2xl text-primary">
-                    {user.avatar ? <Image src={user.avatar} alt="" width={64} height={64} unoptimized className="size-full object-cover" /> : user.codeforcesHandle.charAt(0).toUpperCase()}
+                    <Avatar className="size-full rounded-[inherit] border-0"><AvatarImage src={user.avatar} alt={user.codeforcesHandle} /><AvatarFallback className="text-2xl">{user.codeforcesHandle.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
                   </div>
                   <div className="min-w-0">
                     <p className={cn("mb-1 text-xs font-medium", aesthetic.text)}>{aesthetic.label}</p>

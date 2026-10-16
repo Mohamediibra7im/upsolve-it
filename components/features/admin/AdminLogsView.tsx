@@ -3,7 +3,7 @@
 import { AdminState, AdminRetry } from "./AdminState";
 
 import { useState } from "react";
-import Image from "next/image";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAdminLogs } from "@/hooks/admin/useAdminLogs";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -170,20 +170,9 @@ export default function AdminLogsView() {
                     <TableCell className="px-6 py-3.5">
                       <div className="flex items-center gap-2">
                         <div className="h-6 w-6 rounded-xl border border-[#2b3031] bg-[#131715] overflow-hidden shrink-0">
-                          {log.performedBy?.avatar ? (
-                            <Image
-                              src={log.performedBy.avatar}
-                              alt={log.performedByHandle}
-                              width={24}
-                              height={24}
-                              unoptimized
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <div className="h-full w-full flex items-center justify-center text-[#929b98] bg-background">
+                          <Avatar className="size-full rounded-[inherit] border-0"><AvatarImage src={log.performedBy?.avatar} alt={log.performedByHandle} /><AvatarFallback><div className="h-full w-full flex items-center justify-center text-[#929b98] bg-background">
                               <User size={10} />
-                            </div>
-                          )}
+                            </div></AvatarFallback></Avatar>
                         </div>
                         <div className="text-xs font-medium text-[#f1f3ee] truncate max-w-[120px]">
                           {log.performedByHandle}
@@ -254,20 +243,9 @@ export default function AdminLogsView() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="h-10 w-10 rounded-xl border border-[#2b3031] bg-[#131715] overflow-hidden shrink-0">
-                          {log.performedBy?.avatar ? (
-                            <Image
-                              src={log.performedBy.avatar}
-                              alt={log.performedByHandle}
-                              width={28}
-                              height={28}
-                              unoptimized
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <div className="h-full w-full flex items-center justify-center text-[#929b98] bg-background">
+                          <Avatar className="size-full rounded-[inherit] border-0"><AvatarImage src={log.performedBy?.avatar} alt={log.performedByHandle} /><AvatarFallback><div className="h-full w-full flex items-center justify-center text-[#929b98] bg-background">
                               <User size={12} />
-                            </div>
-                          )}
+                            </div></AvatarFallback></Avatar>
                         </div>
                         <div>
                           <div className="text-xs font-medium text-[#f1f3ee]">
