@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import {useUser} from "@/hooks/auth";
+import { useUser } from "@/hooks/auth";
 import Loader from "@/components/shared/Loader";
 import VerificationRequired from "@/components/shared/VerificationRequired";
 
@@ -14,7 +14,6 @@ const protectedRoots = [
   "/upsolve",
   "/friends",
   "/roadmap",
-  "/community",
   "/report",
 ];
 
@@ -61,9 +60,7 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   // Block unverified users from all pages (except public/login pages)
   if (user && !user.isVerified && !isPublicRoute) {
     return (
-      <VerificationRequired isVerified={false}>
-        {children}
-      </VerificationRequired>
+      <VerificationRequired isVerified={false}>{children}</VerificationRequired>
     );
   }
 

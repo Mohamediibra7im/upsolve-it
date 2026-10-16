@@ -1,141 +1,70 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { m as motion, AnimatePresence } from "framer-motion";
-import { HelpCircle, Bell, Lightbulb, Cpu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePathname } from "next/navigation";
+import { HelpCircle, Bell, Lightbulb } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+const supportLinks = [
+  { href: "/help", label: "Help center", icon: HelpCircle },
+  { href: "/whats-new", label: "What's new", icon: Bell },
+  { href: "/suggestions", label: "Share a suggestion", icon: Lightbulb },
+];
 
 export default function SystemConsoleFab() {
   const pathname = usePathname();
-  const [expanded, setExpanded] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Close menu on navigation
-  useEffect(() => {
-    setExpanded(false);
-  }, [pathname]);
-
-  // Close menu on click outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setExpanded(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   if (pathname.startsWith("/admin")) return null;
 
-  const showHelp = pathname !== "/help";
-  const showWhatsNew = pathname !== "/whats-new";
-  const showSuggestions = pathname !== "/suggestions";
-
-  // If no buttons need to be displayed, hide the FAB entirely
-  if (!showHelp && !showWhatsNew && !showSuggestions) return null;
-
-  const itemVariants = {
-    hidden: { opacity: 0, x: 15, scale: 0.9 },
-    visible: { 
-      opacity: 1, 
-      x: 0, 
-      scale: 1,
-      transition: { type: "spring" as const, stiffness: 350, damping: 25 }
-    },
-    exit: { 
-      opacity: 0, 
-      x: 10, 
-      scale: 0.9,
-      transition: { duration: 0.12 }
-    }
-  };
-
   return (
-    <div 
-      ref={containerRef}
-      className="fixed bottom-6 right-6 z-50 md:bottom-8 md:right-8 flex items-center gap-2 font-mono pointer-events-none"
+    <div
+      className={cn(
+        "fixed bottom-5 right-5 z-50 font-sans sm:bottom-6 sm:right-7",
+        pathname === "/training" && "hidden lg:block",
+      )}
     >
-      <div className="flex items-center gap-2 pointer-events-auto">
-        <AnimatePresence>
-          {expanded && (
-            <div className="flex items-center gap-2">
-              {showHelp && (
-                <motion.div
-                  variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                >
-                  <Link
-                    href="/help"
-                    aria-label="Help manual"
-                    className="h-9 px-3 flex items-center justify-center gap-1.5 rounded-sm border border-emerald-500/25 bg-[#060a08]/90 text-emerald-450 hover:bg-emerald-500/10 hover:border-emerald-500/50 text-[9px] font-bold uppercase tracking-widest shadow-[0_4px_12px_rgba(0,0,0,0.6)] transition-all"
-                  >
-                    <HelpCircle size={10} className="shrink-0" />
-                    <span>HELP</span>
-                  </Link>
-                </motion.div>
-              )}
-
-              {showWhatsNew && (
-                <motion.div
-                  variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                >
-                  <Link
-                    href="/whats-new"
-                    aria-label="What's new changelog"
-                    className="h-9 px-3 flex items-center justify-center gap-1.5 rounded-sm border border-amber-500/25 bg-[#060a08]/90 text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/50 text-[9px] font-bold uppercase tracking-widest shadow-[0_4px_12px_rgba(0,0,0,0.6)] transition-all"
-                  >
-                    <Bell size={10} className="shrink-0" />
-                    <span>NEWS</span>
-                  </Link>
-                </motion.div>
-              )}
-
-              {showSuggestions && (
-                <motion.div
-                  variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                >
-                  <Link
-                    href="/suggestions"
-                    aria-label="Suggested resources"
-                    className="h-9 px-3 flex items-center justify-center gap-1.5 rounded-sm border border-sky-400/25 bg-[#060a08]/90 text-sky-400 hover:bg-sky-500/10 hover:border-sky-405/50 text-[9px] font-bold uppercase tracking-widest shadow-[0_4px_12px_rgba(0,0,0,0.6)] transition-all"
-                  >
-                    <Lightbulb size={10} className="shrink-0" />
-                    <span>SUGG</span>
-                  </Link>
-                </motion.div>
-              )}
-            </div>
-          )}
-        </AnimatePresence>
-
-        <button
-          onClick={() => setExpanded(!expanded)}
-          aria-label="Toggle system control console"
-          className={cn(
-            "size-10 flex items-center justify-center rounded-sm border transition-all shadow-[0_4px_12px_rgba(0,0,0,0.6)]",
-            expanded
-              ? "border-red-500/30 text-red-400 bg-red-950/10 hover:bg-red-500/10 hover:border-red-500/50"
-              : "border-emerald-500/25 text-emerald-450 bg-[#060a08]/95 hover:bg-emerald-500/10 hover:border-emerald-500/40"
-          )}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            aria-label="Open help and resources"
+            className="flex size-11 items-center justify-center rounded-full border border-[#343a37] bg-[#202523] text-[#b6bdb9] shadow-lg transition-colors hover:border-[#6f8174] hover:text-[#b5e3c4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b5e3c4] data-[state=open]:text-[#b5e3c4]"
+          >
+            <HelpCircle size={19} strokeWidth={1.7} />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          side="top"
+          sideOffset={12}
+          className="w-56 rounded-2xl border-[#2b3031] bg-[#191c1e] p-1.5 font-sans shadow-xl"
         >
-          {expanded ? (
-            <X size={13} className="shrink-0" />
-          ) : (
-            <Cpu size={14} className="shrink-0 text-emerald-400 animate-pulse" />
-          )}
-        </button>
-      </div>
+          <DropdownMenuLabel className="px-3 py-2 text-xs font-medium text-[#747e79]">
+            Here to help
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator className="mx-1 bg-[#2b3031]" />
+          {supportLinks
+            .filter((link) => link.href !== pathname)
+            .map((link) => (
+              <DropdownMenuItem
+                key={link.href}
+                asChild
+                className="cursor-pointer rounded-lg px-3 py-2.5 text-[13px] text-[#b6bdb9] focus:bg-white/[0.06] focus:text-[#f1f3ee]"
+              >
+                <Link href={link.href}>
+                  <link.icon />
+                  {link.label}
+                </Link>
+              </DropdownMenuItem>
+            ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

@@ -40,27 +40,35 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="flex min-h-[50vh] items-center justify-center p-4">
-          <Card className="w-full max-w-md border-destructive/30 bg-destructive/5">
-            <CardContent className="pt-6 pb-8 px-6 text-center">
-              <div className="mx-auto mb-4 size-12 rounded-full bg-destructive/10 flex items-center justify-center">
+        <div
+          role="alert"
+          className="flex min-h-[60vh] items-center justify-center px-5 py-12"
+        >
+          <Card className="w-full max-w-lg rounded-3xl border-border bg-card">
+            <CardContent className="p-8 text-center sm:p-10">
+              <div className="mx-auto mb-6 size-12 rounded-2xl border border-destructive/20 bg-destructive/10 flex items-center justify-center">
                 <AlertTriangle className="size-6 text-destructive" />
               </div>
-              <h2 className="text-lg font-semibold text-foreground mb-2">
+              <h2 className="font-heading text-2xl font-medium tracking-tight text-foreground mb-3">
                 Something went wrong
               </h2>
-              <p className="text-sm text-muted-foreground mb-6">
+              <p className="text-sm leading-7 text-muted-foreground mb-7">
                 We apologize for the inconvenience. Please try refreshing the
                 page or contact support if the issue persists.
               </p>
-              <Button onClick={this.handleRetry} className="gap-2">
+              <Button
+                onClick={this.handleRetry}
+                className="h-11 gap-2 rounded-xl"
+              >
                 <RefreshCw className="size-4" />
                 Refresh Page
               </Button>
               {process.env.NODE_ENV === "development" && this.state.error && (
                 <details className="mt-6 text-left text-xs text-muted-foreground">
-                  <summary className="cursor-pointer mb-2">Error Details</summary>
-                  <pre className="bg-background p-3 rounded border overflow-auto max-h-40">
+                  <summary className="cursor-pointer mb-2">
+                    Error Details
+                  </summary>
+                  <pre className="bg-background p-4 rounded-xl border border-border overflow-auto max-h-40">
                     {this.state.error.toString()}
                   </pre>
                 </details>

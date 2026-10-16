@@ -1,6 +1,14 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Check, AlertTriangle, AlertCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -41,7 +49,7 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
       setItems((prev) => [...prev, next]);
       timersRef.current[id] = window.setTimeout(() => remove(id), durationMs);
     },
-    [remove]
+    [remove],
   );
 
   const value = useMemo(() => ({ toast }), [toast]);
@@ -56,7 +64,7 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed z-[99999] top-24 right-4 left-4 sm:left-auto sm:top-24 sm:bottom-auto flex flex-col gap-2 pointer-events-none max-w-sm sm:max-w-md mx-auto sm:mx-0">
+      <div className="fixed z-[200] top-24 right-4 left-4 sm:left-auto sm:top-24 sm:bottom-auto flex flex-col gap-2 pointer-events-none max-w-sm sm:max-w-md mx-auto sm:mx-0">
         {items.map((item) => (
           <div key={item.id} className="pointer-events-auto">
             <ToastCard item={item} onClose={() => remove(item.id)} />
@@ -74,13 +82,16 @@ export const useToast = () => {
 };
 
 const variantClasses: Record<ToastVariant, string> = {
-  default: "border-emerald-500/25 bg-[#060a08] text-emerald-400",
-  success: "border-emerald-500 bg-[#060a08] text-emerald-300",
-  warning: "border-amber-500/30 bg-[#060a08] text-amber-400",
-  destructive: "border-red-500/30 bg-[#060a08] text-red-400",
+  default: "border-border bg-card text-foreground",
+  success: "border-primary bg-card text-foreground",
+  warning: "border-amber-500/30 bg-card text-amber-400",
+  destructive: "border-red-500/30 bg-card text-red-400",
 };
 
-const variantIcons: Record<ToastVariant, React.ComponentType<{ className?: string }>> = {
+const variantIcons: Record<
+  ToastVariant,
+  React.ComponentType<{ className?: string }>
+> = {
   default: AlertCircle,
   success: Check,
   warning: AlertTriangle,
@@ -88,23 +99,32 @@ const variantIcons: Record<ToastVariant, React.ComponentType<{ className?: strin
 };
 
 const variantBarColors: Record<ToastVariant, string> = {
-  default: "bg-emerald-500",
-  success: "bg-emerald-400",
+  default: "bg-primary",
+  success: "bg-primary/90",
   warning: "bg-amber-500",
   destructive: "bg-red-500",
 };
 
-const ToastCard = ({ item, onClose }: { item: ToastItem; onClose: () => void }) => {
+const ToastCard = ({
+  item,
+  onClose,
+}: {
+  item: ToastItem;
+  onClose: () => void;
+}) => {
   const { title, description, variant = "default" } = item;
   const IconComponent = variantIcons[variant];
 
   return (
-    <div className={cn(
-      "relative overflow-hidden border rounded font-mono p-4",
-      "shadow-[0_4px_12px_rgba(0,0,0,0.5)] animate-in fade-in-0 zoom-in-95 slide-in-from-top-3",
-      "duration-200 ease-out hover:border-emerald-500/50 transition-all",
-      variantClasses[variant]
-    )}>
+    <div
+      role={variant === "destructive" ? "alert" : "status"}
+      className={cn(
+        "relative overflow-hidden rounded-2xl border bg-card font-sans p-5",
+        "shadow-none animate-in fade-in-0 zoom-in-95 slide-in-from-top-3",
+        "duration-200 ease-out hover:border-primary/20 transition-all",
+        variantClasses[variant],
+      )}
+    >
       <div className="flex items-start gap-3">
         {/* Icon */}
         <div className="flex-shrink-0 mt-0.5">
@@ -114,12 +134,12 @@ const ToastCard = ({ item, onClose }: { item: ToastItem; onClose: () => void }) 
         {/* Content */}
         <div className="flex-1 min-w-0">
           {title && (
-            <div className="font-bold text-xs uppercase tracking-wider mb-1 leading-tight">
+            <div className="font-medium text-xs   mb-1 leading-tight">
               {title}
             </div>
           )}
           {description && (
-            <div className="text-[10px] text-emerald-500/40 leading-relaxed">
+            <div className="text-xs text-muted-foreground leading-relaxed">
               {description}
             </div>
           )}
@@ -128,7 +148,7 @@ const ToastCard = ({ item, onClose }: { item: ToastItem; onClose: () => void }) 
         {/* Close Button */}
         <button
           aria-label="Close notification"
-          className="flex-shrink-0 p-0.5 rounded text-emerald-500/30 hover:text-emerald-400 transition-colors"
+          className="flex-shrink-0 p-0.5 rounded text-muted-foreground hover:text-primary transition-colors"
           onClick={onClose}
         >
           <X className="size-3.5" />
@@ -136,11 +156,11 @@ const ToastCard = ({ item, onClose }: { item: ToastItem; onClose: () => void }) 
       </div>
 
       {/* Progress Bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-emerald-950/20">
+      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-muted/40">
         <div
           className={cn(
             "h-full animate-progress-shrink origin-left",
-            variantBarColors[variant]
+            variantBarColors[variant],
           )}
           style={{ animationDuration: `${item.durationMs ?? 2800}ms` }}
         />

@@ -70,7 +70,7 @@ const ChangePasswordDialog = () => {
     try {
       const response = await resetPassword(currentPassword, newPassword);
       if (response.success) {
-        setSuccess("Password changed successfully!");
+        setSuccess("Password changed.");
         setTimeout(() => {
           setOpen(false);
           handleReset();
@@ -95,52 +95,67 @@ const ChangePasswordDialog = () => {
       <SheetTrigger asChild>
         <Button
           variant="outline"
-          className="w-full h-10 rounded-sm border border-emerald-500/20 bg-transparent text-emerald-450 font-bold uppercase tracking-widest text-[10px] hover:bg-emerald-500/10 transition-all font-mono"
+          className="w-full h-10 rounded-xl border border-border bg-transparent text-primary font-medium   text-xs hover:bg-primary/10 transition-all font-sans"
         >
           <KeyRound className="mr-1.5 size-3.5" />
-          <span>[ CHANGE_PASSWORD ]</span>
+          <span>Change password</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="h-auto border-t border-emerald-500/25 bg-[#060a08] font-mono text-emerald-400 p-6 shadow-[0_-6px_22px_rgba(0,0,0,0.6)]">
-        <SheetHeader className="space-y-1 pt-2">
-          <div className="flex items-center gap-1.5 text-[8px] font-bold text-emerald-500/40 uppercase tracking-widest">
-            <span>SECURITY_PROTOCOL</span>
-            <span>{"//"}</span>
-            <span>CREDENTIAL_ROTATION</span>
+      <SheetContent
+        side="bottom"
+        className="h-auto max-h-[90dvh] overflow-y-auto rounded-t-3xl border-t border-border bg-card font-sans text-foreground p-6 shadow-none"
+      >
+        <SheetHeader className="mx-auto max-w-md space-y-2 pt-2 text-left">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground  ">
+            <span>Account security</span>
+            <span aria-hidden="true">/</span>
+            <span>Password</span>
           </div>
-          <SheetTitle className="text-sm font-bold uppercase tracking-wider text-white">Change Password</SheetTitle>
-          <SheetDescription className="text-[10px] text-emerald-500/60 uppercase">
+          <SheetTitle className="text-2xl font-medium text-foreground">
+            Change Password
+          </SheetTitle>
+          <SheetDescription className="text-sm leading-relaxed text-muted-foreground">
             Enter your current password and create a new strong password.
           </SheetDescription>
         </SheetHeader>
-        
+
         <div className="mx-auto max-w-md mt-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="block text-[9px] font-bold uppercase tracking-wider text-emerald-500/50">
-                [ CURRENT_PASSWORD ]:
+              <label
+                htmlFor="current-password"
+                className="block text-sm font-medium text-muted-foreground"
+              >
+                Current password
               </label>
               <Input
                 type="password"
+                id="current-password"
+                autoComplete="current-password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 placeholder="Enter your current password"
                 required
-                className="h-10 rounded-sm bg-[#040604] border border-emerald-500/20 text-xs text-emerald-300 placeholder-emerald-500/20 focus:border-emerald-500/50 outline-none transition-all font-mono"
+                className="h-10 rounded-xl bg-background border border-border text-xs text-foreground placeholder:text-muted-foreground focus:border-primary/50 outline-none transition-all font-sans"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-[9px] font-bold uppercase tracking-wider text-emerald-500/50">
-                [ NEW_PASSWORD ]:
+              <label
+                htmlFor="new-password"
+                className="block text-sm font-medium text-muted-foreground"
+              >
+                New password
               </label>
               <Input
                 type="password"
+                id="new-password"
+                autoComplete="new-password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Create a strong password"
                 required
-                className="h-10 rounded-sm bg-[#040604] border border-emerald-500/20 text-xs text-emerald-300 placeholder-emerald-500/20 focus:border-emerald-500/50 outline-none transition-all font-mono"
+                className="h-10 rounded-xl bg-background border border-border text-xs text-foreground placeholder:text-muted-foreground focus:border-primary/50 outline-none transition-all font-sans"
               />
               <div className="pt-0.5">
                 <PasswordStrengthIndicator password={newPassword} />
@@ -148,51 +163,56 @@ const ChangePasswordDialog = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-[9px] font-bold uppercase tracking-wider text-emerald-500/50">
-                [ CONFIRM_NEW_PASSWORD ]:
+              <label
+                htmlFor="confirm-password"
+                className="block text-sm font-medium text-muted-foreground"
+              >
+                Confirm new password
               </label>
               <Input
                 type="password"
+                id="confirm-password"
+                autoComplete="new-password"
                 value={confirmNewPassword}
                 onChange={(e) => setConfirmNewPassword(e.target.value)}
                 placeholder="Re-enter your new password"
                 required
-                className="h-10 rounded-sm bg-[#040604] border border-emerald-500/20 text-xs text-emerald-300 placeholder-emerald-500/20 focus:border-emerald-500/50 outline-none transition-all font-mono"
+                className="h-10 rounded-xl bg-background border border-border text-xs text-foreground placeholder:text-muted-foreground focus:border-primary/50 outline-none transition-all font-sans"
               />
             </div>
 
             {error && (
-              <div className="p-3 rounded-sm bg-red-955/10 border border-red-500/20 text-red-400 text-[9px] uppercase tracking-wide text-center flex items-center justify-center gap-1.5">
-                <ShieldAlert size={12} className="shrink-0 animate-pulse" />
+              <div className="p-3 rounded-xl bg-destructive/10 border border-red-500/20 text-red-400 text-xs   text-center flex items-center justify-center gap-1.5">
+                <ShieldAlert size={12} className="shrink-0 " />
                 <span>{error}</span>
               </div>
             )}
             {success && (
-              <div className="p-3 rounded-sm bg-emerald-500/5 border border-emerald-500/20 text-emerald-300 text-[9px] uppercase tracking-wide text-center flex items-center justify-center gap-1.5">
+              <div className="p-3 rounded-xl bg-primary/5 border border-border text-foreground text-xs   text-center flex items-center justify-center gap-1.5">
                 <CheckCircle size={12} className="shrink-0" />
                 <span>{success}</span>
               </div>
             )}
 
-            <div className="flex gap-3 pt-4 border-t border-emerald-500/10">
+            <div className="flex gap-3 pt-4 border-t border-border">
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleCancel}
                 disabled={isLoading}
-                className="flex-1 h-10 rounded-sm border border-emerald-500/20 bg-transparent text-emerald-400 font-bold uppercase tracking-widest text-[10px] hover:bg-emerald-500/10 transition-all font-mono"
+                className="flex-1 h-10 rounded-xl border border-border bg-transparent text-primary font-medium   text-xs hover:bg-primary/10 transition-all font-sans"
               >
-                [ CANCEL ]
+                Cancel
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={isLoading}
-                className="flex-1 h-10 rounded-sm bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[10px] shadow-[0_0_8px_rgba(16,185,129,0.2)] transition-all font-mono"
+                className="flex-1 h-10 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium   text-xs shadow-none transition-all font-sans"
               >
                 {isLoading ? (
-                  <span>UPDATING...</span>
+                  <span>Saving…</span>
                 ) : (
-                  <span>[ ROTATE_KEY.EXE ]</span>
+                  <span>Save new password</span>
                 )}
               </Button>
             </div>

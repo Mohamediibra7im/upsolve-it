@@ -1,66 +1,40 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
+import StudioMascot from "./StudioMascot";
+import Brand from "@/components/layout/Brand";
 
 interface LoaderProps {
   fullScreen?: boolean;
   message?: string;
   size?: "sm" | "md" | "lg";
 }
-
-const Loader = ({ fullScreen = true, message = "Loading...", size = "md" }: LoaderProps) => {
-  const [frame, setFrame] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setFrame((f) => (f + 1) % 4);
-    }, 200);
-    return () => clearInterval(interval);
-  }, []);
-
-  const spinnerFrames = ["[ / ]", "[ - ]", "[ \\ ]", "[ | ]"];
-  const currentSpinner = spinnerFrames[frame];
-
-  const sizeClasses = {
-    sm: "text-xs",
-    md: "text-sm",
-    lg: "text-base",
-  };
-
-  const containerClass = fullScreen 
-    ? "flex flex-col items-center justify-center min-h-screen bg-[#040604] font-mono text-emerald-400 select-none relative overflow-hidden" 
-    : "flex flex-col items-center justify-center py-12 font-mono text-emerald-400 select-none";
-
+export default function Loader({
+  fullScreen = true,
+  message = "Loading your space…",
+  size = "md",
+}: LoaderProps) {
   return (
-    <div className={containerClass}>
-      {/* Scanlines overlay for fullscreen */}
-      {fullScreen && (
-        <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.04] pointer-events-none" />
+    <div
+      role="status"
+      aria-live="polite"
+      className={cn(
+        "flex flex-col items-center justify-center gap-7 bg-background px-6 font-sans",
+        fullScreen ? "min-h-dvh" : "py-16",
       )}
-
-      <div className="space-y-4 text-center z-10">
-        {/* Animated Bracket Spinner */}
-        <div className="text-xl font-bold tracking-widest text-emerald-300">
-          {currentSpinner}
-        </div>
-
-        {/* Status Line */}
-        <div className="space-y-1.5">
-          <p className={`${sizeClasses[size]} font-bold uppercase tracking-wider text-emerald-300`}>
-            {message.toUpperCase()}
-          </p>
-          <div className="text-[10px] text-emerald-500/40 tracking-widest">
-            SYS_STATUS: RUNNING // DB_CONNECT_ACTIVE
-          </div>
-        </div>
-
-        {/* Animated Monospace Loading Bar */}
-        <div className="text-[10px] text-emerald-500/30 tracking-wider">
-          {"█".repeat((frame + 1) * 3) + "░".repeat(12 - (frame + 1) * 3)}
-        </div>
+    >
+      <Brand />
+      <StudioMascot pose="rest" className="w-28" />
+      <div className="w-40 space-y-2" aria-hidden="true">
+        <div className="h-1.5 w-full animate-pulse rounded-full bg-muted motion-reduce:animate-none" />
+        <div className="mx-auto h-1.5 w-24 animate-pulse rounded-full bg-muted/60 motion-reduce:animate-none" />
       </div>
+      <p
+        className={cn(
+          "text-center font-medium text-muted-foreground",
+          size === "lg" ? "text-base" : size === "sm" ? "text-xs" : "text-sm",
+        )}
+      >
+        {message}
+      </p>
     </div>
   );
-};
-
-export default Loader;
+}

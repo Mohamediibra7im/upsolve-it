@@ -1,36 +1,39 @@
 import "./globals.css";
-import { Inter, Host_Grotesk, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import type React from "react";
 import Script from "next/script";
+import type { Viewport } from "next";
 import AuthGuard from "@/components/providers/AuthGuard";
 import ThemeProvider from "@/components/providers/ThemeProvider";
 import { ToastProvider } from "@/components/providers/Toast";
 import { Analytics } from "@vercel/analytics/react";
 import { cn } from "@/lib/utils";
 import PageTransition from "@/components/shared/PageTransition";
+import StudioBackground from "@/components/layout/StudioBackground";
 import SystemConsoleFab from "@/components/layout/SystemConsoleFab";
 import { LazyMotion, domMax, MotionConfig } from "framer-motion";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
-});
-
-const hostGrotesk = Host_Grotesk({
-  subsets: ["latin"],
+const studioSans = localFont({
+  src: "./fonts/Montserrat-VariableFont_wght.ttf",
   display: "swap",
   variable: "--font-host",
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
+const studioMono = localFont({
+  src: "./fonts/Monda-VariableFont_wght.ttf",
   display: "swap",
   variable: "--font-mono",
 });
 
 export { metadata } from "./metadata";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#101214",
+  colorScheme: "dark",
+};
 
 const structuredData = {
   "@context": "https://schema.org",
@@ -74,12 +77,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={cn(inter.variable, hostGrotesk.variable, jetbrainsMono.variable)}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      </head>
-      <body className="font-sans antialiased overflow-x-hidden" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      data-scroll-behavior="smooth"
+      className={cn(studioSans.variable, studioMono.variable)}
+    >
+      <body
+        className="font-sans antialiased overflow-x-hidden"
+        suppressHydrationWarning
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -90,23 +97,22 @@ export default function RootLayout({
           <ToastProvider>
             <LazyMotion features={domMax} strict>
               <MotionConfig reducedMotion="user">
-              <div className="relative flex min-h-screen flex-col bg-background">
-                {/* Site-wide background */}
-                <div className="fixed inset-0 -z-10 pointer-events-none bg-background transition-colors duration-300" aria-hidden="true">
-                  <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,.04)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,.04)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(16,185,129,.015)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,.015)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,black_45%,transparent_100%)]" />
-                  <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.015] dark:opacity-[0.03]" />
+                <div className="relative isolate flex min-h-screen flex-col bg-background">
+                  <StudioBackground />
+                  <a href="#main-content" className="skip-link">
+                    Skip to content
+                  </a>
+                  <AuthGuard>
+                    <PageTransition>
+                      <ErrorBoundary>{children}</ErrorBoundary>
+                    </PageTransition>
+                  </AuthGuard>
+                  <SystemConsoleFab />
                 </div>
-                <AuthGuard>
-                  <PageTransition>
-                    <ErrorBoundary>{children}</ErrorBoundary>
-                  </PageTransition>
-                </AuthGuard>
-                <SystemConsoleFab />
-              </div>
-            </MotionConfig>
-          </LazyMotion>
-        </ToastProvider>
-      </ThemeProvider>
+              </MotionConfig>
+            </LazyMotion>
+          </ToastProvider>
+        </ThemeProvider>
         <Analytics />
         <Script
           id="structured-data"

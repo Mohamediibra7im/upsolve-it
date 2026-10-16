@@ -6,8 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Profile = ({ user }: { user: User }) => {
   return (
-    <Card className="card-premium group relative overflow-hidden border-2 border-border/50 hover:border-primary/30 transition-all duration-500 h-full flex flex-col">
-      <div className="absolute top-0 right-0 size-32 bg-primary/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-primary/20 transition-all duration-500"></div>
+    <Card className="group relative flex h-full flex-col overflow-hidden rounded-2xl border-border bg-card">
       <CardHeader className="relative z-10 pb-4">
         <div className="flex items-center gap-3">
           <Avatar className="size-12 border-2 border-border">
@@ -17,7 +16,7 @@ const Profile = ({ user }: { user: User }) => {
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <CardTitle className="text-lg font-bold text-foreground truncate">
+            <CardTitle className="text-lg font-medium text-foreground truncate">
               {user.codeforcesHandle}
             </CardTitle>
             <p className="text-xs text-muted-foreground truncate">
@@ -30,7 +29,7 @@ const Profile = ({ user }: { user: User }) => {
         <div className="grid grid-cols-2 gap-4 text-center">
           <div>
             <p className="text-xs font-medium text-muted-foreground">Rating</p>
-            <p className="text-2xl sm:text-3xl font-bold text-primary">
+            <p className="text-2xl sm:text-3xl font-medium text-primary">
               {user.rating || 0}
             </p>
             <p className="text-xs text-muted-foreground">
@@ -41,7 +40,7 @@ const Profile = ({ user }: { user: User }) => {
             <p className="text-xs font-medium text-muted-foreground">
               Max Rating
             </p>
-            <p className="text-2xl sm:text-3xl font-bold text-primary">
+            <p className="text-2xl sm:text-3xl font-medium text-primary">
               {user.maxRating || 0}
             </p>
             <p className="text-xs text-muted-foreground">
