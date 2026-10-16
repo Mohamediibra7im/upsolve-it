@@ -11,7 +11,6 @@ import {
   HelpCircle,
   BookOpen,
   Menu,
-  X,
   Sparkles,
   Search,
   Compass,
@@ -24,10 +23,18 @@ import {
   AlertCircle,
   Info,
   Lightbulb,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import Link from "next/link";
 
 /* ═══════════════════ TOC DEFINITION ═══════════════════ */
@@ -46,7 +53,7 @@ interface TocItem {
 const tocItems: TocItem[] = [
   {
     id: "getting-started",
-    label: "Getting Started",
+    label: "Getting started",
     icon: Zap,
     subItems: [
       { id: "creating-an-account", label: "Creating an Account" },
@@ -56,7 +63,7 @@ const tocItems: TocItem[] = [
   },
   {
     id: "training-engine",
-    label: "Core Training Engine",
+    label: "Training sessions",
     icon: Target,
     subItems: [
       { id: "training-modes", label: "Training Modes" },
@@ -66,7 +73,7 @@ const tocItems: TocItem[] = [
   },
   {
     id: "upsolve-challenge",
-    label: "Upsolve Challenge",
+    label: "Upsolve challenge",
     icon: Layers,
     subItems: [
       { id: "upsolving-arena", label: "Upsolving Arena" },
@@ -75,7 +82,7 @@ const tocItems: TocItem[] = [
   },
   {
     id: "learning-trail",
-    label: "Learning Trail",
+    label: "Learning trail",
     icon: Compass,
     subItems: [
       { id: "roadmap-structure", label: "Roadmap Structure" },
@@ -84,29 +91,29 @@ const tocItems: TocItem[] = [
   },
   {
     id: "progression-system",
-    label: "Gamification & Progress",
+    label: "Experience & progress",
     icon: Trophy,
     subItems: [
       { id: "xp-levels", label: "XP and Levels" },
       { id: "leaderboards", label: "Leaderboards" },
-      { id: "tactical-levels", label: "Tactical Levels" },
+      { id: "tactical-levels", label: "Training levels" },
     ],
   },
   {
     id: "social-features",
-    label: "Social & Identity",
+    label: "Friends & profile",
     icon: Users,
     subItems: [
       { id: "friends-system", label: "Friends System" },
-      { id: "profile-portals", label: "Profile Portals" },
+      { id: "profile-portals", label: "Public profiles" },
     ],
   },
   {
     id: "support-console",
-    label: "Support & Console",
+    label: "Help & support",
     icon: HelpCircle,
     subItems: [
-      { id: "signal-support", label: "Signal Support" },
+      { id: "signal-support", label: "Contact support" },
       { id: "system-notifications", label: "System Notifications" },
     ],
   },
@@ -136,7 +143,11 @@ const getAnchorId = (children: any): string | undefined => {
   const childrenArray = Array.isArray(children) ? children : [children];
   for (const child of childrenArray) {
     if (child && typeof child === "object") {
-      if (child.type === "a" && child.props && (child.props.name || child.props.id)) {
+      if (
+        child.type === "a" &&
+        child.props &&
+        (child.props.name || child.props.id)
+      ) {
         return child.props.name || child.props.id;
       }
       if (child.props && child.props.children) {
@@ -151,18 +162,20 @@ const getAnchorId = (children: any): string | undefined => {
 const parseContentIntoSectors = (content: string) => {
   const rawSections = content.split(/(?=^## )/m);
   const sectors: Record<string, string> = {};
-  
+
   sectors["intro"] = rawSections[0] || "";
-  
+
   rawSections.slice(1).forEach((sec) => {
-    const match = sec.match(/^##\s+(.*?)\s+(?:<a\s+name="(.*?)">|<a\s+id="(.*?)">|$)/m);
+    const match = sec.match(
+      /^##\s+(.*?)\s+(?:<a\s+name="(.*?)">|<a\s+id="(.*?)">|$)/m,
+    );
     if (match) {
       const headingText = match[1];
       const anchorName = match[2] || match[3] || slugify(headingText);
       sectors[anchorName] = sec;
     }
   });
-  
+
   return sectors;
 };
 
@@ -172,8 +185,12 @@ const getSubHeadings = (sectorMarkdown: string) => {
   return lines
     .filter((line) => line.startsWith("### "))
     .map((line) => {
-      const text = line.replace("### ", "").replace(/<[^>]*>/g, "").trim();
-      const id = slugify(text);
+      const text = line
+        .replace("### ", "")
+        .replace(/<[^>]*>/g, "")
+        .trim();
+      const anchor = line.match(/<a\s+(?:name|id)="([^"]+)"/);
+      const id = anchor?.[1] || slugify(text);
       return { id, label: text };
     });
 };
@@ -190,21 +207,21 @@ const CopyButton = ({ text }: { text: string }) => {
     <button
       onClick={handleCopy}
       className={cn(
-        "flex items-center gap-1 px-2.5 py-1.5 text-[8px] font-bold uppercase tracking-widest border rounded-sm transition-all active:scale-95 duration-200",
+        "flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium tracking-normal border rounded-xl transition-all active:scale-95 duration-200",
         copied
-          ? "bg-emerald-500/10 border-emerald-500/35 text-emerald-400"
-          : "bg-emerald-500/5 border-emerald-500/20 text-emerald-500/60 hover:text-emerald-400 hover:border-emerald-500/40"
+          ? "bg-[#b5e3c4]/10 border-[#2b3031] text-[#b5e3c4]"
+          : "bg-[#b5e3c4]/5 border-[#2b3031] text-[#929b98] hover:text-[#b5e3c4] hover:border-[#69746e]",
       )}
     >
       {copied ? (
         <>
-          <Check size={8} className="text-emerald-400" />
-          <span>[ COPIED ]</span>
+          <Check size={13} className="text-[#b5e3c4]" />
+          <span>Copied</span>
         </>
       ) : (
         <>
-          <Copy size={8} />
-          <span>[ COPY ]</span>
+          <Copy size={13} />
+          <span>Copy</span>
         </>
       )}
     </button>
@@ -221,7 +238,7 @@ export default function ClientPage({ content }: Readonly<ClientPageProps>) {
   const [activeSub, setActiveSub] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
-  
+
   const filterInputRef = useRef<HTMLInputElement>(null);
   const contentPaneRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -229,9 +246,15 @@ export default function ClientPage({ content }: Readonly<ClientPageProps>) {
   // Focus filter input on "/"
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "/" && document.activeElement !== filterInputRef.current) {
+      const activeElement = document.activeElement;
+      const isEditing =
+        activeElement instanceof HTMLElement &&
+        (activeElement.matches("input, textarea, select") ||
+          activeElement.isContentEditable);
+      if (e.key === "/" && !isEditing) {
         e.preventDefault();
-        filterInputRef.current?.focus();
+        if (window.innerWidth < 1024) setMobileMenuOpen(true);
+        else filterInputRef.current?.focus();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -277,7 +300,7 @@ export default function ClientPage({ content }: Readonly<ClientPageProps>) {
     setActiveTab(tabId);
     setActiveSub("");
     setMobileMenuOpen(false);
-    
+
     const manualElement = document.getElementById("manual-view-console");
     if (manualElement) {
       const offset = 90;
@@ -291,7 +314,10 @@ export default function ClientPage({ content }: Readonly<ClientPageProps>) {
     }
   };
 
-  const handleScrollToSub = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+  const handleScrollToSub = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    id: string,
+  ) => {
     e.preventDefault();
     const element = document.getElementById(id);
     if (element) {
@@ -316,25 +342,23 @@ export default function ClientPage({ content }: Readonly<ClientPageProps>) {
 
     const Tag = `h${level}` as any;
     const classes = cn(
-      "font-bold tracking-tight text-white relative group flex items-center gap-2 font-mono uppercase",
+      "font-medium tracking-tight text-[#f1f3ee] relative group flex items-center gap-2 font-heading ",
       {
-        "text-lg mt-10 mb-4 border-b border-emerald-500/10 pb-2 scroll-mt-24 text-emerald-350": level === 2,
-        "text-sm mt-8 mb-3 scroll-mt-28 text-emerald-400": level === 3,
-        "text-xs mt-6 mb-2 text-emerald-450 scroll-mt-28": level === 4,
-      }
+        "text-2xl mt-10 mb-5 border-b border-[#2b3031] pb-2 scroll-mt-24 text-[#b5e3c4]":
+          level === 2,
+        "text-xl mt-8 mb-4 scroll-mt-28 text-[#b5e3c4]": level === 3,
+        "text-lg mt-6 mb-3 text-[#b5e3c4] scroll-mt-28": level === 4,
+      },
     );
 
     return (
       <Tag id={id} className={classes} {...props}>
-        <span className="flex-1">
-          {level === 2 && <span className="text-emerald-500/35 mr-1.5">{"//"}</span>}
-          {children}
-        </span>
+        <span className="flex-1">{children}</span>
         {level === 3 && (
           <a
             href={`#${id}`}
             onClick={(e) => handleScrollToSub(e, id)}
-            className="opacity-0 group-hover:opacity-100 transition-opacity text-emerald-500 hover:text-white font-medium text-xs select-none"
+            className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity text-[#929b98] hover:text-[#f1f3ee] font-medium text-xs "
             aria-label="Link to section"
           >
             #
@@ -355,7 +379,7 @@ export default function ClientPage({ content }: Readonly<ClientPageProps>) {
               (line) =>
                 line.toLowerCase().includes(searchQuery.toLowerCase()) &&
                 !line.startsWith("#") &&
-                line.trim().length > 3
+                line.trim().length > 3,
             )
             .map((line) => {
               const cleanLine = line.replace(/[#*`[\]]/g, "").trim();
@@ -372,70 +396,89 @@ export default function ClientPage({ content }: Readonly<ClientPageProps>) {
 
   const activeIdx = tocItems.findIndex((item) => item.id === activeTab);
   const prevSection = activeIdx > 0 ? tocItems[activeIdx - 1] : null;
-  const nextSection = activeIdx < tocItems.length - 1 ? tocItems[activeIdx + 1] : null;
+  const nextSection =
+    activeIdx < tocItems.length - 1 ? tocItems[activeIdx + 1] : null;
 
   const customMarkdownComponents = {
     h2: (props: any) => <HeadingRenderer level={2} {...props} />,
     h3: (props: any) => <HeadingRenderer level={3} {...props} />,
     h4: (props: any) => <HeadingRenderer level={4} {...props} />,
     table: ({ children }: any) => (
-      <div className="my-6 w-full overflow-hidden rounded-sm border border-emerald-500/15 bg-[#040604]/50">
+      <div className="my-6 w-full overflow-hidden rounded-xl border border-[#2b3031] bg-[#101214]">
         <div className="overflow-x-auto">
-          <table className="w-full text-[10px] border-collapse text-left">{children}</table>
+          <table className="w-full min-w-[400px] text-sm border-collapse text-left">
+            {children}
+          </table>
         </div>
       </div>
     ),
     thead: ({ children }: any) => (
-      <thead className="bg-emerald-500/5 text-emerald-400 font-bold uppercase tracking-wider border-b border-emerald-500/15">{children}</thead>
+      <thead className="bg-[#b5e3c4]/5 text-[#b5e3c4] font-medium tracking-normal border-b border-[#2b3031]">
+        {children}
+      </thead>
     ),
     tbody: ({ children }: any) => (
-      <tbody className="divide-y divide-emerald-500/5">{children}</tbody>
+      <tbody className="divide-y divide-[#2b3031]">{children}</tbody>
     ),
     tr: ({ children }: any) => (
-      <tr className="hover:bg-emerald-500/[0.02] transition-colors">{children}</tr>
+      <tr className="hover:bg-[#b5e3c4]/[0.02] transition-colors">
+        {children}
+      </tr>
     ),
     th: ({ children }: any) => (
-      <th className="px-4 py-2.5 font-bold">{children}</th>
+      <th className="px-4 py-3 font-medium text-[#f1f3ee]">{children}</th>
     ),
     td: ({ children }: any) => (
-      <td className="px-4 py-2.5 text-emerald-300 font-medium leading-relaxed">{children}</td>
+      <td className="px-4 py-3 text-[#a8b1ac] leading-relaxed">{children}</td>
     ),
     blockquote: ({ children }: any) => {
       const text = getTextFromNode(children);
       const isNote = text.toLowerCase().includes("note:");
       const isTip = text.toLowerCase().includes("tip:");
-      const isAdmin = text.toLowerCase().includes("admin") || text.toLowerCase().includes("checkpoint");
+      const isAdmin =
+        text.toLowerCase().includes("admin") ||
+        text.toLowerCase().includes("checkpoint");
 
       let alertTitle = "Notification";
       let AlertIcon = Info;
-      let alertColors = "bg-emerald-500/5 border-emerald-500/10 text-emerald-300";
-      let titleColors = "text-emerald-400";
+      let alertColors = "bg-[#b5e3c4]/5 border-[#2b3031] text-[#b5e3c4]";
+      let titleColors = "text-[#b5e3c4]";
 
       if (isNote) {
         alertTitle = "Note";
         AlertIcon = Info;
-        alertColors = "bg-[#040604] border-emerald-500/15 text-emerald-300";
-        titleColors = "text-emerald-400";
+        alertColors = "bg-[#101214] border-[#2b3031] text-[#b5e3c4]";
+        titleColors = "text-[#b5e3c4]";
       } else if (isTip) {
         alertTitle = "Tip";
         AlertIcon = Lightbulb;
-        alertColors = "bg-emerald-500/5 border-emerald-500/15 text-emerald-300/90";
-        titleColors = "text-emerald-400";
+        alertColors = "bg-[#b5e3c4]/5 border-[#2b3031] text-[#929b98]";
+        titleColors = "text-[#b5e3c4]";
       } else if (isAdmin) {
-        alertTitle = "Alert Protocol";
+        alertTitle = "Please note";
         AlertIcon = AlertCircle;
-        alertColors = "bg-amber-500/5 border-amber-500/15 text-amber-250/90";
-        titleColors = "text-amber-400";
+        alertColors = "bg-[#d5b98a]/5 border-[#d5b98a]/20 text-[#d5b98a]";
+        titleColors = "text-[#d5b98a]";
       }
 
       return (
-        <div className={cn("my-6 p-4 rounded-sm border flex gap-3.5 items-start font-mono text-[9px] uppercase leading-relaxed", alertColors)}>
-          <div className="p-1.5 rounded-sm bg-emerald-500/5 border border-emerald-500/10 shrink-0">
+        <div
+          className={cn(
+            "my-6 p-4 rounded-xl border flex gap-3.5 items-start font-sans text-xs leading-relaxed",
+            alertColors,
+          )}
+        >
+          <div className="p-1.5 rounded-xl bg-[#b5e3c4]/5 border border-[#2b3031] shrink-0">
             <AlertIcon className={cn("size-3.5", titleColors)} />
           </div>
           <div className="space-y-1 flex-1">
-            <span className={cn("text-[8px] font-bold tracking-wider block", titleColors)}>
-              {`[ ${alertTitle} ]`}
+            <span
+              className={cn(
+                "text-xs font-medium tracking-normal block",
+                titleColors,
+              )}
+            >
+              {alertTitle}
             </span>
             <div>{children}</div>
           </div>
@@ -450,18 +493,18 @@ export default function ClientPage({ content }: Readonly<ClientPageProps>) {
 
       if (isCodeBlock) {
         return (
-          <div className="relative my-6 rounded-sm border border-emerald-500/15 bg-[#040604] overflow-hidden group font-mono text-[10px]">
-            <div className="flex items-center justify-between px-3 py-2 bg-[#060a08] border-b border-emerald-500/10">
+          <div className="relative my-6 rounded-xl border border-[#2b3031] bg-[#101214] overflow-hidden group font-mono text-sm">
+            <div className="flex items-center justify-between px-3 py-2 bg-[#191c1e] border-b border-[#2b3031]">
               <div className="flex items-center gap-1.5">
-                <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-500/40 font-mono">
-                  {`// ${language}`}
+                <span className="text-xs font-medium tracking-normal text-[#929b98] font-sans">
+                  {language}
                 </span>
               </div>
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <div className="transition-opacity duration-200">
                 <CopyButton text={codeString} />
               </div>
             </div>
-            <pre className="overflow-x-auto p-4 leading-relaxed bg-[#040604] text-emerald-300">
+            <pre className="overflow-x-auto p-4 font-mono leading-relaxed bg-[#101214] text-[#b5e3c4]">
               <code className={className} {...props}>
                 {children}
               </code>
@@ -471,7 +514,10 @@ export default function ClientPage({ content }: Readonly<ClientPageProps>) {
       }
 
       return (
-        <code className="px-1.5 py-0.5 rounded-sm bg-emerald-500/5 border border-emerald-500/15 font-mono text-[9px] text-emerald-400 font-bold uppercase" {...props}>
+        <code
+          className="px-1.5 py-0.5 rounded-xl bg-[#b5e3c4]/5 border border-[#2b3031] font-mono text-sm text-[#b5e3c4] "
+          {...props}
+        >
           {children}
         </code>
       );
@@ -481,8 +527,12 @@ export default function ClientPage({ content }: Readonly<ClientPageProps>) {
       return (
         <a
           href={href}
-          onClick={isInternal && href ? (e) => handleScrollToSub(e, href.substring(1)) : undefined}
-          className="text-emerald-400 hover:text-white font-bold transition-colors underline decoration-emerald-500/30 underline-offset-4 font-mono"
+          onClick={
+            isInternal && href
+              ? (e) => handleScrollToSub(e, href.substring(1))
+              : undefined
+          }
+          className="text-[#b5e3c4] hover:text-[#f1f3ee] font-medium transition-colors underline decoration-[#b5e3c4]/40 underline-offset-4"
           {...props}
         >
           {children}
@@ -492,51 +542,54 @@ export default function ClientPage({ content }: Readonly<ClientPageProps>) {
   };
 
   return (
-    <div className="relative min-h-screen pt-24 pb-20 font-mono text-emerald-400 select-none">
-      <div className="container mx-auto px-4 md:px-8 max-w-6xl relative z-10">
-        
+    <div className="relative min-h-screen pt-12 sm:pt-20 pb-20 font-sans text-[#f1f3ee] ">
+      <div className="container mx-auto px-4 md:px-8 max-w-7xl relative z-10">
         {/* Header Block */}
-        <div className="text-center space-y-4 mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 border border-emerald-500/20 bg-emerald-500/5 text-emerald-450 text-[9px] font-bold uppercase tracking-widest rounded-sm">
+        <div className="space-y-5 mb-12 max-w-3xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 border border-[#2b3031] bg-[#b5e3c4]/5 text-[#b5e3c4] text-xs font-medium tracking-normal rounded-xl">
             <Sparkles className="size-3" />
-            <span>[ SYSTEM_PROTOCOL_MANUAL ]</span>
+            <span>Documentation</span>
           </div>
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-white uppercase leading-[0.9] select-none">
-            {"> "}MAN_SYSTEM_PROTOCOL.SH
+          <h1 className="font-heading text-3xl sm:text-5xl font-medium leading-[1.12] tracking-[-0.04em] text-[#f1f3ee]">
+            Get to know Upsolve.
           </h1>
-          <p className="text-emerald-500/50 uppercase max-w-lg mx-auto text-[10px] leading-relaxed">
-            Detailed guides and control logs to navigate the modules of the Upsolve.it dashboard.
+          <p className="max-w-2xl text-base leading-relaxed text-[#929b98]">
+            Everything you need to build a practice routine, track your
+            progress, and make the most of Upsolve.it.
           </p>
         </div>
 
-        {/* Command Console Layout */}
-        <div id="manual-view-console" className="grid grid-cols-1 lg:grid-cols-[250px_1fr_200px] gap-6 items-start">
-          
-          {/* Column 1: Left Navigation Console Channels */}
+        {/* Documentation layout */}
+        <div
+          id="manual-view-console"
+          className="grid grid-cols-1 lg:grid-cols-[230px_minmax(0,1fr)] xl:grid-cols-[230px_minmax(0,1fr)_180px] gap-6 items-start"
+        >
+          {/* Section navigation */}
           <aside className="hidden lg:block sticky top-[100px] z-30 pr-1 space-y-4">
-            <div className="rounded-sm border border-emerald-500/15 bg-[#060a08]/30 p-4 space-y-4 shadow-[0_6px_22px_rgba(0,0,0,0.6)]">
+            <div className="rounded-2xl border border-[#2b3031] bg-[#191c1e] p-4 space-y-4 ">
               <div className="flex items-center gap-2 px-0.5">
-                <BookOpen className="size-3.5 text-emerald-400" />
-                <span className="text-[9px] font-bold uppercase tracking-wider text-white">
-                  Sector Navigation
+                <BookOpen className="size-3.5 text-[#b5e3c4]" />
+                <span className="text-xs font-medium tracking-normal text-[#f1f3ee]">
+                  Explore the guide
                 </span>
               </div>
 
-              {/* Console Search Engine */}
+              {/* Search documentation */}
               <div className="relative group w-full">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-emerald-500/40 group-focus-within:text-emerald-450 transition-colors" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-[#929b98] group-focus-within:text-[#b5e3c4] transition-colors" />
                 <input
                   ref={filterInputRef}
                   type="text"
-                  placeholder="Filter manual... (Press /)"
+                  placeholder="Search the guide…"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-8 pl-8 pr-2 bg-[#040604] border border-emerald-500/20 rounded-sm text-[9px] focus:outline-none focus:border-emerald-500/50 transition-all font-bold text-emerald-300 placeholder:text-emerald-500/25"
+                  aria-label="Search documentation"
+                  className="w-full h-10 pl-8 pr-2 bg-[#101214] border border-[#2b3031] rounded-xl text-xs focus:outline-none focus:border-[#b5e3c4] transition-all font-medium text-[#b5e3c4] placeholder:text-[#929b98]"
                 />
 
                 {/* Floating Search Dropdown */}
                 {searchQuery && (
-                  <div className="absolute top-full left-0 right-0 mt-1 rounded-sm border border-emerald-500/20 bg-[#060a08] p-1.5 z-50 shadow-2xl max-h-56 overflow-y-auto space-y-1">
+                  <div className="absolute top-full left-0 right-0 mt-1 rounded-xl border border-[#2b3031] bg-[#191c1e] p-1.5 z-50 shadow-2xl max-h-56 overflow-y-auto space-y-1">
                     {searchResults.map((result, idx) => (
                       <button
                         key={idx}
@@ -544,28 +597,28 @@ export default function ClientPage({ content }: Readonly<ClientPageProps>) {
                           handleTabChange(result.sectorId);
                           setSearchQuery("");
                         }}
-                        className="w-full text-left p-2 rounded-sm hover:bg-emerald-500/10 transition-colors text-[9px] space-y-0.5"
+                        className="w-full text-left p-2 rounded-xl hover:bg-[#b5e3c4]/10 transition-colors text-xs space-y-0.5"
                       >
-                        <span className="font-bold text-emerald-400 uppercase block">
+                        <span className="font-medium text-[#b5e3c4] block">
                           {result.sectorLabel}
                         </span>
-                        <span className="text-emerald-500/40 font-bold block truncate">
+                        <span className="text-[#929b98] font-medium block truncate">
                           {result.text}
                         </span>
                       </button>
                     ))}
                     {searchResults.length === 0 && (
-                      <p className="text-[8px] text-center text-emerald-500/30 font-bold py-2">
-                        NO DIAGNOSTICS FOUND
+                      <p className="text-xs text-center text-[#929b98] font-medium py-2">
+                        No matching sections
                       </p>
                     )}
                   </div>
                 )}
               </div>
 
-              <div className="h-[1px] bg-emerald-500/10 w-full" />
+              <div className="h-[1px] bg-[#b5e3c4]/10 w-full" />
 
-              {/* Channels Nav List */}
+              {/* Sections */}
               <nav className="space-y-1">
                 {tocItems.map((item) => {
                   const isActive = activeTab === item.id;
@@ -573,70 +626,81 @@ export default function ClientPage({ content }: Readonly<ClientPageProps>) {
                     <button
                       key={item.id}
                       onClick={() => handleTabChange(item.id)}
+                      aria-current={isActive ? "page" : undefined}
                       className={cn(
-                        "w-full flex items-center justify-between px-2.5 py-2 rounded-sm text-[9px] font-bold transition-all border text-left group uppercase",
+                        "w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-medium transition-all border text-left group ",
                         isActive
-                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                          : "text-emerald-550 border-transparent hover:text-emerald-400 hover:bg-emerald-500/5"
+                          ? "bg-[#b5e3c4]/10 border-[#2b3031] text-[#b5e3c4]"
+                          : "text-[#929b98] border-transparent hover:text-[#b5e3c4] hover:bg-[#b5e3c4]/5",
                       )}
                     >
                       <div className="flex items-center gap-2 truncate">
                         <item.icon className="size-3 shrink-0" />
                         <span className="truncate">{item.label}</span>
                       </div>
-                      <ChevronRight size={10} className={cn(
-                        "opacity-20 group-hover:opacity-70 transition-all",
-                        isActive ? "rotate-90 text-emerald-400 opacity-100" : ""
-                      )} />
+                      <ChevronRight
+                        size={14}
+                        className={cn(
+                          "opacity-20 group-hover:opacity-70 transition-all",
+                          isActive
+                            ? "rotate-90 text-[#b5e3c4] opacity-100"
+                            : "",
+                        )}
+                      />
                     </button>
                   );
                 })}
               </nav>
 
-              <div className="h-[1px] bg-emerald-500/10 w-full" />
+              <div className="h-[1px] bg-[#b5e3c4]/10 w-full" />
 
               {/* Support CTA card */}
-              <div className="p-3.5 rounded-sm border border-emerald-500/10 bg-emerald-500/5 space-y-2">
-                <div className="flex items-center gap-1.5 text-emerald-400">
+              <div className="p-3.5 rounded-xl border border-[#2b3031] bg-[#b5e3c4]/5 space-y-2">
+                <div className="flex items-center gap-1.5 text-[#b5e3c4]">
                   <HelpCircle className="size-3.5" />
-                  <span className="text-[9px] font-bold uppercase tracking-wider">ASSISTANCE</span>
+                  <span className="text-xs font-medium tracking-normal">
+                    Need a hand?
+                  </span>
                 </div>
-                <p className="text-[8px] text-emerald-500/50 leading-relaxed font-bold">
-                  Can't find what you need? Open a support ticket directly with our engineering team.
+                <p className="text-xs text-[#929b98] leading-relaxed font-medium">
+                  Can’t find what you need? Send us a message and we’ll help you
+                  out.
                 </p>
-                <Link href="/help/support" className="block">
-                  <Button variant="outline" className="w-full h-8 rounded-sm border-emerald-500/20 text-[8px] font-bold uppercase tracking-widest hover:bg-emerald-500/10 transition-all font-mono">
-                    [ CONSOLE_TICKET ]
-                  </Button>
-                </Link>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-10 w-full rounded-xl text-sm"
+                >
+                  <Link href="/help/support">Contact support</Link>
+                </Button>
               </div>
             </div>
           </aside>
 
-          {/* Column 2: Center Content Pane Console */}
-          <main 
+          {/* Guide content */}
+          <div
             ref={contentPaneRef}
-            className="w-full rounded-sm border border-emerald-500/15 bg-[#060a08]/30 p-6 sm:p-8 shadow-[0_6px_22px_rgba(0,0,0,0.6)] relative"
+            className="min-w-0 w-full rounded-2xl border border-[#2b3031] bg-[#191c1e] p-5 sm:p-8 relative"
           >
-            {/* Terminal Header Telemetry */}
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-emerald-500/10">
+            {/* Current section */}
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#2b3031]">
               <div className="flex flex-col">
-                <span className="text-[8px] font-bold text-emerald-500/35 uppercase tracking-wider">
-                  Manual Sector
+                <span className="text-xs font-medium text-[#929b98] tracking-normal">
+                  You’re reading
                 </span>
-                <span className="text-sm font-bold text-white uppercase tracking-tight mt-0.5">
+                <span className="text-sm font-medium text-[#f1f3ee] tracking-tight mt-0.5">
                   {tocItems.find((item) => item.id === activeTab)?.label}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 text-[8px] font-bold px-2 py-0.5 rounded-sm bg-emerald-500/5 border border-emerald-500/10 text-emerald-400">
-                  STATUS: VERIFIED
+                <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-xl bg-[#b5e3c4]/5 border border-[#2b3031] text-[#b5e3c4]">
+                  User guide
                 </span>
               </div>
             </div>
 
             {/* Markdown Body */}
-            <article className="prose prose-invert max-w-none prose-headings:font-bold prose-p:text-emerald-300/80 prose-p:leading-relaxed prose-p:text-xs prose-strong:text-white prose-strong:font-bold prose-ul:list-disc prose-ol:list-decimal prose-li:text-emerald-350 prose-li:text-xs text-xs">
+            <article className="prose prose-invert max-w-none prose-headings:font-medium prose-p:text-[#a8b1ac] prose-p:leading-relaxed prose-p:text-sm prose-strong:text-[#f1f3ee] prose-strong:font-medium prose-ul:list-disc prose-ol:list-decimal prose-li:text-[#a8b1ac] prose-li:text-sm text-xs">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeRaw]}
@@ -646,47 +710,51 @@ export default function ClientPage({ content }: Readonly<ClientPageProps>) {
               </ReactMarkdown>
             </article>
 
-            {/* Quick Sector Navigation Footer */}
-            <div className="mt-12 pt-6 border-t border-emerald-500/10 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Quick Explore the guide Footer */}
+            <div className="mt-12 pt-6 border-t border-[#2b3031] grid grid-cols-1 sm:grid-cols-2 gap-4">
               {prevSection ? (
                 <button
                   onClick={() => handleTabChange(prevSection.id)}
-                  className="group flex flex-col items-start p-4 rounded-sm border border-emerald-500/10 bg-[#060a08]/50 hover:bg-emerald-500/5 hover:border-emerald-500/25 transition-all duration-300 text-left font-mono"
+                  className="group flex flex-col items-start p-4 rounded-xl border border-[#2b3031] bg-[#191c1e] hover:bg-[#b5e3c4]/5 hover:border-[#69746e] transition-all duration-300 text-left font-sans"
                 >
-                  <span className="text-[8px] font-bold uppercase tracking-wider text-emerald-500/40 flex items-center gap-1 group-hover:text-emerald-400 transition-colors">
-                    <ArrowLeft size={10} /> Previous Sector
+                  <span className="text-xs font-medium tracking-normal text-[#929b98] flex items-center gap-1 group-hover:text-[#b5e3c4] transition-colors">
+                    <ArrowLeft size={14} /> Previous section
                   </span>
-                  <span className="text-xs font-bold text-white mt-1 truncate w-full uppercase">
+                  <span className="text-xs font-medium text-[#f1f3ee] mt-1 truncate w-full ">
                     {prevSection.label}
                   </span>
                 </button>
-              ) : <div />}
+              ) : (
+                <div />
+              )}
 
               {nextSection ? (
                 <button
                   onClick={() => handleTabChange(nextSection.id)}
-                  className="group flex flex-col items-end p-4 rounded-sm border border-emerald-500/10 bg-[#060a08]/50 hover:bg-emerald-500/5 hover:border-emerald-500/25 transition-all duration-300 text-right font-mono"
+                  className="group flex flex-col items-end p-4 rounded-xl border border-[#2b3031] bg-[#191c1e] hover:bg-[#b5e3c4]/5 hover:border-[#69746e] transition-all duration-300 text-right font-sans"
                 >
-                  <span className="text-[8px] font-bold uppercase tracking-wider text-emerald-500/40 flex items-center gap-1 group-hover:text-emerald-400 transition-colors">
-                    Next Sector <ArrowRight size={10} />
+                  <span className="text-xs font-medium tracking-normal text-[#929b98] flex items-center gap-1 group-hover:text-[#b5e3c4] transition-colors">
+                    Next section <ArrowRight size={14} />
                   </span>
-                  <span className="text-xs font-bold text-white mt-1 truncate w-full uppercase">
+                  <span className="text-xs font-medium text-[#f1f3ee] mt-1 truncate w-full ">
                     {nextSection.label}
                   </span>
                 </button>
-              ) : <div />}
+              ) : (
+                <div />
+              )}
             </div>
-          </main>
+          </div>
 
           {/* Column 3: Right "On this page" Subsection Navigation */}
-          <aside className="hidden lg:block sticky top-[100px] z-30 pl-1 space-y-4">
+          <aside className="hidden xl:block sticky top-[100px] z-30 pl-1 space-y-4">
             {subHeadings.length > 0 && (
-              <div className="rounded-sm border border-emerald-500/15 bg-[#060a08]/30 p-4 space-y-3 shadow-[0_6px_22px_rgba(0,0,0,0.6)]">
-                <span className="text-[8px] font-bold uppercase tracking-wider text-emerald-500/40 block">
-                  On This Page
+              <div className="rounded-2xl border border-[#2b3031] bg-[#191c1e] p-4 space-y-3 ">
+                <span className="text-xs font-medium tracking-normal text-[#929b98] block">
+                  On this page
                 </span>
-                
-                <nav className="space-y-2 border-l border-emerald-500/10 pl-2 text-[9px] uppercase font-bold">
+
+                <nav className="space-y-2 border-l border-[#2b3031] pl-2 text-xs font-medium">
                   {subHeadings.map((sub) => {
                     const isSubActive = activeSub === sub.id;
                     return (
@@ -697,8 +765,8 @@ export default function ClientPage({ content }: Readonly<ClientPageProps>) {
                         className={cn(
                           "block transition-all border-l-2 -ml-[9px] pl-[9px] py-0.5",
                           isSubActive
-                            ? "text-emerald-400 border-emerald-400"
-                            : "text-emerald-550 border-transparent hover:text-emerald-400"
+                            ? "text-[#b5e3c4] border-[#2b3031]"
+                            : "text-[#929b98] border-transparent hover:text-[#b5e3c4]",
                         )}
                       >
                         {sub.label}
@@ -709,76 +777,111 @@ export default function ClientPage({ content }: Readonly<ClientPageProps>) {
               </div>
             )}
           </aside>
-
         </div>
       </div>
 
-      {/* Floating Button on Mobile/Tablet */}
-      <div className="lg:hidden fixed bottom-6 right-6 z-50">
-        <Button
-          onClick={() => setMobileMenuOpen(true)}
-          className="size-11 rounded-sm shadow-2xl bg-emerald-500 text-emerald-950 border border-emerald-400 flex items-center justify-center hover:scale-105 active:scale-95 transition-all font-mono"
-          aria-label="Table of contents"
+      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <div className="fixed bottom-20 right-5 z-50 lg:hidden">
+          <SheetTrigger asChild>
+            <Button
+              className="flex size-11 items-center justify-center rounded-xl border border-[#2b3031] bg-[#b5e3c4] text-[#101214] shadow-lg transition-colors hover:bg-[#ceedd8]"
+              aria-label="Table of contents"
+            >
+              <Menu className="size-4" />
+            </Button>
+          </SheetTrigger>
+        </div>
+        <SheetContent
+          side="right"
+          className="flex h-dvh w-[calc(100%-1rem)] max-w-xs flex-col gap-5 overflow-y-auto border-[#2b3031] bg-[#191c1e] p-5 font-sans text-[#f1f3ee] sm:max-w-xs"
         >
-          <Menu className="size-4" />
-        </Button>
-      </div>
-
-      {/* Mobile Sidebar drawer */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-[100] flex">
-          <div
-            className="absolute inset-0 bg-background/80 backdrop-blur-md"
-            onClick={() => setMobileMenuOpen(false)}
-          />
-
-          <div className="relative ml-auto h-full w-[260px] max-w-full bg-[#060a08] border-l border-emerald-500/25 p-5 flex flex-col gap-5 shadow-2xl z-10 overflow-y-auto font-mono text-emerald-400">
-            <div className="flex items-center justify-between border-b border-emerald-500/10 pb-3">
-              <div className="flex items-center gap-2">
-                <BookOpen className="size-4 text-emerald-400" />
-                <span className="text-[10px] font-bold uppercase tracking-wider text-white">
-                  Sector Channels
-                </span>
+          <SheetHeader className="border-b border-[#2b3031] pb-4 pr-6 text-left">
+            <SheetTitle className="flex items-center gap-2 text-base font-medium">
+              <BookOpen className="size-4 text-[#b5e3c4]" aria-hidden="true" />
+              Explore the guide
+            </SheetTitle>
+            <SheetDescription className="sr-only">
+              Choose a documentation section to read.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="space-y-3">
+            <div className="relative">
+              <Search
+                className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#929b98]"
+                aria-hidden="true"
+              />
+              <input
+                aria-label="Search documentation"
+                placeholder="Search the guide…"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                className="h-11 w-full rounded-xl border border-[#2b3031] bg-[#101214] pl-10 pr-3 text-sm"
+              />
+            </div>
+            {searchQuery && (
+              <div className="max-h-56 space-y-1 overflow-y-auto rounded-xl border border-[#2b3031] bg-[#101214] p-2">
+                {searchResults.length ? (
+                  searchResults.map((result, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => {
+                        handleTabChange(result.sectorId);
+                        setSearchQuery("");
+                      }}
+                      className="block w-full rounded-lg p-2 text-left hover:bg-[#b5e3c4]/5"
+                    >
+                      <span className="block text-sm text-[#b5e3c4]">
+                        {result.sectorLabel}
+                      </span>
+                      <span className="mt-1 block truncate text-xs text-[#929b98]">
+                        {result.text}
+                      </span>
+                    </button>
+                  ))
+                ) : (
+                  <p className="p-2 text-sm text-[#929b98]">
+                    No matching sections. Try another keyword.
+                  </p>
+                )}
               </div>
-              <button
-                onClick={() => setMobileMenuOpen(false)}
-                className="size-7 rounded-sm flex items-center justify-center hover:bg-emerald-500/10 border border-emerald-500/20 text-emerald-500/60 hover:text-emerald-400"
-              >
-                <X className="size-4.5" />
-              </button>
-            </div>
-
-            <nav className="space-y-1.5 flex-1 uppercase text-[9px] font-bold">
-              {tocItems.map((item) => {
-                const isActive = activeTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => handleTabChange(item.id)}
-                    className={cn(
-                      "w-full flex items-center gap-2.5 px-2 py-2 rounded-sm border text-left",
-                      isActive
-                        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                        : "text-emerald-550 border-transparent hover:bg-emerald-500/5 hover:text-emerald-400"
-                    )}
-                  >
-                    <item.icon className="size-3.5 shrink-0" />
-                    <span>{item.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
-
-            <div className="pt-4 border-t border-emerald-500/10">
-              <Link href="/help/support" className="block">
-                <Button className="w-full h-9 rounded-sm bg-emerald-500 text-emerald-950 text-[9px] font-bold uppercase tracking-widest hover:bg-emerald-400 transition-all font-mono">
-                  Contact Support
-                </Button>
-              </Link>
-            </div>
+            )}
           </div>
-        </div>
-      )}
+          <nav
+            aria-label="Documentation sections"
+            className="flex-1 space-y-1.5 text-sm font-medium"
+          >
+            {tocItems.map((item) => {
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  aria-current={isActive ? "page" : undefined}
+                  onClick={() => handleTabChange(item.id)}
+                  className={cn(
+                    "flex w-full items-center gap-2.5 rounded-xl border px-3 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b5e3c4]",
+                    isActive
+                      ? "border-[#b5e3c4]/30 bg-[#b5e3c4]/10 text-[#b5e3c4]"
+                      : "border-transparent text-[#929b98] hover:bg-[#b5e3c4]/5 hover:text-[#f1f3ee]",
+                  )}
+                >
+                  <item.icon className="size-4 shrink-0" aria-hidden="true" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+          <div className="border-t border-[#2b3031] pt-4">
+            <Button
+              asChild
+              className="h-11 w-full rounded-xl bg-[#b5e3c4] text-sm text-[#101214] hover:bg-[#ceedd8]"
+            >
+              <Link href="/help/support">Contact support</Link>
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

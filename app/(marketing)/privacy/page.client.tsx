@@ -2,7 +2,6 @@
 
 import { Shield, Lock, Eye, Cookie, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 const sections = [
   {
@@ -29,56 +28,30 @@ const sections = [
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen relative overflow-hidden py-20 bg-[#040604] font-mono text-emerald-400 select-none">
-      {/* Background terminal grid lines */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,.015)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,.015)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,black_45%,transparent_100%)]" />
-
-      {/* Terminal Scanline overlay */}
-      <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.03] pointer-events-none z-50" />
-
-      <div className="container mx-auto px-4 max-w-3xl space-y-12 relative z-10">
-        
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-950/20 border border-emerald-500/15 rounded-sm text-[9px] font-bold uppercase tracking-widest text-emerald-400">
-            [ LEGAL_DEPARTMENT // PRIVACY_POLICY ]
-          </div>
-          <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-white leading-none">
-            Your Privacy
-          </h1>
-          <p className="text-emerald-500/50 text-xs uppercase leading-relaxed max-w-xl mx-auto">
-            Transparency is important to us. Learn how we handle your data and keep your information safe.
-          </p>
-        </div>
-
-        {/* Sections Grid */}
-        <div className="grid gap-4">
-          {sections.map((section) => (
-            <div
-              key={section.title}
-              className="p-6 rounded-sm bg-[#060a08]/30 border border-emerald-500/15 hover:border-emerald-500/25 transition-all space-y-3"
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-sm bg-emerald-500/5 text-emerald-400 border border-emerald-500/15">
-                  <section.icon size={16} />
+    <div className="min-h-screen bg-[#101214] py-12 font-sans text-[#f1f3ee] sm:py-20">
+      <div className="mx-auto max-w-5xl px-5 sm:px-8">
+        <Link href="/" className="mb-10 inline-flex items-center gap-2 rounded-lg text-sm text-[#929b98] transition-colors hover:text-[#b5e3c4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b5e3c4]">
+          <ArrowLeft className="size-4" />Back to home
+        </Link>
+        <div className="grid gap-10 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-16">
+          <header className="self-start lg:sticky lg:top-28">
+            <p className="mb-4 text-sm text-[#b5e3c4]">Privacy policy</p>
+            <h1 className="font-heading text-4xl font-medium leading-[1.08] tracking-[-0.04em] sm:text-5xl">Your privacy matters.</h1>
+            <p className="mt-5 text-base leading-relaxed text-[#929b98]">How we handle your data, protect your information, and respect your privacy.</p>
+          </header>
+          <div className="space-y-4">
+            {sections.map((section, index) => (
+              <section key={section.title} className="rounded-2xl border border-[#2b3031] bg-[#191c1e] p-6 sm:p-7">
+                <div className="mb-5 flex items-center justify-between">
+                  <section.icon className="size-5 text-[#b5e3c4]" strokeWidth={1.5} />
+                  <span className="text-xs text-[#69746e] tabular-nums">{String(index + 1).padStart(2, "0")}</span>
                 </div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-300">{section.title}</h3>
-              </div>
-              <p className="text-[10px] text-emerald-500/60 leading-relaxed uppercase">
-                {section.content}
-              </p>
-            </div>
-          ))}
-        </div>
+                <h2 className="font-heading text-xl font-medium tracking-tight">{section.title}</h2>
+                <p className="mt-3 text-sm leading-7 text-[#a8b1ac]">{section.content}</p>
+              </section>
+            ))}
 
-        {/* Footer */}
-        <div className="flex flex-col items-center gap-6 pt-6">
-          <div className="h-[1px] w-full bg-emerald-500/10" />
-          <Button asChild variant="ghost" className="h-9 px-4 rounded-sm border border-emerald-500/10 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/5 text-[9px] font-bold uppercase tracking-widest font-mono">
-            <Link href="/">
-              <ArrowLeft size={12} className="mr-1.5" /> [ BACK_TO_HOME.SYS ]
-            </Link>
-          </Button>
+          </div>
         </div>
       </div>
     </div>

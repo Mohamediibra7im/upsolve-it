@@ -1,5 +1,5 @@
-import { Metadata } from 'next';
-import { HelpCenter } from '@/components/features/help';
+import type { Metadata } from "next";
+import { HelpCenter } from "@/components/features/help";
 
 export const metadata: Metadata = {
   title: 'Help Center | Upsolve.it',
@@ -9,16 +9,9 @@ export const metadata: Metadata = {
 export default function HelpPage() {
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-5 py-12 sm:px-8 sm:py-16">
         <HelpCenter />
       </div>
     </div>
   );
 }
-
-
-
-
-
-
-

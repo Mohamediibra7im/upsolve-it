@@ -1,8 +1,7 @@
 "use client";
 
-import { Users, Heart, MessageSquare, ShieldCheck, Trophy, ArrowLeft } from "lucide-react";
+import { Heart, MessageSquare, ShieldCheck, Trophy, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 const rules = [
   {
@@ -29,65 +28,30 @@ const rules = [
 
 export default function CommunityPage() {
   return (
-    <div className="min-h-screen relative overflow-hidden py-20 bg-[#040604] font-mono text-emerald-400 select-none">
-      {/* Background terminal grid lines */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,.015)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,.015)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,black_45%,transparent_100%)]" />
-
-      {/* Terminal Scanline overlay */}
-      <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.03] pointer-events-none z-50" />
-
-      <div className="container mx-auto px-4 max-w-3xl space-y-12 relative z-10">
-        
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-950/20 border border-emerald-500/15 rounded-sm text-[9px] font-bold uppercase tracking-widest text-emerald-400">
-            [ LEGAL_DEPARTMENT // COMMUNITY_GUIDELINES ]
-          </div>
-          <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-white leading-none">
-            Code of Conduct
-          </h1>
-          <p className="text-emerald-500/50 text-xs uppercase leading-relaxed max-w-xl mx-auto">
-            Our community is built on mutual respect and a shared passion for competitive programming. These are the values that guide us.
-          </p>
-        </div>
-
-        {/* Rules list */}
-        <div className="grid gap-4">
-          {rules.map((rule, idx) => (
-            <div
-              key={rule.title}
-              className="p-6 rounded-sm bg-[#060a08]/30 border border-emerald-500/15 hover:border-emerald-500/25 transition-all space-y-3"
-            >
-              <div className="flex items-start gap-4">
-                <div className="p-2.5 rounded-sm bg-emerald-500/5 text-emerald-400 border border-emerald-500/15 shrink-0">
-                  <rule.icon size={16} />
+    <div className="min-h-screen bg-[#101214] py-12 font-sans text-[#f1f3ee] sm:py-20">
+      <div className="mx-auto max-w-5xl px-5 sm:px-8">
+        <Link href="/" className="mb-10 inline-flex items-center gap-2 rounded-lg text-sm text-[#929b98] transition-colors hover:text-[#b5e3c4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b5e3c4]">
+          <ArrowLeft className="size-4" />Back to home
+        </Link>
+        <div className="grid gap-10 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-16">
+          <header className="self-start lg:sticky lg:top-28">
+            <p className="mb-4 text-sm text-[#b5e3c4]">Our community</p>
+            <h1 className="font-heading text-4xl font-medium leading-[1.08] tracking-[-0.04em] sm:text-5xl">Better, together.</h1>
+            <p className="mt-5 text-base leading-relaxed text-[#929b98]">A shared passion for problem solving. A little kindness. These are the values that guide our community.</p>
+          </header>
+          <div className="space-y-4">
+            {rules.map((rule, index) => (
+              <section key={rule.title} className="rounded-2xl border border-[#2b3031] bg-[#191c1e] p-6 sm:p-7">
+                <div className="mb-5 flex items-center justify-between">
+                  <rule.icon className="size-5 text-[#b5e3c4]" strokeWidth={1.5} />
+                  <span className="text-xs text-[#69746e] tabular-nums">{String(index + 1).padStart(2, "0")}</span>
                 </div>
-                <div className="space-y-1.5 flex-1">
-                  <div className="flex items-center gap-1.5 text-[8px] font-bold text-emerald-500/40 uppercase tracking-widest">
-                    <span>RULE_0{idx + 1}</span>
-                  </div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-300">{rule.title}</h3>
-                  <p className="text-[10px] text-emerald-500/60 leading-relaxed uppercase">
-                    {rule.content}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+                <h2 className="font-heading text-xl font-medium tracking-tight">{rule.title}</h2>
+                <p className="mt-3 text-sm leading-7 text-[#a8b1ac]">{rule.content}</p>
+              </section>
+            ))}
 
-        {/* Footer */}
-        <div className="flex flex-col items-center gap-6 pt-6">
-          <div className="h-[1px] w-full bg-emerald-500/10" />
-          <div className="flex items-center gap-2 text-emerald-500/40 text-[9px] font-bold uppercase tracking-wider">
-            <Users size={12} />
-            <span>STANDING_TOGETHER_AS_ONE_COMMUNITY</span>
           </div>
-          <Button asChild variant="ghost" className="h-9 px-4 rounded-sm border border-emerald-500/10 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/5 text-[9px] font-bold uppercase tracking-widest font-mono">
-            <Link href="/">
-              <ArrowLeft size={12} className="mr-1.5" /> [ BACK_TO_HOME.SYS ]
-            </Link>
-          </Button>
         </div>
       </div>
     </div>

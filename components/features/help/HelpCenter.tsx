@@ -2,208 +2,204 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { 
-  Search, 
-  Book, 
-  MessageCircle, 
+import {
+  Search,
+  BookOpen,
+  MessageCircle,
+  ArrowUpRight,
   ArrowRight,
-  Sparkles,
-  Zap,
-  Clock,
-  ChevronRight
+  Compass,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { m as motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
+import StudioMascot from "@/components/shared/StudioMascot";
 import HelpSearch from "./HelpSearch";
 
 const helpCategories = [
   {
-    id: "quick-start",
-    title: "Getting Started",
-    description: "Set up your account and start training in under 5 minutes.",
-    icon: Zap,
-    color: "bg-emerald-500/5 border-emerald-500/15 text-emerald-400",
-    hoverColor: "hover:border-emerald-500/25",
+    title: "Your first session",
+    description:
+      "From creating an account to finding your first set of problems.",
+    icon: Compass,
     href: "/help/quick-start",
-    time: "5 MIN READ",
+    detail: "Start here",
   },
   {
-    id: "faq",
-    title: "FAQ & Guides",
-    description: "Answers to the most common questions about every feature.",
-    icon: Book,
-    color: "bg-emerald-500/5 border-emerald-500/15 text-emerald-400",
-    hoverColor: "hover:border-emerald-500/25",
+    title: "Questions, answered",
+    description: "Understand training, profile syncing, upsolving, and more.",
+    icon: BookOpen,
     href: "/help/faq",
-    time: "BROWSE ALL",
+    detail: "Browse the FAQ",
   },
   {
-    id: "support",
-    title: "Contact Support",
-    description: "Still need help? Reach out to our team directly.",
+    title: "A little extra help",
+    description:
+      "Tell us where you’re stuck. We’ll help you find your next step.",
     icon: MessageCircle,
-    color: "bg-emerald-500/5 border-emerald-500/15 text-emerald-400",
-    hoverColor: "hover:border-emerald-500/25",
     href: "/help/support",
-    time: "24-48H RESPONSE",
+    detail: "Contact support",
   },
 ];
 
 const quickLinks = [
-  { label: "How do I create an account?", href: "/help/faq" },
-  { label: "How do I sync my profile?", href: "/help/faq" },
-  { label: "How do practice sessions work?", href: "/help/faq" },
-  { label: "What is upsolving?", href: "/help/faq" },
-  { label: "How do I change my password?", href: "/help/faq" },
-  { label: "Is my data safe?", href: "/help/faq" },
+  "How do I create an account?",
+  "How do I sync my profile?",
+  "How do practice sessions work?",
+  "What is upsolving?",
+  "How do I change my password?",
+  "Is my data safe?",
 ];
 
 export default function HelpCenter() {
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
-    <div className="max-w-4xl mx-auto space-y-10 pb-20 font-mono text-emerald-400 select-none relative z-10">
-      {/* Hero */}
-      <div className="text-center space-y-4 pt-4">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-950/20 border border-emerald-500/15 rounded-sm text-[9px] font-bold uppercase tracking-widest text-emerald-400">
-          <Sparkles className="size-3 animate-pulse" />
-          {"// Help Center"}
-        </div>
-        <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-none uppercase">
-          How can we help?
-        </h1>
-        <p className="text-emerald-500/50 text-xs uppercase max-w-lg mx-auto">
-          Find answers to your questions, learn how to use the platform, or get in touch with our team.
-        </p>
-
-        {/* Search */}
-        <div className="max-w-xl mx-auto pt-2">
-          <div className="relative group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-emerald-500/30 group-focus-within:text-emerald-400 transition-colors" />
+    <div className="relative mx-auto max-w-6xl space-y-12 pb-16 font-sans text-[#f1f3ee] sm:space-y-16">
+      <header className="grid items-center gap-8 border-b border-[#2b3031] pb-10 sm:grid-cols-[minmax(0,1fr)_220px] lg:grid-cols-[minmax(0,1fr)_280px]">
+        <div>
+          <p className="mb-4 text-sm font-medium text-[#b5e3c4]">Help center</p>
+          <h1 className="max-w-2xl font-heading text-4xl font-medium leading-[1.08] tracking-[-0.04em] sm:text-5xl lg:text-6xl">
+            A little guidance.
+            <br />A clearer next step.
+          </h1>
+          <p className="mt-5 max-w-xl text-base leading-relaxed text-[#929b98]">
+            Find an answer, learn your way around, and get back to solving.
+          </p>
+          <div className="relative mt-7 max-w-xl">
+            <Search
+              aria-hidden="true"
+              className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#929b98]"
+            />
             <Input
-              placeholder="Search questions or topics..."
+              aria-label="Search help"
+              placeholder="Search questions or topics…"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-10 pl-9 bg-[#040604] border border-emerald-500/20 rounded-sm text-xs text-emerald-300 placeholder-emerald-500/20 focus:border-emerald-500/50 outline-none transition-all font-mono"
+              onChange={(event) => setSearchQuery(event.target.value)}
+              className="h-14 rounded-2xl border-[#39403c] bg-[#191c1e] pl-11 text-base placeholder:text-[#929b98]"
             />
           </div>
         </div>
-
-        <AnimatePresence>
-          {searchQuery && (
-            <motion.div
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 5 }}
-              className="max-w-xl mx-auto text-left"
-            >
-              <HelpSearch query={searchQuery} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Category Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {helpCategories.map((category, idx) => (
-          <motion.div
-            key={category.id}
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: idx * 0.08 }}
-          >
-            <Link href={category.href}>
-              <Card 
-                className={cn(
-                  "h-full border-emerald-500/15 bg-[#060a08]/30 rounded-sm cursor-pointer group transition-all duration-300 hover:border-emerald-500/25",
-                  category.hoverColor
-                )}
-              >
-                <CardContent className="p-6 space-y-4">
-                  <div className={cn(
-                    "size-9 rounded-sm flex items-center justify-center border transition-all duration-300",
-                    category.color
-                  )}>
-                    <category.icon className="size-4.5" />
-                  </div>
-                  
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-300 group-hover:text-emerald-400 transition-colors">
-                        {category.title}
-                      </h3>
-                      <ChevronRight className="size-3.5 text-emerald-500/40 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
-                    </div>
-                    <p className="text-[10px] text-emerald-500/60 leading-relaxed uppercase">
-                      {category.description}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 text-[8px] font-bold text-emerald-500/35 tracking-widest">
-                    <Clock className="size-3" />
-                    {category.time}
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Quick Links */}
-      <Card className="border-emerald-500/15 bg-[#060a08]/20 rounded-sm">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="size-7 rounded-sm bg-emerald-500/5 border border-emerald-500/15 flex items-center justify-center text-emerald-400">
-              <Zap className="size-3.5" />
-            </div>
-            <h2 className="text-xs font-bold text-emerald-300 uppercase tracking-wider">Common Questions</h2>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] font-bold uppercase">
-            {quickLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="flex items-center gap-2 p-2 bg-[#040604]/40 border border-emerald-500/5 hover:border-emerald-500/15 rounded-sm hover:bg-emerald-500/5 transition-all group"
-              >
-                <ChevronRight className="size-3 text-emerald-500/30 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all shrink-0" />
-                <span className="text-emerald-500/55 group-hover:text-emerald-300 transition-colors">
-                  {link.label}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* CTA */}
-      <div className="text-center space-y-4 py-4">
-        <div className="inline-flex items-center gap-2 text-emerald-500/35 text-[9px] font-bold uppercase">
-          <div className="h-[1px] w-8 bg-emerald-500/10" />
-          <span>OR</span>
-          <div className="h-[1px] w-8 bg-emerald-500/10" />
-        </div>
-        <div className="space-y-1">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-white">Still have questions?</h3>
-          <p className="text-[10px] text-emerald-500/60 uppercase">
-            Our support team is here to help you with anything you need.
+        <div className="hidden self-end sm:block">
+          <StudioMascot pose="learn" className="mx-auto w-full max-w-64" />
+          <p className="mt-3 text-center text-sm text-[#929b98]">
+            There’s always a way forward.
           </p>
         </div>
-        <Button 
-          asChild
-          className="h-10 px-6 rounded-sm bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold uppercase tracking-widest text-[10px] shadow-[0_0_8px_rgba(16,185,129,0.2)] transition-all font-mono"
-        >
-          <Link href="/help/support" className="gap-1.5 justify-center">
-            [ CONTACT_SUPPORT_PORTAL.EXE ]
-            <ArrowRight className="size-3.5" />
-          </Link>
-        </Button>
-      </div>
+      </header>
+
+      <AnimatePresence>
+        {searchQuery && (
+          <motion.div
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+          >
+            <HelpSearch query={searchQuery} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <section
+        aria-labelledby="help-paths"
+        className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-12"
+      >
+        <div>
+          <h2
+            id="help-paths"
+            className="font-heading text-2xl font-medium tracking-tight"
+          >
+            Find your way.
+          </h2>
+          <p className="mt-3 max-w-xs text-sm leading-relaxed text-[#929b98]">
+            New here or already in a routine, start with what you need.
+          </p>
+        </div>
+        <div className="overflow-hidden rounded-2xl border border-[#2b3031] bg-[#191c1e]">
+          {helpCategories.map((category, index) => (
+            <Link
+              key={category.href}
+              href={category.href}
+              className="group flex items-start gap-4 border-b border-[#2b3031] p-5 transition-colors last:border-b-0 hover:bg-[#b5e3c4]/5 sm:items-center sm:gap-5 sm:p-6"
+            >
+              <span className="hidden text-xs tabular-nums text-[#929b98] sm:block">
+                0{index + 1}
+              </span>
+              <category.icon
+                aria-hidden="true"
+                className="mt-1 size-5 shrink-0 text-[#b5e3c4] sm:mt-0"
+                strokeWidth={1.5}
+              />
+              <div className="min-w-0 flex-1">
+                <h3 className="font-heading text-lg font-medium text-[#f1f3ee]">
+                  {category.title}
+                </h3>
+                <p className="mt-1 text-sm leading-relaxed text-[#929b98]">
+                  {category.description}
+                </p>
+                <p className="mt-3 text-xs font-medium text-[#b5e3c4]">
+                  {category.detail}
+                </p>
+              </div>
+              <ArrowUpRight
+                aria-hidden="true"
+                className="mt-1 size-4 shrink-0 text-[#929b98] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+              />
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section
+        aria-labelledby="common-questions"
+        className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-12"
+      >
+        <div>
+          <h2
+            id="common-questions"
+            className="font-heading text-2xl font-medium tracking-tight"
+          >
+            Good questions.
+          </h2>
+          <p className="mt-3 max-w-xs text-sm leading-relaxed text-[#929b98]">
+            A few things people often ask us.
+          </p>
+        </div>
+        <div className="grid gap-x-8 sm:grid-cols-2">
+          {quickLinks.map((label) => (
+            <Link
+              key={label}
+              href="/help/faq"
+              className="group flex items-center justify-between gap-4 border-b border-[#2b3031] py-5 text-sm text-[#b8c0bb] transition-colors hover:text-[#b5e3c4]"
+            >
+              <span>{label}</span>
+              <ArrowRight
+                aria-hidden="true"
+                className="size-4 shrink-0 text-[#929b98] transition-transform group-hover:translate-x-1"
+              />
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <Link
+        href="/docs"
+        className="group flex flex-col justify-between gap-5 rounded-2xl border border-[#2b3031] bg-[#191c1e] p-6 transition-colors hover:border-[#69746e] sm:flex-row sm:items-center sm:p-8"
+      >
+        <div>
+          <p className="text-sm font-medium text-[#b5e3c4]">
+            The complete guide
+          </p>
+          <h2 className="mt-2 font-heading text-2xl font-medium tracking-tight">
+            Get to know your training space.
+          </h2>
+          <p className="mt-2 text-sm text-[#929b98]">
+            Explore every feature, at your own pace.
+          </p>
+        </div>
+        <span className="inline-flex shrink-0 items-center gap-2 text-sm text-[#b5e3c4]">
+          Read the guide <ArrowUpRight className="size-4" aria-hidden="true" />
+        </span>
+      </Link>
     </div>
   );
 }

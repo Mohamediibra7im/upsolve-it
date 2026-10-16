@@ -1,6 +1,6 @@
 # Comprehensive Usage Guide
 
-Welcome to the Upsolve.it manual. This document provides detailed operating instructions and design explanations for all systems and protocols within the platform.
+Welcome to the Upsolve.it manual. Find practical guidance for setting up your account, training consistently, and learning from your progress.
 
 ## Table of Contents
 
@@ -8,7 +8,7 @@ Welcome to the Upsolve.it manual. This document provides detailed operating inst
    - [Creating an Account](#creating-an-account)
    - [Codeforces Verification](#codeforces-verification)
    - [Syncing Profile](#syncing-profile)
-2. [Core Training Engine](#training-engine)
+2. [Training sessions](#training-engine)
    - [Training Modes](#training-modes)
    - [Solving Problems](#solving-problems)
    - [Session Results](#session-results)
@@ -21,12 +21,12 @@ Welcome to the Upsolve.it manual. This document provides detailed operating inst
 5. [Gamification & Progress](#progression-system)
    - [XP and Levels](#xp-levels)
    - [Leaderboards](#leaderboards)
-   - [Tactical Levels](#tactical-levels)
+   - [Training levels](#tactical-levels)
 6. [Social & Identity](#social-features)
    - [Friends System](#friends-system)
-   - [Profile Portals](#profile-portals)
-7. [Support & Console](#support-console)
-   - [Signal Support Console](#signal-support)
+   - [Public profiles](#profile-portals)
+7. [Help & support](#support-console)
+   - [Contact support](#signal-support)
    - [System Notifications](#system-notifications)
 
 ---
@@ -35,63 +35,63 @@ Welcome to the Upsolve.it manual. This document provides detailed operating inst
 
 ### Creating an Account <a name="creating-an-account"></a>
 
-To create an identity on Upsolve.it:
+To create an account on Upsolve.it:
 
-1. Navigate to the register section on the home page.
+1. Choose Create account from the home page.
 2. Enter your Codeforces handle. The handle must match your active Codeforces ID.
 3. Choose a secure password for account authentication.
-4. Complete the sign-up process. The system will create your dashboard profile shell.
+4. Complete the sign-up process. Your dashboard will be ready when registration is complete.
 
 ### Codeforces Verification <a name="codeforces-verification"></a>
 
-Before you can access protected training sectors, you must verify your identity to ensure profile ownership:
+Before you can access protected training pages, you must verify your identity to ensure profile ownership:
 
-1. Start the Codeforces Verification Quest.
-2. The platform will output a temporary timed verification code.
+1. Start the Codeforces verification.
+2. The platform will show a temporary verification code.
 3. Open your Codeforces profile settings, and paste this verification code into the **First Name** field.
 4. Click verify. The system scans the Codeforces API, confirms the code matches the First Name on your profile, verifies your handle, and awards you 50 XP and a Verified Badge.
 
 ### Syncing Profile <a name="syncing-profile"></a>
 
-Your rating, solved problems, and submission history are automatically synced at session initialization. You can manually request a sync at any time:
+Your rating, solved problems, and submission history are synced when you start a session. You can manually request a sync at any time:
 
 1. Click on your profile avatar in the navigation bar.
 2. Click Sync Profile.
-3. The platform will fetch your latest contest ratings, active rank, and submission histories directly from Codeforces to update your dashboard dashboards.
+3. The platform will fetch your latest contest ratings, active rank, and submission histories directly from Codeforces to update your dashboard.
 
 ---
 
-## Core Training Engine <a name="training-engine"></a>
+## Training sessions <a name="training-engine"></a>
 
-The training engine is the tactical execution center of Upsolve.it. It allows you to run customized training sessions.
+The training page helps you build a session around your current level and the skills you want to improve.
 
 ### Training Modes <a name="training-modes"></a>
 
-Upsolve.it supports five tactical training modes:
+Upsolve.it supports five training modes:
 
-- **Ladder Mode**: Classic rating-based training. Best for steady progress. Curated blocks where the difficulty index increases as you solve them.
-- **Weakness Mode**: Targets specific tags where your historical stats show lower success rates, forcing you to patch tactical gaps.
+- **Ladder Mode**: Classic rating-based training. Best for steady progress. Choose a level to set the difficulty of your problem set.
+- **Weakness Mode**: Targets specific tags where your historical stats show lower success rates, helping you give those topics more attention.
 - **Speed Mode**: Solve lower-rated problems under strict countdown timers to train your quick-coding reflexes under pressure.
 - **Contest Simulation**: Simulates standard contest situations with hidden problem ratings, strict timers, and final review only.
-- **Endurance Mode**: Longer sessions with more problems, designed for deep weekend practice over long training intervals.
+- **Endurance Mode**: Longer sessions with more problems, designed for longer practice blocks.
 
 ### Solving Problems <a name="solving-problems"></a>
 
 During an active session:
 
-1. The platform generates problems matching your selected training parameters.
+1. Choose a mode, adjust your level, and optionally select topics. Click Generate problems to create your set, then Start session when you’re ready.
 2. Each problem includes a link to the corresponding Codeforces task, rating level, tag classifications, and a session timer.
-3. Click Open Problem to open and solve it inside your local IDE environment.
+3. Open a problem to read its statement on Codeforces, then work on your solution in your preferred editor.
 4. Submit your code on Codeforces.
-5. Return to the Upsolve.it console. The platform automatically queries the Codeforces API in real-time, monitoring your submission history to automatically update the problem status to "Accepted" or "Wrong Answer" / "Judging" without requiring manual inputs.
+5. Return to Upsolve.it to check your submission status. Use Refresh status to fetch your latest Codeforces result, including Accepted, Wrong answer, or Judging.
 
 ### Session Results <a name="session-results"></a>
 
-Completing a session logs your results to database telemetry:
+Choose Finish session to save your results and open your session review:
 
 - Solved problems accrue XP rewards relative to difficulty.
-- Attempted but unsolved problems are automatically compiled and transferred into your Upsolve Arena list.
-- Mode performance stats (average time, success rate, points) are recalculated and plotted on your statistics dashboard.
+- Attempted but unsolved problems are added to your upsolve list.
+- Your session review shows solved problems, time spent, performance, and suggestions for what to practice next.
 
 ---
 
@@ -99,11 +99,11 @@ Completing a session logs your results to database telemetry:
 
 ### Upsolving Arena <a name="upsolving-arena"></a>
 
-The Upsolve Arena is a dedicated sector focused on conquering problems you previously failed to solve:
+Your upsolve list keeps track of problems you want to return to:
 
 - Problems are automatically pushed here from failed training runs.
-- The arena organizes tasks by difficulty and category tags.
-- Focus on resolving these tasks to continuously break rating plateaus.
+- The list organizes problems by difficulty and category tags.
+- Use these problems to work through ideas you missed during a timed session.
 
 ### Tracking Progress <a name="tracking-progress"></a>
 
@@ -121,7 +121,7 @@ The Roadmap is a curated curriculum designed to transition competitive programme
 
 - Topic levels are structured as a sequence of topic nodes (e.g., Graph Theory, Dynamic Programming, Mathematics).
 - Each node includes tutorial material, reference templates, and a targeted set of training problems.
-- Earn significant XP gains by completing all problems in a node.
+- Earn XP by completing all problems in a node.
 
 ### Level Unlock Gates <a name="level-gates"></a>
 
@@ -136,28 +136,28 @@ Progress is gated by sequential checkpoints:
 
 ### XP and Levels <a name="xp-levels"></a>
 
-Almost all operations on the console yield experience points:
+You earn experience points through practice and progress:
 
 - Solving problems: Earn XP based on Codeforces rating levels.
-- Verification quests: Bonus XP.
-- Roadmap node completion: Significant XP blocks.
-- Levelling up increases your rank classification visible on your profile header.
+- Account verification: Bonus XP.
+- Roadmap node completion: Earn XP as you finish topics.
+- As you earn XP, your level increases and appears on your profile.
 
 ### Leaderboards <a name="leaderboards"></a>
 
-The Leaderboard logs overall community performance metrics:
+The leaderboard shows progress across the community:
 
 - Compare your level, rating, and solved problems counts against the community.
 - View leaderboards filtered by weekly, monthly, or all-time XP gains.
 
-### Tactical Levels <a name="tactical-levels"></a>
+### Training levels <a name="tactical-levels"></a>
 
-Your performance is mapped to specific CP ranks:
+Your training level sets the difficulty for ladder sessions. On the training page:
 
-- Easy (800-1200): Recruit level.
-- Medium (1200-1600): Specialist level.
-- Hard (1600-2000): Expert level.
-- Expert (2000-2400): Candidate Master level.
+- Use the plus and minus controls to adjust your level.
+- Check the target performance to understand the challenge.
+- Select Show ratings to reveal the four problem difficulty targets.
+- Use recommended level to return to a level based on your Codeforces rating.
 
 ---
 
@@ -167,11 +167,11 @@ Your performance is mapped to specific CP ranks:
 
 - Send and accept friend requests by handle.
 - View your friends' active dashboard charts, stats summaries, and progress.
-- Monitor active training sessions and upsolve metrics of fellow operators.
+- Monitor active training sessions and upsolve metrics of other members.
 
-### Profile Portals <a name="profile-portals"></a>
+### Public profiles <a name="profile-portals"></a>
 
-Your public profile is your operator card. It displays:
+Your public profile is a snapshot of your progress. It displays:
 - Level progression and rank status.
 - Activity heatmap showing daily practice consistency and total solved counts.
 - Codeforces rating milestones.
@@ -179,22 +179,22 @@ Your public profile is your operator card. It displays:
 
 ---
 
-## Support & Console <a name="support-console"></a>
+## Help & support <a name="support-console"></a>
 
-### Signal Support Console <a name="signal-support"></a>
+### Contact support <a name="signal-support"></a>
 
-For technical diagnostics, bugs, or system feedback, use the Signal Support Console:
+For questions, bugs, or feedback, open Contact support from the help center:
 
-- Compose contact requests directly from the help center.
-- Requests are dispatched directly to admin mailboxes.
-- Once resolved, admin responses are dispatched directly to your registered email address.
+- Fill in your name, email, subject, category, and message.
+- Choose Send message to contact the team.
+- The team can reply to the email address you provide.
 
 ### System Notifications <a name="system-notifications"></a>
 
-The notification center broadcasts targeted alerts:
+The notification center keeps you informed:
 
-- Click the floating action bell icon (or navigate to /whats-new) to open the notification board.
+- Open Notifications to see platform messages, or visit What’s new for release notes.
 - View platform announcements.
-- Version logs and new feature drops.
+- New features and improvements.
 - Scheduled maintenance outages.
-- Direct messages from admin operators.
+- Messages from the support team.
