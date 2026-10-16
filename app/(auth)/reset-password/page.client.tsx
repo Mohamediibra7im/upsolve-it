@@ -38,24 +38,31 @@ export default function ResetPasswordPage() {
   const [resetToken, setResetToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
-  const [countdown, setCountdown] = useState(120);
+  const [countdown, setCountdown] = useState(0);
+  const [expiresAt, setExpiresAt] = useState<number | null>(null);
+  const [recoveryCode, setRecoveryCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (stage === "verify" && countdown > 0) {
-      timer = setInterval(() => {
-        setCountdown((prev) => prev - 1);
-      }, 1000);
-    } else if (countdown === 0) {
-      setError("Verification time expired. Please try again.");
-      setStage("enterHandle");
-    }
+    if (stage === "enterHandle" || expiresAt === null) return;
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000));
+      setCountdown(remaining);
+      if (remaining === 0) {
+        setError("Verification time expired. Please start again.");
+        setVerificationToken("");
+        setResetToken("");
+        setRecoveryCode("");
+        setStage("enterHandle");
+      }
+    };
+    tick();
+    const timer = setInterval(tick, 1000);
     return () => clearInterval(timer);
-  }, [stage, countdown]);
+  }, [stage, expiresAt]);
 
   const handleStartVerification = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,14 +77,24 @@ export default function ResetPasswordPage() {
       const res = await fetch(resolveApiUrl("/api/auth/initiate-reset"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ handle }),
+        body: JSON.stringify({ handle: handle.trim() }),
       });
 
       const data = await res.json();
       if (res.ok) {
+        const deadline = new Date(data.expiresAt).getTime();
+        if (
+          !/^[a-f0-9]{32}$/.test(data.code) ||
+          !data.verificationToken ||
+          !Number.isFinite(deadline) ||
+          deadline <= Date.now()
+        )
+          throw new Error("Recovery service unavailable");
         setVerificationToken(data.verificationToken);
+        setRecoveryCode(data.code);
+        setExpiresAt(deadline);
+        setCountdown(Math.ceil((deadline - Date.now()) / 1000));
         setStage("verify");
-        setCountdown(120);
       } else {
         setError(data.message || "Failed to start verification.");
       }
@@ -94,21 +111,29 @@ export default function ResetPasswordPage() {
     setError(null);
 
     try {
-      const res = await fetch(resolveApiUrl("/api/auth/verify-submission"), {
+      const res = await fetch(resolveApiUrl("/api/auth/verify-reset-profile"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ handle, verificationToken }),
+        body: JSON.stringify({ verificationToken }),
       });
 
       const data = await res.json();
       if (res.ok) {
+        const deadline = new Date(data.expiresAt).getTime();
+        if (
+          !data.resetToken ||
+          !Number.isFinite(deadline) ||
+          deadline <= Date.now()
+        )
+          throw new Error("Recovery proof expired");
         setResetToken(data.resetToken);
+        setExpiresAt(deadline);
         setStage("resetPassword");
       } else {
-        setError(data.message || "Submission verification failed.");
+        setError(data.message || "Profile verification failed.");
       }
     } catch (err) {
-      console.error("Verify submission error:", err);
+      console.error("Verify profile error:", err);
       setError("Unable to connect. Please try verifying again.");
     } finally {
       setIsLoading(false);
@@ -135,7 +160,7 @@ export default function ResetPasswordPage() {
       const res = await fetch(resolveApiUrl("/api/auth/reset-password"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ handle, resetToken, newPassword }),
+        body: JSON.stringify({ resetToken, newPassword }),
       });
 
       const data = await res.json();
@@ -147,9 +172,13 @@ export default function ResetPasswordPage() {
           durationMs: 4000,
         });
 
-        setTimeout(() => {
-          router.push("/");
-        }, 2000);
+        setResetToken("");
+        setVerificationToken("");
+        setNewPassword("");
+        setConfirmNewPassword("");
+        setExpiresAt(null);
+        setStage("enterHandle");
+        router.push("/login");
       } else {
         setError(data.message || "Failed to reset password.");
       }
@@ -220,8 +249,8 @@ export default function ResetPasswordPage() {
               className="space-y-5"
             >
               <p className="text-[13px] leading-6 text-[#929b98]">
-                Enter your Codeforces handle. We will ask you to make a specific
-                submission to confirm the account belongs to you.
+                Enter your Codeforces handle. You will temporarily add a unique
+                code to your Codeforces profile to confirm ownership.
               </p>
               <div className="space-y-2">
                 <label
@@ -280,21 +309,24 @@ export default function ResetPasswordPage() {
                   <h3 className="text-sm font-medium">Confirm your account</h3>
                 </div>
                 <p className="text-[13px] leading-6 text-[#b6bdb9]">
-                  Open{" "}
+                  Open your{" "}
                   <a
-                    href="https://codeforces.com/problemset/problem/4/A"
+                    href="https://codeforces.com/settings/social"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-[#b5e3c4] underline underline-offset-4"
                   >
-                    Problem 4A
-                    <ExternalLink size={12} />
+                    Codeforces profile settings <ExternalLink size={12} />
                   </a>{" "}
-                  and submit code that results in a{" "}
-                  <span className="font-medium text-[#f1f3ee]">
-                    Compilation Error
-                  </span>
-                  .
+                  and set your <strong>First name</strong> to this code, then
+                  save:
+                </p>
+                <code className="mt-3 block select-all break-all rounded-lg bg-[#131715] p-3 font-mono text-sm text-[#f1f3ee]">
+                  {recoveryCode}
+                </code>
+                <p className="mt-3 text-xs leading-5 text-[#929b98]">
+                  You can restore your first name after verification. Keep this
+                  recovery page open.
                 </p>
               </div>
               <div className="flex items-center justify-between rounded-xl border border-[#2b3031] bg-[#131715] px-4 py-3">
@@ -315,12 +347,12 @@ export default function ResetPasswordPage() {
                 {isLoading ? (
                   <>
                     <RefreshCw className="size-4 animate-spin" />
-                    Checking submission…
+                    Checking profile…
                   </>
                 ) : (
                   <>
                     <Shield size={16} />
-                    Verify submission
+                    Verify profile
                   </>
                 )}
               </Button>

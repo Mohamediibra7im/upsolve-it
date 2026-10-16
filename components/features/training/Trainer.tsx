@@ -27,6 +27,8 @@ interface TrainerProps {
   stopTraining: () => void;
   refreshProblemStatus: () => void;
   finishTraining: () => void;
+  finishError?: string | null;
+  isFinishing?: boolean;
   submissionStatuses: SubmissionStatus[];
   display: TrainerDisplayOptions;
   onProblemOpen?: (problem: TrainingProblem) => void;
@@ -43,6 +45,8 @@ const Trainer = ({
   stopTraining,
   refreshProblemStatus,
   finishTraining,
+  finishError,
+  isFinishing,
   submissionStatuses,
   display,
   onProblemOpen,
@@ -61,7 +65,9 @@ const Trainer = ({
   }, [isTraining, training?.startTime]);
 
   const isPreContestPeriod = useMemo(() => {
-    return isTraining && !!training?.startTime && currentTime < training.startTime;
+    return (
+      isTraining && !!training?.startTime && currentTime < training.startTime
+    );
   }, [isTraining, training?.startTime, currentTime]);
 
   const [isFinishDialogOpen, setIsFinishDialogOpen] = useState(false);
@@ -98,6 +104,22 @@ const Trainer = ({
 
   return (
     <div className={cn(isTraining ? "pb-44 font-sans lg:pb-0" : "font-sans")}>
+      {finishError && (
+        <div
+          role="alert"
+          className="mb-4 rounded-xl border border-red-400/30 bg-red-400/5 p-4 text-sm text-red-300"
+        >
+          <p>{finishError} Your training is still saved on this device.</p>
+          <button
+            type="button"
+            onClick={finishTraining}
+            disabled={isFinishing}
+            className="mt-3 rounded-lg border border-current px-4 py-2 font-medium disabled:opacity-50"
+          >
+            {isFinishing ? "Saving…" : "Retry saving training"}
+          </button>
+        </div>
+      )}
       <StopTrainingDialog
         isOpen={isStopDialogOpen}
         onCancel={() => setIsStopDialogOpen(false)}
@@ -113,7 +135,9 @@ const Trainer = ({
       <div
         className={cn(
           "gap-6",
-          isTraining ? "lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-8" : "grid-cols-1",
+          isTraining
+            ? "lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-8"
+            : "grid-cols-1",
         )}
       >
         <ProblemsCard

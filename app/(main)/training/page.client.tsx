@@ -1,7 +1,12 @@
 "use client";
 
 import { useTraining, useTags } from "@/hooks/training";
-import { Trainer, TagSelector, LevelSelector, ModeSelector } from "@/components/features/training";
+import {
+  Trainer,
+  TagSelector,
+  LevelSelector,
+  ModeSelector,
+} from "@/components/features/training";
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@/hooks/auth";
 import Loader from "@/components/shared/Loader";
@@ -39,6 +44,8 @@ export default function TrainingPage() {
     isRefreshing,
     refreshProblemStatus,
     finishTraining,
+    finishError,
+    isFinishing,
     generateProblems,
     generateProblemsFromRatings,
     submissionStatuses,
@@ -74,14 +81,12 @@ export default function TrainingPage() {
     { revalidateOnFocus: false },
   );
 
-  const handleLevelChange = useCallback((ratings: {
-    P1: number;
-    P2: number;
-    P3: number;
-    P4: number;
-  }) => {
-    setCustomRatings(ratings);
-  }, []);
+  const handleLevelChange = useCallback(
+    (ratings: { P1: number; P2: number; P3: number; P4: number }) => {
+      setCustomRatings(ratings);
+    },
+    [],
+  );
 
   const handleGenerateProblems = useCallback(() => {
     if (!user) return;
@@ -165,8 +170,7 @@ export default function TrainingPage() {
       trainingMode: selectedMode,
       durationMinutes: base.durationMinutes,
       showRatings: base.showRatings && showRatings,
-      weaknessFallback:
-        selectedMode === "weakness" ? weaknessFallback : false,
+      weaknessFallback: selectedMode === "weakness" ? weaknessFallback : false,
       tags: selectedTags.map((t) => t.value),
     });
   }, [
@@ -180,8 +184,7 @@ export default function TrainingPage() {
     startTraining,
   ]);
 
-  const effectiveShowRatings =
-    selectedMode === "contest" ? false : showRatings;
+  const effectiveShowRatings = selectedMode === "contest" ? false : showRatings;
 
   const hideContestDetails = training?.trainingMode === "contest";
 
@@ -205,7 +208,9 @@ export default function TrainingPage() {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="mb-3 text-sm text-[#929b98]">Your training space</p>
-              <h1 className="font-heading text-3xl font-medium tracking-tight sm:text-4xl">{modeLabel}</h1>
+              <h1 className="font-heading text-3xl font-medium tracking-tight sm:text-4xl">
+                {modeLabel}
+              </h1>
             </div>
             <div className="flex items-center gap-2 rounded-full border border-[#b5e3c4]/20 bg-[#b5e3c4]/5 px-4 py-2 text-xs text-[#b5e3c4]">
               <span className="size-1.5 rounded-full bg-[#b5e3c4]" />
@@ -214,7 +219,9 @@ export default function TrainingPage() {
           </div>
           <div className="overflow-hidden rounded-[1.5rem] border border-[#2b3031] bg-[#191c1e] p-4 sm:p-6">
             <Trainer
-              status={isRefreshing ? "refreshing" : isTraining ? "training" : "idle"}
+              status={
+                isRefreshing ? "refreshing" : isTraining ? "training" : "idle"
+              }
               training={training}
               problems={problems}
               onGenerateProblems={handleGenerateProblems}
@@ -222,6 +229,8 @@ export default function TrainingPage() {
               stopTraining={stopTraining}
               refreshProblemStatus={refreshProblemStatus}
               finishTraining={finishTraining}
+              finishError={finishError}
+              isFinishing={isFinishing}
               submissionStatuses={submissionStatuses}
               display={{
                 showRatings: effectiveShowRatings,
@@ -248,8 +257,13 @@ export default function TrainingPage() {
               <CircleDot className="size-4 text-[#b5e3c4]" aria-hidden="true" />
               The training room
             </div>
-            <h1 className="max-w-3xl font-heading text-4xl font-medium leading-[1.1] tracking-[-0.04em] sm:text-5xl">Make room for progress.</h1>
-            <p className="mt-4 max-w-xl text-sm leading-relaxed text-[#929b98] sm:text-base">Choose your focus. Find your challenge. Turn a little practice into lasting progress.</p>
+            <h1 className="max-w-3xl font-heading text-4xl font-medium leading-[1.1] tracking-[-0.04em] sm:text-5xl">
+              Make room for progress.
+            </h1>
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-[#929b98] sm:text-base">
+              Choose your focus. Find your challenge. Turn a little practice
+              into lasting progress.
+            </p>
           </div>
           <div className="flex items-center gap-3 rounded-2xl border border-[#2b3031] bg-[#191c1e] px-4 py-3">
             <div className="flex size-9 items-center justify-center rounded-xl bg-[#b5e3c4]/10 text-[#b5e3c4]">
@@ -257,24 +271,46 @@ export default function TrainingPage() {
             </div>
             <div>
               <p className="text-xs text-[#929b98]">Training as</p>
-              <p className="mt-0.5 text-sm font-medium">{user.codeforcesHandle}</p>
+              <p className="mt-0.5 text-sm font-medium">
+                {user.codeforcesHandle}
+              </p>
             </div>
           </div>
         </header>
 
-        <section aria-labelledby="training-mode-heading" className="rounded-[1.5rem] border border-[#2b3031] bg-[#191c1e] p-5 sm:p-7">
+        <section
+          aria-labelledby="training-mode-heading"
+          className="rounded-[1.5rem] border border-[#2b3031] bg-[#191c1e] p-5 sm:p-7"
+        >
           <div className="mb-6 flex items-center gap-3">
-            <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#39403c] text-xs text-[#929b98]">1</span>
-            <h2 id="training-mode-heading" className="font-heading text-xl font-medium tracking-tight">Choose your session</h2>
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#39403c] text-xs text-[#929b98]">
+              1
+            </span>
+            <h2
+              id="training-mode-heading"
+              className="font-heading text-xl font-medium tracking-tight"
+            >
+              Choose your session
+            </h2>
           </div>
           <ModeSelector value={selectedMode} onChange={setSelectedMode} />
         </section>
 
         <div className="grid gap-6 xl:grid-cols-2">
-          <section aria-labelledby="training-level-heading" className="min-w-0 rounded-[1.5rem] border border-[#2b3031] bg-[#191c1e] p-5 sm:p-7">
+          <section
+            aria-labelledby="training-level-heading"
+            className="min-w-0 rounded-[1.5rem] border border-[#2b3031] bg-[#191c1e] p-5 sm:p-7"
+          >
             <div className="mb-5 flex items-center gap-3">
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#39403c] text-xs text-[#929b98]">2</span>
-              <h2 id="training-level-heading" className="font-heading text-xl font-medium tracking-tight">Find your challenge</h2>
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#39403c] text-xs text-[#929b98]">
+                2
+              </span>
+              <h2
+                id="training-level-heading"
+                className="font-heading text-xl font-medium tracking-tight"
+              >
+                Find your challenge
+              </h2>
             </div>
             <LevelSelector
               onLevelChange={handleLevelChange}
@@ -284,10 +320,20 @@ export default function TrainingPage() {
             />
           </section>
 
-          <section aria-labelledby="training-topics-heading" className="min-w-0 rounded-[1.5rem] border border-[#2b3031] bg-[#191c1e] p-5 sm:p-7">
+          <section
+            aria-labelledby="training-topics-heading"
+            className="min-w-0 rounded-[1.5rem] border border-[#2b3031] bg-[#191c1e] p-5 sm:p-7"
+          >
             <div className="mb-5 flex flex-wrap items-center gap-3">
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#39403c] text-xs text-[#929b98]">3</span>
-              <h2 id="training-topics-heading" className="font-heading text-xl font-medium tracking-tight">Set your focus</h2>
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#39403c] text-xs text-[#929b98]">
+                3
+              </span>
+              <h2
+                id="training-topics-heading"
+                className="font-heading text-xl font-medium tracking-tight"
+              >
+                Set your focus
+              </h2>
               <span className="ml-auto text-xs text-[#929b98]">Optional</span>
             </div>
             <TagSelector
@@ -299,16 +345,30 @@ export default function TrainingPage() {
           </section>
         </div>
 
-        <section aria-labelledby="training-preview-heading" className="overflow-hidden rounded-[1.5rem] border border-[#2b3031] bg-[#191c1e] p-5 sm:p-7">
+        <section
+          aria-labelledby="training-preview-heading"
+          className="overflow-hidden rounded-[1.5rem] border border-[#2b3031] bg-[#191c1e] p-5 sm:p-7"
+        >
           <div className="mb-6 flex items-center gap-3">
-            <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#39403c] text-xs text-[#929b98]">4</span>
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#39403c] text-xs text-[#929b98]">
+              4
+            </span>
             <div>
-              <h2 id="training-preview-heading" className="font-heading text-xl font-medium tracking-tight">Your next session</h2>
-              <p className="mt-1 text-sm text-[#929b98]">Generate your problem set, then start when you’re ready.</p>
+              <h2
+                id="training-preview-heading"
+                className="font-heading text-xl font-medium tracking-tight"
+              >
+                Your next session
+              </h2>
+              <p className="mt-1 text-sm text-[#929b98]">
+                Generate your problem set, then start when you’re ready.
+              </p>
             </div>
           </div>
           <Trainer
-            status={isRefreshing ? "refreshing" : isTraining ? "training" : "idle"}
+            status={
+              isRefreshing ? "refreshing" : isTraining ? "training" : "idle"
+            }
             training={training}
             problems={problems}
             onGenerateProblems={handleGenerateProblems}
@@ -316,6 +376,8 @@ export default function TrainingPage() {
             stopTraining={stopTraining}
             refreshProblemStatus={refreshProblemStatus}
             finishTraining={finishTraining}
+            finishError={finishError}
+            isFinishing={isFinishing}
             submissionStatuses={submissionStatuses}
             display={{
               showRatings: effectiveShowRatings,

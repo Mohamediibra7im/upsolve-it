@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import useSWR from "swr";
 import { Training } from "@/types/Training";
-import { getAccuratePerformance } from "@/utils/getPerformance";
 import useUser from "@/hooks/auth/useUser";
 import { apiFetcher, swrFetcher } from "@/lib/apiClient";
 
@@ -11,42 +10,69 @@ const useHistory = () => {
     data: history,
     error,
     mutate,
-  } = useSWR<Training[]>(
-    user ? "/api/trainings" : null,
-    swrFetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnMount: true,
-      errorRetryCount: 3,
-      errorRetryInterval: 2000,
-      dedupingInterval: 3000,
-    }
-  );
+  } = useSWR<Training[]>(user ? "/api/trainings" : null, swrFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnMount: true,
+    errorRetryCount: 3,
+    errorRetryInterval: 2000,
+    dedupingInterval: 3000,
+  });
 
   const addTraining = useCallback(
     async (training: Training) => {
       if (typeof window === "undefined") return;
 
-      // Use the user's current rating for accurate performance calculation
-      const userRating = user?.rating || 1500; // Default to 1500 if rating not available
-      const performance = getAccuratePerformance(training, userRating);
-      const newTraining = { ...training, performance };
-
-      try {
-        await apiFetcher("/api/trainings", {
+      const fields = [
+        "problemId",
+        "contestId",
+        "index",
+        "name",
+        "rating",
+        "tags",
+        "url",
+        "startedAt",
+        "solvedAt",
+        "solvedTime",
+        "timeSpentSeconds",
+        "expectedTimeSeconds",
+        "speedStatus",
+        "attempts",
+        "isSolved",
+        "insightMessage",
+        "recommendation",
+      ];
+      const payload = {
+        startTime: training.startTime,
+        endTime: training.endTime,
+        customRatings: Object.fromEntries(
+          Object.entries(training.customRatings ?? {}).filter(([key]) =>
+            /^P[1-8]$/.test(key),
+          ),
+        ),
+        problems: training.problems.map((problem) =>
+          Object.fromEntries(
+            Object.entries(problem).filter(([key]) => fields.includes(key)),
+          ),
+        ),
+        trainingMode: training.trainingMode,
+        weaknessFallback: training.weaknessFallback,
+        showRatings: training.showRatings,
+        durationMinutes: training.durationMinutes,
+        level: training.level,
+      };
+      const result = await apiFetcher<{ training: Training }>(
+        "/api/trainings",
+        {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(newTraining),
-        });
-        // Revalidate the SWR cache to show the new training
-        mutate();
-      } catch (error) {
-        console.error('Failed to load training history:', error);
-      }
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
+      // A cache refresh failure must not turn a successful save into a duplicate retry.
+      void Promise.resolve(mutate()).catch(console.error);
+      return result.training;
     },
-    [mutate, user?.rating],
+    [mutate],
   );
 
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
@@ -91,7 +117,3 @@ const useHistory = () => {
 };
 
 export default useHistory;
-
-
-
-

@@ -113,7 +113,7 @@ const useUser = () => {
     newPassword: string,
   ): Promise<Response<null>> => {
     try {
-      const res = await fetch(resolveApiUrl("/api/auth/reset-pin"), {
+      const res = await fetch(resolveApiUrl("/api/auth/reset-password"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
