@@ -1,7 +1,9 @@
 "use client";
 
+import MemberPageState from "@/components/features/profile/MemberPageState";
+
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { m } from "framer-motion";
 import {
@@ -13,7 +15,6 @@ import {
   Check,
   X,
   Ban,
-  Cpu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,11 +61,12 @@ function formatRequestTime(createdAt?: string) {
 export default function FriendsPage() {
   const { user, isLoading: isUserLoading } = useUser();
   const router = useRouter();
-  const { friends, isLoading, mutate: mutateFriends } = useFriends(!!user);
+  const { friends, isLoading, isError: friendsError, mutate: mutateFriends } = useFriends(!!user);
   const {
     incoming,
     outgoing,
     isLoading: requestsLoading,
+    isError: requestsError,
     mutate: mutateRequests,
   } = useFriendRequests(!!user);
   const { toast } = useToast();
@@ -243,52 +245,52 @@ export default function FriendsPage() {
   }
 
   return (
-    <div className="min-h-screen relative pb-20 font-mono text-emerald-400">
-      <div className="absolute inset-0 -z-10 bg-[#040604]">
-        <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.04]" />
-      </div>
+    <div className="min-h-screen relative pb-20 font-sans text-foreground">
 
-      <div className="container mx-auto px-4 py-8 sm:py-12 space-y-8 max-w-4xl">
-        {/* Terminal Header */}
+      <div className="mx-auto w-full py-8 sm:py-12 space-y-8 max-w-7xl">
+
         <m.div
-          initial={{ opacity: 0, y: -10 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           className="space-y-4"
         >
-          <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40">
-            <Users size={12} className="text-emerald-400" />
-            <span>FRIENDS_DATABASE // SOCIAL_MATRIX</span>
-            <span className="flex-1 border-b border-emerald-500/10" />
-            <Cpu size={10} className="text-emerald-500/30" />
-            <span>COMMUNITY: ONLINE</span>
+          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <Users size={12} className="text-primary" />
+            <span>Your community</span>
+            <span className="flex-1 border-b border-border" />
+            <span>Community</span>
           </div>
 
           <div className="space-y-1">
-            <h1 className="text-xl sm:text-2xl font-bold text-emerald-300 uppercase tracking-wider">
-              Friend Directory Station
+            <h1 className="text-foreground font-heading text-3xl sm:text-4xl font-medium tracking-tight leading-tight">
+              Better, together.
             </h1>
-            <p className="text-[11px] text-emerald-500/40 max-w-lg">
-              Send a connection request using Codeforces handle credentials. Accept incoming requests to sync stats.
+            <p className="text-sm text-muted-foreground max-w-lg">
+              Connect with fellow learners, compare your progress, and keep each other going.
             </p>
           </div>
         </m.div>
 
-        {/* Input Form Panel */}
-        <div className="p-5 border border-emerald-500/15 bg-emerald-950/5 relative overflow-hidden rounded-lg">
-          <form onSubmit={handleSendRequest} className="flex flex-col sm:flex-row gap-3 sm:items-end">
+        <div className="grid items-start gap-8 lg:grid-cols-[280px_minmax(0,1fr)]">
+        <aside className="lg:sticky lg:top-24">
+        {/* Add a connection */}
+        <div className="p-5 border border-border bg-card relative overflow-hidden rounded-2xl">
+          <h2 className="mb-2 font-heading text-xl font-medium tracking-tight text-foreground">Grow your circle</h2>
+          <p className="mb-6 text-sm leading-relaxed text-muted-foreground">Add a friend with their Codeforces handle to follow their practice.</p>
+          <form onSubmit={handleSendRequest} className="flex flex-col gap-4">
             <div className="flex-1 space-y-2">
               <label
                 htmlFor="friend-handle"
-                className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/40"
+                className="text-xs font-medium text-muted-foreground"
               >
-                Codeforces handle credentials
+                Codeforces handle
               </label>
               <Input
                 id="friend-handle"
                 value={handle}
                 onChange={(e) => setHandle(e.target.value)}
-                placeholder="enter_handle..."
-                className="h-10 rounded border border-emerald-500/20 bg-[#060a08] text-xs text-emerald-400 placeholder:text-emerald-500/30 focus:border-emerald-500/40 focus:ring-0 font-mono"
+                placeholder="Enter a Codeforces handle"
+                className="h-10 rounded-lg border border-border bg-card text-xs text-primary placeholder:text-muted-foreground focus:border-border focus-visible:ring-2 focus-visible:ring-ring font-sans"
                 autoComplete="off"
                 spellCheck={false}
               />
@@ -296,47 +298,44 @@ export default function FriendsPage() {
             <Button
               type="submit"
               disabled={adding || !normalizeCodeforcesHandleInput(handle)}
-              className="h-10 rounded bg-emerald-500 text-emerald-950 font-bold uppercase tracking-widest text-[9px] shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:bg-emerald-400 transition-all font-mono sm:px-6 shrink-0"
+              className="h-10 rounded-lg bg-primary text-primary-foreground font-medium text-xs hover:bg-primary transition-all font-sans sm:px-6 shrink-0"
             >
               {adding ? (
                 <Loader2 className="size-3.5 animate-spin" />
               ) : (
                 <UserPlus size={12} />
               )}
-              [ SEND_REQUEST.EXE ]
+              Send request
             </Button>
           </form>
         </div>
 
+        <p className="mt-4 px-2 text-sm leading-relaxed text-muted-foreground">Once you’re connected, open a friend’s profile to see their sessions, solved problems, and progress.</p>
+        </aside>
+        <div className="min-w-0 space-y-8">
+        {requestsError && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4"><p className="text-sm text-muted-foreground">Friend requests are unavailable right now.</p><Button variant="outline" onClick={() => mutateRequests()}>Try again</Button></div>}
         {/* Incoming requests */}
         {!requestsLoading && incoming.length > 0 && (
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40 border-b border-emerald-500/10 pb-1">
-              <span>INCOMING_REQUEST_NODES // PENDING</span>
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground pb-1">
+              <span>Friend requests</span>
               <span className="tabular-nums">({incoming.length})</span>
             </div>
-            <div className="divide-y divide-emerald-500/[0.07]">
+            <div className="divide-y divide-border rounded-2xl border border-border bg-card">
               {incoming.map((row) => (
                 <div
                   key={row._id}
-                  className="flex flex-col sm:flex-row sm:items-center gap-4 py-3 justify-between hover:bg-emerald-950/5 transition-all px-2"
+                  className="flex flex-col sm:flex-row sm:items-center gap-4 py-5 justify-between transition-colors px-4"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="relative size-10 shrink-0 rounded border border-emerald-500/10 overflow-hidden bg-emerald-950/20">
-                      <Image
-                        src={row.from.avatar}
-                        alt=""
-                        fill
-                        sizes="40px"
-                        className="object-cover opacity-80"
-                        unoptimized
-                      />
+                    <div className="relative size-10 shrink-0 rounded-lg border border-border overflow-hidden bg-card">
+                      <Avatar className="size-full rounded-lg"><AvatarImage src={row.from.avatar || undefined} alt="" /><AvatarFallback className="bg-primary/10 text-primary">{row.from.codeforcesHandle.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
                     </div>
                     <div className="min-w-0">
-                      <p className="font-bold text-xs text-emerald-300 truncate">
+                      <p className="font-medium text-sm text-foreground truncate">
                         {row.from.codeforcesHandle}
                       </p>
-                      <p className="text-[9px] text-emerald-500/30 tabular-nums">
+                      <p className="text-xs text-muted-foreground tabular-nums">
                         {formatRequestTime(
                           row.createdAt != null ? String(row.createdAt) : undefined,
                         )}
@@ -347,7 +346,7 @@ export default function FriendsPage() {
                     <Button
                       type="button"
                       size="sm"
-                      className="h-8 rounded bg-emerald-500 text-emerald-950 font-bold uppercase tracking-widest text-[8px] hover:bg-emerald-400 transition-all font-mono"
+                      className="h-9 rounded-lg bg-primary text-primary-foreground font-medium text-xs hover:bg-primary transition-all font-sans"
                       onClick={() => acceptRequest(row._id)}
                       disabled={requestBusyId === row._id}
                     >
@@ -356,18 +355,18 @@ export default function FriendsPage() {
                       ) : (
                         <Check size={10} className="mr-1" />
                       )}
-                      [ ACCEPT.EXE ]
+                      Accept
                     </Button>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="h-8 rounded border border-emerald-500/20 bg-transparent text-emerald-500/60 font-bold uppercase tracking-widest text-[8px] hover:bg-emerald-500/10 hover:text-emerald-400 font-mono"
+                      className="h-9 rounded-lg border border-border bg-transparent text-muted-foreground font-medium text-xs hover:bg-primary/10 hover:text-primary font-sans"
                       onClick={() => declineRequest(row._id)}
                       disabled={requestBusyId === row._id}
                     >
                       <X size={10} className="mr-1" />
-                      [ DECLINE.SH ]
+                      Decline
                     </Button>
                   </div>
                 </div>
@@ -379,39 +378,32 @@ export default function FriendsPage() {
         {/* Outgoing requests */}
         {!requestsLoading && outgoing.length > 0 && (
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40 border-b border-emerald-500/10 pb-1">
-              <span>OUTGOING_TRANSMISSIONS // PENDING</span>
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground pb-1">
+              <span>Sent requests</span>
               <span className="tabular-nums">({outgoing.length})</span>
             </div>
-            <div className="divide-y divide-emerald-500/[0.07]">
+            <div className="divide-y divide-border rounded-2xl border border-border bg-card">
               {outgoing.map((row) => (
                 <div
                   key={row._id}
-                  className="flex flex-col sm:flex-row sm:items-center gap-4 py-3 justify-between hover:bg-emerald-950/5 transition-all px-2"
+                  className="flex flex-col sm:flex-row sm:items-center gap-4 py-5 justify-between transition-colors px-4"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="relative size-10 shrink-0 rounded border border-emerald-500/10 overflow-hidden bg-emerald-950/20">
-                      <Image
-                        src={row.to.avatar}
-                        alt=""
-                        fill
-                        sizes="40px"
-                        className="object-cover opacity-80"
-                        unoptimized
-                      />
+                    <div className="relative size-10 shrink-0 rounded-lg border border-border overflow-hidden bg-card">
+                      <Avatar className="size-full rounded-lg"><AvatarImage src={row.to.avatar || undefined} alt="" /><AvatarFallback className="bg-primary/10 text-primary">{row.to.codeforcesHandle.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
                     </div>
                     <div className="min-w-0">
-                      <p className="font-bold text-xs text-emerald-300 truncate">
+                      <p className="font-medium text-sm text-foreground truncate">
                         {row.to.codeforcesHandle}
                       </p>
-                      <p className="text-[9px] text-amber-500/60 uppercase tracking-widest">Pending</p>
+                      <p className="text-xs text-amber-300">Pending</p>
                     </div>
                   </div>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="h-8 rounded border border-red-500/20 bg-transparent text-red-400/60 font-bold uppercase tracking-widest text-[8px] hover:bg-red-500/10 hover:text-red-400 font-mono"
+                    className="h-9 rounded-lg border border-red-500/20 bg-transparent text-red-300 font-medium text-xs hover:bg-red-500/10 hover:text-red-400 font-sans"
                     onClick={() => cancelRequest(row._id)}
                     disabled={requestBusyId === row._id}
                   >
@@ -420,7 +412,7 @@ export default function FriendsPage() {
                     ) : (
                       <Ban size={10} className="mr-1" />
                     )}
-                    [ CANCEL.SH ]
+                    Cancel request
                   </Button>
                 </div>
               ))}
@@ -430,49 +422,44 @@ export default function FriendsPage() {
 
         {/* Friends list */}
         <div className="space-y-4">
-          <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40 border-b border-emerald-500/10 pb-1">
-            <span>SYNCED_NODES // CURRENT_DIRECTORY</span>
+          <div className="flex items-center gap-2 text-sm font-medium text-foreground pb-1">
+            <span>Your friends</span>
             <span className="tabular-nums">({sortedFriends.length})</span>
           </div>
 
           {isLoading ? (
-            <Loader message="Loading friends..." />
+            <MemberPageState kind="loading" title="Gathering your circle" description="Loading your friends’ profiles." />
+          ) : friendsError && sortedFriends.length === 0 ? (
+            <MemberPageState kind="error" title="We couldn’t load your friends" description="Your connections will appear here when the data is available."><Button variant="outline" onClick={() => mutateFriends()}>Try again</Button></MemberPageState>
           ) : sortedFriends.length === 0 ? (
-            <div className="py-12 text-center text-emerald-500/20 text-xs">
-              [SYS.EMPTY // NO SYNCED FRIENDS FOUND]
+            <div className="rounded-2xl border border-dashed border-border px-6 py-16 text-center text-muted-foreground text-sm">
+              Your circle starts here. Send a friend request to connect.
             </div>
           ) : (
-            <div className="divide-y divide-emerald-500/[0.07]">
+            <div className="divide-y divide-border rounded-2xl border border-border bg-card">
               {sortedFriends.map((f) => (
                 <m.div
                   key={f._id}
-                  initial={{ opacity: 0, y: 6 }}
+                  initial={false}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex flex-col sm:flex-row sm:items-center gap-4 py-3 justify-between hover:bg-emerald-950/5 transition-all px-2"
+                  className="flex flex-col sm:flex-row sm:items-center gap-4 py-5 justify-between transition-colors px-4"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div
                       onClick={() => openFriendStats(f._id)}
-                      className="relative size-10 shrink-0 rounded border border-emerald-500/10 overflow-hidden bg-emerald-950/20 cursor-pointer hover:opacity-85 transition-opacity"
+                      className="relative size-10 shrink-0 rounded-lg border border-border overflow-hidden bg-card cursor-pointer hover:opacity-85 transition-opacity"
                     >
-                      <Image
-                        src={f.avatar}
-                        alt=""
-                        fill
-                        sizes="40px"
-                        className="object-cover opacity-80"
-                        unoptimized
-                      />
+                      <Avatar className="size-full rounded-lg"><AvatarImage src={f.avatar || undefined} alt="" /><AvatarFallback className="bg-primary/10 text-primary">{f.codeforcesHandle.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
                     </div>
                     <div
                       onClick={() => openFriendStats(f._id)}
                       className="min-w-0 cursor-pointer group/friend"
                     >
-                      <p className="font-bold text-xs text-emerald-300 truncate group-hover/friend:text-emerald-200 transition-colors">
+                      <p className="font-medium text-sm text-foreground truncate group-hover/friend:text-foreground transition-colors">
                         {f.codeforcesHandle}
                       </p>
-                      <p className="text-[9px] font-bold uppercase tracking-wider text-emerald-500/40">
-                        {f.rank.toUpperCase()} · rating {f.rating}
+                      <p className="text-xs font-medium text-muted-foreground">
+                        {f.rank} · rating {f.rating}
                       </p>
                     </div>
                   </div>
@@ -481,18 +468,18 @@ export default function FriendsPage() {
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="h-8 rounded border border-emerald-500/25 bg-transparent text-emerald-400 font-bold uppercase tracking-widest text-[8px] hover:bg-emerald-500/10 hover:text-emerald-300 font-mono inline-flex items-center gap-1"
+                      className="h-9 rounded-lg border border-border bg-transparent text-primary font-medium text-xs hover:bg-primary/10 hover:text-foreground font-sans inline-flex items-center gap-1"
                       onClick={() => openFriendStats(f._id)}
                     >
                       <BarChart2 size={10} />
-                      [ VIEW_STATS.EXE ]
+                      View progress
                     </Button>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       className={cn(
-                        "size-8 rounded text-emerald-500/30 hover:text-red-400 hover:bg-red-500/10 transition-all",
+                        "size-8 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-all",
                         removingId === f._id && "opacity-70",
                       )}
                       onClick={() => handleRemove(f)}
@@ -510,6 +497,8 @@ export default function FriendsPage() {
               ))}
             </div>
           )}
+        </div>
+        </div>
         </div>
       </div>
 

@@ -20,7 +20,6 @@ const useUpsolvedProblems = () => {
   const {
     isLoading: isProblemsLoading,
     refreshSolvedProblems,
-    solvedProblems,
   } = useSolvedProblems(user);
 
   // ── Single SWR hook fetching combined { items, dismissed } ──────────

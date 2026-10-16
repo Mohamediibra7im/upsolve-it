@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useUser } from "@/hooks/auth";
 import { useFriendRequests } from "@/hooks/social";
@@ -26,11 +27,11 @@ export default function Dashboard() {
   const { user, logout: _logout, syncProfile } = useUser();
   const { incoming: incomingFriendRequests } = useFriendRequests(!!user);
   const friendRequestCount = incomingFriendRequests.length;
-  const { history, isLoading: isHistoryLoading } = useHistory();
-  const { upsolvedProblems, isLoading: isUpsolveLoading } = useUpsolvedProblems();
+  const { history, isLoading: isHistoryLoading, error: historyError, refresh: refreshHistory } = useHistory();
+  const { upsolvedProblems, isLoading: isUpsolveLoading, error: upsolveError, refreshUpsolvedProblems } = useUpsolvedProblems();
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const { summary } = useRoadmapUserSummary(!!user);
+  const { summary, error: summaryError, mutateSummary } = useRoadmapUserSummary(!!user);
   const { leaderboard } = useRoadmapLeaderboard({ limit: 5 });
   const { activity: roadmapActivity } = useRoadmapActivity(!!user);
   const { totalSolved } = useHeatmapData(history || [], upsolvedProblems || [], roadmapActivity);
@@ -43,8 +44,7 @@ export default function Dashboard() {
 
   const handleSync = async () => {
     setIsSyncing(true);
-    await syncProfile();
-    setIsSyncing(false);
+    try { await syncProfile(); } finally { setIsSyncing(false); }
   };
 
   // Guard: user must exist (AuthGuard in layout already ensures this,
@@ -87,7 +87,7 @@ export default function Dashboard() {
   const secondaryLoading = isHistoryLoading || isUpsolveLoading;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Hero renders immediately — no dependency on history/upsolve */}
       <DashboardHero
         user={user}
@@ -101,17 +101,19 @@ export default function Dashboard() {
         onSync={handleSync}
       />
 
+      {(historyError || upsolveError || summaryError) && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-5"><p className="text-sm text-muted-foreground">Some progress is unavailable. Try again to see your latest statistics.</p><Button variant="outline" onClick={() => Promise.all([refreshHistory(), refreshUpsolvedProblems(), mutateSummary()])}>Try again</Button></div>}
+
       {/* Stat cards — shows 0s while secondary data loads, fills in quickly */}
       <DashboardStatCards stats={stats} />
 
       <DashboardStreaks streaks={streaks} roadmapRank={roadmapRank} />
 
-      {/* Terminal sub-panes — show skeleton while history/upsolve are loading */}
+      {/* Show matching placeholders while secondary data loads. */}
       {secondaryLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-          <div className="rounded-2xl border border-emerald-500/15 bg-emerald-950/5 h-48 animate-pulse" />
-          <div className="rounded-2xl border border-emerald-500/15 bg-emerald-950/5 h-48 animate-pulse" />
-          <div className="rounded-2xl border border-emerald-500/15 bg-emerald-950/5 h-48 animate-pulse" />
+        <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3" role="status" aria-label="Loading your progress">
+          <div className="h-80 animate-pulse rounded-3xl border border-border bg-card motion-reduce:animate-none" />
+          <div className="h-80 animate-pulse rounded-3xl border border-border bg-card motion-reduce:animate-none" />
+          <div className="h-80 animate-pulse rounded-3xl border border-border bg-card motion-reduce:animate-none md:col-span-2 xl:col-span-1" />
         </div>
       ) : (
         <DashboardSidebar

@@ -34,18 +34,18 @@ const UpsolvedProblemsList = ({
   };
 
   return (
-    <div className="font-mono text-emerald-400">
+    <div className="rounded-2xl border border-border bg-card p-3 sm:p-5 font-sans text-foreground">
       {/* Desktop: Table-style header */}
-      <div className="hidden lg:grid grid-cols-[40px_1fr_80px_100px_60px] items-center px-2 py-2 text-[9px] font-bold uppercase tracking-widest text-emerald-500/30 border-b border-emerald-500/10">
+      <div className="hidden lg:grid grid-cols-[40px_1fr_80px_100px_60px] items-center px-2 py-2 text-xs font-medium text-muted-foreground border-b border-border">
         <span>#</span>
-        <span>PROBLEM_NODE</span>
-        <span className="text-center">RATING</span>
-        <span className="text-center">STATUS</span>
-        <span className="text-right">ACT</span>
+        <span>Problem</span>
+        <span className="text-center">Rating</span>
+        <span className="text-center">Status</span>
+        <span className="text-right">Actions</span>
       </div>
 
       {/* Problem rows */}
-      <div className="divide-y divide-emerald-500/[0.07]">
+      <div className="divide-y divide-border">
         {paginatedProblems.map((problem, idx) => {
           const index = startIndex + idx;
           const isSolved = !!problem.solvedTime;
@@ -54,12 +54,12 @@ const UpsolvedProblemsList = ({
             <div
               key={problem.contestId + problem.index}
               className={cn(
-                "group grid grid-cols-[40px_1fr_auto] lg:grid-cols-[40px_1fr_80px_100px_60px] items-center gap-3 lg:gap-0 py-3 px-2 hover:bg-emerald-950/5 transition-all duration-200",
-                isSolved && "text-emerald-300"
+                "group grid grid-cols-[24px_minmax(0,1fr)_auto] lg:grid-cols-[40px_1fr_80px_100px_60px] items-center gap-3 lg:gap-0 py-3 px-2 hover:bg-card transition-all duration-200",
+                isSolved && "text-foreground"
               )}
             >
               {/* Index */}
-              <span className="text-[10px] font-bold text-emerald-500/40 tabular-nums">
+              <span className="text-xs font-medium text-muted-foreground tabular-nums">
                 {String(index + 1).padStart(2, "0")}
               </span>
 
@@ -67,16 +67,16 @@ const UpsolvedProblemsList = ({
               <Link
                 href={problem.url}
                 target="_blank"
-                className="group/link flex items-center gap-2 min-w-0"
+                className="group/link flex items-center gap-2 min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold truncate group-hover/link:text-emerald-300 transition-colors">
+                    <span className="text-sm font-medium truncate group-hover/link:text-primary transition-colors">
                       {problem.name}
                     </span>
                     <ExternalLink size={10} className="opacity-0 group-hover/link:opacity-60 transition-opacity shrink-0" />
                   </div>
-                  <span className="text-[9px] text-emerald-500/30 uppercase tracking-wider">
+                  <span className="text-xs text-muted-foreground">
                     {problem.contestId}-{problem.index}
                   </span>
                 </div>
@@ -84,7 +84,7 @@ const UpsolvedProblemsList = ({
 
               {/* Rating (desktop) */}
               <div className="hidden lg:flex items-center justify-center">
-                <span className="text-[10px] font-bold text-emerald-500/50 tabular-nums">
+                <span className="text-xs font-medium text-muted-foreground tabular-nums">
                   {problem.rating || "—"}
                 </span>
               </div>
@@ -92,29 +92,30 @@ const UpsolvedProblemsList = ({
               {/* Status (desktop) */}
               <div className="hidden lg:flex items-center justify-center">
                 {isSolved ? (
-                  <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">[RESOLVED]</span>
+                  <span className="text-xs font-medium text-primary">Solved</span>
                 ) : (
-                  <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wider">[PENDING]</span>
+                  <span className="text-xs font-medium text-amber-400">Pending</span>
                 )}
               </div>
 
               {/* Actions */}
               <div className="flex items-center justify-end gap-1">
                 {/* Mobile status */}
-                <span className="lg:hidden text-[8px] font-bold uppercase tracking-wider mr-1">
+                <span className="lg:hidden text-xs font-medium mr-1">
                   {isSolved ? (
-                    <span className="text-emerald-400">[✓]</span>
+                    <span className="text-primary">✓</span>
                   ) : (
-                    <span className="text-amber-400">[…]</span>
+                    <span className="text-amber-400">…</span>
                   )}
                 </span>
                 {/* Mobile rating */}
-                <span className="lg:hidden text-[9px] text-emerald-500/40 tabular-nums mr-2">
+                <span className="lg:hidden hidden sm:inline text-xs text-muted-foreground tabular-nums mr-2">
                   {problem.rating || "—"}
                 </span>
                 <button
                   onClick={() => onDelete(problem)}
-                  className="flex items-center justify-center size-7 rounded text-emerald-500/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                  aria-label={`Remove ${problem.name} from upsolve list`}
+                  className="flex items-center justify-center size-9 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   <Trash2 size={12} />
                 </button>
@@ -126,16 +127,16 @@ const UpsolvedProblemsList = ({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 mt-4 border-t border-emerald-500/10">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 mt-4 border-t border-border">
           <div className="flex items-center gap-3">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/30">ROWS_PER_PAGE:</span>
-            <select
+            <span className="text-xs font-medium text-muted-foreground">Rows per page:</span>
+            <select aria-label="Problems per page"
               value={String(pageSize)}
               onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
-              className="h-8 px-2 rounded border border-emerald-500/20 bg-transparent text-[10px] font-bold text-emerald-400 focus:outline-none focus:border-emerald-500/40 appearance-none cursor-pointer font-mono"
+              className="h-11 px-2 rounded-lg border border-border bg-transparent text-xs font-medium text-primary focus:outline-none focus:border-border appearance-none cursor-pointer font-sans focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {[10, 20, 50, 100].map((size) => (
-                <option key={size} value={String(size)} className="bg-[#060a08] text-emerald-400">
+                <option key={size} value={String(size)} className="bg-card text-primary">
                   {size}
                 </option>
               ))}
@@ -143,35 +144,39 @@ const UpsolvedProblemsList = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/30 mr-2 tabular-nums">
-              PAGE {currentPage}/{totalPages}
+            <span className="text-xs font-medium text-muted-foreground mr-2 tabular-nums">
+              Page {currentPage}/{totalPages}
             </span>
 
             <button
+              aria-label="First page"
               onClick={() => goToPage(1)}
               disabled={currentPage === 1}
-              className="flex items-center justify-center size-7 rounded border border-emerald-500/15 text-emerald-500/40 hover:text-emerald-300 hover:border-emerald-500/40 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+              className="flex items-center justify-center size-9 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-border disabled:opacity-20 disabled:cursor-not-allowed transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <ChevronsLeft size={12} />
             </button>
             <button
+              aria-label="Previous page"
               onClick={() => goToPage(currentPage - 1)}
               disabled={currentPage === 1}
-              className="flex items-center justify-center size-7 rounded border border-emerald-500/15 text-emerald-500/40 hover:text-emerald-300 hover:border-emerald-500/40 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+              className="flex items-center justify-center size-9 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-border disabled:opacity-20 disabled:cursor-not-allowed transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <ChevronLeft size={12} />
             </button>
             <button
+              aria-label="Next page"
               onClick={() => goToPage(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="flex items-center justify-center size-7 rounded border border-emerald-500/15 text-emerald-500/40 hover:text-emerald-300 hover:border-emerald-500/40 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+              className="flex items-center justify-center size-9 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-border disabled:opacity-20 disabled:cursor-not-allowed transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <ChevronRight size={12} />
             </button>
             <button
+              aria-label="Last page"
               onClick={() => goToPage(totalPages)}
               disabled={currentPage === totalPages}
-              className="flex items-center justify-center size-7 rounded border border-emerald-500/15 text-emerald-500/40 hover:text-emerald-300 hover:border-emerald-500/40 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+              className="flex items-center justify-center size-9 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-border disabled:opacity-20 disabled:cursor-not-allowed transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <ChevronsRight size={12} />
             </button>

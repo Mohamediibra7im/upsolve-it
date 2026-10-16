@@ -4,11 +4,7 @@ import Link from "next/link";
 import { m } from "framer-motion";
 import {
   ArrowRight,
-  BarChart3,
-  TrendingUp,
   Clock,
-  CheckCircle2,
-  Sparkles,
   Trophy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,32 +23,25 @@ interface ProfileStatsGridProps {
 
 export function ProfileStatsGrid({ profileStats }: ProfileStatsGridProps) {
   return (
-    <div className="flex flex-wrap gap-4 font-mono text-emerald-400 w-full">
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-5 font-sans text-foreground w-full">
       {profileStats.map((stat, idx) => (
         <m.div
           key={stat.label}
-          initial={{ opacity: 0, y: 15 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: idx * 0.05 }}
-          className="flex-1 min-w-[150px] sm:min-w-[180px]"
+          className="min-w-0"
         >
-          <div className="relative overflow-hidden rounded-xl border border-emerald-500/20 bg-[#060a08]/60 p-4 transition-all duration-300 hover:border-emerald-500/40 group flex flex-col justify-between h-full">
-            <div className="absolute inset-0 pointer-events-none z-20 bg-terminal-scanlines opacity-[0.1]" />
-            <stat.icon
-              className={cn(
-                "absolute top-4 right-4 size-10 opacity-[0.03] group-hover:opacity-[0.1] transition-opacity",
-                stat.tone,
-              )}
-            />
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-3 sm:p-4 transition-all duration-300 hover:border-border group flex flex-col justify-between h-full">
             <div className="space-y-1">
-              <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-500/45 block">
+              <span className="text-xs font-medium text-muted-foreground block">
                 {stat.label}
               </span>
-              <h3 className={cn("text-2xl font-black tracking-tight leading-none", stat.tone)}>
+              <h3 className={cn("font-heading text-2xl font-medium tracking-tight leading-none tabular-nums", stat.tone)}>
                 {stat.value}
               </h3>
-              <p className="text-[9px] font-bold text-emerald-500/60 pt-2 border-t border-emerald-500/10 mt-2">
-                &gt; {stat.sub}
+              <p className="text-xs font-medium text-muted-foreground pt-2 border-t border-border mt-2">
+                {stat.sub}
               </p>
             </div>
           </div>
@@ -75,60 +64,52 @@ interface TrainingStatsGridProps {
 
 export function TrainingStatsGrid({ trainingStats }: TrainingStatsGridProps) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 font-mono text-emerald-400 w-full">
-      <m.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-        <div className="relative overflow-hidden rounded-xl border border-emerald-500/20 bg-[#060a08]/60 p-4 transition-all duration-300 hover:border-emerald-500/40 group h-full">
-          <div className="absolute inset-0 pointer-events-none z-20 bg-terminal-scanlines opacity-[0.1]" />
-          <BarChart3 className="absolute top-4 right-4 size-10 opacity-[0.03] group-hover:opacity-[0.1] text-cyan-400 transition-opacity" />
-          <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-500/45 block">Sessions</span>
-          <h3 className="text-2xl font-black text-cyan-400 glow-text-cyan leading-none mt-1">
+    <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 font-sans text-primary w-full">
+      <m.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-3 sm:p-4 transition-all duration-300 hover:border-border group h-full">
+          <span className="text-xs font-medium text-muted-foreground block">Sessions</span>
+          <h3 className="text-2xl font-medium text-foreground leading-none mt-2 font-heading tracking-tight">
             {trainingStats?.totalSessions ?? 0}
           </h3>
-          <p className="text-[8px] font-bold text-emerald-500/40 uppercase pt-2 border-t border-emerald-500/10 mt-2">
-            &gt; TOTAL RUNS LOGGED
+          <p className="text-xs font-medium text-muted-foreground pt-2 border-t border-border mt-2">
+            Training sessions
           </p>
         </div>
       </m.div>
 
-      <m.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-        <div className="relative overflow-hidden rounded-xl border border-emerald-500/20 bg-[#060a08]/60 p-4 transition-all duration-300 hover:border-emerald-500/40 group h-full">
-          <div className="absolute inset-0 pointer-events-none z-20 bg-terminal-scanlines opacity-[0.1]" />
-          <CheckCircle2 className="absolute top-4 right-4 size-10 opacity-[0.03] group-hover:opacity-[0.1] text-emerald-400 transition-opacity" />
-          <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-500/45 block">Solved</span>
-          <h3 className="text-2xl font-black text-emerald-400 glow-text-emerald leading-none mt-1">
+      <m.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+        <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-3 sm:p-4 transition-all duration-300 hover:border-border group h-full">
+          <span className="text-xs font-medium text-muted-foreground block">Solved</span>
+          <h3 className="text-2xl font-medium text-foreground leading-none mt-2 font-heading tracking-tight">
             {trainingStats?.solvedProblems ?? 0}
-            <span className="text-xs font-bold text-emerald-500/45 ml-1">/ {trainingStats?.totalProblems ?? 0}</span>
+            <span className="text-xs font-medium text-muted-foreground ml-1">/ {trainingStats?.totalProblems ?? 0}</span>
           </h3>
-          <p className="text-[8px] font-bold text-emerald-500/40 uppercase pt-2 border-t border-emerald-500/10 mt-2">
-            &gt; {trainingStats?.solvingRate ?? 0}% SUCCESS RATE
+          <p className="text-xs font-medium text-muted-foreground pt-2 border-t border-border mt-2">
+            {trainingStats?.solvingRate ?? 0}% solve rate
           </p>
         </div>
       </m.div>
 
-      <m.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-        <div className="relative overflow-hidden rounded-xl border border-emerald-500/20 bg-[#060a08]/60 p-4 transition-all duration-300 hover:border-emerald-500/40 group h-full">
-          <div className="absolute inset-0 pointer-events-none z-20 bg-terminal-scanlines opacity-[0.1]" />
-          <TrendingUp className="absolute top-4 right-4 size-10 opacity-[0.03] group-hover:opacity-[0.1] text-emerald-400 transition-opacity" />
-          <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-500/45 block">Avg Perf</span>
-          <h3 className="text-2xl font-black text-emerald-400 glow-text-emerald leading-none mt-1">
+      <m.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-3 sm:p-4 transition-all duration-300 hover:border-border group h-full">
+          <span className="text-xs font-medium text-muted-foreground block">Avg. performance</span>
+          <h3 className="text-2xl font-medium text-foreground leading-none mt-2 font-heading tracking-tight">
             {trainingStats?.avgPerformance ?? "—"}
           </h3>
-          <p className="text-[8px] font-bold text-emerald-500/40 uppercase pt-2 border-t border-emerald-500/10 mt-2">
-            &gt; MEAN LEVEL RATING
+          <p className="text-xs font-medium text-muted-foreground pt-2 border-t border-border mt-2">
+            Average session performance
           </p>
         </div>
       </m.div>
 
-      <m.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-        <div className="relative overflow-hidden rounded-xl border border-emerald-500/20 bg-[#060a08]/60 p-4 transition-all duration-300 hover:border-emerald-500/40 group h-full">
-          <div className="absolute inset-0 pointer-events-none z-20 bg-terminal-scanlines opacity-[0.1]" />
-          <Sparkles className="absolute top-4 right-4 size-10 opacity-[0.03] group-hover:opacity-[0.1] text-amber-400 transition-opacity" />
-          <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-500/45 block">Best Perf</span>
-          <h3 className="text-2xl font-black text-amber-400 glow-text-amber leading-none mt-1">
+      <m.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+        <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-3 sm:p-4 transition-all duration-300 hover:border-border group h-full">
+          <span className="text-xs font-medium text-muted-foreground block">Best performance</span>
+          <h3 className="text-2xl font-medium text-foreground leading-none mt-2 font-heading tracking-tight">
             {trainingStats?.bestPerformance ?? "—"}
           </h3>
-          <p className="text-[8px] font-bold text-emerald-500/40 uppercase pt-2 border-t border-emerald-500/10 mt-2">
-            &gt; PERSONAL RECORD
+          <p className="text-xs font-medium text-muted-foreground pt-2 border-t border-border mt-2">
+            Personal best
           </p>
         </div>
       </m.div>
@@ -149,14 +130,14 @@ interface AchievementsPanelProps {
 
 export function AchievementsPanel({ achievements }: AchievementsPanelProps) {
   return (
-    <div className="font-mono text-emerald-400 w-full space-y-4">
-      <div className="flex items-center justify-between pb-3 border-b border-emerald-500/15 select-none text-xs text-emerald-500/60">
+    <div className="font-sans text-primary w-full space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
-          <Trophy size={14} className="text-emerald-400 animate-pulse" />
-          <span className="font-semibold tracking-wider">SYS.ACHIEVEMENTS // EARNED NODES</span>
+          <Trophy size={14} className="text-primary" />
+          <span className="font-semibold">Your achievements</span>
         </div>
-        <span className="text-[10px] tracking-widest font-black uppercase text-emerald-500/50">
-          {achievements.filter(a => a.unlocked).length} / {achievements.length} UNLOCKED_NODES
+        <span className="text-xs font-semibold text-muted-foreground">
+          {achievements.filter(a => a.unlocked).length} / {achievements.length} unlocked
         </span>
       </div>
 
@@ -166,48 +147,48 @@ export function AchievementsPanel({ achievements }: AchievementsPanelProps) {
           return (
             <m.div
               key={badge.id}
-              initial={{ opacity: 0, y: 10 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05 }}
             >
               <div
                 className={cn(
-                  "flex flex-col justify-between p-4 rounded-xl border transition-all duration-300 relative overflow-hidden min-h-[120px] font-mono",
+                  "flex flex-col justify-between p-4 rounded-2xl border transition-all duration-300 relative overflow-hidden min-h-[120px] font-sans",
                   badge.unlocked
-                    ? "border-emerald-500/25 bg-emerald-950/5 hover:border-emerald-500/50 shadow-[inset_0_0_10px_rgba(16,185,129,0.03)]"
-                    : "border-emerald-500/10 bg-transparent opacity-30 select-none border-dashed"
+                    ? "border-border bg-card hover:border-border"
+                    : "border-border bg-transparent border-dashed"
                 )}
               >
                 <div className="flex items-start justify-between w-full">
                   <div className={cn(
-                    "p-2 rounded border relative",
-                    badge.unlocked ? "border-emerald-500/30 bg-emerald-950/30 text-emerald-400" : "bg-transparent border-emerald-500/10 text-emerald-500/30"
+                    "p-2 rounded-lg border relative",
+                    badge.unlocked ? "border-border bg-card text-primary" : "bg-transparent border-border text-muted-foreground"
                   )}>
-                    <Icon className="size-4 animate-pulse" />
+                    <Icon className="size-4" />
                     {badge.unlocked && (
                       <span className="absolute -top-0.5 -right-0.5 flex size-1.5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                        <span className="relative inline-flex rounded-full size-1.5 bg-emerald-500" />
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                        <span className="relative inline-flex rounded-full size-1.5 bg-primary" />
                       </span>
                     )}
                   </div>
 
                   {!badge.unlocked ? (
-                    <span className="text-[7px] font-bold text-emerald-500/30 uppercase tracking-widest">
-                      [ NODE_OFFLINE ]
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Inactive
                     </span>
                   ) : (
-                    <span className="text-[7px] font-bold text-emerald-400 uppercase tracking-widest glow-text-emerald">
-                      [ NODE_ACTIVE ]
+                    <span className="text-xs font-medium text-primary">
+                      Active
                     </span>
                   )}
                 </div>
 
                 <div className="mt-4">
-                  <h4 className={cn("text-xs font-black uppercase tracking-wider leading-none", badge.unlocked ? "text-emerald-400" : "text-emerald-500/30")}>
+                  <h4 className={cn("text-sm font-semibold leading-snug", badge.unlocked ? "text-primary" : "text-muted-foreground")}>
                     {badge.name}
                   </h4>
-                  <p className={cn("text-[9px] mt-1.5 leading-tight font-medium", badge.unlocked ? "text-emerald-500/70" : "text-emerald-500/20")}>
+                  <p className={cn("text-xs mt-1.5 leading-tight font-medium", badge.unlocked ? "text-muted-foreground" : "text-muted-foreground")}>
                     {badge.desc}
                   </p>
                 </div>
@@ -226,56 +207,42 @@ interface ActivityLogsPanelProps {
 
 export function ActivityLogsPanel({ recentSessions }: ActivityLogsPanelProps) {
   return (
-    <div className="font-mono text-emerald-400 w-full space-y-4">
-      <div className="flex items-center justify-between pb-3 border-b border-emerald-500/15 select-none text-xs text-emerald-500/60">
+    <div className="font-sans text-primary w-full space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
-          <Clock className="size-4 text-emerald-400" />
-          <span className="font-semibold tracking-wider">SYS.ACTIVITY_LOGS // RUN DIAGNOSTICS</span>
+          <Clock className="size-4 text-primary" />
+          <span className="font-semibold">Recent practice</span>
         </div>
         <Link
           href="/statistics"
-          className="text-[9px] font-bold uppercase tracking-widest text-emerald-400 hover:text-emerald-300 hover:glow-text-emerald flex items-center gap-1"
+          className="text-xs font-medium text-primary hover:text-foreground flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
-          [ EXPLORE ALL LOGS ] <ArrowRight className="size-3" />
+          View all sessions <ArrowRight className="size-3" />
         </Link>
       </div>
-      
-      <div className="divide-y divide-emerald-500/10">
+
+      <div className="divide-y divide-border">
         {recentSessions.length > 0 ? recentSessions.map((session) => {
           const solved = session.problems.filter(isTrainingProblemCountedSolved).length;
           const total = session.problems.length;
           const mode = session.trainingMode ?? "training";
           return (
-            <div key={session._id} className="flex items-center justify-between px-2 py-3 hover:bg-emerald-950/5 transition-colors text-xs text-emerald-500/80">
-              <div className="flex items-center gap-3 min-w-0">
-                <span className={cn(
-                  "size-2 rounded-full shrink-0 animate-pulse",
-                  solved > 0 ? "bg-emerald-500" : "bg-emerald-950 border border-emerald-500/25"
-                )} />
-                <div className="min-w-0">
-                  <span className="font-bold text-emerald-300 capitalize truncate block">
-                    &gt; {mode} Run Diagnostic
-                  </span>
-                  <span className="text-[9px] text-emerald-500/40">
-                    {new Date(session.startTime).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
-                  </span>
-                </div>
+            <div key={session._id ?? session.startTime} className="flex flex-col justify-between gap-4 py-4 sm:flex-row sm:items-center">
+              <div className="min-w-0">
+                <p className="text-sm font-medium capitalize text-foreground">{mode} session</p>
+                <p className="mt-1 text-xs text-muted-foreground">{new Date(session.startTime).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</p>
               </div>
-              <div className="flex items-center gap-6 shrink-0">
-                <span className="text-[10px] font-mono text-emerald-500/60 tabular-nums">
-                  ACCURACY: {solved}/{total}
-                </span>
-                <span className="text-[10px] font-black text-emerald-400 glow-text-emerald tabular-nums w-12 text-right">
-                  PERF_{session.performance ?? "—"}
-                </span>
-              </div>
+              <dl className="grid grid-cols-2 gap-6 text-sm sm:text-right">
+                <div><dt className="text-xs text-muted-foreground">Solved</dt><dd className="mt-1 tabular-nums text-foreground">{solved}/{total}</dd></div>
+                <div><dt className="text-xs text-muted-foreground">Performance</dt><dd className="mt-1 tabular-nums text-primary">{session.performance ?? "—"}</dd></div>
+              </dl>
             </div>
           );
         }) : (
           <div className="px-5 py-8 text-center space-y-3">
-            <p className="text-xs text-emerald-500/40">[NO DIAGNOSTIC SESSION LOGS FOUND]</p>
-            <Button asChild variant="outline" className="h-9 rounded border border-emerald-500/35 bg-[#060a08] text-emerald-400 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-500/10 hover:text-emerald-300 hover:border-emerald-500/60 active:scale-[0.98] transition-all font-mono">
-              <Link href="/training">[ RUN FIRST_SESSION.EXE ]</Link>
+            <p className="text-xs text-muted-foreground">Your recent sessions will appear here.</p>
+            <Button asChild variant="outline" className="h-9 rounded-lg border border-border bg-card text-primary font-medium text-xs hover:bg-primary/10 hover:text-foreground hover:border-border active:scale-[0.98] transition-all font-sans">
+              <Link href="/training">Start your first session</Link>
             </Button>
           </div>
         )}

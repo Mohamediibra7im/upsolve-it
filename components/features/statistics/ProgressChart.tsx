@@ -64,11 +64,9 @@ const ProgressChart = ({ history }: { history: Training[] }) => {
   ];
 
   return (
-    <div className="w-full font-mono text-emerald-400">
-      <div className="relative overflow-hidden rounded-lg border border-emerald-500/15 bg-[#060a08]/30 p-4">
-        {/* Scanlines overlay */}
-        <div className="absolute inset-0 pointer-events-none z-20 bg-terminal-scanlines opacity-[0.04]" />
-        
+    <div className="w-full font-sans text-primary">
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-4">
+
         <ResponsiveContainer
           width="100%"
           height={260}
@@ -79,24 +77,24 @@ const ProgressChart = ({ history }: { history: Training[] }) => {
             margin={{
               top: 10,
               right: 10,
-              left: -10,
+              left: 0,
               bottom: 5,
             }}
           >
             <defs>
               <linearGradient id="performanceGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
+                <stop offset="5%" stopColor="#b5e3c4" stopOpacity={0.2} />
+                <stop offset="95%" stopColor="#b5e3c4" stopOpacity={0.0} />
               </linearGradient>
             </defs>
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke="rgba(16,185,129,0.08)"
+              stroke="#2b3031"
               vertical={false}
             />
             <XAxis
               dataKey="formattedDate"
-              tick={{ fill: "rgba(16,185,129,0.4)", fontSize: 9, fontFamily: "monospace" }}
+              tick={{ fill: "#929b98", fontSize: 11, fontFamily: "inherit" }}
               tickLine={false}
               axisLine={false}
               interval={chartData.length <= 16 ? 0 : "preserveStartEnd"}
@@ -107,10 +105,10 @@ const ProgressChart = ({ history }: { history: Training[] }) => {
             <YAxis
               domain={yDomain}
               tickFormatter={(value) => `${value}`}
-              tick={{ fill: "rgba(16,185,129,0.4)", fontSize: 9, fontFamily: "monospace" }}
+              tick={{ fill: "#929b98", fontSize: 11, fontFamily: "inherit" }}
               tickLine={false}
               axisLine={false}
-              width={35}
+              width={50}
             />
             <Tooltip
               labelFormatter={(_, payload) => {
@@ -121,20 +119,20 @@ const ProgressChart = ({ history }: { history: Training[] }) => {
                     })
                   | undefined;
                 if (!row) return "";
-                return `RUN #${String(row.sessionNumber).padStart(2, "0")} (${formatCalendarDay(row.startTime)})`;
+                return `Session #${String(row.sessionNumber).padStart(2, "0")} (${formatCalendarDay(row.startTime)})`;
               }}
-              formatter={(value: any) => [`${value} pts`, "PERF"]}
+              formatter={(value: any) => [`${value} pts`, "Performance"]}
               contentStyle={{
-                backgroundColor: "#060a08",
-                borderColor: "rgba(16,185,129,0.3)",
-                borderRadius: "4px",
-                fontSize: "10px",
-                fontFamily: "monospace",
-                color: "#10b981",
-                boxShadow: "0 0 10px rgba(16,185,129,0.1)",
+                backgroundColor: "#191c1e",
+                borderColor: "#2b3031",
+                borderRadius: "12px",
+                fontSize: "12px",
+                fontFamily: "inherit",
+                color: "#f1f3ee",
+                boxShadow: "none",
               }}
               labelStyle={{
-                color: "#a7f3d0",
+                color: "#f1f3ee",
                 fontWeight: "bold",
                 marginBottom: "4px",
               }}
@@ -142,20 +140,20 @@ const ProgressChart = ({ history }: { history: Training[] }) => {
             <Area
               type="monotone"
               dataKey="performance"
-              stroke="#10b981"
+              stroke="#b5e3c4"
               strokeWidth={2}
               fill="url(#performanceGradient)"
               dot={{
-                fill: "#10b981",
+                fill: "#b5e3c4",
                 strokeWidth: 1.5,
                 r: 3,
-                stroke: "#060a08",
+                stroke: "#191c1e",
               }}
               activeDot={{
                 r: 5,
                 strokeWidth: 2,
-                stroke: "#10b981",
-                fill: "#060a08",
+                stroke: "#b5e3c4",
+                fill: "#191c1e",
               }}
             />
           </AreaChart>

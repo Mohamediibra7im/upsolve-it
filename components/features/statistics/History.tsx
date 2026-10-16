@@ -12,11 +12,11 @@ import { averageEffectiveProblemRatingForSession } from "@/services/training/eff
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2 } from "lucide-react";
 
 const modeToExe: Record<string, string> = {
-  ladder: "LADDER.EXE",
-  speed: "SPEED.COM",
-  contest: "CONTEST.BAT",
-  weakness: "WEAKNESS.SYS",
-  endurance: "ENDURE.BAT",
+  ladder: "Ladder",
+  speed: "Speed",
+  contest: "Contest",
+  weakness: "Weakness",
+  endurance: "Endurance",
 };
 
 const ProblemStatus = ({
@@ -32,43 +32,43 @@ const ProblemStatus = ({
     if (isTrainingProblemCountedSolved(problem) && problem.solvedTime) {
       const solvedMinutes = Math.floor((problem.solvedTime - startTime) / 60000);
       return (
-        <span className="text-emerald-400 font-bold" title={`Solved in ${solvedMinutes}m`}>
-          [✓ {solvedMinutes}M]
+        <span className="text-primary font-medium" title={`Solved in ${solvedMinutes}m`}>
+          ✓  {solvedMinutes}min
         </span>
       );
     }
 
     if (isTrainingProblemCountedSolved(problem)) {
       return (
-        <span className="text-emerald-400 font-bold">
-          [✓]
+        <span className="text-primary font-medium">
+          ✓
         </span>
       );
     }
 
     if (postSolvedTime) {
       return (
-        <span className="text-amber-400 font-bold" title="Upsolved after session">
-          [+]
+        <span className="text-amber-400 font-medium" title="Upsolved after session">
+          +
         </span>
       );
     }
 
     return (
-      <span className="text-emerald-500/20">
-        [ ]
+      <span className="text-muted-foreground">
+
       </span>
     );
   };
 
   return (
     <Link
-      className="hover:text-emerald-300 transition-colors font-bold text-xs flex items-center gap-1.5 whitespace-nowrap"
+      className="hover:text-foreground transition-colors font-medium text-xs flex items-center gap-1.5 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       href={problem.url}
       target="_blank"
     >
       {renderStatus()}
-      <span className="text-[10px] text-emerald-500/50 hover:text-emerald-300">
+      <span className="text-xs text-muted-foreground hover:text-foreground">
         {problem.contestId}-{problem.index}
       </span>
     </Link>
@@ -107,7 +107,7 @@ const History = ({
   };
 
   const onDelete = (trainingId: string) => {
-    if (confirm("Are you sure you want to purge this session run database record?")) {
+    if (confirm("Delete this training session from your history?")) {
       deleteTraining(trainingId);
     }
   };
@@ -121,54 +121,56 @@ const History = ({
 
   if (!history || history.length === 0) {
     return (
-      <div className="text-center py-8 text-emerald-500/25 font-mono text-xs">
-        [SYS.ERR // NO TRAINING SESSION LOGS FOUND]
+      <div className="text-center py-8 text-muted-foreground font-sans text-xs">
+        No training sessions yet
       </div>
     );
   }
 
   // Count max problems in any session in the current view
   const maxProblemsCount = Math.max(...paginatedHistory.map((h) => h.problems?.length ?? 0), 0);
+  const gridTemplateColumns = `120px 100px 90px ${maxProblemsCount > 0 ? `repeat(${maxProblemsCount}, minmax(70px, 1fr))` : ""} 110px 48px`;
 
   return (
-    <div className="font-mono text-emerald-400 w-full space-y-4">
+    <div className="font-sans text-primary w-full space-y-4">
       {/* Desktop Grid Layout */}
       <div className="hidden md:block w-full overflow-x-auto">
-        <div className="min-w-[800px] divide-y divide-emerald-500/[0.07]">
+        <div className="min-w-[800px] divide-y divide-border">
           {/* Header row */}
-          <div className="grid grid-flow-col auto-cols-fr items-center px-2 py-2.5 text-[8px] font-bold uppercase tracking-widest text-emerald-500/25 border-b border-emerald-500/10">
-            <span>TIMESTAMP</span>
-            <span>RUN_BINARY</span>
-            <span>AVG.RATING</span>
+          <div style={{ gridTemplateColumns }} className="grid grid-flow-col items-center px-2 py-2.5 text-xs font-medium text-muted-foreground border-b border-border">
+            <span>Date</span>
+            <span>Session</span>
+            <span>Avg. rating</span>
             {Array.from({ length: maxProblemsCount }).map((_, idx) => (
               <span key={idx}>P{String(idx + 1).padStart(2, "0")}</span>
             ))}
-            <span>PERF.SCORE</span>
-            <span className="text-right pr-2">PURGE</span>
+            <span>Performance</span>
+            <span className="text-right pr-2">Delete</span>
           </div>
 
           {/* Data rows */}
           {paginatedHistory.map((training) => {
             const mode = normalizeTrainingMode(training.trainingMode);
-            const modeLabel = modeToExe[mode] ?? formatTrainingModeLabel(mode).toUpperCase();
+            const modeLabel = modeToExe[mode] ?? formatTrainingModeLabel(mode);
 
             return (
               <div
                 key={training._id ?? training.startTime}
-                className="grid grid-flow-col auto-cols-fr items-center px-2 py-3 hover:bg-emerald-950/5 transition-all duration-200"
+                style={{ gridTemplateColumns }}
+                className="grid grid-flow-col items-center px-2 py-3 hover:bg-card transition-all duration-200"
               >
                 {/* Date */}
-                <span className="text-[10px] text-emerald-500/40 tabular-nums">
+                <span className="text-xs text-muted-foreground tabular-nums">
                   {new Date(training.startTime).toLocaleDateString()}
                 </span>
 
                 {/* Mode executable */}
-                <span className="text-[10px] font-bold text-emerald-400">
+                <span className="text-xs font-medium text-primary">
                   {modeLabel}
                 </span>
 
                 {/* Avg Rating */}
-                <span className="text-[10px] text-emerald-500/40 tabular-nums">
+                <span className="text-xs text-muted-foreground tabular-nums">
                   {calculateAverageRating(training)}
                 </span>
 
@@ -184,23 +186,24 @@ const History = ({
                           postSolvedTime={findPostSolvedTime(p)}
                         />
                       ) : (
-                        <span className="text-emerald-500/10">—</span>
+                        <span className="text-muted-foreground">—</span>
                       )}
                     </div>
                   );
                 })}
 
                 {/* Performance */}
-                <span className="text-[10px] font-bold text-emerald-300 tabular-nums">
+                <span className="text-xs font-medium text-foreground tabular-nums">
                   {training.performance}
                 </span>
 
                 {/* Action */}
                 <div className="flex items-center justify-end pr-2">
                   <button
+                    aria-label="Delete training session"
                     onClick={() => onDelete(training._id!)}
                     disabled={isDeleting === training._id}
-                    className="flex items-center justify-center size-7 rounded text-emerald-500/30 hover:text-red-400 hover:bg-red-500/10 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+                    className="flex items-center justify-center size-9 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 disabled:opacity-20 disabled:cursor-not-allowed transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   >
                     <Trash2 size={12} />
                   </button>
@@ -212,10 +215,10 @@ const History = ({
       </div>
 
       {/* Mobile Card-less List Layout */}
-      <div className="md:hidden space-y-4 divide-y divide-emerald-500/[0.07]">
+      <div className="md:hidden space-y-4 divide-y divide-border">
         {paginatedHistory.map((training) => {
           const mode = normalizeTrainingMode(training.trainingMode);
-          const modeLabel = modeToExe[mode] ?? formatTrainingModeLabel(mode).toUpperCase();
+          const modeLabel = modeToExe[mode] ?? formatTrainingModeLabel(mode);
 
           return (
             <div
@@ -224,18 +227,19 @@ const History = ({
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] font-bold text-emerald-400">
+                  <span className="text-xs font-medium text-primary">
                     {modeLabel}
                   </span>
-                  <div className="text-[9px] text-emerald-500/30 tabular-nums mt-0.5">
-                    {new Date(training.startTime).toLocaleDateString()} · AVG: {calculateAverageRating(training)} · PERF: {training.performance}
+                  <div className="text-xs text-muted-foreground tabular-nums mt-0.5">
+                    {new Date(training.startTime).toLocaleDateString()} · Average: {calculateAverageRating(training)} · Performance: {training.performance}
                   </div>
                 </div>
 
                 <button
-                  onClick={() => onDelete(training._id!)}
+                  aria-label="Delete training session"
+                    onClick={() => onDelete(training._id!)}
                   disabled={isDeleting === training._id}
-                  className="flex items-center justify-center size-7 rounded text-emerald-500/30 hover:text-red-400 hover:bg-red-500/10 transition-all shrink-0"
+                  className="flex items-center justify-center size-9 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   <Trash2 size={12} />
                 </button>
@@ -245,7 +249,7 @@ const History = ({
               <div className="flex flex-wrap gap-x-4 gap-y-2 py-1">
                 {training.problems.map((p, idx) => (
                   <div key={p.contestId} className="flex items-center gap-1">
-                    <span className="text-[9px] text-emerald-500/25">P{idx + 1}:</span>
+                    <span className="text-xs text-muted-foreground">P{idx + 1}:</span>
                     <ProblemStatus
                       problem={p}
                       startTime={training.startTime}
@@ -261,17 +265,17 @@ const History = ({
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-emerald-500/10">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-border">
           {/* Rows per page selector */}
           <div className="flex items-center gap-3">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/30">ROWS_PER_PAGE:</span>
-            <select
+            <span className="text-xs font-medium text-muted-foreground">Rows per page:</span>
+            <select aria-label="Sessions per page"
               value={String(pageSize)}
               onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
-              className="h-8 px-2 rounded border border-emerald-500/20 bg-transparent text-[10px] font-bold text-emerald-400 focus:outline-none focus:border-emerald-500/40 appearance-none cursor-pointer font-mono"
+              className="h-11 px-2 rounded-lg border border-border bg-transparent text-xs font-medium text-primary focus:outline-none focus:border-border appearance-none cursor-pointer font-sans focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {[5, 10, 25, 50].map((size) => (
-                <option key={size} value={String(size)} className="bg-[#060a08] text-emerald-400">
+                <option key={size} value={String(size)} className="bg-card text-primary">
                   {size}
                 </option>
               ))}
@@ -280,35 +284,39 @@ const History = ({
 
           {/* Navigation */}
           <div className="flex items-center gap-2">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/30 mr-2 tabular-nums">
-              PAGE {currentPage}/{totalPages}
+            <span className="text-xs font-medium text-muted-foreground mr-2 tabular-nums">
+              Page {currentPage}/{totalPages}
             </span>
 
             <button
+              aria-label="First page"
               onClick={() => goToPage(1)}
               disabled={currentPage === 1}
-              className="flex items-center justify-center size-7 rounded border border-emerald-500/15 text-emerald-500/40 hover:text-emerald-300 hover:border-emerald-500/40 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+              className="flex items-center justify-center size-9 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-border disabled:opacity-20 disabled:cursor-not-allowed transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <ChevronsLeft size={12} />
             </button>
             <button
+              aria-label="Previous page"
               onClick={() => goToPage(currentPage - 1)}
               disabled={currentPage === 1}
-              className="flex items-center justify-center size-7 rounded border border-emerald-500/15 text-emerald-500/40 hover:text-emerald-300 hover:border-emerald-500/40 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+              className="flex items-center justify-center size-9 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-border disabled:opacity-20 disabled:cursor-not-allowed transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <ChevronLeft size={12} />
             </button>
             <button
+              aria-label="Next page"
               onClick={() => goToPage(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="flex items-center justify-center size-7 rounded border border-emerald-500/15 text-emerald-500/40 hover:text-emerald-300 hover:border-emerald-500/40 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+              className="flex items-center justify-center size-9 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-border disabled:opacity-20 disabled:cursor-not-allowed transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <ChevronRight size={12} />
             </button>
             <button
+              aria-label="Last page"
               onClick={() => goToPage(totalPages)}
               disabled={currentPage === totalPages}
-              className="flex items-center justify-center size-7 rounded border border-emerald-500/15 text-emerald-500/40 hover:text-emerald-300 hover:border-emerald-500/40 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+              className="flex items-center justify-center size-9 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-border disabled:opacity-20 disabled:cursor-not-allowed transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <ChevronsRight size={12} />
             </button>

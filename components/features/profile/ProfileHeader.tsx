@@ -2,129 +2,47 @@
 
 import Link from "next/link";
 import { m } from "framer-motion";
-import { ArrowRight, RefreshCw, Shield, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, RefreshCw, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { User } from "@/types/User";
+import type { UserRoadmapSummary } from "@/types/Roadmap";
 
 interface ProfileHeaderProps {
-  user: any;
-  summary: any;
+  user: User;
+  summary: UserRoadmapSummary | undefined;
   syncProfile: () => void;
 }
 
 export default function ProfileHeader({ user, summary, syncProfile }: ProfileHeaderProps) {
   return (
-    <m.section
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="relative overflow-hidden rounded-[2rem] border border-emerald-500/25 bg-[#060a08] shadow-[0_0_30px_rgba(16,185,129,0.08)] text-emerald-400 font-mono"
-    >
-      {/* Scanline CRT overlay */}
-      <div className="absolute inset-0 pointer-events-none z-20 bg-terminal-scanlines opacity-[0.15]" />
-      <div className="terminal-scanline-sweep" />
-
-      {/* Terminal Header Bar */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-emerald-500/15 bg-[#0b120f] select-none text-xs text-emerald-500/60">
-        <div className="flex items-center gap-2">
-          <div className="flex gap-1.5">
-            <div className="size-3 rounded-full bg-[#ef4444]/80 border border-[#ef4444]/30" />
-            <div className="size-3 rounded-full bg-[#eab308]/80 border border-[#eab308]/30" />
-            <div className="size-3 rounded-full bg-[#22c55e]/80 border border-[#22c55e]/30" />
-          </div>
-          <span className="ml-3 font-semibold tracking-wider">guest@upsolve: ~/profile_identity</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[10px] tracking-widest font-black uppercase text-emerald-500/50">SYS_IDENT_VERIFIED</span>
-        </div>
+    <m.section initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="rounded-[2rem] border border-border bg-card p-6 sm:p-8 lg:p-10">
+      <div className="mb-8 flex items-center justify-between gap-4">
+        <p className="text-sm font-medium text-muted-foreground">Your profile</p>
+        <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">Overview <ArrowUpRight className="size-4" /></Link>
       </div>
-
-      <div className="relative z-10 p-6 md:p-8 space-y-6">
-        {/* Terminal diagnostics readout */}
-        <div className="space-y-1 bg-black/40 p-4 border border-emerald-500/10 rounded-lg">
-          <div className="flex items-center gap-2 text-emerald-500/60 text-xs">
-            <span>guest@upsolve.it:~$</span>
-            <span className="text-emerald-400 font-bold">./profile_diagnostics.sh --user={user.codeforcesHandle}</span>
-          </div>
-          <div className="text-[10px] text-emerald-500/40 font-mono leading-relaxed">
-            [SYS] ACCESSING SECURITY SECTOR IDENTITY LOGS... SUCCESS<br />
-            [SYS] INTEGRITY CHECKS... OK | SIGNATURE VERIFIED
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex min-w-0 flex-col items-start gap-5 sm:flex-row sm:items-center">
+          <Avatar className="size-20 shrink-0 rounded-2xl border border-border bg-background sm:size-24">
+            <AvatarImage src={user.avatar} alt={user.codeforcesHandle} />
+            <AvatarFallback className="rounded-2xl bg-primary/10 font-heading text-3xl text-primary">{user.codeforcesHandle?.charAt(0).toUpperCase()}</AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 space-y-3">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
+              <span>Codeforces member</span>
+              {user.role === "admin" && <span className="rounded-full border border-border px-2 py-0.5">Admin</span>}
+              {user.isVerified && <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-primary"><ShieldCheck className="size-3" />Verified</span>}
+            </div>
+            <h1 className="break-all font-heading text-[32px] font-medium leading-tight tracking-tight text-foreground sm:text-4xl">{user.codeforcesHandle}</h1>
+            <p className="text-sm leading-relaxed text-muted-foreground"><span className="capitalize text-foreground">{user.rank || "Unrated"}</span><span className="mx-2" aria-hidden="true">·</span>{user.organization || "Independent learner"}</p>
           </div>
         </div>
-
-        <div className="flex flex-col lg:flex-row gap-6 md:gap-8 items-start lg:items-center justify-between">
-          <div className="flex flex-col sm:flex-row gap-5 items-center sm:items-start text-center sm:text-left">
-            <div className="relative">
-              <div className="rounded border border-emerald-500/35 p-1 bg-[#0b120f] shadow-lg shadow-emerald-950/20">
-                <Avatar className="size-20 md:w-24 md:h-24 border border-emerald-500/15 rounded bg-black">
-                  <AvatarImage src={user.avatar} alt={user.codeforcesHandle} />
-                  <AvatarFallback className="bg-[#0b120f] text-2xl font-black text-emerald-400">
-                    {user.codeforcesHandle?.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-              <div className="absolute -bottom-1 -right-1 size-4 rounded-full bg-emerald-500 border border-black shadow animate-pulse" />
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex flex-wrap justify-center sm:justify-start items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-emerald-950/40 border border-emerald-500/25 text-emerald-400 text-[9px] font-bold uppercase tracking-wider">
-                  <Shield size={10} /> COMPETITIVE_PROG_FEED
-                </span>
-                {user.role === "admin" && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-red-950/40 border border-red-500/25 text-red-400 text-[9px] font-bold uppercase tracking-wider">
-                    SYS_ADMIN
-                  </span>
-                )}
-              </div>
-
-              <h1 className="text-3xl md:text-5xl font-black tracking-tight uppercase text-emerald-400 glow-text-emerald leading-none flex flex-wrap items-center justify-center sm:justify-start gap-3">
-                {user.codeforcesHandle}
-                {user.isVerified && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-400/40 text-emerald-400 text-[9px] font-bold uppercase tracking-widest">
-                    <ShieldCheck size={11} />
-                    [ VERIFIED ]
-                  </span>
-                )}
-              </h1>
-
-              <div className="flex flex-wrap justify-center sm:justify-start gap-2 text-[9px] font-bold uppercase tracking-wider text-emerald-500/60">
-                <span className="rounded border border-emerald-500/15 bg-black/45 px-3 py-1.5">
-                  CF_RANK: {user.rank || "Unrated"}
-                </span>
-                <span className="rounded border border-emerald-500/15 bg-black/45 px-3 py-1.5">
-                  CF_ORG: {user.organization || "Independent"}
-                </span>
-                <span className="rounded border border-emerald-500/15 bg-black/45 px-3 py-1.5">
-                  LEVEL_CAP: {summary?.currentLevel?.title || "Novice"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2.5 w-full lg:w-auto">
-            <Button
-              onClick={syncProfile}
-              variant="outline"
-              className="h-10 flex-1 sm:flex-none rounded border border-emerald-500/35 bg-[#060a08] text-emerald-400 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-500/10 hover:text-emerald-300 hover:border-emerald-500/60 active:scale-[0.98] transition-all font-mono"
-            >
-              <RefreshCw className="mr-2 size-3.5" />
-              [ SYNC HANDLE ]
-            </Button>
-            <Button
-              asChild
-              className="h-10 flex-1 sm:flex-none rounded bg-emerald-500 text-emerald-950 font-bold uppercase tracking-widest text-[9px] shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:bg-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] active:scale-[0.98] transition-all font-mono"
-            >
-              <Link href="/dashboard" className="flex items-center gap-2">
-                [ TO DASHBOARD ]
-                <ArrowRight className="size-3.5" />
-              </Link>
-            </Button>
-          </div>
-        </div>
+        <Button onClick={syncProfile} variant="outline" className="h-11 shrink-0 self-start rounded-xl border-border bg-transparent px-5 text-sm text-foreground lg:self-center"><RefreshCw className="mr-2 size-4" />Sync profile</Button>
+      </div>
+      <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-border pt-5 text-sm text-muted-foreground">
+        <span>Learning <span className="font-medium text-foreground">{summary?.currentLevel?.title || "Novice"}</span></span>
+        <span><span className="font-medium tabular-nums text-primary">{(summary?.totalXp || 0).toLocaleString()}</span> total XP</span>
       </div>
     </m.section>
   );
 }
-

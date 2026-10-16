@@ -1,14 +1,16 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+
+import MemberPageState from "@/components/features/profile/MemberPageState";
+
 import { useState } from "react";
 import { m } from "framer-motion";
 import {
   Trophy,
-  Zap,
   Crown,
   Medal,
   ChevronDown,
-  Cpu,
 } from "lucide-react";
 import { useRoadmapLeaderboard, useRoadmapLevels } from "@/hooks/roadmap";
 import { useUser } from "@/hooks/auth";
@@ -18,9 +20,9 @@ import { UserProfileDialog } from "@/components/features/profile";
 
 const XP_TIERS = [
   { min: 5000, label: "Legend", color: "text-amber-400", bg: "bg-amber-400/10", border: "border-amber-400/20" },
-  { min: 3000, label: "Champion", color: "text-purple-400", bg: "bg-purple-400/10", border: "border-purple-400/20" },
+  { min: 3000, label: "Champion", color: "text-purple-400", bg: "bg-primary/10", border: "border-primary/20" },
   { min: 1500, label: "Strategist", color: "text-primary", bg: "bg-primary/10", border: "border-primary/20" },
-  { min: 500, label: "Tactician", color: "text-emerald-400", bg: "bg-emerald-400/10", border: "border-emerald-400/20" },
+  { min: 500, label: "Tactician", color: "text-primary", bg: "bg-primary/10", border: "border-border" },
   { min: 0, label: "Novice", color: "text-muted-foreground", bg: "bg-muted/50", border: "border-border/40" },
 ] as const;
 
@@ -44,6 +46,8 @@ const LeaderboardPage = () => {
     pageSize,
     myRank,
     isLoading,
+    error,
+    mutateLeaderboard,
   } = useRoadmapLeaderboard({
     level: selectedLevelId || undefined,
     period,
@@ -55,51 +59,47 @@ const LeaderboardPage = () => {
     : null;
 
   return (
-    <div className="min-h-screen relative pb-24 font-mono text-emerald-400">
+    <div className="min-h-screen relative pb-24 font-sans text-foreground">
       {/* Background */}
-      <div className="absolute inset-0 -z-10 bg-[#040604]">
-        <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.04]" />
-      </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl space-y-6">
+      <div className="mx-auto w-full max-w-7xl space-y-8">
 
         {/* Hero / Header Section */}
         <m.section
-          initial={{ opacity: 0, y: -10 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           className="space-y-4"
         >
-          <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40">
-            <Trophy size={12} className="text-emerald-400" />
-            <span>RANKING_ENGINE // COMMUNITY_MATRIX</span>
-            <span className="flex-1 border-b border-emerald-500/10" />
-            <Cpu size={10} className="text-emerald-500/30" />
-            <span>ACTIVE: ALL_SECTORS</span>
+          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <Trophy size={12} className="text-primary" />
+            <span>The community leaderboard</span>
+            <span className="flex-1 border-b border-border" />
+            <span>All levels</span>
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div className="space-y-1">
-              <h1 className="text-xl sm:text-2xl font-bold text-emerald-300 uppercase tracking-wider">
-                Community Leaderboard
+              <h1 className="text-foreground font-heading text-3xl sm:text-4xl font-medium tracking-tight leading-tight">
+                A little friendly competition.
               </h1>
-              <p className="text-[11px] text-emerald-500/40 max-w-xl">
-                Compare weekly, monthly, and overall XP gains across the competitive programming matrix.
+              <p className="text-sm text-muted-foreground max-w-xl">
+                Meet the people putting in the practice. Explore the weekly, monthly, and all-time rankings.
               </p>
             </div>
 
-            {/* My Rank telemetry */}
+
             {myRank && (
-              <div className="inline-flex items-center gap-3 rounded border border-emerald-500/15 bg-emerald-950/10 px-4 py-2 text-left shrink-0">
-                <Avatar className="size-8 border border-emerald-500/30">
+              <div className="inline-flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-2 text-left shrink-0">
+                <Avatar className="size-8 border border-border">
                   <AvatarImage src={user?.avatar ?? ""} />
-                  <AvatarFallback className="bg-emerald-500/10 text-[9px] font-bold text-emerald-400">
+                  <AvatarFallback className="bg-primary/10 text-xs font-medium text-primary">
                     {user?.codeforcesHandle?.substring(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-500/30">MY_RANK</span>
-                  <div className="text-[11px] font-bold text-emerald-300">
-                    #{myRank} <span className="text-emerald-500/40 font-normal">({currentUserEntry?.totalXp?.toLocaleString() ?? "—"} XP)</span>
+                  <span className="text-xs font-medium text-muted-foreground">Your rank</span>
+                  <div className="text-sm font-medium text-foreground">
+                    #{myRank} <span className="text-muted-foreground font-normal">({currentUserEntry?.totalXp?.toLocaleString() ?? "—"} XP)</span>
                   </div>
                 </div>
               </div>
@@ -115,14 +115,15 @@ const LeaderboardPage = () => {
               <button
                 key={p}
                 onClick={() => { setPeriod(p); setPage(1); }}
+                aria-pressed={period === p}
                 className={cn(
-                  "h-9 px-3 rounded border font-bold uppercase tracking-widest text-[9px] transition-all duration-200",
+                  "h-10 px-3 rounded-xl border font-medium text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   period === p
-                    ? "bg-emerald-500 text-emerald-950 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
-                    : "bg-transparent border-emerald-500/20 text-emerald-500/50 hover:text-emerald-300 hover:border-emerald-500/40"
+                    ? "bg-primary text-primary-foreground border-border"
+                    : "bg-transparent border-border text-muted-foreground hover:text-foreground hover:border-border"
                 )}
               >
-                [ {p.toUpperCase()}.SH ]
+                 {p === "all" ? "All time" : p === "weekly" ? "This week" : "This month"}
               </button>
             ))}
           </div>
@@ -133,184 +134,81 @@ const LeaderboardPage = () => {
               value={selectedLevelId}
               onChange={(e) => { setSelectedLevelId(e.target.value); setPage(1); }}
               title="Filter leaderboard by level"
-              className="appearance-none rounded border border-emerald-500/20 bg-[#060a08] px-3 py-2 pr-8 text-[9px] font-bold uppercase tracking-wider text-emerald-400 focus:outline-none focus:border-emerald-500/40 transition-colors cursor-pointer"
+              className="appearance-none rounded-lg border border-border bg-card px-3 py-2 pr-8 text-xs font-medium text-primary focus:outline-none focus:border-border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <option value="">All Levels</option>
               {levels.map((lvl) => (
-                <option key={lvl._id} value={lvl._id} className="bg-[#060a08]">
-                  L{lvl.orderIndex}: {lvl.title.toUpperCase()}
+                <option key={lvl._id} value={lvl._id} className="bg-card">
+                  L{lvl.orderIndex}: {lvl.title}
                 </option>
               ))}
             </select>
-            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3 text-emerald-500/50 pointer-events-none" />
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3 text-muted-foreground pointer-events-none" />
           </div>
         </div>
 
         {/* Content */}
         {isLoading ? (
-          <div className="space-y-4 animate-pulse">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-12 border-b border-emerald-500/10" />
-            ))}
-          </div>
+          <MemberPageState kind="loading" title="Gathering the rankings" description="Loading the community’s latest progress." />
+        ) : error && leaderboard.length === 0 ? (
+          <MemberPageState kind="error" title="Rankings are unavailable" description="We couldn’t load the leaderboard. Try again to see the latest standings."><Button variant="outline" onClick={() => mutateLeaderboard()}>Try again</Button></MemberPageState>
         ) : leaderboard.length === 0 ? (
           <div className="py-16 text-center space-y-4">
-            <div className="size-14 rounded border border-emerald-500/15 bg-emerald-950/10 flex items-center justify-center mx-auto text-emerald-500/30">
+            <div className="size-14 rounded-lg border border-border bg-card flex items-center justify-center mx-auto text-muted-foreground">
               <Trophy size={24} />
             </div>
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-emerald-300 uppercase tracking-wider">No Rankings Found</h3>
-              <p className="text-[11px] text-emerald-500/40 max-w-xs mx-auto">
-                No active session records exist for the selected filters.
+              <h3 className="font-medium text-foreground font-heading text-lg tracking-tight">A fresh start.</h3>
+              <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                There are no rankings for these filters yet. Try another period or level.
               </p>
             </div>
           </div>
         ) : (
           <>
-            {/* Podium — Top 3 */}
             {top3.length > 0 && (
-              <div className="mt-8 flex items-end justify-center gap-4 max-w-2xl mx-auto px-2">
-                {/* 2nd Place */}
-                {top3[1] && (
-                  <m.div
-                    initial={{ opacity: 0, y: 15 }}
+              <section aria-label="Leading learners" className="grid gap-4 sm:grid-cols-3">
+                {top3.map((learner, index) => (
+                  <m.button
+                    key={learner.userId}
+                    type="button"
+                    initial={false}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
-                    onClick={() => setSelectedUserId(top3[1].userId)}
-                    className="flex-1 flex flex-col items-center min-w-0 cursor-pointer group"
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    onClick={() => setSelectedUserId(learner.userId)}
+                    className={cn("group flex min-w-0 flex-col items-start rounded-2xl border bg-card p-5 text-left transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", index === 0 ? "border-primary/35" : "border-border")}
                   >
-                    <div className="relative mb-2 shrink-0">
-                      <div className="rounded-full p-0.5 border border-zinc-400/20 bg-zinc-950/30">
-                        <Avatar className="size-14 border border-zinc-400/40 group-hover:scale-105 transition-transform duration-200">
-                          <AvatarImage src={top3[1].avatar ?? ""} />
-                          <AvatarFallback className="bg-zinc-900 text-zinc-400 text-xs font-bold">
-                            {top3[1].handle.substring(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
-                      <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#040604] border border-zinc-400/30 rounded-full p-0.5">
-                        <Medal size={12} className="text-zinc-400" />
-                      </div>
+                    <div className="mb-6 flex w-full items-center justify-between gap-3">
+                      <span className="text-sm font-medium text-muted-foreground">{index === 0 ? "Leading the way" : `Rank ${index + 1}`}</span>
+                      {index === 0 ? <Crown className="size-5 text-primary" /> : <Medal className="size-5 text-muted-foreground" />}
                     </div>
-                    <span className="font-bold text-[11px] text-emerald-300 truncate max-w-full text-center group-hover:text-emerald-200 transition-colors">
-                      {top3[1].handle}
-                    </span>
-                    <span className="text-[10px] text-zinc-400 mt-0.5 flex items-center gap-0.5">
-                      <Zap size={10} className="fill-current text-primary" />
-                      {top3[1].totalXp.toLocaleString()} XP
-                    </span>
-                    <span className="text-[9px] text-emerald-500/30 font-medium">
-                      {top3[1].problemsSolved} solved
-                    </span>
-
-                    {/* Column */}
-                    <div className="w-full mt-3 rounded-t border-t border-x border-zinc-400/20 bg-zinc-950/10 flex flex-col items-center justify-center h-16 relative">
-                      <span className="text-xl font-bold text-zinc-400/20 font-mono">
-                        02
-                      </span>
+                    <Avatar className="mb-4 size-14 rounded-2xl border border-border">
+                      <AvatarImage src={learner.avatar ?? ""} alt="" />
+                      <AvatarFallback className="rounded-2xl bg-primary/10 text-primary">{learner.handle.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <span className="w-full truncate font-heading text-xl font-medium tracking-tight text-foreground">{learner.handle}</span>
+                    <div className="mt-5 flex w-full flex-wrap items-end justify-between gap-2 border-t border-border pt-4">
+                      <span className="font-heading text-2xl tabular-nums text-primary">{learner.totalXp.toLocaleString()} <span className="font-sans text-xs text-muted-foreground">XP</span></span>
+                      <span className="text-xs text-muted-foreground">{learner.problemsSolved} solved</span>
                     </div>
-                  </m.div>
-                )}
-
-                {/* 1st Place */}
-                {top3[0] && (
-                  <m.div
-                    initial={{ opacity: 0, y: 25 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    onClick={() => setSelectedUserId(top3[0].userId)}
-                    className="flex-[1.1] flex flex-col items-center min-w-0 z-10 cursor-pointer group"
-                  >
-                    <div className="relative mb-2 shrink-0">
-                      <div className="rounded-full p-0.5 border border-amber-400/30 bg-amber-950/10 shadow-[0_0_10px_rgba(245,158,11,0.1)]">
-                        <Avatar className="size-16 border border-amber-400/40 group-hover:scale-105 transition-transform duration-200">
-                          <AvatarImage src={top3[0].avatar ?? ""} />
-                          <AvatarFallback className="bg-amber-950/20 text-amber-400 text-sm font-bold">
-                            {top3[0].handle.substring(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
-                      <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#040604] border border-amber-400/40 rounded-full p-0.5">
-                        <Crown size={12} className="text-amber-400" />
-                      </div>
-                    </div>
-                    <span className="font-bold text-xs text-emerald-300 truncate max-w-full text-center group-hover:text-emerald-200 transition-colors">
-                      {top3[0].handle}
-                    </span>
-                    <span className="text-[11px] font-bold text-amber-400 mt-0.5 flex items-center gap-0.5">
-                      <Zap size={10} className="fill-current text-amber-400" />
-                      {top3[0].totalXp.toLocaleString()} XP
-                    </span>
-                    <span className="text-[9px] text-amber-500/40 font-bold uppercase tracking-wider">
-                      {top3[0].problemsSolved} solved
-                    </span>
-
-                    {/* Column */}
-                    <div className="w-full mt-3 rounded-t border-t border-x border-amber-400/25 bg-amber-950/5 flex flex-col items-center justify-center h-22 relative">
-                      <span className="text-2xl font-bold text-amber-400/20 font-mono">
-                        01
-                      </span>
-                    </div>
-                  </m.div>
-                )}
-
-                {/* 3rd Place */}
-                {top3[2] && (
-                  <m.div
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
-                    onClick={() => setSelectedUserId(top3[2].userId)}
-                    className="flex-1 flex flex-col items-center min-w-0 cursor-pointer group"
-                  >
-                    <div className="relative mb-2 shrink-0">
-                      <div className="rounded-full p-0.5 border border-amber-700/20 bg-amber-950/5">
-                        <Avatar className="size-12 border border-amber-700/40 group-hover:scale-105 transition-transform duration-200">
-                          <AvatarImage src={top3[2].avatar ?? ""} />
-                          <AvatarFallback className="bg-amber-950/20 text-amber-700 text-[10px] font-bold">
-                            {top3[2].handle.substring(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
-                      <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#040604] border border-amber-700/30 rounded-full p-0.5">
-                        <Medal size={10} className="text-amber-700" />
-                      </div>
-                    </div>
-                    <span className="font-bold text-[11px] text-emerald-300 truncate max-w-full text-center group-hover:text-emerald-200 transition-colors">
-                      {top3[2].handle}
-                    </span>
-                    <span className="text-[10px] text-amber-700 mt-0.5 flex items-center gap-0.5">
-                      <Zap size={10} className="fill-current text-primary" />
-                      {top3[2].totalXp.toLocaleString()} XP
-                    </span>
-                    <span className="text-[9px] text-emerald-500/30 font-medium">
-                      {top3[2].problemsSolved} solved
-                    </span>
-
-                    {/* Column */}
-                    <div className="w-full mt-3 rounded-t border-t border-x border-amber-700/20 bg-[#060a08]/10 flex flex-col items-center justify-center h-12 relative">
-                      <span className="text-lg font-bold text-amber-700/20 font-mono">
-                        03
-                      </span>
-                    </div>
-                  </m.div>
-                )}
-              </div>
+                  </m.button>
+                ))}
+              </section>
             )}
 
             {/* Leaderboard List */}
-            <div className="space-y-2 pt-6">
+            <div className="rounded-2xl border border-border bg-card p-3 sm:p-5">
               {/* List Header */}
-              <div className="hidden sm:grid grid-cols-[56px_1fr_80px_80px_100px] items-center px-4 py-2 text-[8px] font-bold uppercase tracking-widest text-emerald-500/25 border-b border-emerald-500/10">
-                <span>RANK</span>
-                <span>USER_NODE</span>
-                <span className="text-center">TOPICS</span>
-                <span className="text-center">SOLVED</span>
-                <span className="text-right">TOTAL_XP</span>
+              <div className="hidden sm:grid grid-cols-[56px_1fr_80px_80px_100px] items-center px-4 py-2 text-xs font-medium text-muted-foreground border-b border-border">
+                <span>Rank</span>
+                <span>Learner</span>
+                <span className="text-center">Topics</span>
+                <span className="text-center">Solved</span>
+                <span className="text-right">Total XP</span>
               </div>
 
               {/* Rows */}
-              <div className="divide-y divide-emerald-500/[0.07]">
+              <div className="divide-y divide-border">
                 {leaderboard.map((entry, idx) => {
                   const isCurrentUser = user && String(entry.userId) === String(user._id);
                   const tier = getTier(entry.totalXp);
@@ -318,14 +216,14 @@ const LeaderboardPage = () => {
                   return (
                     <m.div
                       key={entry.userId}
-                      initial={{ opacity: 0, y: 8 }}
+                      initial={false}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.2, delay: idx * 0.01 }}
                     >
                       <div
                         className={cn(
-                          "group grid grid-cols-[40px_1fr_auto] sm:grid-cols-[56px_1fr_80px_80px_100px] items-center py-3 px-2 sm:px-4 hover:bg-emerald-950/5 transition-all duration-200",
-                          isCurrentUser && "bg-emerald-500/[0.03] border-b border-emerald-500/20"
+                          "group grid grid-cols-[32px_minmax(0,1fr)_auto] sm:grid-cols-[56px_1fr_80px_80px_100px] items-center py-3 px-2 sm:px-4 hover:bg-card transition-all duration-200",
+                          isCurrentUser && "bg-primary/10 border-b border-border"
                         )}
                       >
                         {/* Rank */}
@@ -333,7 +231,7 @@ const LeaderboardPage = () => {
                           {entry.rank <= 3 ? (
                             <div
                               className={cn(
-                                "flex items-center justify-center size-6 rounded text-[10px] font-bold",
+                                "flex items-center justify-center size-6 rounded-lg text-xs font-medium",
                                 entry.rank === 1 && "bg-amber-400/15 text-amber-400",
                                 entry.rank === 2 && "bg-zinc-400/15 text-zinc-400",
                                 entry.rank === 3 && "bg-amber-700/15 text-amber-700"
@@ -346,7 +244,7 @@ const LeaderboardPage = () => {
                               )}
                             </div>
                           ) : (
-                            <span className="text-[10px] font-bold text-emerald-500/40 font-mono tabular-nums">
+                            <span className="text-xs font-medium text-muted-foreground font-sans tabular-nums">
                               #{String(entry.rank).padStart(2, "0")}
                             </span>
                           )}
@@ -354,29 +252,32 @@ const LeaderboardPage = () => {
 
                         {/* User info */}
                         <div
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedUserId(entry.userId); } }}
                           onClick={() => setSelectedUserId(entry.userId)}
-                          className="flex items-center gap-3 min-w-0 cursor-pointer group/user"
+                          className="flex items-center gap-3 min-w-0 cursor-pointer group/user rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
-                          <Avatar className="size-8 border border-emerald-500/10">
+                          <Avatar className="size-8 border border-border">
                             <AvatarImage src={entry.avatar ?? ""} />
-                            <AvatarFallback className="bg-emerald-950/20 text-[9px] text-emerald-400 font-bold">
+                            <AvatarFallback className="bg-card text-xs text-primary font-medium">
                               {entry.handle.substring(0, 2).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className="font-bold text-xs text-emerald-300 truncate group-hover/user:text-emerald-200 transition-colors">
+                              <span className="font-medium text-sm text-foreground truncate group-hover/user:text-primary transition-colors">
                                 {entry.handle}
                               </span>
                               {isCurrentUser && (
-                                <span className="text-[8px] font-bold uppercase tracking-wider text-emerald-400/60 bg-emerald-500/10 border border-emerald-500/20 px-1 rounded">
-                                  [YOU]
+                                <span className="text-xs font-medium text-muted-foreground bg-primary/10 border border-border px-1 rounded-lg">
+                                  You
                                 </span>
                               )}
                             </div>
                             <span
                               className={cn(
-                                "inline-block text-[8px] font-bold uppercase tracking-wider mt-0.5",
+                                "inline-block text-xs font-medium mt-0.5",
                                 tier.color
                               )}
                             >
@@ -387,24 +288,24 @@ const LeaderboardPage = () => {
 
                         {/* Topics (desktop) */}
                         <div className="hidden sm:flex items-center justify-center">
-                          <span className="text-[10px] font-bold text-emerald-500/40 tabular-nums">
+                          <span className="text-xs font-medium text-muted-foreground tabular-nums">
                             {entry.topicsDone}
                           </span>
                         </div>
 
                         {/* Solved (desktop) */}
                         <div className="hidden sm:flex items-center justify-center">
-                          <span className="text-[10px] font-bold text-emerald-400 tabular-nums">
+                          <span className="text-xs font-medium text-primary tabular-nums">
                             {entry.problemsSolved}
                           </span>
                         </div>
 
                         {/* XP */}
                         <div className="flex items-center justify-end gap-2">
-                          <span className="sm:hidden text-[9px] text-emerald-400 mr-1 tabular-nums">
+                          <span className="sm:hidden text-xs text-primary mr-1 tabular-nums">
                             {entry.problemsSolved} AC
                           </span>
-                          <span className="text-[10px] font-bold text-emerald-300 tabular-nums">
+                          <span className="text-xs font-medium text-foreground tabular-nums">
                             {entry.totalXp.toLocaleString()}
                           </span>
                         </div>
@@ -416,46 +317,46 @@ const LeaderboardPage = () => {
             </div>
 
             {/* Pagination */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-emerald-500/10">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-border">
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page <= 1}
                   className={cn(
-                    "h-9 px-3 rounded border font-bold uppercase tracking-widest text-[9px] transition-all duration-200 font-mono",
+                    "h-10 px-3 rounded-xl border font-medium text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring font-sans",
                     page <= 1
-                      ? "border-emerald-500/10 text-emerald-500/20 cursor-not-allowed"
-                      : "border-emerald-500/20 text-emerald-500/50 hover:text-emerald-300 hover:border-emerald-500/40"
+                      ? "border-border text-muted-foreground cursor-not-allowed"
+                      : "border-border text-muted-foreground hover:text-foreground hover:border-border"
                   )}
                 >
-                  [ PREV.SH ]
+                  Previous
                 </button>
 
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page >= totalPages}
                   className={cn(
-                    "h-9 px-3 rounded border font-bold uppercase tracking-widest text-[9px] transition-all duration-200 font-mono",
+                    "h-10 px-3 rounded-xl border font-medium text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring font-sans",
                     page >= totalPages
-                      ? "border-emerald-500/10 text-emerald-500/20 cursor-not-allowed"
-                      : "border-emerald-500/20 text-emerald-500/50 hover:text-emerald-300 hover:border-emerald-500/40"
+                      ? "border-border text-muted-foreground cursor-not-allowed"
+                      : "border-border text-muted-foreground hover:text-foreground hover:border-border"
                   )}
                 >
-                  [ NEXT.SH ]
+                  Next
                 </button>
 
                 {myRank && (
                   <button
                     onClick={() => setPage(Math.ceil(myRank / pageSize))}
-                    className="h-9 px-3 rounded border border-emerald-500/35 bg-emerald-950/15 text-emerald-300 font-bold uppercase tracking-widest text-[9px] transition-all duration-200 hover:bg-emerald-500/10"
+                    className="h-9 px-3 rounded-lg border border-border bg-card text-foreground font-medium text-xs transition-all duration-200 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   >
-                    [ JUMP_TO_MY_RANK.EXE ]
+                    Find my rank
                   </button>
                 )}
               </div>
 
-              <span className="text-[10px] font-bold text-emerald-500/40 tabular-nums">
-                PAGE {page}/{totalPages}
+              <span className="text-xs font-medium text-muted-foreground tabular-nums">
+                Page {page}/{totalPages}
               </span>
             </div>
 

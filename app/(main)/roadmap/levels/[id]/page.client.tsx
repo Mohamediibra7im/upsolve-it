@@ -1,5 +1,10 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+
+import MemberPageState from "@/components/features/profile/MemberPageState";
+
+import StudioProgress from "@/components/features/profile/StudioProgress";
 import Link from "next/link";
 import { useMemo } from "react";
 import { useParams } from "next/navigation";
@@ -10,43 +15,41 @@ import {
   Activity,
   CheckCircle2,
   BookOpen,
-  Cpu,
 } from "lucide-react";
-import Loader from "@/components/shared/Loader";
 import { useRoadmapLevel } from "@/hooks/roadmap/useRoadmap";
 import { cn } from "@/lib/utils";
 
-const getLevelNodeTier = (orderIndex: number) => {
+const getLevelTier = (orderIndex: number) => {
   if (orderIndex === 0)
     return {
-      name: "Beginner Node",
+      name: "Beginner",
       color: "text-slate-400",
       border: "border-slate-500/20",
       bg: "bg-slate-500/10",
     };
   if (orderIndex === 1)
     return {
-      name: "Recruit Node",
+      name: "Recruit",
       color: "text-blue-400",
-      border: "border-blue-500/20",
-      bg: "bg-blue-500/10",
+      border: "border-primary/20",
+      bg: "bg-primary/10",
     };
   if (orderIndex === 2)
     return {
-      name: "Gladiator Node",
+      name: "Gladiator",
       color: "text-cyan-400",
-      border: "border-cyan-500/20",
-      bg: "bg-cyan-500/10",
+      border: "border-primary/20",
+      bg: "bg-primary/10",
     };
   if (orderIndex === 3)
     return {
-      name: "Elite Node",
+      name: "Elite",
       color: "text-amber-400",
       border: "border-amber-500/20",
       bg: "bg-amber-500/10",
     };
   return {
-    name: "Grandmaster Node",
+    name: "Grandmaster",
     color: "text-primary",
     border: "border-primary/20",
     bg: "bg-primary/10",
@@ -56,7 +59,7 @@ const getLevelNodeTier = (orderIndex: number) => {
 const LevelPage = () => {
   const params = useParams<{ id: string }>();
   const levelId = params?.id;
-  const { data, isLoading } = useRoadmapLevel(levelId);
+  const { data, isLoading, error, mutate } = useRoadmapLevel(levelId);
 
   const progressPct = useMemo(() => {
     if (!data?.level?.topicsCount) return 0;
@@ -68,66 +71,53 @@ const LevelPage = () => {
     );
   }, [data]);
 
-  // Progress blocks
-  const totalBlocks = 20;
-  const filledBlocks = Math.min(totalBlocks, Math.round((progressPct / 100) * totalBlocks));
 
-  if (isLoading || !data) {
-    return <Loader message="Loading curriculum level..." />;
-  }
+  if (error && !data) return <MemberPageState kind="error" title="This level is unavailable" description="We couldn’t load its topics. Try again, or return to your roadmap."><Button variant="outline" onClick={() => mutate()}>Try again</Button><Button asChild variant="ghost"><Link href="/roadmap">Back to roadmap</Link></Button></MemberPageState>;
+  if (isLoading || !data) return <MemberPageState kind="loading" title="Opening this level" description="Gathering your topics and progress." />;
 
   const levelIndex = data.level.orderIndex ?? 0;
-  const tier = getLevelNodeTier(levelIndex);
+  const tier = getLevelTier(levelIndex);
 
   return (
-    <div className="min-h-screen pb-20 relative font-mono text-emerald-400">
+    <div className="min-h-screen pb-20 relative font-sans text-foreground">
       {/* Background */}
-      <div className="absolute inset-0 -z-10 bg-[#040604]">
-        <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.04]" />
-      </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 max-w-6xl space-y-6">
-        {/* Terminal Header */}
+      <div className="mx-auto w-full relative z-10 max-w-6xl space-y-6">
+
         <motion.section
-          initial={{ opacity: 0, y: -10 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
           className="space-y-4 pt-8"
         >
-          <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40">
-            <Target size={12} className="text-emerald-400" />
-            <span>LEVEL_BRIEFING // SYSTEM_SECTOR</span>
-            <span className="flex-1 border-b border-emerald-500/10" />
-            <Cpu size={10} className="text-emerald-500/30" />
-            <span>{tier.name.toUpperCase()}</span>
+          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <Target size={12} className="text-primary" />
+            <span>About this level</span>
+            <span className="flex-1 border-b border-border" />
+            <span>{tier.name}</span>
           </div>
 
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div className="space-y-2">
-              <h1 className="text-xl sm:text-2xl font-bold text-emerald-300 uppercase tracking-wider">
+              <h1 className="text-foreground font-heading text-3xl sm:text-4xl font-medium tracking-tight leading-tight">
                 {data.level.title}
               </h1>
-              <p className="text-[11px] text-emerald-500/40 max-w-3xl leading-relaxed">
-                {data.level.description || "No level description formulated yet."}
+              <p className="text-sm text-muted-foreground max-w-3xl leading-relaxed">
+                {data.level.description || "Explore the topics in this level and build your understanding step by step."}
               </p>
             </div>
 
             {/* Level progress readout */}
             <div className="shrink-0 space-y-2 text-right">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/40">LEVEL_COMPILATION</span>
+              <span className="text-xs font-medium text-muted-foreground">Level progress</span>
               <div className="flex items-center justify-end gap-3 text-xs">
-                <span className="flex items-center">
-                  <span className="text-emerald-500/30">[</span>
-                  <span className="text-emerald-400">{"█".repeat(filledBlocks)}</span>
-                  <span className="text-emerald-500/15">{"░".repeat(totalBlocks - filledBlocks)}</span>
-                  <span className="text-emerald-500/30">]</span>
-                </span>
-                <span className="font-bold text-emerald-300">{progressPct}%</span>
+                <StudioProgress value={progressPct} label="Level progress" className="w-24 sm:w-32" />
+                <span className="font-medium text-foreground">{progressPct}%</span>
               </div>
-              <div className="flex items-center justify-end gap-3 text-[9px] text-emerald-500/30">
-                <span>MISSIONS: {data.level.topicsUnlockedCount}/{data.level.topicsCount}</span>
+              <div className="flex items-center justify-end gap-3 text-xs text-muted-foreground">
+                <span>Topics: {data.level.topicsUnlockedCount}/{data.level.topicsCount}</span>
                 <span>•</span>
-                <span>BONUS: +{data.level.levelBonusXp ?? 500} XP</span>
+                <span>Bonus: +{data.level.levelBonusXp ?? 500} XP</span>
               </div>
             </div>
           </div>
@@ -135,13 +125,14 @@ const LevelPage = () => {
 
         {/* Sessions Section */}
         <section className="space-y-6 pt-6">
-          <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40">
-            <Activity size={12} className="text-emerald-400" />
-            <span>MISSIONS_AND_PRACTICAL_LABS // CURRICULUM_LOG</span>
-            <span className="flex-1 border-b border-emerald-500/10" />
+          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <Activity size={12} className="text-primary" />
+            <span>Topics and practice</span>
+            <span className="flex-1 border-b border-border" />
           </div>
 
-          {/* Grid Layout of Sessions */}
+          {data.topics.length === 0 && <MemberPageState title="More to learn, soon" description="Topics for this level are being prepared. Your progress will be ready when they arrive."><Button asChild variant="outline"><Link href="/roadmap">Back to roadmap</Link></Button></MemberPageState>}
+          {/* Topic collection */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {data.topics.map((topic, idx) => {
               const isLocked = topic.progress?.isLocked;
@@ -152,62 +143,36 @@ const LevelPage = () => {
                 learningPct >= (topic.requiredLearningPct ?? 80);
 
               const status = isLocked
-                ? "LOCKED"
+                ? "Locked"
                 : isComplete
-                  ? "COMPLETED"
+                  ? "Complete"
                   : isProblemsUnlocked
-                    ? "PRACTICE_OPEN"
+                    ? "Ready to practice"
                     : learningPct > 0
-                      ? "LEARNING_ACTIVE"
-                      : "UNSTARTED";
+                      ? "Learning in progress"
+                      : "Not started";
 
-              // Progress bar segments
-              const learnSegs = Math.min(10, Math.round((learningPct / 100) * 10));
-              const probSegs = Math.min(10, Math.round((problemPct / 100) * 10));
 
               return (
                 <motion.div
                   key={topic._id}
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={false}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: idx * 0.02 }}
-                  className="relative flex flex-col justify-between rounded-lg border border-emerald-500/15 bg-[#060a08]/30 overflow-hidden"
+                  className="relative flex flex-col justify-between rounded-2xl border border-border bg-card overflow-hidden"
                 >
-                  {/* Lock Screen */}
-                  {isLocked && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#060a08]/95 text-center p-5 z-20">
-                      <div className="rounded border border-emerald-500/20 bg-emerald-950/15 p-2.5 mb-2.5">
-                        <Lock size={16} className="text-emerald-500/40" />
-                      </div>
-                      <h4 className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">
-                        MISSION_LOCKED
-                      </h4>
-                      <p className="text-[9px] text-emerald-500/30 mt-1 max-w-[200px] leading-relaxed">
-                        Complete previous sessions to unlock this sector parameters:
-                      </p>
-                      <div className="mt-2 space-y-1">
-                        <span className="flex items-center justify-center gap-1 text-[8px] font-bold uppercase tracking-wider text-primary">
-                          Learn {topic.requiredLearningPct}%
-                        </span>
-                        <span className="flex items-center justify-center gap-1 text-[8px] font-bold uppercase tracking-wider text-emerald-500">
-                          Solve {topic.requiredProblemPct}%
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
                   {/* Header bar */}
-                  <div className="flex items-center justify-between px-4 py-2 border-b border-emerald-500/10 bg-[#081210]">
-                    <span className="text-[9px] font-bold text-emerald-500/50 uppercase">
-                      MISSION_{String(topic.orderIndex).padStart(2, "0")}
+                  <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-card">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Topic {String(topic.orderIndex).padStart(2, "0")}
                     </span>
                     <span className={cn(
-                      "text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border",
+                      "text-xs font-medium px-1.5 py-0.5 rounded-lg border",
                       isComplete
-                        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                        ? "bg-primary/10 border-border text-primary"
                         : isProblemsUnlocked
                           ? "bg-primary/10 border-primary/20 text-primary"
-                          : "bg-emerald-500/5 border-emerald-500/5 text-emerald-500/30"
+                          : "bg-primary/10 border-border text-muted-foreground"
                     )}>
                       {status}
                     </span>
@@ -216,11 +181,11 @@ const LevelPage = () => {
                   {/* Content details */}
                   <div className="p-4 space-y-4 flex-1 flex flex-col justify-between">
                     <div className="space-y-2">
-                      <h3 className="text-xs font-bold text-emerald-300 uppercase">
+                      <h3 className="font-medium text-foreground font-heading text-lg tracking-tight">
                         {topic.title}
                       </h3>
                       {topic.description && (
-                        <p className="text-[10px] text-emerald-500/40 leading-relaxed line-clamp-3">
+                        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
                           {topic.description}
                         </p>
                       )}
@@ -231,14 +196,14 @@ const LevelPage = () => {
                           {topic.subtopics.slice(0, 3).map((sub) => (
                             <span
                               key={sub}
-                              className="text-[8px] font-bold text-emerald-500/30 uppercase"
+                              className="text-xs font-medium text-muted-foreground"
                             >
-                              [{sub}]
+                              {sub}
                             </span>
                           ))}
                           {topic.subtopics.length > 3 && (
-                            <span className="text-[8px] font-bold text-emerald-500/20 uppercase">
-                              [+{topic.subtopics.length - 3}]
+                            <span className="text-xs font-medium text-muted-foreground">
+                              +{topic.subtopics.length - 3}
                             </span>
                           )}
                         </div>
@@ -246,66 +211,50 @@ const LevelPage = () => {
                     </div>
 
                     {/* Progress details */}
-                    <div className="pt-3 border-t border-emerald-500/[0.07] space-y-2.5">
+                    <div className="pt-3 border-t border-border space-y-2.5">
                       {/* Learn Progress */}
                       <div className="space-y-1">
-                        <div className="flex items-center justify-between text-[9px] text-emerald-500/45">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <BookOpen size={10} />
-                            LEARNING
+                            Learning
                           </span>
-                          <span className="font-bold text-emerald-300 tabular-nums">
+                          <span className="font-medium text-foreground tabular-nums">
                             {learningPct}%
                           </span>
                         </div>
-                        <div className="text-[9px] tabular-nums flex items-center">
-                          <span className="text-emerald-500/30">[</span>
-                          <span className="text-emerald-400">{"█".repeat(learnSegs)}</span>
-                          <span className="text-emerald-500/15">{"░".repeat(10 - learnSegs)}</span>
-                          <span className="text-emerald-500/30">]</span>
-                        </div>
+                        <StudioProgress value={learningPct} label="Topic learning progress" className="w-24 sm:w-32" />
                       </div>
 
                       {/* Problems Progress */}
                       <div className="space-y-1">
-                        <div className="flex items-center justify-between text-[9px] text-emerald-500/45">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <CheckCircle2 size={10} />
-                            PRACTICE
+                            Practice
                           </span>
-                          <span className="font-bold text-emerald-300 tabular-nums">
-                            {isProblemsUnlocked ? `${problemPct}%` : "LOCKED"}
+                          <span className="font-medium text-foreground tabular-nums">
+                            {isProblemsUnlocked ? `${problemPct}%` : "Locked"}
                           </span>
                         </div>
-                        <div className="text-[9px] tabular-nums flex items-center">
-                          {isProblemsUnlocked ? (
-                            <>
-                              <span className="text-emerald-500/30">[</span>
-                              <span className="text-emerald-400">{"█".repeat(probSegs)}</span>
-                              <span className="text-emerald-500/15">{"░".repeat(10 - probSegs)}</span>
-                              <span className="text-emerald-500/30">]</span>
-                            </>
-                          ) : (
-                            <span className="text-emerald-500/20">[░░░░░░░░░░]</span>
-                          )}
-                        </div>
+                        <StudioProgress value={problemPct} label="Topic practice progress" className="w-24 sm:w-32" />
                       </div>
 
                       {/* Target count / XP */}
-                      <div className="flex items-center justify-between text-[8px] text-emerald-500/35 uppercase tracking-wider">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span>{topic.problemsCount ?? 0} problems</span>
                         <span>+{topic.topicXpReward ?? 100} XP</span>
                       </div>
 
-                      <Link
+                      {isLocked ? <div className="rounded-xl bg-muted/40 p-3 text-sm leading-relaxed text-muted-foreground"><Lock className="mb-2 size-4" />Complete the previous topic to unlock this one. Aim for {topic.requiredLearningPct}% learning and {topic.requiredProblemPct}% practice.</div> : <Link
                         href={`/roadmap/levels/${levelId}/topics/${topic._id}`}
                         className={cn(
-                          "w-full h-9 rounded bg-emerald-500 text-emerald-950 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-400 transition-all inline-flex items-center justify-center font-mono",
+                          "w-full h-9 rounded-lg bg-primary text-primary-foreground font-medium text-xs hover:bg-primary transition-all inline-flex items-center justify-center font-sans",
                           isLocked && "pointer-events-none opacity-50",
                         )}
                       >
-                        [ ENTER_MISSION.EXE ]
-                      </Link>
+                        Open topic
+                      </Link>}
                     </div>
                   </div>
                 </motion.div>

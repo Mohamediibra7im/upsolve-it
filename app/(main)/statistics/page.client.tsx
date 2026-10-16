@@ -1,5 +1,11 @@
 "use client";
 
+import MemberPageState from "@/components/features/profile/MemberPageState";
+
+import StudioMascot from "@/components/shared/StudioMascot";
+import StudioProgress from "@/components/features/profile/StudioProgress";
+
+
 import { useHistory, useUpsolvedProblems } from "@/hooks/data";
 import { useUser } from "@/hooks/auth";
 import Loader from "@/components/shared/Loader";
@@ -9,14 +15,10 @@ import { Button } from "@/components/ui/button";
 import {
   TrendingUp,
   Calendar,
-  BarChart3,
   Trophy,
   CheckCircle2,
   LayoutDashboard,
-  AlertTriangle,
-  RefreshCw,
   Clock,
-  Cpu,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import Link from "next/link";
@@ -175,85 +177,51 @@ export default function StatisticsPage() {
     }
   };
 
-  // Progress bar for solving rate
-  const solvingBlocks = stats ? Math.min(20, Math.round((stats.solvingRate / 100) * 20)) : 0;
-  const solvingBar = stats ? "█".repeat(solvingBlocks) + "░".repeat(20 - solvingBlocks) : "";
-
   return (
-    <div className="min-h-screen relative pb-20 font-mono text-emerald-400">
-      <div className="absolute inset-0 -z-10 bg-[#040604]">
-        <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.04]" />
-      </div>
+    <div className="min-h-screen relative pb-20 font-sans text-foreground">
 
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 max-w-7xl space-y-6">
+      <section className="mx-auto w-full py-8 lg:py-12 max-w-7xl space-y-6">
         <UpsolveReminder />
 
-        {hasError && (
-          <m.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-4 py-3 px-4 border-b border-amber-500/15"
-          >
-            <AlertTriangle size={14} className="text-amber-400 shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-bold text-amber-300 uppercase tracking-wider">SYS.ERR // DATA_LOAD_FAILURE</p>
-              <p className="text-[9px] text-amber-500/50 mt-0.5">
-                {error instanceof Error ? error.message : "Network error. The server may be offline."}
-              </p>
-            </div>
-            <Button
-              onClick={handleRetry}
-              disabled={isRetrying}
-              variant="outline"
-              className="h-8 rounded border border-amber-500/25 bg-transparent text-amber-400 font-bold uppercase tracking-widest text-[8px] hover:bg-amber-500/10 font-mono shrink-0"
-            >
-              <RefreshCw size={10} className={cn("mr-1.5", isRetrying && "animate-spin")} />
-              {isRetrying ? "RETRYING..." : "[ RETRY.SH ]"}
-            </Button>
-          </m.div>
-        )}
-
-        {/* Terminal Header */}
         <m.div
-          initial={{ opacity: 0, y: -10 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
-          <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40">
-            <LayoutDashboard size={12} className="text-emerald-400" />
-            <span>ANALYTICS_ENGINE // PERFORMANCE_HUB</span>
-            <span className="flex-1 border-b border-emerald-500/10" />
-            <Cpu size={10} className="text-emerald-500/30" />
+          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <LayoutDashboard size={12} className="text-primary" />
+            <span>Your practice, in perspective</span>
+            <span className="flex-1 border-b border-border" />
             <span>{user.codeforcesHandle}</span>
           </div>
 
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div className="space-y-2">
-              <h1 className="text-xl sm:text-2xl font-bold text-emerald-300 uppercase tracking-wider">
-                Analytics & Insights Terminal
+              <h1 className="text-foreground font-heading text-3xl sm:text-4xl font-medium tracking-tight leading-tight">
+                See your progress clearly.
               </h1>
-              <p className="text-[11px] text-emerald-500/40 max-w-2xl">
-                Performance tracking and diagnostic metrics for <span className="text-emerald-300 font-bold">{user.codeforcesHandle}</span>.
+              <p className="text-sm text-muted-foreground max-w-2xl">
+                A clear view of your practice, <span className="text-foreground font-medium">{user.codeforcesHandle}</span>.
               </p>
 
               {/* Inline summary stats */}
               {stats && (
-                <div className="flex flex-wrap items-center gap-4 text-[10px] text-emerald-500/40 pt-2">
-                  <span>SOLVE_RATE: <span className="text-emerald-300 font-bold">{stats.solvingRate}%</span></span>
-                  <span className="text-emerald-500/10">|</span>
-                  <span>AVG_RATING: <span className="text-emerald-300 font-bold">{formatMetric(stats.averageRating)}</span></span>
-                  <span className="text-emerald-500/10">|</span>
-                  <span className="hidden sm:inline">[{solvingBar}]</span>
+                <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground pt-2">
+                  <span>Solve rate: <span className="text-foreground font-medium">{stats.solvingRate}%</span></span>
+                  <span className="text-muted-foreground">|</span>
+                  <span>Average rating: <span className="text-foreground font-medium">{formatMetric(stats.averageRating)}</span></span>
+                  <span className="text-muted-foreground">|</span>
+                  <StudioProgress value={stats.solvingRate} label="Solve rate" className="hidden sm:block max-w-24" />
                 </div>
               )}
             </div>
 
             <div className="flex flex-wrap gap-3 shrink-0">
-              <Button asChild className="h-10 rounded bg-emerald-500 text-emerald-950 font-bold uppercase tracking-widest text-[9px] shadow-[0_0_15px_rgba(16,185,129,0.25)] hover:bg-emerald-400 transition-all font-mono">
-                <Link href="/training">[ NEW_SESSION.EXE ]</Link>
+              <Button asChild className="h-10 rounded-lg bg-primary text-primary-foreground font-medium text-xs hover:bg-primary transition-all font-sans">
+                <Link href="/training">New session</Link>
               </Button>
-              <Button asChild variant="outline" className="h-10 rounded border border-emerald-500/25 bg-transparent text-emerald-400 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-500/10 transition-all font-mono">
-                <Link href="/upsolve">[ UPSOLVE_QUEUE.SH ]</Link>
+              <Button asChild variant="outline" className="h-10 rounded-lg border border-border bg-transparent text-primary font-medium text-xs hover:bg-primary/10 transition-all font-sans">
+                <Link href="/upsolve">Upsolve list</Link>
               </Button>
             </div>
           </div>
@@ -262,37 +230,39 @@ export default function StatisticsPage() {
           <div className="flex items-center gap-2 pt-2">
             <button
               onClick={() => setTab("overview")}
+              aria-pressed={tab === "overview"}
               className={cn(
-                "h-9 px-4 rounded border font-bold uppercase tracking-widest text-[9px] transition-all font-mono",
+                "h-10 px-4 rounded-xl border font-medium text-sm transition-all font-sans focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 tab === "overview"
-                  ? "bg-emerald-500 text-emerald-950 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
-                  : "bg-transparent border-emerald-500/20 text-emerald-500/50 hover:text-emerald-300 hover:border-emerald-500/40"
+                  ? "bg-primary text-primary-foreground border-border"
+                  : "bg-transparent border-border text-muted-foreground hover:text-foreground hover:border-border"
               )}
             >
-              [ OVERVIEW.SH ]
+              Overview
             </button>
             <button
               onClick={() => setTab("history")}
+              aria-pressed={tab === "history"}
               className={cn(
-                "h-9 px-4 rounded border font-bold uppercase tracking-widest text-[9px] transition-all font-mono",
+                "h-10 px-4 rounded-xl border font-medium text-sm transition-all font-sans focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 tab === "history"
-                  ? "bg-emerald-500 text-emerald-950 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
-                  : "bg-transparent border-emerald-500/20 text-emerald-500/50 hover:text-emerald-300 hover:border-emerald-500/40"
+                  ? "bg-primary text-primary-foreground border-border"
+                  : "bg-transparent border-border text-muted-foreground hover:text-foreground hover:border-border"
               )}
             >
-              [ TRAINING_LOGS.SH ]
+              Session history
             </button>
           </div>
         </m.div>
 
         {isLoading ? (
-          <div className="space-y-4 animate-pulse">
+          <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-20 border-b border-emerald-500/10" />
+                <div key={i} className="h-20 border-b border-border" />
               ))}
             </div>
-            <div className="h-64 w-full border-b border-emerald-500/10" />
+            <div className="h-64 w-full border-b border-border" />
           </div>
         ) : history && history.length > 0 && stats ? (
           <div>
@@ -301,66 +271,73 @@ export default function StatisticsPage() {
                 <m.div
                   key="overview"
                   variants={listStagger}
-                  initial="hidden"
+                  initial={false}
                   animate="show"
                   exit="hidden"
                   className="space-y-8"
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard
-                      title="Total Sessions"
+                      title="Total sessions"
                       value={formatMetric(stats.totalSessions)}
                       subValue="Sessions recorded"
                       icon={Calendar}
                     />
                     <StatCard
-                      title="Avg Performance"
+                      title="Avg. performance"
                       value={formatMetric(stats.averagePerformance)}
                       subValue="Sessions with ≥1 solve"
                       icon={TrendingUp}
                       trend={stats.recentTrend}
                     />
                     <StatCard
-                      title="Peak Rating"
+                      title="Best performance"
                       value={formatMetric(stats.bestPerformance)}
                       subValue="Sessions with ≥1 solve"
                       icon={Trophy}
                     />
                     <StatCard
-                      title="Solved Tasks"
+                      title="Solved problems"
                       value={formatMetric(stats.solvedProblems)}
                       subValue={`${stats.totalProblems} tasks attempted`}
                       icon={CheckCircle2}
                     />
                   </div>
 
-                  <ModeBreakdown statsByMode={statsByMode} />
-
-                  {/* Performance Chart Section */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40">
-                      <TrendingUp size={12} className="text-emerald-400" />
-                      <span>PERFORMANCE_TRAJECTORY // SESSION_EVOLUTION</span>
-                      <span className="flex-1 border-b border-emerald-500/10" />
-                    </div>
-                    <div className="py-4">
+                  <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
+                    <section className="min-w-0 space-y-4">
+                      <div>
+                        <h2 className="font-heading text-xl font-medium tracking-tight text-foreground">Performance over time</h2>
+                        <p className="mt-1 text-sm text-muted-foreground">Every session adds to the picture.</p>
+                      </div>
                       <ProgressChart history={history} />
-                    </div>
+                    </section>
+                    <aside className="rounded-2xl border border-border bg-card p-6">
+                      <p className="text-sm font-medium text-muted-foreground">Your practice snapshot</p>
+                      <p className="mt-6 font-heading text-5xl font-medium tracking-tight tabular-nums text-foreground">{stats.solvingRate}<span className="text-2xl text-muted-foreground">%</span></p>
+                      <p className="mt-2 text-sm text-muted-foreground">of attempted problems solved</p>
+                      <StudioProgress value={stats.solvingRate} label="Overall solving rate" className="mt-5" />
+                      <dl className="mt-6 space-y-4 border-t border-border pt-5 text-sm">
+                        <div className="flex justify-between gap-3"><dt className="text-muted-foreground">Average rating</dt><dd className="tabular-nums text-foreground">{formatMetric(stats.averageRating)}</dd></div>
+                        <div className="flex justify-between gap-3"><dt className="text-muted-foreground">Recent trend</dt><dd className={cn("tabular-nums", stats.recentTrend >= 0 ? "text-primary" : "text-red-300")}>{stats.recentTrend > 0 ? "+" : ""}{stats.recentTrend}</dd></div>
+                      </dl>
+                    </aside>
                   </div>
+                  <ModeBreakdown statsByMode={statsByMode} />
                 </m.div>
               ) : (
                 <m.div
                   key="history"
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={false}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
                   className="space-y-4"
                 >
-                  <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40">
-                    <Clock size={12} className="text-emerald-400" />
-                    <span>TRAINING_ARCHIVE // SESSION_LOGS</span>
-                    <span className="flex-1 border-b border-emerald-500/10" />
+                  <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                    <Clock size={12} className="text-primary" />
+                    <span>Session history</span>
+                    <span className="flex-1 border-b border-border" />
                   </div>
                   <History
                     history={history}
@@ -373,19 +350,19 @@ export default function StatisticsPage() {
               )}
             </AnimatePresence>
           </div>
+        ) : hasError ? (
+          <MemberPageState kind="error" title="Your history is unavailable" description="We couldn’t load your sessions. Try again to bring your progress into view."><Button variant="outline" disabled={isRetrying} onClick={handleRetry}>{isRetrying ? "Trying again…" : "Try again"}</Button></MemberPageState>
         ) : (
           <div className="py-16 text-center space-y-6">
-            <div className="size-14 rounded border border-emerald-500/15 bg-emerald-950/10 flex items-center justify-center mx-auto text-emerald-500/30">
-              <BarChart3 size={24} />
-            </div>
+            <StudioMascot pose="think" className="mx-auto w-36" />
             <div className="space-y-2">
-              <h3 className="text-sm font-bold text-emerald-300 uppercase tracking-wider">Initialize Analytics Engine</h3>
-              <p className="text-[11px] text-emerald-500/40 max-w-sm mx-auto">
-                Complete your first training session to unlock performance tracking and diagnostic analytics.
+              <h3 className="font-medium text-foreground font-heading text-lg tracking-tight">Your progress starts here.</h3>
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                Complete your first session to see your performance, solve rate, and progress over time.
               </p>
             </div>
-            <Button asChild className="h-10 rounded bg-emerald-500 text-emerald-950 font-bold uppercase tracking-widest text-[9px] shadow-[0_0_15px_rgba(16,185,129,0.25)] hover:bg-emerald-400 transition-all font-mono">
-              <Link href="/training">[ LAUNCH_FIRST_SESSION.EXE ]</Link>
+            <Button asChild className="h-10 rounded-lg bg-primary text-primary-foreground font-medium text-xs hover:bg-primary transition-all font-sans">
+              <Link href="/training">Start your first session</Link>
             </Button>
           </div>
         )}

@@ -1,5 +1,8 @@
 "use client";
 
+import MemberPageState from "@/components/features/profile/MemberPageState";
+
+import StudioProgress from "@/components/features/profile/StudioProgress";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
@@ -19,7 +22,6 @@ import {
   Layers,
   Loader2,
 } from "lucide-react";
-import Loader from "@/components/shared/Loader";
 import { useRoadmapTopic, useRoadmapLevel, useRoadmapUserSummary } from "@/hooks/roadmap/useRoadmap";
 import { VideoPlayer } from "@/components/features/roadmap";
 import { apiClient } from "@/lib/apiClient";
@@ -39,59 +41,59 @@ import {
 
 const LanguageChoice = ({ onSelect }: { onSelect: (lang: "Arabic" | "English") => void }) => (
   <motion.div
-    initial={{ opacity: 0, y: 10 }}
+    initial={false}
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: -10 }}
     transition={{ duration: 0.3 }}
-    className="flex flex-col items-center justify-center py-12 gap-8 font-mono text-emerald-400"
+    className="flex flex-col items-center justify-center py-12 gap-8 font-sans text-primary"
   >
     <div className="text-center space-y-3">
-      <div className="flex items-center justify-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40">
-        <GraduationCap size={12} className="text-emerald-400" />
-        <span>CURRICULUM_SELECTION // PATH_INITIALIZATION</span>
+      <div className="flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground">
+        <GraduationCap size={12} className="text-primary" />
+        <span>Choose your learning path</span>
       </div>
-      <h2 className="text-lg font-bold text-emerald-300 uppercase tracking-wider">
-        Select Training Channel Path
+      <h2 className="text-lg font-medium text-foreground font-heading text-xl tracking-tight">
+        Choose how you learn
       </h2>
-      <p className="text-[11px] text-emerald-500/40 max-w-sm mx-auto leading-relaxed">
-        Choose your primary tutorial feed type. Switching channels later will flush cached progress on this topic sector.
+      <p className="text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">
+        Choose how you prefer to learn. Changing your path later resets this topic’s progress and XP.
       </p>
     </div>
 
     <div className="grid gap-4 sm:grid-cols-2 w-full max-w-2xl">
       <button
         onClick={() => onSelect("Arabic")}
-        className="group relative flex flex-col gap-4 rounded border border-emerald-500/15 bg-emerald-950/5 hover:border-emerald-500/35 transition-all duration-200 p-5 text-left cursor-pointer"
+        className="group relative flex flex-col gap-4 rounded-lg border border-border bg-card hover:border-border transition-all duration-200 p-5 text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
-        <div className="size-10 rounded border border-emerald-500/20 bg-emerald-950/10 flex items-center justify-center text-emerald-400 shrink-0">
+        <div className="size-10 rounded-lg border border-border bg-card flex items-center justify-center text-primary shrink-0">
           <Video size={18} />
         </div>
         <div className="space-y-1">
-          <h3 className="text-sm font-bold text-emerald-300 uppercase">Arabic Video Channel</h3>
-          <p className="text-[10px] text-emerald-500/40 leading-relaxed">
-            Automatic watch time calculation based on video lectures.
+          <h3 className="font-medium text-foreground font-heading text-lg tracking-tight">Watch in Arabic</h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Follow guided video lessons. Your watch progress is saved as you learn.
           </p>
         </div>
-        <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-400 group-hover:text-emerald-300 transition-colors">
-          [ START_PATH.EXE ]
+        <span className="text-xs font-medium text-primary group-hover:text-foreground transition-colors">
+          Start this path
         </span>
       </button>
 
       <button
         onClick={() => onSelect("English")}
-        className="group relative flex flex-col gap-4 rounded border border-emerald-500/15 bg-emerald-950/5 hover:border-emerald-500/35 transition-all duration-200 p-5 text-left cursor-pointer"
+        className="group relative flex flex-col gap-4 rounded-lg border border-border bg-card hover:border-border transition-all duration-200 p-5 text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
-        <div className="size-10 rounded border border-emerald-500/20 bg-emerald-950/10 flex items-center justify-center text-emerald-400 shrink-0">
+        <div className="size-10 rounded-lg border border-border bg-card flex items-center justify-center text-primary shrink-0">
           <Globe size={18} />
         </div>
         <div className="space-y-1">
-          <h3 className="text-sm font-bold text-emerald-300 uppercase">English Reading Channel</h3>
-          <p className="text-[10px] text-emerald-500/40 leading-relaxed">
-            Articles, documentation sheets, and manual checkoff listings.
+          <h3 className="font-medium text-foreground font-heading text-lg tracking-tight">Read in English</h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Explore articles and documentation, then mark each resource complete.
           </p>
         </div>
-        <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-400 group-hover:text-emerald-300 transition-colors">
-          [ START_PATH.EXE ]
+        <span className="text-xs font-medium text-primary group-hover:text-foreground transition-colors">
+          Start this path
         </span>
       </button>
     </div>
@@ -282,19 +284,8 @@ export default function TopicPage() {
     }
   }, [user, isCompletingLearning, topicId, selectedLanguage, mutate, mutateLevel, mutateSummary, toast]);
 
-  if (error && !data) {
-    return (
-      <div className="min-h-screen flex items-center justify-center font-mono text-emerald-400">
-        <div className="text-center space-y-3">
-          <p className="text-xs font-bold text-red-400 uppercase tracking-wider">[SYS.ERR // LOAD_FAILURE]</p>
-          <p className="text-[11px] text-emerald-500/50">{error}</p>
-          <button type="button" onClick={() => mutate()} className="text-[10px] font-bold text-emerald-400 hover:text-emerald-300">[ TRY_AGAIN.SH ]</button>
-        </div>
-      </div>
-    );
-  }
-
-  if (isLoading || !data) return <Loader message="Loading topic..." />;
+  if (error && !data) return <MemberPageState kind="error" title="We couldn’t open this topic" description="Your learning workspace is temporarily unavailable. Try again to continue."><Button variant="outline" onClick={() => mutate()}>Try again</Button><Button asChild variant="ghost"><Link href={`/roadmap/levels/${levelId}`}>Back to level</Link></Button></MemberPageState>;
+  if (isLoading || !data) return <MemberPageState kind="loading" title="Opening your learning workspace" description="Gathering the resources and your progress." />;
 
   const problemsList = data.problems ?? [];
 
@@ -307,29 +298,22 @@ export default function TopicPage() {
   const resourceTypeIcon = (type: string) => {
     switch (type) {
       case "Video": return <Video className="size-3 text-amber-400" />;
-      case "Article": return <FileText className="size-3 text-sky-400" />;
-      case "Documentation": return <FileText className="size-3 text-blue-400" />;
+      case "Article": return <FileText className="size-3 text-primary" />;
+      case "Documentation": return <FileText className="size-3 text-primary" />;
       case "Tutorial": return <Play className="size-3 text-violet-400" />;
-      case "Course": return <BookOpen className="size-3 text-emerald-400" />;
-      case "PDF": return <FileText className="size-3 text-orange-400" />;
+      case "Course": return <BookOpen className="size-3 text-primary" />;
+      case "PDF": return <FileText className="size-3 text-primary" />;
       case "Website": return <Globe className="size-3 text-teal-400" />;
-      default: return <ExternalLink className="size-3 text-emerald-500/30" />;
+      default: return <ExternalLink className="size-3 text-muted-foreground" />;
     }
   };
 
-  // Progress readouts
-  const totalBlocks = 10;
-  const learnBlocks = Math.min(totalBlocks, Math.round((learningPct / 100) * totalBlocks));
-  const probBlocks = Math.min(totalBlocks, Math.round((problemPct / 100) * totalBlocks));
 
   return (
-    <div className="min-h-screen pb-20 relative font-mono text-emerald-400">
+    <div className="min-h-screen pb-20 relative font-sans text-foreground">
       {/* Background */}
-      <div className="absolute inset-0 -z-10 bg-[#040604]">
-        <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.04]" />
-      </div>
 
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl space-y-6">
+      <div className="relative z-10 mx-auto w-full max-w-6xl space-y-6">
 
         {/* ── TOP NAV ── */}
         <div className="flex items-center justify-end py-4 gap-4">
@@ -338,15 +322,16 @@ export default function TopicPage() {
             <div className="flex items-center gap-2">
               <button
                 type="button"
+                aria-pressed={currentStep === "learning"}
                 onClick={() => setCurrentStep("learning")}
                 className={cn(
-                  "h-9 px-4 rounded border font-bold uppercase tracking-widest text-[9px] transition-all duration-200 font-mono",
+                  "h-10 px-4 rounded-xl border font-medium text-sm transition-colors font-sans focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   currentStep === "learning"
-                    ? "bg-emerald-500 text-emerald-950 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
-                    : "bg-transparent border-emerald-500/20 text-emerald-500/50 hover:text-emerald-300 hover:border-emerald-500/40"
+                    ? "bg-primary text-primary-foreground border-border"
+                    : "bg-transparent border-border text-muted-foreground hover:text-foreground hover:border-border"
                 )}
               >
-                [ LEARN.SH ]
+                Learn
               </button>
               <button
                 type="button"
@@ -355,14 +340,14 @@ export default function TopicPage() {
                   else toast({ title: "Locked", description: `Reach ${data.topic.requiredLearningPct}% learning first.`, variant: "destructive" });
                 }}
                 className={cn(
-                  "h-9 px-4 rounded border font-bold uppercase tracking-widest text-[9px] transition-all duration-200 font-mono",
+                  "h-10 px-4 rounded-xl border font-medium text-sm transition-colors font-sans focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   currentStep === "problems"
-                    ? "bg-emerald-500 text-emerald-950 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
-                    : "bg-transparent border-emerald-500/20 text-emerald-500/50 hover:text-emerald-300 hover:border-emerald-500/40",
+                    ? "bg-primary text-primary-foreground border-border"
+                    : "bg-transparent border-border text-muted-foreground hover:text-foreground hover:border-border",
                   !isProblemsUnlocked && "opacity-40 cursor-not-allowed"
                 )}
               >
-                [ PRACTICE.EXE ]
+                Practice
               </button>
             </div>
           )}
@@ -370,21 +355,21 @@ export default function TopicPage() {
 
         {/* ── HERO ── */}
         <motion.div
-          initial={{ opacity: 0, y: -10 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
           className="space-y-4"
         >
-          <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40">
-            <Layers size={12} className="text-emerald-400" />
-            <span>MISSION_STATION // DATA_STREAM_BRIEFING</span>
-            <span className="flex-1 border-b border-emerald-500/10" />
+          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <Layers size={12} className="text-primary" />
+            <span>Your learning workspace</span>
+            <span className="flex-1 border-b border-border" />
             {selectedLanguage && (
               <span className={cn(
-                "text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border",
+                "text-xs font-medium px-1.5 py-0.5 rounded-lg border",
                 selectedLanguage === "Arabic"
                   ? "bg-amber-500/10 border-amber-500/20 text-amber-400"
-                  : "bg-sky-500/10 border-sky-500/20 text-sky-400"
+                  : "bg-primary/10 border-primary/20 text-primary"
               )}>
                 {selectedLanguage} Path
               </span>
@@ -393,19 +378,19 @@ export default function TopicPage() {
 
           <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
             <div className="space-y-3 flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold text-emerald-300 uppercase tracking-wider leading-none">
+              <h1 className="text-foreground leading-none font-heading text-3xl sm:text-4xl font-medium tracking-tight leading-tight">
                 {data.topic.title}
               </h1>
               {data.topic.description && (
-                <p className="text-[11px] text-emerald-500/40 max-w-2xl leading-relaxed">
+                <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
                   {data.topic.description}
                 </p>
               )}
               {data.topic.subtopics && data.topic.subtopics.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {data.topic.subtopics.map((sub: string) => (
-                    <span key={sub} className="text-[9px] font-bold text-emerald-500/30 uppercase">
-                      [{sub}]
+                    <span key={sub} className="text-xs font-medium text-muted-foreground">
+                      {sub}
                     </span>
                   ))}
                 </div>
@@ -415,16 +400,16 @@ export default function TopicPage() {
             {/* Right: stats readouts */}
             <div className="flex flex-row lg:flex-col gap-4 shrink-0">
               {/* Reward readout */}
-              <div className="py-2 px-3 border-b border-emerald-500/10">
-                <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-500/45 block">XP_REWARD</span>
-                <span className="text-lg font-bold text-emerald-300 tabular-nums">+{data.topic.topicXpReward} XP</span>
+              <div className="py-2 px-3 border-b border-border">
+                <span className="text-xs font-medium text-muted-foreground block">XP reward</span>
+                <span className="text-lg font-medium text-foreground tabular-nums">+{data.topic.topicXpReward} XP</span>
               </div>
 
               {/* Progress info */}
               {selectedLanguage && (
-                <div className="py-2 px-3 border-b border-emerald-500/10">
-                  <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-500/45 block">LEARN_RATIO</span>
-                  <span className="text-lg font-bold text-emerald-300 tabular-nums">{Math.round(learningPct)}%</span>
+                <div className="py-2 px-3 border-b border-border">
+                  <span className="text-xs font-medium text-muted-foreground block">Learning progress</span>
+                  <span className="text-lg font-medium text-foreground tabular-nums">{Math.round(learningPct)}%</span>
                 </div>
               )}
             </div>
@@ -432,38 +417,22 @@ export default function TopicPage() {
 
           {/* Progress Block Meters */}
           {selectedLanguage && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-emerald-500/10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-border">
               <div className="space-y-1">
-                <div className="flex items-center justify-between text-[9px] text-emerald-500/45">
-                  <span>LEARNING_PROGRESS</span>
-                  <span className="font-bold text-emerald-300">{Math.round(learningPct)}%</span>
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Learning progress</span>
+                  <span className="font-medium text-foreground">{Math.round(learningPct)}%</span>
                 </div>
-                <div className="text-[10px] tabular-nums flex items-center">
-                  <span className="text-emerald-500/30">[</span>
-                  <span className="text-emerald-400">{"█".repeat(learnBlocks)}</span>
-                  <span className="text-emerald-500/15">{"░".repeat(10 - learnBlocks)}</span>
-                  <span className="text-emerald-500/30">]</span>
-                </div>
+                <StudioProgress value={learningPct} label="Learning progress" className="w-24 sm:w-32" />
               </div>
               <div className="space-y-1">
-                <div className="flex items-center justify-between text-[9px] text-emerald-500/45">
-                  <span>PRACTICE_COMPLETION</span>
-                  <span className="font-bold text-emerald-300">
-                    {isProblemsUnlocked ? `${solvedCount}/${totalCount} solved` : "LOCKED"}
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Practice progress</span>
+                  <span className="font-medium text-foreground">
+                    {isProblemsUnlocked ? `${solvedCount}/${totalCount} solved` : "Locked"}
                   </span>
                 </div>
-                <div className="text-[10px] tabular-nums flex items-center">
-                  {isProblemsUnlocked ? (
-                    <>
-                      <span className="text-emerald-500/30">[</span>
-                      <span className="text-emerald-400">{"█".repeat(probBlocks)}</span>
-                      <span className="text-emerald-500/15">{"░".repeat(10 - probBlocks)}</span>
-                      <span className="text-emerald-500/30">]</span>
-                    </>
-                  ) : (
-                    <span className="text-emerald-500/20">[░░░░░░░░░░]</span>
-                  )}
-                </div>
+                <StudioProgress value={problemPct} label="Practice progress" className="w-24 sm:w-32" />
               </div>
             </div>
           )}
@@ -476,25 +445,25 @@ export default function TopicPage() {
           ) : currentStep === "learning" ? (
             <motion.div
               key="learning"
-              initial={{ opacity: 0, y: 10 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
               className="space-y-6"
             >
               {/* Path Switcher status bar */}
-              <div className="flex items-center justify-between py-2.5 px-4 border border-emerald-500/10 bg-emerald-950/5 rounded">
-                <div className="flex items-center gap-2 text-[9px]">
-                  <span className="font-bold text-emerald-500/45 uppercase">ACTIVE_PATH //</span>
-                  <span className="font-bold text-emerald-300 uppercase">{selectedLanguage}</span>
+              <div className="flex items-center justify-between py-2.5 px-4 border border-border bg-card rounded-lg">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="font-medium text-muted-foreground">Your path ·</span>
+                  <span className="font-medium text-foreground">{selectedLanguage}</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => { setPendingLangSwitch(selectedLanguage === "Arabic" ? "English" : "Arabic"); setIsSwitchLangConfirmOpen(true); }}
-                  className="h-7 px-3 rounded border border-emerald-500/20 bg-transparent text-emerald-500/60 font-bold uppercase tracking-widest text-[8px] hover:bg-emerald-500/10 hover:text-emerald-300 transition-all font-mono inline-flex items-center gap-1.5"
+                  className="h-7 px-3 rounded-lg border border-border bg-transparent text-muted-foreground font-medium text-xs hover:bg-primary/10 hover:text-foreground transition-all font-sans inline-flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   <RefreshCw size={9} />
-                  [ SWITCH_PATH.COM ]
+                  Change path
                 </button>
               </div>
 
@@ -506,14 +475,14 @@ export default function TopicPage() {
                       {/* Video Player Box */}
                       <div className="lg:col-span-2 space-y-4">
                         {activeVideo ? (
-                          <div className="rounded border border-emerald-500/15 bg-[#060a08]/30 overflow-hidden">
+                          <div className="rounded-lg border border-border bg-card overflow-hidden">
                             {/* Header */}
-                            <div className="flex items-center justify-between px-4 py-2 border-b border-emerald-500/10 bg-[#081210]">
-                              <span className="text-[9px] font-bold text-emerald-400 truncate max-w-md">
-                                {activeVideo.title.toUpperCase()}
+                            <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-card">
+                              <span className="text-xs font-medium text-primary truncate max-w-md">
+                                {activeVideo.title}
                               </span>
                               {activeVideoProgress?.isCompleted && (
-                                <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider">[ WATCHED ]</span>
+                                <span className="text-xs font-medium text-primary">Watched</span>
                               )}
                             </div>
                             <div className="overflow-hidden">
@@ -524,38 +493,29 @@ export default function TopicPage() {
                               />
                             </div>
                             {/* Watch progress */}
-                            <div className="p-4 border-t border-emerald-500/10 bg-emerald-950/5">
-                              <div className="flex items-center justify-between text-[9px] text-emerald-500/40 mb-1">
-                                <span>WATCH_RATIO</span>
+                            <div className="p-4 border-t border-border bg-card">
+                              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                                <span>Video progress</span>
                                 <span>{activeVideoProgress?.watchPct ?? 0}%</span>
                               </div>
-                              <div className="text-[9px] tabular-nums flex items-center">
-                                <span className="text-emerald-500/30">[</span>
-                                <span className="text-emerald-400">
-                                  {"█".repeat(Math.min(10, Math.round((activeVideoProgress?.watchPct ?? 0) / 10)))}
-                                </span>
-                                <span className="text-emerald-500/15">
-                                  {"░".repeat(10 - Math.min(10, Math.round((activeVideoProgress?.watchPct ?? 0) / 10)))}
-                                </span>
-                                <span className="text-emerald-500/30">]</span>
-                              </div>
+                              <StudioProgress value={activeVideoProgress?.watchPct ?? 0} label="Video progress" className="w-24 sm:w-32" />
                             </div>
                           </div>
                         ) : (
-                          <div className="py-12 border border-emerald-500/15 bg-emerald-950/5 text-center text-emerald-500/20 text-xs">
-                            [SYS.ERR // NO VIDEO STREAM LOCATED]
+                          <div className="py-12 border border-border bg-card text-center text-muted-foreground text-xs">
+                            This video is unavailable.
                           </div>
                         )}
                       </div>
 
                       {/* Playlist Sidebar */}
                       <div className="space-y-4">
-                        <div className="rounded border border-emerald-500/15 bg-[#060a08]/30 overflow-hidden">
-                          <div className="px-4 py-2.5 border-b border-emerald-500/10 bg-emerald-950/5">
-                            <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest block">LECTURE_PLAYLIST</span>
-                            <span className="text-[8px] text-emerald-500/30 uppercase">{videoResources.length} sections logged</span>
+                        <div className="rounded-lg border border-border bg-card overflow-hidden">
+                          <div className="px-4 py-2.5 border-b border-border bg-card">
+                            <span className="text-xs font-medium text-primary block">Video lessons</span>
+                            <span className="text-xs text-muted-foreground">{videoResources.length} video lessons</span>
                           </div>
-                          <div className="divide-y divide-emerald-500/[0.07] max-h-[320px] overflow-y-auto">
+                          <div className="divide-y divide-border max-h-[320px] overflow-y-auto">
                             {videoResources.map((v, idx) => {
                               const vProg = data.progress?.resourceProgress?.[v._id];
                               const isActive = v._id === activeVideoId;
@@ -565,12 +525,12 @@ export default function TopicPage() {
                                   type="button"
                                   onClick={() => setActiveVideoId(v._id)}
                                   className={cn(
-                                    "w-full flex items-center gap-3 px-4 py-3 text-left transition-all text-xs font-mono",
-                                    isActive ? "bg-emerald-500/10 border-l-2 border-emerald-500 text-emerald-300" : "hover:bg-emerald-950/5 border-l-2 border-l-transparent text-emerald-500/60"
+                                    "w-full flex items-center gap-3 px-4 py-3 text-left transition-all text-xs font-sans",
+                                    isActive ? "bg-primary/10 border-l-2 border-border text-foreground" : "hover:bg-card border-l-2 border-l-transparent text-muted-foreground"
                                   )}
                                 >
-                                  <span className="shrink-0 text-[9px] font-bold">
-                                    {vProg?.isCompleted ? "[✓]" : `[${String(idx + 1).padStart(2, "0")}]`}
+                                  <span className="shrink-0 text-xs font-medium">
+                                    {vProg?.isCompleted ? "✓" : String(idx + 1).padStart(2, "0")}
                                   </span>
                                   <span className="truncate leading-tight flex-1">
                                     {v.title}
@@ -586,13 +546,13 @@ export default function TopicPage() {
                     /* Single Video layout */
                     <div className="space-y-4">
                       {activeVideo ? (
-                        <div className="rounded border border-emerald-500/15 bg-[#060a08]/30 overflow-hidden">
-                          <div className="flex items-center justify-between px-4 py-2 border-b border-emerald-500/10 bg-[#081210]">
-                            <span className="text-[9px] font-bold text-emerald-400 truncate max-w-md">
-                              {activeVideo.title.toUpperCase()}
+                        <div className="rounded-lg border border-border bg-card overflow-hidden">
+                          <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-card">
+                            <span className="text-xs font-medium text-primary truncate max-w-md">
+                              {activeVideo.title}
                             </span>
                             {activeVideoProgress?.isCompleted && (
-                              <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider">[ WATCHED ]</span>
+                              <span className="text-xs font-medium text-primary">Watched</span>
                             )}
                           </div>
                           <div className="overflow-hidden">
@@ -602,26 +562,17 @@ export default function TopicPage() {
                               onProgress={(payload) => handleVideoProgress(activeVideo._id, payload)}
                             />
                           </div>
-                          <div className="p-4 border-t border-emerald-500/10 bg-emerald-950/5">
-                            <div className="flex items-center justify-between text-[9px] text-emerald-500/40 mb-1">
-                              <span>WATCH_RATIO</span>
+                          <div className="p-4 border-t border-border bg-card">
+                            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                              <span>Video progress</span>
                               <span>{activeVideoProgress?.watchPct ?? 0}%</span>
                             </div>
-                            <div className="text-[9px] tabular-nums flex items-center">
-                              <span className="text-emerald-500/30">[</span>
-                              <span className="text-emerald-400">
-                                {"█".repeat(Math.min(10, Math.round((activeVideoProgress?.watchPct ?? 0) / 10)))}
-                              </span>
-                              <span className="text-emerald-500/15">
-                                {"░".repeat(10 - Math.min(10, Math.round((activeVideoProgress?.watchPct ?? 0) / 10)))}
-                              </span>
-                              <span className="text-emerald-500/30">]</span>
-                            </div>
+                            <StudioProgress value={activeVideoProgress?.watchPct ?? 0} label="Video progress" className="w-24 sm:w-32" />
                           </div>
                         </div>
                       ) : (
-                        <div className="py-12 border border-emerald-500/15 bg-emerald-950/5 text-center text-emerald-500/20 text-xs">
-                          [SYS.ERR // NO VIDEO STREAM LOCATED]
+                        <div className="py-12 border border-border bg-card text-center text-muted-foreground text-xs">
+                          This video is unavailable.
                         </div>
                       )}
                     </div>
@@ -629,44 +580,47 @@ export default function TopicPage() {
 
                   {/* Extra Materials Checklist */}
                   {arabicNonVideoResources.length > 0 && (
-                    <div className="rounded border border-emerald-500/15 bg-[#060a08]/30 overflow-hidden">
-                      <div className="flex items-center justify-between px-4 py-3.5 border-b border-emerald-500/10 bg-emerald-950/5">
+                    <div className="rounded-lg border border-border bg-card overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-3.5 border-b border-border bg-card">
                         <div>
-                          <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest block">EXTRA_MATERIALS</span>
-                          <span className="text-[8px] text-emerald-500/30 uppercase">{arabicNonVideoResources.length} items logged</span>
+                          <span className="text-xs font-medium text-primary block">Additional materials</span>
+                          <span className="text-xs text-muted-foreground">{arabicNonVideoResources.length} resources</span>
                         </div>
-                        <span className="text-[9px] text-emerald-400 uppercase tracking-wider">
+                        <span className="text-xs text-primary">
                           {arabicNonVideoResources.filter(r => data.progress?.resourceProgress?.[r._id]?.isCompleted).length}/{arabicNonVideoResources.length} completed
                         </span>
                       </div>
-                      <div className="divide-y divide-emerald-500/[0.07]">
+                      <div className="divide-y divide-border">
                         {arabicNonVideoResources.map((res, idx) => {
                           const rProg = data.progress?.resourceProgress?.[res._id] || { watchPct: 0, isCompleted: false };
                           const isToggling = togglingResourceIds.has(res._id);
                           return (
-                            <div key={res._id} className={cn("flex items-center gap-4 px-4 py-3.5 transition-all text-xs", rProg.isCompleted && "bg-emerald-500/[0.02]")}>
-                              <span className="text-[10px] text-emerald-500/20 w-6 shrink-0 text-center">{String(idx + 1).padStart(2, "0")}</span>
-                              <div className="shrink-0 size-8 rounded border border-emerald-500/10 bg-emerald-950/10 flex items-center justify-center">
+                            <div key={res._id} className={cn("flex items-center gap-4 px-4 py-3.5 transition-all text-xs", rProg.isCompleted && "bg-primary/10")}>
+                              <span className="hidden sm:block text-xs text-muted-foreground w-6 shrink-0 text-center">{String(idx + 1).padStart(2, "0")}</span>
+                              <div className="hidden sm:flex shrink-0 size-8 rounded-lg border border-border bg-card items-center justify-center">
                                 {resourceTypeIcon(res.type)}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <a href={res.url} target="_blank" rel="noopener noreferrer" className={cn("font-bold transition-colors inline-flex items-center gap-1.5", rProg.isCompleted ? "text-emerald-500/30 line-through" : "text-emerald-300 hover:text-emerald-200")}>
+                                <a href={res.url} target="_blank" rel="noopener noreferrer" className={cn("font-medium transition-colors inline-flex items-center gap-1.5", rProg.isCompleted ? "text-muted-foreground line-through" : "text-foreground hover:text-foreground")}>
                                   {res.title}
                                   <ExternalLink size={9} className="opacity-40" />
                                 </a>
-                                <div className="flex items-center gap-2 mt-0.5 text-[8px] text-emerald-500/30 uppercase">
+                                <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
                                   <span>{res.type}</span>
-                                  {res.weight === 0 && <span className="text-emerald-500/20 border border-emerald-500/10 px-1 rounded">[OPTIONAL]</span>}
+                                  <span className="sm:hidden">+{res.xpReward} XP</span>
+                                  {res.weight === 0 && <span className="text-muted-foreground border border-border px-1 rounded-lg">Optional</span>}
                                 </div>
                               </div>
-                              <span className="shrink-0 text-[9px] text-emerald-500/40 mr-2">
+                              <span className="hidden sm:inline shrink-0 text-xs text-muted-foreground mr-2">
                                 +{res.xpReward} XP
                               </span>
                               <button
                                 type="button"
                                 disabled={isToggling || !user}
+                                aria-label={`${rProg.isCompleted ? "Mark incomplete" : "Mark complete"}: ${res.title}`}
+                                aria-pressed={rProg.isCompleted}
                                 onClick={() => handleToggleResource(res._id, rProg.isCompleted)}
-                                className={cn("shrink-0 size-6 rounded border flex items-center justify-center transition-all", isToggling && "opacity-50 cursor-wait animate-pulse", rProg.isCompleted ? "bg-emerald-500 border-emerald-500 text-emerald-950" : "border-emerald-500/20 bg-[#060a08] hover:border-emerald-500/40")}
+                                className={cn("shrink-0 size-9 rounded-lg border flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", isToggling && "opacity-50 cursor-wait animate-pulse", rProg.isCompleted ? "bg-primary border-border text-primary-foreground" : "border-border bg-card hover:border-border")}
                               >
                                 {rProg.isCompleted && <Check size={12} />}
                               </button>
@@ -681,50 +635,53 @@ export default function TopicPage() {
 
               {/* ── ENGLISH LEARNING (READING WORKSPACE) ── */}
               {selectedLanguage === "English" && (
-                <div className="rounded border border-emerald-500/15 bg-[#060a08]/30 overflow-hidden">
-                  <div className="flex items-center justify-between px-4 py-3.5 border-b border-emerald-500/10 bg-emerald-950/5">
+                <div className="rounded-lg border border-border bg-card overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3.5 border-b border-border bg-card">
                     <div>
-                      <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest block">READING_CHECKLIST</span>
-                      <span className="text-[8px] text-emerald-500/30 uppercase">{englishResources.length} items logged</span>
+                      <span className="text-xs font-medium text-primary block">Reading materials</span>
+                      <span className="text-xs text-muted-foreground">{englishResources.length} resources</span>
                     </div>
-                    <span className="text-[9px] text-emerald-400 uppercase tracking-wider">
+                    <span className="text-xs text-primary">
                       {englishResources.filter(r => data.progress?.resourceProgress?.[r._id]?.isCompleted).length}/{englishResources.length} completed
                     </span>
                   </div>
 
                   {englishResources.length === 0 ? (
-                    <div className="py-12 text-center text-emerald-500/20 text-xs">
-                      [SYS.EMPTY // NO READING RESOURCES DEFINED]
+                    <div className="py-12 text-center text-muted-foreground text-xs">
+                      No reading materials have been added yet.
                     </div>
                   ) : (
-                    <div className="divide-y divide-emerald-500/[0.07]">
+                    <div className="divide-y divide-border">
                       {englishResources.map((res, idx) => {
                         const rProg = data.progress?.resourceProgress?.[res._id] || { watchPct: 0, isCompleted: false };
                         const isToggling = togglingResourceIds.has(res._id);
                         return (
-                          <div key={res._id} className={cn("flex items-center gap-4 px-4 py-3.5 transition-all text-xs", rProg.isCompleted && "bg-emerald-500/[0.02]")}>
-                            <span className="text-[10px] text-emerald-500/20 w-6 shrink-0 text-center">{String(idx + 1).padStart(2, "0")}</span>
-                            <div className="shrink-0 size-8 rounded border border-emerald-500/10 bg-emerald-950/10 flex items-center justify-center">
+                          <div key={res._id} className={cn("flex items-center gap-4 px-4 py-3.5 transition-all text-xs", rProg.isCompleted && "bg-primary/10")}>
+                            <span className="hidden sm:block text-xs text-muted-foreground w-6 shrink-0 text-center">{String(idx + 1).padStart(2, "0")}</span>
+                            <div className="hidden sm:flex shrink-0 size-8 rounded-lg border border-border bg-card items-center justify-center">
                               {resourceTypeIcon(res.type)}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <a href={res.url} target="_blank" rel="noopener noreferrer" className={cn("font-bold transition-colors inline-flex items-center gap-1.5", rProg.isCompleted ? "text-emerald-500/30 line-through" : "text-emerald-300 hover:text-emerald-200")}>
+                              <a href={res.url} target="_blank" rel="noopener noreferrer" className={cn("font-medium transition-colors inline-flex items-center gap-1.5", rProg.isCompleted ? "text-muted-foreground line-through" : "text-foreground hover:text-foreground")}>
                                 {res.title}
                                 <ExternalLink size={9} className="opacity-40" />
                               </a>
-                              <div className="flex items-center gap-2 mt-0.5 text-[8px] text-emerald-500/30 uppercase">
+                              <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
                                 <span>{res.type}</span>
-                                {res.weight === 0 && <span className="text-emerald-500/20 border border-emerald-500/10 px-1 rounded">[OPTIONAL]</span>}
+                                  <span className="sm:hidden">+{res.xpReward} XP</span>
+                                {res.weight === 0 && <span className="text-muted-foreground border border-border px-1 rounded-lg">Optional</span>}
                               </div>
                             </div>
-                            <span className="shrink-0 text-[9px] text-emerald-500/40 mr-2">
+                            <span className="hidden sm:inline shrink-0 text-xs text-muted-foreground mr-2">
                               +{res.xpReward} XP
                             </span>
                             <button
                               type="button"
                               disabled={isToggling || !user}
-                              onClick={() => handleToggleResource(res._id, rProg.isCompleted)}
-                              className={cn("shrink-0 size-6 rounded border flex items-center justify-center transition-all", isToggling && "opacity-50 cursor-wait animate-pulse", rProg.isCompleted ? "bg-emerald-500 border-emerald-500 text-emerald-950" : "border-emerald-500/20 bg-[#060a08] hover:border-emerald-500/40")}
+                              aria-label={`${rProg.isCompleted ? "Mark incomplete" : "Mark complete"}: ${res.title}`}
+                                aria-pressed={rProg.isCompleted}
+                                onClick={() => handleToggleResource(res._id, rProg.isCompleted)}
+                              className={cn("shrink-0 size-9 rounded-lg border flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", isToggling && "opacity-50 cursor-wait animate-pulse", rProg.isCompleted ? "bg-primary border-border text-primary-foreground" : "border-border bg-card hover:border-border")}
                             >
                               {rProg.isCompleted && <Check size={12} />}
                             </button>
@@ -737,11 +694,11 @@ export default function TopicPage() {
               )}
 
               {/* Gated triggers at end of Learn step */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-3 px-4 border border-emerald-500/10 bg-emerald-950/5 rounded">
-                <span className="text-[10px] text-emerald-500/45 uppercase tracking-wider">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-3 px-4 border border-border bg-card rounded-lg">
+                <span className="text-xs text-muted-foreground">
                   {isProblemsUnlocked
-                    ? "[✓ TASK_STATE // PRACTICE_READY]"
-                    : `[ LOCKED // COMPILATION REQ: ${data.topic.requiredLearningPct}% LEARNING ]`
+                    ? "Ready to put it into practice"
+                    : `Complete ${data.topic.requiredLearningPct}% of learning to unlock practice`
                   }
                 </span>
 
@@ -751,14 +708,14 @@ export default function TopicPage() {
                       type="button"
                       onClick={handleCompleteLearning}
                       disabled={isCompletingLearning}
-                      className="h-8 px-4 rounded bg-emerald-500 text-emerald-950 font-bold uppercase tracking-widest text-[8px] hover:bg-emerald-400 font-mono inline-flex items-center"
+                      className="h-9 px-4 rounded-lg bg-primary text-primary-foreground font-medium text-xs hover:bg-primary font-sans inline-flex items-center"
                     >
                       {isCompletingLearning ? (
                         <Loader2 size={10} className="animate-spin mr-1" />
                       ) : (
                         <CheckCircle2 size={10} className="mr-1" />
                       )}
-                      [ COMPLETE.EXE ]
+                      Complete
                     </Button>
                   )}
                   <Button
@@ -766,13 +723,13 @@ export default function TopicPage() {
                     onClick={() => { if (isProblemsUnlocked) setCurrentStep("problems"); }}
                     disabled={!isProblemsUnlocked}
                     className={cn(
-                      "h-8 px-4 rounded font-bold uppercase tracking-widest text-[8px] transition-all font-mono",
+                      "h-9 px-4 rounded-lg font-medium text-xs transition-all font-sans",
                       isProblemsUnlocked
-                        ? "bg-emerald-500 text-emerald-950 border-emerald-500 hover:bg-emerald-400"
-                        : "bg-transparent border-emerald-500/10 text-emerald-500/20 cursor-not-allowed"
+                        ? "bg-primary text-primary-foreground border-border hover:bg-primary"
+                        : "bg-transparent border-border text-muted-foreground cursor-not-allowed"
                     )}
                   >
-                    {isProblemsUnlocked ? "[ OPEN_PRACTICE.EXE ]" : "[ LOCKED.SYS ]"}
+                    {isProblemsUnlocked ? "Open practice" : "Locked"}
                   </Button>
                 </div>
               </div>
@@ -782,118 +739,115 @@ export default function TopicPage() {
             /* ── PRACTICE STEP (PROBLEMS MATRIX) ── */
             <motion.div
               key="practice"
-              initial={{ opacity: 0, y: 10 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
               className="space-y-6"
             >
               {!isProblemsUnlocked ? (
-                <div className="py-12 border border-emerald-500/15 bg-emerald-950/5 text-center space-y-4">
-                  <div className="size-10 rounded border border-emerald-500/10 flex items-center justify-center text-emerald-500/30 mx-auto">
+                <div className="py-12 border border-border bg-card text-center space-y-4">
+                  <div className="size-10 rounded-lg border border-border flex items-center justify-center text-muted-foreground mx-auto">
                     <Lock size={16} />
                   </div>
-                  <h3 className="text-sm font-bold text-emerald-300 uppercase">Practice Sector Locked</h3>
-                  <p className="text-[11px] text-emerald-500/40 max-w-sm mx-auto">
-                    Complete at least {data.topic.requiredLearningPct}% of the learning feeds to compile problems. (Current: {Math.round(learningPct)}%)
+                  <h3 className="font-medium text-foreground font-heading text-lg tracking-tight">A little learning comes first.</h3>
+                  <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                    Complete at least {data.topic.requiredLearningPct}% of the learning resources to unlock practice. (Current: {Math.round(learningPct)}%)
                   </p>
-                  <Button type="button" onClick={() => setCurrentStep("learning")} className="h-8 px-4 rounded border border-emerald-500/20 bg-transparent text-emerald-400 font-bold uppercase tracking-widest text-[8px] hover:bg-emerald-500/10 font-mono">
-                    [ GO_TO_LEARNING.SH ]
+                  <Button type="button" onClick={() => setCurrentStep("learning")} className="h-9 px-4 rounded-lg border border-border bg-transparent text-primary font-medium text-xs hover:bg-primary/10 font-sans">
+                    Go to learning
                   </Button>
                 </div>
               ) : (
-                <div className="rounded border border-emerald-500/15 bg-[#060a08]/30 overflow-hidden">
+                <div className="rounded-lg border border-border bg-card overflow-hidden">
                   {/* Header */}
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-emerald-500/10 bg-emerald-950/5">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
                     <div>
-                      <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest block">PRACTICE_PROBLEMS_LOG</span>
-                      <span className="text-[8px] text-emerald-500/30 uppercase">
+                      <span className="text-xs font-medium text-primary block">Practice problems</span>
+                      <span className="text-xs text-muted-foreground">
                         Resolve {data.topic.requiredProblemPct}% of targets
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className="text-[8px] text-emerald-500/30 uppercase block">RESOLVED</span>
-                      <span className="text-xs font-bold text-emerald-300 tabular-nums">
+                      <span className="text-xs text-muted-foreground block">Solved</span>
+                      <span className="text-xs font-medium text-foreground tabular-nums">
                         {solvedCount}/{totalCount}
                       </span>
                     </div>
                   </div>
 
                   {/* Progress bar */}
-                  <div className="px-4 py-2.5 border-b border-emerald-500/10 bg-emerald-950/5">
-                    <div className="flex items-center justify-between text-[9px] text-emerald-500/40 mb-1">
-                      <span>COMPLETION_RATIO</span>
-                      <span className={problemPct >= (data.topic.requiredProblemPct ?? 60) ? "text-emerald-400" : "text-emerald-300"}>
+                  <div className="px-4 py-2.5 border-b border-border bg-card">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                      <span>Completion</span>
+                      <span className={problemPct >= (data.topic.requiredProblemPct ?? 60) ? "text-primary" : "text-foreground"}>
                         {Math.round(problemPct)}%
                       </span>
                     </div>
-                    <div className="text-[10px] tabular-nums flex items-center">
-                      <span className="text-emerald-500/30">[</span>
-                      <span className="text-emerald-400">{"█".repeat(probBlocks)}</span>
-                      <span className="text-emerald-500/15">{"░".repeat(10 - probBlocks)}</span>
-                      <span className="text-emerald-500/30">]</span>
-                    </div>
+                    <StudioProgress value={problemPct} label="Practice progress" className="w-24 sm:w-32" />
                   </div>
 
                   {/* Codeforces Group links */}
                   {groupLinks.length > 0 && (
-                    <div className="px-4 py-3 border-b border-emerald-500/10 bg-emerald-950/5 text-xs">
+                    <div className="px-4 py-3 border-b border-border bg-card text-xs">
                       <div className="space-y-1">
-                        <span className="text-[9px] font-bold text-emerald-500/45 uppercase tracking-wider block">CODEFORCES_GROUP_RESOURCES</span>
+                        <span className="text-xs font-medium text-muted-foreground block">Codeforces group resources</span>
                         {groupLinks.map((link: string, i: number) => (
-                          <a key={i} href={link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 font-bold text-emerald-300 hover:text-emerald-200 transition-colors">
+                          <a key={i} href={link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 font-medium text-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
                             {link} <ExternalLink size={9} className="opacity-40" />
                           </a>
                         ))}
-                        {data.topic?.groupNote && <p className="text-[9px] text-emerald-500/30 italic mt-1">{data.topic.groupNote}</p>}
+                        {data.topic?.groupNote && <p className="text-xs text-muted-foreground italic mt-1">{data.topic.groupNote}</p>}
                       </div>
                     </div>
                   )}
 
                   {/* Problems checklist */}
                   {problemsList.length === 0 ? (
-                    <div className="py-12 text-center text-emerald-500/20 text-xs">
-                      [SYS.EMPTY // NO PRACTICE CHALLENGE NODES DEPLOYED]
+                    <div className="py-12 text-center text-muted-foreground text-xs">
+                      No practice problems have been added yet.
                     </div>
                   ) : (
-                    <div className="divide-y divide-emerald-500/[0.07]">
+                    <div className="divide-y divide-border">
                       {problemsList.map((prob, index) => {
                         const isSolved = Boolean(data.progress?.problemProgress?.[prob._id]);
                         const isToggling = togglingProblemIds.has(prob._id);
                         return (
                           <div
                             key={prob._id}
-                            className={cn("flex items-center gap-4 px-4 py-3.5 transition-all text-xs", isSolved && "bg-emerald-500/[0.02]")}
+                            className={cn("flex items-center gap-4 px-4 py-3.5 transition-all text-xs", isSolved && "bg-primary/10")}
                           >
                             <button
                               type="button"
                               disabled={isToggling || !user}
+                              aria-label={`${isSolved ? "Mark unsolved" : "Mark solved"}: ${prob.name}`}
+                              aria-pressed={isSolved}
                               onClick={() => handleToggleProblem(prob._id, isSolved)}
-                              className={cn("shrink-0 size-6 rounded border flex items-center justify-center transition-all", isToggling && "opacity-50 cursor-wait animate-pulse", isSolved ? "bg-emerald-500 border-emerald-500 text-emerald-950" : "border-emerald-500/20 bg-[#060a08] hover:border-emerald-500/40")}
+                              className={cn("shrink-0 size-9 rounded-lg border flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", isToggling && "opacity-50 cursor-wait animate-pulse", isSolved ? "bg-primary border-border text-primary-foreground" : "border-border bg-card hover:border-border")}
                             >
                               {isSolved && <Check size={12} />}
                             </button>
 
-                            <span className="text-[10px] text-emerald-500/20 w-6 shrink-0 text-center">{String(prob.orderIndex ?? index + 1).padStart(2, "0")}</span>
+                            <span className="hidden sm:block text-xs text-muted-foreground w-6 shrink-0 text-center">{String(prob.orderIndex ?? index + 1).padStart(2, "0")}</span>
 
                             <div className="flex-1 min-w-0">
                               <a
                                 href={prob.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className={cn("font-bold transition-colors inline-flex items-center gap-1.5", isSolved ? "text-emerald-500/30 line-through" : "text-emerald-300 hover:text-emerald-200")}
+                                className={cn("font-medium transition-colors inline-flex items-center gap-1.5", isSolved ? "text-muted-foreground line-through" : "text-foreground hover:text-foreground")}
                               >
                                 {prob.name}
                                 <ExternalLink size={9} className="opacity-40" />
                               </a>
                             </div>
 
-                            <span className={cn("shrink-0 text-[9px] font-bold px-2 py-0.5 rounded border mr-2", isSolved ? "border-emerald-500/20 text-emerald-500/40" : "border-primary/20 text-primary")}>
+                            <span className={cn("shrink-0 text-xs font-medium px-2 py-0.5 rounded-lg border mr-2", isSolved ? "border-border text-muted-foreground" : "border-primary/20 text-primary")}>
                               +{prob.xpReward} XP
                             </span>
 
-                            <span className={cn("shrink-0 hidden sm:inline text-[9px] font-bold uppercase", isSolved ? "text-emerald-400" : "text-emerald-500/30")}>
-                              {isSolved ? "[RESOLVED]" : "[PENDING]"}
+                            <span className={cn("shrink-0 hidden sm:inline text-xs font-medium", isSolved ? "text-primary" : "text-muted-foreground")}>
+                              {isSolved ? "Solved" : "Pending"}
                             </span>
                           </div>
                         );
@@ -910,20 +864,20 @@ export default function TopicPage() {
                     const reqProblem = data.topic.requiredProblemPct ?? 60;
                     const canProceed = learningPct >= reqLearning && problemPct >= reqProblem;
                     return (
-                      <div className="flex justify-end px-4 py-3 border-t border-emerald-500/10 bg-emerald-950/5">
+                      <div className="flex justify-end px-4 py-3 border-t border-border bg-card">
                         {canProceed ? (
                           <Link
                             href={`/roadmap/levels/${levelId}/topics/${next._id}`}
-                            className="h-8 px-4 rounded bg-emerald-500 text-emerald-950 font-bold uppercase tracking-widest text-[8px] hover:bg-emerald-400 transition-all font-mono inline-flex items-center"
+                            className="h-9 px-4 rounded-lg bg-primary text-primary-foreground font-medium text-xs hover:bg-primary transition-all font-sans inline-flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                           >
-                            [ NEXT_MISSION: {next.title.toUpperCase()} ]
+                            Next topic:  {next.title}
                           </Link>
                         ) : (
                           <span
-                            className="h-8 px-4 rounded border border-emerald-500/5 text-emerald-500/20 text-[8px] font-bold uppercase tracking-widest inline-flex items-center select-none cursor-not-allowed"
+                            className="h-9 px-4 rounded-lg border border-border text-muted-foreground text-xs font-medium inline-flex items-center cursor-not-allowed"
                             title={`Need ${reqLearning}% learning and ${reqProblem}% problem progress`}
                           >
-                            [ LOCKED: LRN {Math.round(learningPct)}/{reqLearning}% · PRB {Math.round(problemPct)}/{reqProblem}% ]
+                            Locked · learning  {Math.round(learningPct)}/{reqLearning}% · practice {Math.round(problemPct)}/{reqProblem}%
                           </span>
                         )}
                       </div>
@@ -938,23 +892,23 @@ export default function TopicPage() {
 
       {/* Switch Language Dialog */}
       <Dialog open={isSwitchLangConfirmOpen} onOpenChange={setIsSwitchLangConfirmOpen}>
-        <DialogContent className="max-w-sm bg-[#060a08] border border-emerald-500/25 rounded p-0 overflow-hidden font-mono text-emerald-400">
+        <DialogContent className="max-w-sm bg-card border border-border rounded-lg p-0 overflow-hidden font-sans text-primary">
           <div className="p-6 pb-0">
-            <div className="flex items-center justify-center size-10 rounded border border-amber-500/25 bg-amber-950/10 mx-auto mb-4">
+            <div className="flex items-center justify-center size-10 rounded-lg border border-amber-500/25 bg-amber-950/10 mx-auto mb-4">
               <RefreshCw size={18} className="text-amber-400" />
             </div>
             <DialogHeader className="text-center">
-              <DialogTitle className="text-sm font-bold uppercase tracking-wider text-emerald-300">Switch Learning Path?</DialogTitle>
-              <DialogDescription className="text-[11px] text-emerald-500/40 leading-relaxed mt-2">
+              <DialogTitle className="text-sm font-medium text-foreground">Switch Learning Path?</DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground leading-relaxed mt-2">
                 Switching to{" "}
-                <span className="font-bold text-emerald-300">{pendingLangSwitch === "Arabic" ? "Arabic" : "English"}</span>{" "}
-                will purge accumulated progress and XP stats for this topic sector.
+                <span className="font-medium text-foreground">{pendingLangSwitch === "Arabic" ? "Arabic" : "English"}</span>{" "}
+                will reset your progress and XP for this topic.
               </DialogDescription>
             </DialogHeader>
           </div>
-          <DialogFooter className="flex flex-row gap-3 p-6 pt-4 bg-[#081210]/40 border-t border-emerald-500/10">
-            <Button type="button" variant="ghost" onClick={() => { setIsSwitchLangConfirmOpen(false); setPendingLangSwitch(null); }} className="flex-1 h-9 rounded border border-emerald-500/20 bg-transparent text-emerald-500/60 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-500/10 font-mono">
-              [ CANCEL ]
+          <DialogFooter className="flex flex-row gap-3 p-6 pt-4 bg-card border-t border-border">
+            <Button type="button" variant="ghost" onClick={() => { setIsSwitchLangConfirmOpen(false); setPendingLangSwitch(null); }} className="flex-1 h-9 rounded-lg border border-border bg-transparent text-muted-foreground font-medium text-xs hover:bg-primary/10 font-sans">
+              Cancel
             </Button>
             <Button
               type="button"
@@ -970,9 +924,9 @@ export default function TopicPage() {
                 setPendingLangSwitch(null);
                 mutate(); mutateLevel(); mutateSummary();
               }}
-              className="flex-1 h-9 rounded bg-emerald-500 text-emerald-950 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-400 font-mono"
+              className="flex-1 h-9 rounded-lg bg-primary text-primary-foreground font-medium text-xs hover:bg-primary font-sans"
             >
-              [ SWITCH_PATH ]
+              Change path
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,5 +1,9 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+
+import MemberPageState from "@/components/features/profile/MemberPageState";
+
 import { useState, useMemo } from "react";
 import { m, AnimatePresence } from "framer-motion";
 import {
@@ -7,17 +11,14 @@ import {
   Search,
   Target,
   Clock,
-  Layers,
   Zap,
-  Cpu,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useLevels } from "@/hooks/roadmap";
-import Loader from "@/components/shared/Loader";
 
 const LevelsPage = () => {
-  const { levels: levelsData, isLoading } = useLevels();
+  const { levels: levelsData, isLoading, error, mutateLevels } = useLevels();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<"all" | "low" | "medium" | "high" | "expert">("all");
 
@@ -39,13 +40,8 @@ const LevelsPage = () => {
     });
   }, [levelsData, searchQuery, filterType]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center pt-0">
-        <Loader message="Loading levels..." />
-      </div>
-    );
-  }
+  if (isLoading) return <MemberPageState kind="loading" title="Finding your next challenge" description="Loading the training levels." />;
+  if (error && levelsData.length === 0) return <MemberPageState kind="error" title="Training levels are unavailable" description="We couldn’t load the level catalog. Try again in a moment."><Button variant="outline" onClick={() => mutateLevels()}>Try again</Button></MemberPageState>;
 
   const container = {
     hidden: { opacity: 0 },
@@ -63,41 +59,38 @@ const LevelsPage = () => {
   };
 
   return (
-    <div className="min-h-screen relative pb-12 font-mono text-emerald-400">
+    <div className="min-h-screen relative pb-12 font-sans text-foreground">
       {/* Background Accents */}
-      <div className="absolute inset-0 -z-10 bg-[#040604]">
-        <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.04]" />
-      </div>
 
-      <div className="container mx-auto px-4 md:px-8 space-y-6">
+      <div className="mx-auto w-full md:px-8 space-y-6">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-4">
-            <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40">
-              <Target size={12} className="text-emerald-400" />
-              <span>LEVELS_DATABASE // ROADMAP_STATIONS</span>
-              <span className="flex-1 border-b border-emerald-500/10" />
-              <Cpu size={10} className="text-emerald-500/30" />
-              <span>ACTIVE: {filteredLevels.length} STATIONS</span>
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+              <Target size={12} className="text-primary" />
+              <span>Find your training level</span>
+              <span className="flex-1 border-b border-border" />
+              <span>Available: {filteredLevels.length} levels</span>
             </div>
             <div className="space-y-1">
-              <h1 className="text-xl sm:text-2xl font-bold text-emerald-300 uppercase tracking-wider">
-                Tactical Level Database
+              <h1 className="text-foreground font-heading text-3xl sm:text-4xl font-medium tracking-tight leading-tight">
+                A challenge at every level.
               </h1>
-              <p className="text-[11px] text-emerald-500/40 max-w-xl leading-relaxed">
-                Select your training difficulty based on rating requirements. Each node specifies ratings and constraints for practice sessions.
+              <p className="text-sm text-muted-foreground max-w-xl leading-relaxed">
+                Find the right amount of challenge. Each level combines four problem ratings for a focused practice session.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 min-w-[300px] shrink-0">
+          <div className="flex flex-col gap-3 w-full md:w-auto md:min-w-[280px] shrink-0">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500/30" size={14} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
               <Input
-                placeholder="search_parameters..."
+                aria-label="Search levels or ratings"
+                placeholder="Search levels or ratings"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-10 pl-9 rounded border border-emerald-500/20 bg-[#060a08] text-xs text-emerald-400 placeholder:text-emerald-500/30 focus:border-emerald-500/40 focus:ring-0 font-mono"
+                className="h-10 pl-9 rounded-lg border border-border bg-card text-xs text-primary placeholder:text-muted-foreground focus:border-border focus-visible:ring-2 focus-visible:ring-ring font-sans"
               />
             </div>
 
@@ -107,13 +100,13 @@ const LevelsPage = () => {
                   key={t}
                   onClick={() => setFilterType(t)}
                   className={cn(
-                    "h-8 px-3 rounded border font-bold uppercase tracking-wider text-[9px] transition-all duration-200 font-mono",
+                    "h-9 px-3 rounded-lg border font-medium text-xs transition-all duration-200 font-sans",
                     filterType === t
-                      ? "bg-emerald-500 text-emerald-950 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
-                      : "bg-transparent border-emerald-500/15 text-emerald-500/50 hover:text-emerald-300 hover:border-emerald-500/40"
+                      ? "bg-primary text-primary-foreground border-border"
+                      : "bg-transparent border-border text-muted-foreground hover:text-foreground hover:border-border"
                   )}
                 >
-                  [ {t.toUpperCase()} ]
+                   {t.charAt(0).toUpperCase() + t.slice(1)}
                 </button>
               ))}
             </div>
@@ -123,7 +116,7 @@ const LevelsPage = () => {
         {/* Levels Grid */}
         <m.div
           variants={container}
-          initial="hidden"
+          initial={false}
           animate="show"
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
         >
@@ -133,40 +126,40 @@ const LevelsPage = () => {
                 key={level.id}
                 layout
                 variants={item}
-                className="relative overflow-hidden rounded-lg border border-emerald-500/15 bg-emerald-950/[0.02]"
+                className="relative overflow-hidden rounded-2xl border border-border bg-card"
               >
                 {/* Station status bar */}
-                <div className="flex items-center justify-between px-4 py-2 border-b border-emerald-500/10 bg-[#081210]">
-                  <div className="flex items-center gap-1.5 text-[8px] font-bold tracking-wider text-emerald-400/55">
-                    <Zap size={10} className="text-emerald-400" />
-                    <span>LEVEL_NODE #{level.level.padStart(3, "0")}</span>
+                <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-card">
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                    <Zap size={10} className="text-primary" />
+                    <span>Level {level.level}</span>
                   </div>
-                  <div className="size-1.5 rounded-full bg-emerald-500/40" />
+                  <div className="size-1.5 rounded-full bg-primary/10" />
                 </div>
 
                 {/* Body details */}
                 <div className="p-4 space-y-4">
                   {/* XP / Time */}
-                  <div className="flex items-center justify-between text-[11px] border-b border-emerald-500/[0.07] pb-3">
+                  <div className="flex items-center justify-between text-sm border-b border-border pb-3">
                     <div>
-                      <span className="text-[8px] text-emerald-500/35 uppercase tracking-wider block">Requirement</span>
+                      <span className="text-xs text-muted-foreground block">Performance</span>
                       <div className="flex items-center gap-1 mt-0.5">
-                        <Trophy size={11} className="text-emerald-400" />
-                        <span className="font-bold text-emerald-300">{level.Performance}</span>
+                        <Trophy size={11} className="text-primary" />
+                        <span className="font-medium text-foreground">{level.Performance}</span>
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="text-[8px] text-emerald-500/35 uppercase tracking-wider block">Duration</span>
+                      <span className="text-xs text-muted-foreground block">Duration</span>
                       <div className="flex items-center gap-1 justify-end mt-0.5">
-                        <Clock size={11} className="text-emerald-400" />
-                        <span className="font-bold text-emerald-300">{level.time} MIN</span>
+                        <Clock size={11} className="text-primary" />
+                        <span className="font-medium text-foreground">{level.time} min</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Ratings matrix */}
                   <div>
-                    <span className="text-[8px] text-emerald-500/35 uppercase tracking-wider block mb-2">TARGET_RATINGS_MATRIX</span>
+                    <span className="text-xs text-muted-foreground block mb-2">Problem ratings</span>
                     <div className="grid grid-cols-2 gap-2">
                       {[
                         { label: "P1", val: level.P1 },
@@ -176,10 +169,10 @@ const LevelsPage = () => {
                       ].map((p) => (
                         <div
                           key={p.label}
-                          className="flex items-center justify-between py-1.5 px-2.5 rounded border border-emerald-500/10 bg-emerald-950/5 text-[10px]"
+                          className="flex items-center justify-between py-1.5 px-2.5 rounded-lg border border-border bg-card text-xs"
                         >
-                          <span className="font-bold text-emerald-500/40">{p.label}</span>
-                          <span className="font-bold text-emerald-300 tabular-nums">{p.val}</span>
+                          <span className="font-medium text-muted-foreground">{p.label}</span>
+                          <span className="font-medium text-foreground tabular-nums">{p.val}</span>
                         </div>
                       ))}
                     </div>
@@ -190,21 +183,8 @@ const LevelsPage = () => {
           </AnimatePresence>
         </m.div>
 
-        {filteredLevels.length === 0 && (
-          <m.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-20 text-center space-y-4"
-          >
-            <Layers className="size-14 text-emerald-500/20" />
-            <div className="space-y-1">
-              <h3 className="text-sm font-bold text-emerald-300 uppercase tracking-wider">No Matching Parameters</h3>
-              <p className="text-[11px] text-emerald-500/40 max-w-xs mx-auto">
-                No tactical levels matched the filter parameters.
-              </p>
-            </div>
-          </m.div>
-        )}
+        {filteredLevels.length === 0 && <MemberPageState title="No levels match yet" description="Try a different rating or clear your filters to explore every level."><Button variant="outline" onClick={() => { setSearchQuery(""); setFilterType("all"); }}>Clear filters</Button></MemberPageState>}
+
       </div>
     </div>
   );

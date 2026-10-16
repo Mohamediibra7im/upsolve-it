@@ -167,33 +167,35 @@ const VideoPlayer = ({
   }, [videoUrl, isLocked]);
 
   return (
-    <div className="relative w-full aspect-video flex items-center justify-center bg-[#040604] overflow-hidden border border-emerald-500/15 rounded-sm shadow-[0_6px_22px_rgba(0,0,0,0.6)] font-mono">
+    <div className="relative w-full aspect-video flex items-center justify-center bg-background overflow-hidden border border-border rounded-lg font-sans">
       {/* Loading State Overlay */}
-      {!isReady && !isLocked && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#040604]/95 w-full gap-3 aspect-video z-10 pointer-events-none">
-          <Loader2 className="size-8 animate-spin text-emerald-400" />
-          <p className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/40 animate-pulse">
-            Loading session player...
+      {!isReady && !isLocked && !!videoUrl && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-background w-full gap-3 aspect-video z-10 pointer-events-none">
+          <Loader2 className="size-8 animate-spin motion-reduce:animate-none text-primary" />
+          <p className="text-xs font-medium text-muted-foreground">
+            Loading video…
           </p>
         </div>
       )}
 
       {/* Locked State Overlay */}
       {isLocked && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#040604]/95 w-full gap-3 aspect-video z-10">
-          <div className="p-3 bg-red-955/15 rounded-sm border border-red-500/20 text-red-400 animate-pulse">
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-background w-full gap-3 aspect-video z-10">
+          <div className="p-3 bg-primary/10 rounded-2xl border border-border text-primary">
             <Lock className="size-6" />
           </div>
           <div className="space-y-1 text-center">
-            <p className="text-[10px] font-bold text-red-450 uppercase tracking-widest">
+            <p className="text-xs font-medium text-foreground">
               This topic is locked
             </p>
-            <p className="text-[8px] font-bold text-red-500/35 uppercase">
-              [ RESOLVE_PREVIOUS_LOGS_TO_UNLOCK ]
+            <p className="text-xs font-medium text-muted-foreground">
+              Complete earlier topics to unlock
             </p>
           </div>
         </div>
       )}
+
+      {!videoUrl && !isLocked && <p className="px-5 text-center text-sm text-muted-foreground">This video is not available yet.</p>}
 
       {/* Div where YT Player will mount */}
       {!isLocked && videoUrl && (

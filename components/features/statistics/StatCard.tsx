@@ -18,19 +18,19 @@ export const StatCard = ({
   icon: any;
   trend?: number;
 }) => (
-  <m.div variants={fadeUp} className="py-3 px-4 border-b border-emerald-500/10 font-mono text-emerald-400">
-    <div className="flex items-center justify-between mb-1">
-      <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/40">{title}</span>
+  <m.div variants={fadeUp} className="rounded-2xl border border-border bg-card p-5 font-sans text-primary">
+    <div className="flex items-center justify-between mb-3">
+      <span className="text-xs font-medium text-muted-foreground">{title}</span>
       {trend !== undefined && (
-        <span className={`text-[9px] font-bold tabular-nums ${trend >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+        <span className={`text-xs font-medium tabular-nums ${trend >= 0 ? "text-primary" : "text-red-400"}`}>
           {trend >= 0 ? "+" : ""}{trend}
         </span>
       )}
     </div>
     <div className="flex items-baseline gap-2">
-      <span className="text-2xl font-bold text-emerald-300 tabular-nums">{value}</span>
-      <Icon size={12} className="text-emerald-500/40" />
+      <span className="font-heading text-3xl font-medium text-foreground tabular-nums">{value}</span>
+      <Icon size={16} className="text-muted-foreground" />
     </div>
-    {subValue && <p className="text-[9px] text-emerald-500/30 mt-0.5">{subValue}</p>}
+    {subValue && <p className="text-xs text-muted-foreground mt-0.5">{subValue}</p>}
   </m.div>
 );

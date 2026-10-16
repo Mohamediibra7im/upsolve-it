@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -34,20 +35,21 @@ export function FriendStatsDialog({
   onOpenChange,
   userStats,
 }: Readonly<FriendStatsDialogProps>) {
+  const openerRef = useRef<HTMLElement | null>(null);
   const handle = userStats?.user.codeforcesHandle ?? "";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="z-[150] flex max-h-[90vh] w-[95vw] max-w-xl flex-col overflow-hidden rounded-2xl border-border/60 bg-background p-0 shadow-xl sm:max-w-lg gap-0">
+      <DialogContent onOpenAutoFocus={() => { openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null; }} onCloseAutoFocus={(event) => { event.preventDefault(); openerRef.current?.focus(); }} className="z-[150] flex max-h-[90vh] w-[95vw] max-w-xl flex-col overflow-hidden rounded-2xl border-border/60 bg-background p-0 shadow-xl sm:max-w-lg gap-0">
         {userStats ? (
           <>
             <div className="shrink-0 border-b border-border/60 bg-muted/30 px-6 py-6 sm:px-8">
               <DialogHeader className="space-y-2 text-left">
                 <DialogTitle className="text-lg font-semibold tracking-tight text-foreground">
-                  Friend training stats
+                  Friend progress
                 </DialogTitle>
                 <div className="space-y-1">
-                  <p className="text-xl font-bold text-foreground">{handle}</p>
+                  <p className="break-all font-heading text-2xl font-medium tracking-tight text-foreground">{handle}</p>
                   <p className="text-sm font-normal text-muted-foreground">
                     {userStats.user.rank}
                     {" · "}
@@ -94,7 +96,7 @@ export function FriendStatsDialog({
                 ].map((item) => (
                   <div
                     key={item.label}
-                    className="rounded-xl border border-border/50 bg-card/50 px-4 py-3"
+                    className="rounded-2xl border border-border/50 bg-card/50 px-4 py-3"
                   >
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <item.icon className="size-4 shrink-0 opacity-70" />
@@ -105,8 +107,8 @@ export function FriendStatsDialog({
                         "mt-1 text-lg font-semibold tabular-nums text-foreground",
                         item.label === "Recent trend" &&
                           (userStats.stats.recentTrend >= 0
-                            ? "text-emerald-600 dark:text-emerald-400"
-                            : "text-red-600 dark:text-red-400"),
+                            ? "text-primary"
+                            : "text-red-300"),
                       )}
                     >
                       {item.value}
@@ -115,12 +117,12 @@ export function FriendStatsDialog({
                 ))}
               </div>
 
-              <div className="rounded-xl border border-border/50 bg-card/30 p-4">
+              <div className="rounded-2xl border border-border/50 bg-card/30 p-4">
                 <div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
                   <Star className="size-4 text-amber-500" />
                   Problems & upsolves
                 </div>
-                <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                <dl className="grid grid-cols-1 gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
                   <div className="flex justify-between gap-2">
                     <dt className="text-muted-foreground">Solved</dt>
                     <dd className="font-medium tabular-nums">
@@ -156,7 +158,7 @@ export function FriendStatsDialog({
                     Recent sessions
                   </p>
                   <section
-                    className="relative max-h-[min(50vh,280px)] overflow-y-auto overscroll-y-contain rounded-lg border border-border/40 bg-muted/10 py-2 pl-2 pr-1 custom-scrollbar touch-pan-y"
+                    className="relative max-h-[min(50vh,280px)] overflow-y-auto overscroll-y-contain rounded-2xl border border-border/40 bg-muted/10 py-2 pl-2 pr-1 custom-scrollbar touch-pan-y"
                     tabIndex={0}
                     aria-label="Recent practice sessions, scrollable list"
                   >
@@ -164,7 +166,7 @@ export function FriendStatsDialog({
                       {userStats.trainings.map((t) => (
                         <li
                           key={t.id}
-                          className="flex items-center justify-between gap-3 rounded-lg border border-border/40 bg-muted/20 px-3 py-2 text-sm"
+                          className="flex items-center justify-between gap-3 rounded-2xl border border-border/40 bg-muted/20 px-3 py-2 text-sm"
                         >
                           <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-muted-foreground">
                             <Calendar className="size-3.5 shrink-0" />
@@ -202,12 +204,12 @@ export function FriendStatsDialog({
           </>
         ) : (
           <>
-            <DialogTitle className="sr-only">Friend training stats</DialogTitle>
+            <DialogTitle className="sr-only">Friend progress</DialogTitle>
             <DialogDescription className="sr-only">
               Loading statistics
             </DialogDescription>
             <div className="flex flex-col items-center justify-center gap-4 px-8 py-16">
-              <Loader2 className="size-10 animate-spin text-primary" />
+              <Loader2 className="size-8 animate-spin motion-reduce:animate-none text-primary" />
               <p className="text-sm text-muted-foreground">Loading stats…</p>
             </div>
           </>

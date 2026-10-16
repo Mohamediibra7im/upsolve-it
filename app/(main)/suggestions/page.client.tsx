@@ -1,10 +1,13 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+
+import MemberPageState from "@/components/features/profile/MemberPageState";
+
 import Link from "next/link";
 import { m as motion } from "framer-motion";
 import { ChevronLeft, ExternalLink, Globe, BookOpen, Trophy, GraduationCap } from "lucide-react";
 import { useSuggestions, type Suggestion } from "@/hooks/admin/useSuggestions";
-import Loader from "@/components/shared/Loader";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 10 },
@@ -33,65 +36,60 @@ function groupByCategory(suggestions: Suggestion[]) {
 }
 
 export default function SuggestionsPage() {
-  const { suggestions, isLoading } = useSuggestions();
+  const { suggestions, isLoading, isError, mutate } = useSuggestions();
 
-  if (isLoading) return <Loader message="Loading suggestions..." />;
+  if (isLoading) return <MemberPageState kind="loading" title="Gathering good resources" description="Loading places to learn and practice." />;
 
   const grouped = groupByCategory(suggestions);
 
   return (
-    <section className="min-h-screen relative overflow-hidden bg-[#040604] font-mono text-emerald-400 select-none py-8">
-      {/* Background terminal grid lines */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,.015)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,.015)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,black_45%,transparent_100%)]" />
+    <section className="min-h-screen relative overflow-hidden font-sans text-foreground py-8">
 
-      {/* Terminal Scanline overlay */}
-      <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.03] pointer-events-none z-50" />
-
-      <div className="container mx-auto px-4 max-w-3xl relative z-10">
+      <div className="mx-auto w-full max-w-5xl relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: -8 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
           className="space-y-4"
         >
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-500/60 hover:text-emerald-300 transition-colors mb-4"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors mb-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <ChevronLeft className="size-3.5" />
-            [ HOME ]
+            Home
           </Link>
 
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-950/20 border border-emerald-500/15 rounded-sm">
-                <Globe className="size-3.5 text-emerald-400" />
-                <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-300">Resources</span>
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-card border border-border rounded-lg">
+                <Globe className="size-3.5 text-primary" />
+                <span className="text-xs font-medium text-foreground">Resources</span>
               </div>
             </div>
-            <h1 className="text-xl font-bold uppercase tracking-wider text-white">
-              Suggested Websites
+            <h1 className="text-white font-heading text-3xl sm:text-4xl font-medium tracking-tight leading-tight text-foreground">
+              Worth exploring.
             </h1>
-            <p className="text-[10px] text-emerald-500/60 uppercase">
-              Hand-picked resources to boost your competitive programming journey
+            <p className="text-sm text-muted-foreground">
+              A thoughtful collection of places to learn, practice, and find your next idea.
             </p>
           </div>
         </motion.div>
 
         <div className="mt-8">
-          {grouped.length === 0 ? (
+          {isError ? <MemberPageState kind="error" title="Resources are unavailable" description="We couldn’t load our recommendations. Try again in a moment."><Button variant="outline" onClick={() => mutate()}>Try again</Button></MemberPageState> : grouped.length === 0 ? (
             <motion.div
-              initial="hidden"
+              initial={false}
               animate="show"
               variants={fadeUp}
-              className="rounded-sm border border-emerald-500/15 bg-[#060a08]/30 p-12 text-center"
+              className="rounded-lg border border-border bg-card p-12 text-center"
             >
-              <Globe className="size-10 text-emerald-500/20 mx-auto mb-3" />
-              <p className="text-[10px] uppercase text-emerald-500/50">No suggestions available yet</p>
+              <Globe className="size-10 text-muted-foreground mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">New recommendations are on the way.</p>
             </motion.div>
           ) : (
             <motion.div
-              initial="hidden"
+              initial={false}
               animate="show"
               variants={stagger}
               className="space-y-8"
@@ -100,9 +98,9 @@ export default function SuggestionsPage() {
                 const CategoryIcon = categoryIcons[category] || Globe;
                 return (
                   <motion.div key={category} variants={fadeUp} className="space-y-3">
-                    <div className="flex items-center gap-2 border-b border-emerald-500/10 pb-1.5">
-                      <CategoryIcon className="size-4 text-emerald-400" />
-                      <h2 className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest">
+                    <div className="flex items-center gap-2 border-b border-border pb-1.5">
+                      <CategoryIcon className="size-4 text-primary" />
+                      <h2 className="font-medium text-foreground font-heading text-xl tracking-tight">
                         {category}
                       </h2>
                     </div>
@@ -113,18 +111,18 @@ export default function SuggestionsPage() {
                             href={s.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="block group"
+                            className="block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                           >
-                            <div className="rounded-sm border border-emerald-500/15 bg-[#060a08]/30 hover:bg-[#060a08]/50 hover:border-emerald-500/25 transition-all duration-300 p-4">
+                            <div className="h-full rounded-2xl border border-border bg-card hover:bg-muted/40 transition-colors p-5">
                               <div className="flex items-start gap-3">
                                 <div className="min-w-0 flex-1 space-y-1">
                                   <div className="flex items-center justify-between gap-2">
-                                    <h3 className="text-xs font-bold text-emerald-300 group-hover:text-emerald-400 transition-colors truncate uppercase">
+                                    <h3 className="font-medium text-foreground group-hover:text-primary transition-colors truncate font-heading text-lg tracking-tight">
                                       {s.title}
                                     </h3>
-                                    <ExternalLink className="size-3 text-emerald-500/30 group-hover:text-emerald-400 transition-colors shrink-0" />
+                                    <ExternalLink className="size-3 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
                                   </div>
-                                  <p className="text-[9px] text-emerald-500/60 leading-relaxed uppercase line-clamp-2">
+                                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
                                     {s.description}
                                   </p>
                                 </div>
