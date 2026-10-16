@@ -5,7 +5,7 @@ import { Trainer, TagSelector, LevelSelector, ModeSelector } from "@/components/
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@/hooks/auth";
 import Loader from "@/components/shared/Loader";
-import { Flame, Terminal, Cpu, Settings, Tag } from "lucide-react";
+import { ArrowUpRight, CircleDot } from "lucide-react";
 import UpsolveReminder from "@/components/shared/UpsolveReminder";
 import type { TrainingMode } from "@/types/TrainingMode";
 import {
@@ -200,145 +200,19 @@ export default function TrainingPage() {
               : "Ladder Training";
 
     return (
-      <section className="min-h-screen pb-20 pt-0 font-mono text-emerald-400">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-[1400px]">
-          {/* Unified Terminal Cockpit Frame */}
-          <div className="relative overflow-hidden rounded-[2rem] border border-emerald-500/25 bg-[#040706] shadow-[0_0_30px_rgba(16,185,129,0.05)]">
-            {/* Scanline CRT overlay */}
-            <div className="absolute inset-0 pointer-events-none z-20 bg-terminal-scanlines opacity-[0.12]" />
-            
-            {/* Cockpit Shell Top Status Header */}
-            <div className="flex flex-wrap items-center justify-between px-6 py-3 border-b border-emerald-500/15 bg-[#0b120f] select-none text-[9px] text-emerald-500/40">
-              <div className="flex items-center gap-2">
-                <Terminal size={12} className="text-emerald-400 animate-pulse" />
-                <span>TERMINAL WORKSTATION // PORT_3000</span>
-              </div>
-              <div className="flex items-center gap-6">
-                <span>MODE: {modeLabel.toUpperCase()}</span>
-                <span>CF HANDLE: {user.codeforcesHandle}</span>
-                <span className="inline-flex items-center gap-1">
-                  <Cpu size={10} className="animate-spin duration-3000 text-emerald-400" /> STATUS_LIVE
-                </span>
-              </div>
+      <section className="min-h-screen pb-20 font-sans text-[#f1f3ee]">
+        <div className="container mx-auto max-w-[1400px] space-y-7 px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="mb-3 text-sm text-[#929b98]">Your training space</p>
+              <h1 className="font-heading text-3xl font-medium tracking-tight sm:text-4xl">{modeLabel}</h1>
             </div>
-
-            {/* Active Viewport Screen Content */}
-            <div className="p-6 relative z-10 min-h-[420px] bg-[#040706]/95">
-              <Trainer
-                status={isRefreshing ? "refreshing" : isTraining ? "training" : "idle"}
-                training={training}
-                problems={problems}
-                onGenerateProblems={handleGenerateProblems}
-                onStartSession={handleStartSession}
-                stopTraining={stopTraining}
-                refreshProblemStatus={refreshProblemStatus}
-                finishTraining={finishTraining}
-                submissionStatuses={submissionStatuses}
-                display={{
-                  showRatings: effectiveShowRatings,
-                  hideContestDetails: hideContestDetails,
-                }}
-                onProblemOpen={notifyProblemOpened}
-                isPoolLoading={isLoading}
-                onExtendEndTime={extendEndTime}
-              />
+            <div className="flex items-center gap-2 rounded-full border border-[#b5e3c4]/20 bg-[#b5e3c4]/5 px-4 py-2 text-xs text-[#b5e3c4]">
+              <span className="size-1.5 rounded-full bg-[#b5e3c4]" />
+              Session in progress
             </div>
           </div>
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section className="min-h-screen pb-20 pt-0 font-mono text-emerald-400">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-[1400px] space-y-6">
-        <UpsolveReminder />
-
-        {/* Command sequence block */}
-        <div className="bg-[#050907] border border-emerald-500/15 rounded-lg p-4 font-mono text-xs text-emerald-500 select-none">
-          <div className="flex items-center gap-1 text-[10px]">
-            <span className="text-emerald-400 font-bold">guest@upsolve.it:~$</span>
-            <span>./initiate_training_run.sh --handle={user.codeforcesHandle}</span>
-          </div>
-          <p className="text-[10px] text-emerald-500/60 mt-1.5 uppercase">
-            &gt;&gt; Initializing Contest Compiler v3.1... Select module parameters below to build the session binary.
-          </p>
-        </div>
-
-        {/* Section 1: Mode Config */}
-        <div className="relative overflow-hidden rounded-2xl border border-emerald-500/20 bg-[#040706] shadow-[0_0_20px_rgba(16,185,129,0.02)]">
-          {/* Scanline CRT overlay */}
-          <div className="absolute inset-0 pointer-events-none z-20 bg-terminal-scanlines opacity-[0.08]" />
-          {/* Header bar */}
-          <div className="flex flex-wrap items-center justify-between px-6 py-2.5 border-b border-emerald-500/15 bg-[#0b120f] select-none text-[9px] text-emerald-500/40">
-            <div className="flex items-center gap-2">
-              <Settings size={11} className="text-emerald-400" />
-              <span>STEP 01 // CHOOSE CONTEST MODE PROTOCOL</span>
-            </div>
-            <span className="text-[8px] font-bold text-emerald-500/50 uppercase">[ MODE_SECTOR ]</span>
-          </div>
-          <div className="p-6 relative z-10 bg-[#040706]/95">
-            <ModeSelector value={selectedMode} onChange={setSelectedMode} />
-          </div>
-        </div>
-
-        {/* Section 2: Level Adjuster */}
-        <div className="relative overflow-hidden rounded-2xl border border-emerald-500/20 bg-[#040706] shadow-[0_0_20px_rgba(16,185,129,0.02)]">
-          {/* Scanline CRT overlay */}
-          <div className="absolute inset-0 pointer-events-none z-20 bg-terminal-scanlines opacity-[0.08]" />
-          {/* Header bar */}
-          <div className="flex flex-wrap items-center justify-between px-6 py-2.5 border-b border-emerald-500/15 bg-[#0b120f] select-none text-[9px] text-emerald-500/40">
-            <div className="flex items-center gap-2">
-              <Flame size={11} className="text-emerald-400" />
-              <span>STEP 02 // ADJUST ROADMAP LEVEL CALIBRATION</span>
-            </div>
-            <span className="text-[8px] font-bold text-emerald-500/50 uppercase">[ LEVEL_SECTOR ]</span>
-          </div>
-          <div className="p-6 relative z-10 bg-[#040706]/95">
-            <LevelSelector
-              onLevelChange={handleLevelChange}
-              currentRatings={customRatings}
-              showRatings={showRatings}
-              setShowRatings={setShowRatings}
-            />
-          </div>
-        </div>
-
-        {/* Section 3: Tag Filtering */}
-        <div className="relative overflow-hidden rounded-2xl border border-emerald-500/20 bg-[#040706] shadow-[0_0_20px_rgba(16,185,129,0.02)]">
-          {/* Scanline CRT overlay */}
-          <div className="absolute inset-0 pointer-events-none z-20 bg-terminal-scanlines opacity-[0.08]" />
-          {/* Header bar */}
-          <div className="flex flex-wrap items-center justify-between px-6 py-2.5 border-b border-emerald-500/15 bg-[#0b120f] select-none text-[9px] text-emerald-500/40">
-            <div className="flex items-center gap-2">
-              <Tag size={11} className="text-emerald-400" />
-              <span>STEP 03 // TARGET FILTER TOPIC TAGS (OPTIONAL)</span>
-            </div>
-            <span className="text-[8px] font-bold text-emerald-500/50 uppercase">[ TAGS_SECTOR ]</span>
-          </div>
-          <div className="p-6 relative z-10 bg-[#040706]/95">
-            <TagSelector
-              allTags={allTags}
-              selectedTags={selectedTags}
-              onTagClick={onTagClick}
-              onClearTags={onClearTags}
-            />
-          </div>
-        </div>
-
-        {/* Section 4: Trainer Compiler */}
-        <div className="relative overflow-hidden rounded-2xl border border-emerald-500/20 bg-[#040706] shadow-[0_0_20px_rgba(16,185,129,0.02)]">
-          {/* Scanline CRT overlay */}
-          <div className="absolute inset-0 pointer-events-none z-20 bg-terminal-scanlines opacity-[0.08]" />
-          {/* Header bar */}
-          <div className="flex flex-wrap items-center justify-between px-6 py-2.5 border-b border-emerald-500/15 bg-[#0b120f] select-none text-[9px] text-emerald-500/40">
-            <div className="flex items-center gap-2">
-              <Terminal size={11} className="text-emerald-400" />
-              <span>STEP 04 // RUN COMPILER AND COMPILE SESSION BINARY</span>
-            </div>
-            <span className="text-[8px] font-bold text-emerald-500/50 uppercase">[ LAUNCH_SECTOR ]</span>
-          </div>
-          <div className="p-6 relative z-10 bg-[#040706]/95">
+          <div className="overflow-hidden rounded-[1.5rem] border border-[#2b3031] bg-[#191c1e] p-4 sm:p-6">
             <Trainer
               status={isRefreshing ? "refreshing" : isTraining ? "training" : "idle"}
               training={training}
@@ -359,6 +233,99 @@ export default function TrainingPage() {
             />
           </div>
         </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="min-h-screen pb-20 font-sans text-[#f1f3ee]">
+      <div className="container mx-auto max-w-[1400px] space-y-6 px-4 sm:px-6 lg:px-8">
+        <UpsolveReminder />
+
+        <header className="flex flex-wrap items-end justify-between gap-6 pb-4 pt-2 sm:pb-6">
+          <div>
+            <div className="mb-4 flex items-center gap-2 text-sm text-[#929b98]">
+              <CircleDot className="size-4 text-[#b5e3c4]" aria-hidden="true" />
+              The training room
+            </div>
+            <h1 className="max-w-3xl font-heading text-4xl font-medium leading-[1.1] tracking-[-0.04em] sm:text-5xl">Make room for progress.</h1>
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-[#929b98] sm:text-base">Choose your focus. Find your challenge. Turn a little practice into lasting progress.</p>
+          </div>
+          <div className="flex items-center gap-3 rounded-2xl border border-[#2b3031] bg-[#191c1e] px-4 py-3">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-[#b5e3c4]/10 text-[#b5e3c4]">
+              <ArrowUpRight className="size-4" aria-hidden="true" />
+            </div>
+            <div>
+              <p className="text-xs text-[#929b98]">Training as</p>
+              <p className="mt-0.5 text-sm font-medium">{user.codeforcesHandle}</p>
+            </div>
+          </div>
+        </header>
+
+        <section aria-labelledby="training-mode-heading" className="rounded-[1.5rem] border border-[#2b3031] bg-[#191c1e] p-5 sm:p-7">
+          <div className="mb-6 flex items-center gap-3">
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#39403c] text-xs text-[#929b98]">1</span>
+            <h2 id="training-mode-heading" className="font-heading text-xl font-medium tracking-tight">Choose your session</h2>
+          </div>
+          <ModeSelector value={selectedMode} onChange={setSelectedMode} />
+        </section>
+
+        <div className="grid gap-6 xl:grid-cols-2">
+          <section aria-labelledby="training-level-heading" className="min-w-0 rounded-[1.5rem] border border-[#2b3031] bg-[#191c1e] p-5 sm:p-7">
+            <div className="mb-5 flex items-center gap-3">
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#39403c] text-xs text-[#929b98]">2</span>
+              <h2 id="training-level-heading" className="font-heading text-xl font-medium tracking-tight">Find your challenge</h2>
+            </div>
+            <LevelSelector
+              onLevelChange={handleLevelChange}
+              currentRatings={customRatings}
+              showRatings={showRatings}
+              setShowRatings={setShowRatings}
+            />
+          </section>
+
+          <section aria-labelledby="training-topics-heading" className="min-w-0 rounded-[1.5rem] border border-[#2b3031] bg-[#191c1e] p-5 sm:p-7">
+            <div className="mb-5 flex flex-wrap items-center gap-3">
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#39403c] text-xs text-[#929b98]">3</span>
+              <h2 id="training-topics-heading" className="font-heading text-xl font-medium tracking-tight">Set your focus</h2>
+              <span className="ml-auto text-xs text-[#929b98]">Optional</span>
+            </div>
+            <TagSelector
+              allTags={allTags}
+              selectedTags={selectedTags}
+              onTagClick={onTagClick}
+              onClearTags={onClearTags}
+            />
+          </section>
+        </div>
+
+        <section aria-labelledby="training-preview-heading" className="overflow-hidden rounded-[1.5rem] border border-[#2b3031] bg-[#191c1e] p-5 sm:p-7">
+          <div className="mb-6 flex items-center gap-3">
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#39403c] text-xs text-[#929b98]">4</span>
+            <div>
+              <h2 id="training-preview-heading" className="font-heading text-xl font-medium tracking-tight">Your next session</h2>
+              <p className="mt-1 text-sm text-[#929b98]">Generate your problem set, then start when you’re ready.</p>
+            </div>
+          </div>
+          <Trainer
+            status={isRefreshing ? "refreshing" : isTraining ? "training" : "idle"}
+            training={training}
+            problems={problems}
+            onGenerateProblems={handleGenerateProblems}
+            onStartSession={handleStartSession}
+            stopTraining={stopTraining}
+            refreshProblemStatus={refreshProblemStatus}
+            finishTraining={finishTraining}
+            submissionStatuses={submissionStatuses}
+            display={{
+              showRatings: effectiveShowRatings,
+              hideContestDetails: hideContestDetails,
+            }}
+            onProblemOpen={notifyProblemOpened}
+            isPoolLoading={isLoading}
+            onExtendEndTime={extendEndTime}
+          />
+        </section>
       </div>
     </section>
   );

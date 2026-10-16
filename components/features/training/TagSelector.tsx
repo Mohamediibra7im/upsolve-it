@@ -1,7 +1,6 @@
 "use client";
 
 import { ProblemTag } from "@/types/Codeforces";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,34 +9,33 @@ import {
   Binary,
   GitBranch,
   Calculator,
-  Terminal,
+  TextCursorInput,
   Zap,
-  Filter
+  Check,
+  type LucideIcon,
 } from "lucide-react";
-import { m } from "framer-motion";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
-// Categorization Logic
-const getTagCategory = (tagName: string) => {
+const getTagCategory = (tagName: string): { label: string; icon: LucideIcon } => {
   const name = tagName.toLowerCase();
-  
-  if (name.includes('dp') || name.includes('greedy') || name.includes('implementation') || name.includes('constructive') || name.includes('sort') || name.includes('search'))
-    return { label: "Algorithms", icon: Zap, color: "text-amber-400", border: "border-amber-500/20" };
-    
-  if (name.includes('graph') || name.includes('tree') || name.includes('dsu') || name.includes('flows') || name.includes('shortest'))
-    return { label: "Graphs & Trees", icon: GitBranch, color: "text-emerald-400", border: "border-emerald-500/20" };
-    
-  if (name.includes('math') || name.includes('number') || name.includes('combinatorics') || name.includes('geometry') || name.includes('probabilities'))
-    return { label: "Math & Logic", icon: Calculator, color: "text-sky-400", border: "border-sky-500/20" };
-    
-  if (name.includes('string') || name.includes('hash') || name.includes('regex') || name.includes('expression'))
-    return { label: "Strings", icon: Terminal, color: "text-rose-400", border: "border-rose-500/20" };
-    
-  if (name.includes('bitmask') || name.includes('binary') || name.includes('divide'))
-    return { label: "Low Level", icon: Binary, color: "text-indigo-400", border: "border-indigo-500/20" };
-    
-  return { label: "General", icon: Hash, color: "text-slate-400", border: "border-slate-500/20" };
+
+  if (["dp", "greedy", "implementation", "constructive", "sort", "search"].some((term) => name.includes(term))) {
+    return { label: "Algorithms", icon: Zap };
+  }
+  if (["graph", "tree", "dsu", "flows", "shortest"].some((term) => name.includes(term))) {
+    return { label: "Graphs & trees", icon: GitBranch };
+  }
+  if (["math", "number", "combinatorics", "geometry", "probabilities"].some((term) => name.includes(term))) {
+    return { label: "Math & logic", icon: Calculator };
+  }
+  if (["string", "hash", "regex", "expression"].some((term) => name.includes(term))) {
+    return { label: "Strings", icon: TextCursorInput };
+  }
+  if (["bitmask", "binary", "divide"].some((term) => name.includes(term))) {
+    return { label: "Low level", icon: Binary };
+  }
+  return { label: "General", icon: Hash };
 };
 
 const TagSelector = ({
@@ -54,88 +52,85 @@ const TagSelector = ({
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredTags = useMemo(() => {
-    return allTags.filter(tag => 
-      tag.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    return allTags.filter((tag) => tag.name.toLowerCase().includes(searchQuery.toLowerCase()));
   }, [allTags, searchQuery]);
 
   const groupedTags = useMemo(() => {
-    const groups: Record<string, { label: string; icon: any; color: string; border: string; tags: ProblemTag[] }> = {};
-    
-    filteredTags.forEach(tag => {
+    const groups: Record<string, { label: string; icon: LucideIcon; tags: ProblemTag[] }> = {};
+
+    filteredTags.forEach((tag) => {
       const category = getTagCategory(tag.name);
-      if (!groups[category.label]) {
-        groups[category.label] = { ...category, tags: [] };
-      }
+      if (!groups[category.label]) groups[category.label] = { ...category, tags: [] };
       groups[category.label].tags.push(tag);
     });
-    
+
     return Object.values(groups).sort((a, b) => a.label.localeCompare(b.label));
   }, [filteredTags]);
 
   return (
-    <div className="space-y-6 font-mono text-emerald-400">
-      {/* Search & Stats Header */}
-      <div className="flex flex-col sm:flex-row gap-4 items-center w-full">
-        <div className="relative flex-1 w-full group">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-emerald-500/40 group-focus-within:text-emerald-400 transition-colors" />
-          <Input
-            placeholder="search_topics --query=(e.g. dp)..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-10 bg-transparent border border-emerald-500/20 text-emerald-400 placeholder:text-emerald-500/35 focus:border-emerald-500/50 focus:ring-0 rounded font-mono"
-          />
-        </div>
-        
+    <div className="space-y-5">
+      <div className="relative">
+        <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#929b98]" aria-hidden="true" />
+        <Input
+          aria-label="Search topics"
+          placeholder="Search topics, like graphs or dp"
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          className="h-11 rounded-xl border-[#2b3031] bg-[#15181a] pl-10 text-sm text-[#f1f3ee] placeholder:text-[#929b98] focus-visible:ring-[#b5e3c4] focus-visible:ring-offset-[#191c1e]"
+        />
+      </div>
+
+      <div className="flex min-h-6 items-center justify-between gap-3 text-xs">
+        <p className="text-[#929b98]" aria-live="polite">
+          {selectedTags.length ? `${selectedTags.length} ${selectedTags.length === 1 ? "topic" : "topics"} selected` : "All topics included"}
+        </p>
         {selectedTags.length > 0 && (
-          <Button
-            variant="outline"
-            size="sm"
+          <button
+            type="button"
             onClick={onClearTags}
-            className="h-10 px-4 rounded border border-red-500/35 bg-[#060a08] text-red-400 font-bold uppercase tracking-widest text-[9px] hover:bg-red-500/10 hover:text-red-300 hover:border-red-500/60 active:scale-[0.98] transition-all font-mono whitespace-nowrap"
+            className="rounded-md px-1 py-1 text-[#b5e3c4] transition-colors hover:text-[#d2eedb] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b5e3c4]"
           >
-            <Filter className="size-3.5 mr-2" />
-            [ RESET_FILTERS.SH ({selectedTags.length}) ]
-          </Button>
+            Clear selection
+          </button>
         )}
       </div>
 
-      {/* Grouped Tags Scroll Area */}
-      <ScrollArea className="h-[300px] pr-2">
-        <div className="space-y-6 pb-6">
+      <ScrollArea className="h-[290px] pr-3">
+        <div className="space-y-6 pb-3">
           {groupedTags.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center space-y-2 text-emerald-500/40">
-              <Search className="size-6 opacity-40 animate-pulse" />
-              <p className="text-xs">[ SEARCH_FAIL // NO TOPICS MATCHED ]</p>
+            <div className="flex flex-col items-center justify-center space-y-3 rounded-xl border border-dashed border-[#2b3031] px-5 py-12 text-center text-[#929b98]">
+              <Search className="size-5" aria-hidden="true" />
+              <p className="text-sm">No topics match “{searchQuery}”.</p>
+              <button type="button" onClick={() => setSearchQuery("")} className="rounded-md px-2 py-1 text-xs text-[#b5e3c4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b5e3c4]">
+                Clear search
+              </button>
             </div>
           ) : (
             groupedTags.map((group) => (
               <div key={group.label} className="space-y-3">
-                <div className="flex items-center gap-2 px-1 select-none">
-                  <group.icon className={cn("size-3.5", group.color)} />
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.15em] text-emerald-500/45">
-                    {group.label}
-                  </h4>
-                  <div className="h-px flex-1 bg-emerald-500/10 ml-2" />
+                <div className="flex items-center gap-2 text-[#929b98]">
+                  <group.icon className="size-3.5" aria-hidden="true" />
+                  <h4 className="text-xs font-medium">{group.label}</h4>
                 </div>
-                
                 <div className="flex flex-wrap gap-2">
                   {group.tags.map((tag) => {
-                    const isSelected = selectedTags.some(t => t.value === tag.value);
+                    const isSelected = selectedTags.some((selectedTag) => selectedTag.value === tag.value);
                     return (
-                      <m.button
+                      <button
                         key={tag.value}
+                        type="button"
+                        aria-pressed={isSelected}
                         onClick={() => onTagClick(tag)}
-                        whileTap={{ scale: 0.97 }}
                         className={cn(
-                          "relative px-3 py-1.5 rounded text-[10px] font-bold transition-all duration-200 border font-mono tracking-wider",
+                          "inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-3 py-2 text-xs transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b5e3c4] focus-visible:ring-offset-2 focus-visible:ring-offset-[#191c1e]",
                           isSelected
-                            ? "bg-emerald-950/40 text-emerald-300 border-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
-                            : "bg-transparent border-emerald-500/15 text-emerald-500/50 hover:border-emerald-500/35 hover:text-emerald-400"
+                            ? "border-[#b5e3c4]/50 bg-[#b5e3c4]/10 text-[#b5e3c4]"
+                            : "border-[#2b3031] bg-[#15181a] text-[#b8c0bb] hover:border-[#69746e] hover:text-[#f1f3ee]",
                         )}
                       >
-                        {isSelected ? `[x] ${tag.name}` : `[ ] ${tag.name}`}
-                      </m.button>
+                        {isSelected && <Check className="size-3" aria-hidden="true" />}
+                        {tag.name}
+                      </button>
                     );
                   })}
                 </div>

@@ -12,6 +12,8 @@ import {
   ArrowRight,
   TrendingUp,
   BookOpen,
+  ArrowLeft,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Loader from "@/components/shared/Loader";
@@ -74,6 +76,7 @@ export default function SessionReviewPage() {
 
   const [data, setData] = useState<ReviewPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     if (!id) return;
@@ -92,7 +95,7 @@ export default function SessionReviewPage() {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, retryCount]);
 
   const addOneUpsolve = async (p: ReviewProblem) => {
     const tp = {
@@ -109,15 +112,39 @@ export default function SessionReviewPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center font-mono text-emerald-400">
-        <div className="text-center space-y-4">
-          <p className="text-[11px] text-red-400">[SYS.ERR] {error}</p>
+      <div className="min-h-[60dvh] flex items-center justify-center px-4 py-10 font-sans text-[#f1f3ee]">
+        <div
+          role="alert"
+          className="w-full max-w-lg rounded-2xl border border-[#2b3031] bg-[#191c1e] p-6 text-center space-y-5 sm:p-10"
+        >
+          <h1 className="font-heading text-2xl font-medium">
+            This review couldn’t load.
+          </h1>
+          <p className="text-sm text-[#e5a39d]">{error}</p>
           <div className="flex flex-wrap justify-center gap-2">
-            <Button asChild variant="outline" className="h-9 rounded border border-emerald-500/25 bg-transparent text-emerald-400 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-500/10 font-mono">
-              <Link href="/training/reviews">[ ALL_REVIEWS.SH ]</Link>
+            <Button
+              onClick={() => {
+                setError(null);
+                setRetryCount((count) => count + 1);
+              }}
+              className="rounded-xl"
+            >
+              <RefreshCw className="size-4" />
+              Try again
             </Button>
-            <Button asChild variant="outline" className="h-9 rounded border border-emerald-500/25 bg-transparent text-emerald-400 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-500/10 font-mono">
-              <Link href="/training">[ TRAINING.SH ]</Link>
+            <Button
+              asChild
+              variant="outline"
+              className="h-9 rounded-xl border border-[#2b3031] bg-transparent text-[#b5e3c4] font-medium tracking-normal text-xs hover:bg-[#b5e3c4]/10 font-sans"
+            >
+              <Link href="/training/reviews">All sessions</Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="h-9 rounded-xl border border-[#2b3031] bg-transparent text-[#b5e3c4] font-medium tracking-normal text-xs hover:bg-[#b5e3c4]/10 font-sans"
+            >
+              <Link href="/training">Back to training</Link>
             </Button>
           </div>
         </div>
@@ -131,94 +158,113 @@ export default function SessionReviewPage() {
   const solvedFromRows = problems.filter((p) => p.solved).length;
   const totalProblems = summary.totalProblems ?? problems.length;
   const solvedDisplay = solvedFromRows;
-  const solveRate = totalProblems > 0 ? Math.round((solvedDisplay / totalProblems) * 100) : 0;
+  const solveRate =
+    totalProblems > 0 ? Math.round((solvedDisplay / totalProblems) * 100) : 0;
 
-  const modeExe =
+  const modeLabel =
     summary.trainingMode === "contest"
-      ? "CONTEST_SIM.BAT"
+      ? "Contest simulation"
       : summary.trainingMode === "speed"
-        ? "SPEED_BURST.COM"
+        ? "Speed round"
         : summary.trainingMode === "endurance"
-          ? "ENDURANCE_TEST.BAT"
+          ? "Endurance"
           : summary.trainingMode === "weakness"
-            ? "WEAKNESS_CORRECT.SYS"
-            : "LADDER_TRAINING.EXE";
-
-  // Progress bar
-  const totalBlocks = 20;
-  const filledBlocks = Math.min(totalBlocks, Math.round((solveRate / 100) * totalBlocks));
-  const progressBar = "█".repeat(filledBlocks) + "░".repeat(totalBlocks - filledBlocks);
+            ? "Weakness training"
+            : "Ladder training";
 
   return (
-    <section className="min-h-screen relative overflow-hidden font-mono text-emerald-400">
-      <div className="absolute inset-0 -z-10 bg-[#040604]">
-        <div className="absolute inset-0 bg-terminal-scanlines opacity-[0.04]" />
-      </div>
-
+    <section className="min-h-screen relative overflow-hidden font-sans text-[#f1f3ee]">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div className="max-w-4xl mx-auto space-y-8">
-          {/* Back + Header */}
-          <m.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
+        <div className="max-w-5xl mx-auto space-y-8">
+          <Link
+            href="/training/reviews"
+            className="inline-flex items-center gap-2 text-sm text-[#929b98] hover:text-[#b5e3c4]"
           >
-
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            All sessions
+          </Link>
+          {/* Back + Header */}
+          <m.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40">
-                <TrendingUp size={12} className="text-emerald-400" />
-                <span>SESSION_REVIEW // PERFORMANCE_AUDIT</span>
-                <span className="flex-1 border-b border-emerald-500/10" />
-                <span className="text-emerald-500/25">{modeExe}</span>
+              <div className="flex items-center gap-2 text-xs font-medium tracking-normal text-[#929b98]">
+                <TrendingUp size={12} className="text-[#b5e3c4]" />
+                <span>Session review</span>
+                <span className="flex-1 border-b border-[#2b3031]" />
+                <span className="text-[#929b98]">{modeLabel}</span>
               </div>
 
-              <h1 className="text-xl sm:text-2xl font-bold text-emerald-300 uppercase tracking-wider">
-                Performance Audit
+              <h1 className="font-heading text-3xl sm:text-5xl font-medium leading-[1.12] tracking-[-0.04em] text-[#f1f3ee]">
+                A closer look at your progress.
               </h1>
             </div>
           </m.div>
 
-          {/* Summary Telemetry */}
+          {/* Session summary */}
           <m.div
             initial="hidden"
             animate="show"
             variants={fadeUp}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4"
+            className="grid grid-cols-2 md:grid-cols-4 gap-3"
           >
-            <div className="py-3 px-4 border-b border-emerald-500/10">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/40">SOLVED.COUNT</span>
+            <div className="p-4 sm:p-5 rounded-2xl border border-[#2b3031] bg-[#191c1e]">
+              <span className="text-xs font-medium tracking-normal text-[#929b98]">
+                Problems solved
+              </span>
               <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-2xl font-bold text-emerald-300 tabular-nums">{solvedDisplay}/{totalProblems}</span>
-                <Target size={12} className="text-emerald-500/40" />
+                <span className="text-2xl font-medium text-[#b5e3c4] tabular-nums">
+                  {solvedDisplay}/{totalProblems}
+                </span>
+                <Target size={12} className="text-[#929b98]" />
               </div>
             </div>
-            <div className="py-3 px-4 border-b border-emerald-500/10">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/40">PERFORMANCE.SCORE</span>
+            <div className="p-4 sm:p-5 rounded-2xl border border-[#2b3031] bg-[#191c1e]">
+              <span className="text-xs font-medium tracking-normal text-[#929b98]">
+                Performance
+              </span>
               <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-2xl font-bold text-emerald-300 tabular-nums">{summary.performanceScore}</span>
-                <TrendingUp size={12} className="text-emerald-500/40" />
+                <span className="text-2xl font-medium text-[#b5e3c4] tabular-nums">
+                  {summary.performanceScore}
+                </span>
+                <TrendingUp size={12} className="text-[#929b98]" />
               </div>
             </div>
-            <div className="py-3 px-4 border-b border-emerald-500/10">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/40">TOTAL.TIME</span>
+            <div className="p-4 sm:p-5 rounded-2xl border border-[#2b3031] bg-[#191c1e]">
+              <span className="text-xs font-medium tracking-normal text-[#929b98]">
+                Time spent
+              </span>
               <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-2xl font-bold text-emerald-300 tabular-nums">{Math.round(summary.totalTimeSpent / 60)}m</span>
-                <Clock size={12} className="text-emerald-500/40" />
+                <span className="text-2xl font-medium text-[#b5e3c4] tabular-nums">
+                  {Math.round(summary.totalTimeSpent / 60)}m
+                </span>
+                <Clock size={12} className="text-[#929b98]" />
               </div>
             </div>
-            <div className="py-3 px-4 border-b border-emerald-500/10">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500/40">SOLVE.RATE</span>
+            <div className="p-4 sm:p-5 rounded-2xl border border-[#2b3031] bg-[#191c1e]">
+              <span className="text-xs font-medium tracking-normal text-[#929b98]">
+                Solve rate
+              </span>
               <div className="flex items-center gap-3 mt-1">
-                <span className="text-xl font-bold text-emerald-300 tabular-nums">{solveRate}%</span>
-                <span className="text-[9px] text-emerald-500/25 hidden sm:inline">[{progressBar}]</span>
+                <span className="text-xl font-medium text-[#b5e3c4] tabular-nums">
+                  {solveRate}%
+                </span>
+                <span
+                  className="h-1.5 min-w-8 flex-1 overflow-hidden rounded-full bg-[#2b3031]"
+                  aria-hidden="true"
+                >
+                  <span
+                    className="block h-full rounded-full bg-[#b5e3c4]"
+                    style={{ width: `${solveRate}%` }}
+                  />
+                </span>
               </div>
             </div>
           </m.div>
 
           {/* Problem Breakdown Header */}
-          <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40 pt-4">
-            <Target size={12} className="text-emerald-400" />
-            <span>PROBLEM_BREAKDOWN // DIAGNOSTIC_OUTPUT</span>
-            <span className="flex-1 border-b border-emerald-500/10" />
+          <div className="flex items-center gap-2 text-xs font-medium tracking-normal text-[#929b98] pt-4">
+            <Target size={12} className="text-[#b5e3c4]" />
+            <span>Problem breakdown</span>
+            <span className="flex-1 border-b border-[#2b3031]" />
           </div>
 
           {/* Problem List */}
@@ -226,99 +272,146 @@ export default function SessionReviewPage() {
             initial="hidden"
             animate="show"
             variants={stagger}
-            className="divide-y divide-emerald-500/[0.07]"
+            className="space-y-3"
           >
+            {problems.length === 0 && (
+              <div className="rounded-2xl border border-[#2b3031] bg-[#191c1e] p-8 text-center">
+                <h2 className="font-heading text-xl font-medium">
+                  No problem details are available.
+                </h2>
+                <p className="mt-3 text-sm leading-relaxed text-[#929b98]">
+                  You can still explore another session or return to training
+                  below.
+                </p>
+              </div>
+            )}
             {problems.map((p) => (
               <m.div
                 key={p.problemId}
                 variants={fadeUp}
-                className="py-4 px-2 hover:bg-emerald-950/5 transition-all duration-200"
+                className="rounded-2xl border border-[#2b3031] bg-[#191c1e] p-5 sm:p-6"
               >
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_180px] lg:gap-8">
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span className={cn(
-                        "text-xs font-bold",
-                        p.solved ? "text-emerald-300" : "text-emerald-500/60"
-                      )}>
-                        [{p.index}]
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      <span
+                        className={cn(
+                          "text-xs font-medium",
+                          p.solved ? "text-[#b5e3c4]" : "text-[#929b98]",
+                        )}
+                      >
+                        {p.index}
                       </span>
-                      <span className="text-xs font-bold text-emerald-300 truncate">{p.name}</span>
-                      <span className="text-[9px] text-emerald-500/30 tabular-nums">#{p.contestId}</span>
-                      <span className="text-[9px] text-emerald-500/25 tabular-nums">R:{p.rating}</span>
+                      <span className="w-full font-heading text-xl font-medium leading-snug text-[#f1f3ee]">
+                        {p.name}
+                      </span>
+                      <span className="text-xs text-[#929b98] tabular-nums">
+                        #{p.contestId}
+                      </span>
+                      <span className="text-xs text-[#929b98] tabular-nums">
+                        Rating {p.rating}
+                      </span>
                     </div>
 
                     {/* Tags */}
                     <div className="flex flex-wrap gap-1.5 mb-2">
                       {p.tags.slice(0, 4).map((t) => (
-                        <span key={t} className="text-[8px] font-bold text-emerald-500/25 uppercase tracking-wider">
-                          [{t}]
+                        <span
+                          key={t}
+                          className="rounded-md border border-[#2b3031] px-2 py-1 text-xs text-[#929b98]"
+                        >
+                          {t}
                         </span>
                       ))}
                     </div>
 
-                    {/* Stats row */}
-                    <div className="flex flex-wrap items-center gap-3 text-[10px]">
-                      <span className={p.solved ? "text-emerald-400" : "text-red-400"}>
-                        {p.solved ? "[ACCEPTED]" : "[UNSOLVED]"}
-                      </span>
-                      <span className="text-emerald-500/20">|</span>
-                      <span className="text-emerald-500/40">{p.attempts} attempt{p.attempts !== 1 ? "s" : ""}</span>
-                      <span className="text-emerald-500/20">|</span>
-                      <span className="text-emerald-500/40">
-                        {Math.round(p.timeSpentSeconds / 60)}m / {Math.round(p.expectedTimeSeconds / 60)}m expected
-                      </span>
-                      {p.speedStatus && (
-                        <>
-                          <span className="text-emerald-500/20">|</span>
-                          <span className={cn(
-                            "font-bold uppercase",
-                            p.speedStatus === "fast" ? "text-emerald-400" :
-                            p.speedStatus === "slow" ? "text-amber-400" :
-                            "text-emerald-500/40"
-                          )}>
-                            [{p.speedStatus}]
-                          </span>
-                        </>
-                      )}
-                    </div>
+                    <dl className="my-5 grid grid-cols-2 gap-4 border-y border-[#2b3031] py-4 sm:grid-cols-3">
+                      <div>
+                        <dt className="mb-1 text-xs text-[#929b98]">Result</dt>
+                        <dd
+                          className={cn(
+                            "text-sm font-medium",
+                            p.solved ? "text-[#b5e3c4]" : "text-[#d5b98a]",
+                          )}
+                        >
+                          {p.solved ? "Accepted" : "Unsolved"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="mb-1 text-xs text-[#929b98]">
+                          Attempts
+                        </dt>
+                        <dd className="text-sm tabular-nums text-[#f1f3ee]">
+                          {p.attempts}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="mb-1 text-xs text-[#929b98]">
+                          Time / expected
+                        </dt>
+                        <dd className="text-sm tabular-nums text-[#f1f3ee]">
+                          {Math.round(p.timeSpentSeconds / 60)}m /{" "}
+                          {Math.round(p.expectedTimeSeconds / 60)}m
+                        </dd>
+                      </div>
+                    </dl>
+                    {p.speedStatus && (
+                      <p
+                        className={cn(
+                          "mb-3 text-xs font-medium",
+                          p.speedStatus === "fast"
+                            ? "text-[#b5e3c4]"
+                            : p.speedStatus === "slow"
+                              ? "text-[#d5b98a]"
+                              : "text-[#929b98]",
+                        )}
+                      >
+                        {p.speedStatus === "fast"
+                          ? "Ahead of the expected pace"
+                          : p.speedStatus === "slow"
+                            ? "An opportunity to build speed"
+                            : p.speedStatus === "unsolved"
+                              ? "A good problem to revisit"
+                              : p.speedStatus}
+                      </p>
+                    )}
 
                     {/* Insight + Recommendation */}
                     {p.insightMessage && (
-                      <p className="text-[11px] text-emerald-500/50 mt-2 leading-relaxed">
-                        → {p.insightMessage}
+                      <p className="text-sm text-[#929b98] mt-2 leading-relaxed">
+                        {p.insightMessage}
                       </p>
                     )}
                     {p.recommendation && (
-                      <p className="text-[10px] text-emerald-500/30 mt-1">
-                        {"// "}{p.recommendation}
+                      <p className="text-sm text-[#929b98] mt-1">
+                        {p.recommendation}
                       </p>
                     )}
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex flex-wrap gap-2 lg:flex-col lg:items-stretch">
                     <a
                       href={`https://codeforces.com/contest/${p.contestId}/problem/${p.index}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="h-8 px-3 rounded border border-emerald-500/20 bg-transparent text-emerald-500/50 font-bold uppercase tracking-widest text-[8px] hover:bg-emerald-500/10 hover:text-emerald-300 transition-all inline-flex items-center gap-1.5"
+                      className="h-10 px-3 rounded-xl border border-[#2b3031] bg-transparent text-[#929b98] font-medium tracking-normal text-xs hover:bg-[#b5e3c4]/10 hover:text-[#b5e3c4] transition-all inline-flex items-center gap-1.5"
                     >
-                      [ OPEN_CF ]
+                      Open problem
                       <ArrowRight size={9} />
                     </a>
                     {!p.solved &&
                       (isInUpsolveQueue(p) ? (
-                        <span className="h-8 px-3 rounded border border-emerald-500/20 text-emerald-400 text-[8px] font-bold uppercase tracking-widest inline-flex items-center gap-1.5">
+                        <span className="h-10 px-3 rounded-xl border border-[#2b3031] text-[#b5e3c4] text-xs font-medium tracking-normal inline-flex items-center gap-1.5">
                           <CheckCircle2 size={9} />
-                          [QUEUED]
+                          In your queue
                         </span>
                       ) : (
                         <button
                           onClick={() => void addOneUpsolve(p)}
-                          className="h-8 px-3 rounded border border-amber-500/25 bg-transparent text-amber-400 font-bold uppercase tracking-widest text-[8px] hover:bg-amber-500/10 hover:text-amber-300 transition-all inline-flex items-center gap-1.5"
+                          className="h-10 px-3 rounded-xl border border-[#d5b98a]/20 bg-transparent text-[#d5b98a] font-medium tracking-normal text-xs hover:bg-[#d5b98a]/5 hover:text-[#d5b98a] transition-all inline-flex items-center gap-1.5"
                         >
-                          [ +UPSOLVE ]
+                          Add to upsolve
                         </button>
                       ))}
                   </div>
@@ -332,40 +425,41 @@ export default function SessionReviewPage() {
             initial="hidden"
             animate="show"
             variants={fadeUp}
-            className="pt-6 border-t border-emerald-500/10 space-y-4"
+            className="pt-6 border-t border-[#2b3031] space-y-4"
           >
-            <div className="flex items-center gap-2 text-[9px] font-bold tracking-wider text-emerald-500/40">
-              <BookOpen size={12} className="text-emerald-400" />
-              <span>NEXT_ACTIONS // CONTINUATION_PROMPT</span>
+            <div className="flex items-center gap-2 text-xs font-medium tracking-normal text-[#929b98]">
+              <BookOpen size={12} className="text-[#b5e3c4]" />
+              <span>Keep your momentum</span>
             </div>
 
-            <p className="text-[11px] text-emerald-500/40 leading-relaxed">
-              Lock in one upsolve block for missed problems, then compile a new session while patterns are fresh.
+            <p className="text-sm text-[#929b98] leading-relaxed">
+              Take another look at the problems you missed, or start a fresh
+              session while the ideas are still with you.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 asChild
-                className="h-10 rounded bg-emerald-500 text-emerald-950 font-bold uppercase tracking-widest text-[9px] shadow-[0_0_15px_rgba(16,185,129,0.25)] hover:bg-emerald-400 transition-all font-mono"
+                className="h-10 rounded-xl bg-[#b5e3c4] text-[#101214] font-medium tracking-normal text-xs  hover:bg-[#ceedd8] transition-all font-sans"
               >
                 <Link href="/training">
                   <Trophy size={12} className="mr-2" />
-                  [ NEXT_SESSION.EXE ]
+                  Start another session
                 </Link>
               </Button>
               <Button
                 asChild
                 variant="outline"
-                className="h-10 rounded border border-emerald-500/25 bg-transparent text-emerald-400 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-500/10 transition-all font-mono"
+                className="h-10 rounded-xl border border-[#2b3031] bg-transparent text-[#b5e3c4] font-medium tracking-normal text-xs hover:bg-[#b5e3c4]/10 transition-all font-sans"
               >
-                <Link href="/upsolve">[ UPSOLVE_QUEUE.SH ]</Link>
+                <Link href="/upsolve">Your upsolve queue</Link>
               </Button>
               <Button
                 variant="outline"
-                className="h-10 rounded border border-emerald-500/15 bg-transparent text-emerald-500/40 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-500/10 hover:text-emerald-300 transition-all font-mono"
+                className="h-10 rounded-xl border border-[#2b3031] bg-transparent text-[#929b98] font-medium tracking-normal text-xs hover:bg-[#b5e3c4]/10 hover:text-[#b5e3c4] transition-all font-sans"
                 onClick={() => router.push("/dashboard")}
               >
-                [ DASHBOARD.SH ]
+                Back to dashboard
               </Button>
             </div>
           </m.div>

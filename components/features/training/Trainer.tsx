@@ -97,7 +97,7 @@ const Trainer = ({
   const totalCount = currentProblems?.length ?? 0;
 
   return (
-    <div className={cn(isTraining ? "pb-28 lg:pb-0" : undefined)}>
+    <div className={cn(isTraining ? "pb-44 font-sans lg:pb-0" : "font-sans")}>
       <StopTrainingDialog
         isOpen={isStopDialogOpen}
         onCancel={() => setIsStopDialogOpen(false)}
@@ -113,7 +113,7 @@ const Trainer = ({
       <div
         className={cn(
           "gap-6",
-          isTraining ? "lg:grid lg:grid-cols-[1fr_340px] lg:gap-8" : "grid-cols-1",
+          isTraining ? "lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-8" : "grid-cols-1",
         )}
       >
         <ProblemsCard

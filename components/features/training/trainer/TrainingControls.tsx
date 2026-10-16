@@ -3,14 +3,27 @@
 import { useState, useEffect, useCallback } from "react";
 import { m, AnimatePresence, Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Trophy, XCircle, Clock, Target, Square, Coffee } from "lucide-react";
+import {
+  RefreshCw,
+  Trophy,
+  XCircle,
+  Clock,
+  Target,
+  Square,
+  Coffee,
+  MoreHorizontal,
+} from "lucide-react";
 import CountDown from "../CountDown";
 import { Training } from "@/types/Training";
 import { cn } from "@/lib/utils";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as const } },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as const },
+  },
 };
 
 const BREAK_OPTIONS = [5, 10, 15] as const;
@@ -42,6 +55,7 @@ const TrainingControls = ({
 }: TrainingControlsProps) => {
   const [breakEndTime, setBreakEndTime] = useState<number | null>(null);
   const [showBreakPicker, setShowBreakPicker] = useState(false);
+  const [showMobileActions, setShowMobileActions] = useState(false);
   const [, setTick] = useState(0);
 
   const isOnBreak = breakEndTime !== null && Date.now() < breakEndTime;
@@ -58,41 +72,49 @@ const TrainingControls = ({
     return () => clearInterval(timer);
   }, [isOnBreak, breakEndTime]);
 
-  const startBreak = useCallback((minutes: number) => {
-    setBreakEndTime(Date.now() + minutes * 60000);
-    setShowBreakPicker(false);
-    onExtendEndTime?.(minutes);
-  }, [onExtendEndTime]);
+  const startBreak = useCallback(
+    (minutes: number) => {
+      setBreakEndTime(Date.now() + minutes * 60000);
+      setShowBreakPicker(false);
+      onExtendEndTime?.(minutes);
+    },
+    [onExtendEndTime],
+  );
 
   const endBreakEarly = () => setBreakEndTime(null);
 
   if (!training) return null;
 
-  const breakRemaining = isOnBreak ? Math.max(0, breakEndTime! - Date.now()) : 0;
+  const breakRemaining = isOnBreak
+    ? Math.max(0, breakEndTime! - Date.now())
+    : 0;
   const breakMinutes = Math.floor(breakRemaining / 60000);
   const breakSeconds = Math.floor((breakRemaining % 60000) / 1000);
 
   const renderBreakBanner = () => {
     if (!isOnBreak) return null;
     return (
-      <div className="rounded border border-cyan-500/20 bg-cyan-950/10 p-4 space-y-3 font-mono text-cyan-400">
-        <div className="flex items-center gap-2">
-          <Coffee size={14} className="text-cyan-400 animate-pulse" />
-          <span className="text-[10px] font-bold uppercase tracking-widest">[ BREAK_MODE_ACTIVE ]</span>
+      <div className="space-y-4 rounded-xl border border-[#b5e3c4]/20 bg-[#b5e3c4]/5 p-4">
+        <div className="flex items-center gap-2 text-sm text-[#b5e3c4]">
+          <Coffee className="size-4" />
+          <span>Take a breather</span>
         </div>
-        <div className="flex items-center justify-between">
-          <span className="text-2xl font-black text-cyan-300 tabular-nums">
+        <div className="flex items-center justify-between gap-3">
+          <span className="font-heading text-3xl font-medium text-[#f1f3ee] tabular-nums">
             {breakMinutes}:{breakSeconds.toString().padStart(2, "0")}
           </span>
           <Button
             size="sm"
             variant="outline"
             onClick={endBreakEarly}
-            className="text-[9px] font-bold uppercase tracking-wider border-cyan-500/35 bg-transparent text-cyan-300 hover:bg-cyan-500/10 h-7 rounded font-mono"
+            className="rounded-lg border-[#39403c] bg-transparent text-xs text-[#b5e3c4] hover:bg-[#b5e3c4]/10 hover:text-[#d2eedb]"
           >
-            [ RESUME.SH ]
+            Resume session
           </Button>
         </div>
+        <p className="text-xs leading-relaxed text-[#929b98]">
+          Your session has been extended by the break duration.
+        </p>
       </div>
     );
   };
@@ -100,10 +122,8 @@ const TrainingControls = ({
   const renderBreakPicker = () => {
     if (!showBreakPicker) return null;
     return (
-      <div className="rounded border border-emerald-500/15 bg-emerald-950/5 p-3 space-y-2 font-mono">
-        <p className="text-[8px] font-bold text-emerald-500/40 uppercase tracking-widest">
-          select break duration
-        </p>
+      <div className="space-y-3 rounded-xl border border-[#2b3031] bg-[#101214] p-4">
+        <p className="text-xs text-[#929b98]">How long would you like?</p>
         <div className="flex gap-2">
           {BREAK_OPTIONS.map((min) => (
             <Button
@@ -111,9 +131,9 @@ const TrainingControls = ({
               size="sm"
               variant="outline"
               onClick={() => startBreak(min)}
-              className="flex-1 text-[10px] font-bold border-emerald-500/35 text-emerald-400 bg-transparent hover:bg-emerald-500/10 h-7 rounded font-mono"
+              className="flex-1 rounded-lg border-[#39403c] bg-transparent text-xs text-[#b8c0bb] hover:border-[#b5e3c4]/40 hover:bg-[#b5e3c4]/5 hover:text-[#b5e3c4]"
             >
-              {min}M
+              {min} min
             </Button>
           ))}
         </div>
@@ -123,79 +143,98 @@ const TrainingControls = ({
 
   const renderActionButtons = (isMobile = false) => {
     const buttonClass = isMobile
-      ? "h-9 flex-1 text-[9px] font-bold uppercase tracking-widest rounded border font-mono bg-transparent"
-      : "w-full h-10 text-[9px] font-bold uppercase tracking-widest rounded border font-mono bg-transparent";
+      ? "h-11 min-w-0 flex-1 rounded-xl px-3 text-xs"
+      : "h-11 w-full rounded-xl text-sm";
+    const outlineClass =
+      "border-[#39403c] bg-transparent text-[#b8c0bb] hover:border-[#69746e] hover:bg-[#b5e3c4]/5 hover:text-[#f1f3ee]";
 
     if (isTraining && isPreContestPeriod) {
       return (
         <Button
           variant="outline"
           onClick={onStopTraining}
-          className={cn(buttonClass, "border-red-500/35 text-red-400 hover:bg-red-500/10 hover:border-red-500/60")}
+          className={cn(
+            buttonClass,
+            "border-[#e5a39d]/30 bg-transparent text-[#e5a39d] hover:bg-[#e5a39d]/10 hover:text-[#efbeb9]",
+          )}
         >
-          <XCircle size={13} className="mr-1.5" />
-          [ CANCEL_SESSION.SH ]
+          <XCircle className="size-4" />
+          Cancel session
         </Button>
       );
     }
 
     if (isTraining) {
       return (
-        <div className={cn("space-y-2.5", isMobile && "flex items-center gap-2 space-y-0")}>
-          {isOnBreak ? null : (
+        <div
+          className={cn(
+            "space-y-3",
+            isMobile && "flex w-full items-center gap-2 space-y-0",
+          )}
+        >
+          {!isOnBreak && (
             <>
               <Button
                 variant="outline"
                 onClick={refreshProblemStatus}
-                className={cn(buttonClass, "border-emerald-500/35 text-emerald-400 hover:bg-emerald-500/10")}
+                aria-label={
+                  isRefreshing ? "Refreshing status" : "Refresh status"
+                }
+                className={cn(buttonClass, outlineClass)}
                 disabled={isRefreshing}
               >
-                <RefreshCw size={12} className={cn("mr-1.5", isRefreshing ? "animate-spin" : "")} />
-                {isRefreshing ? "[ REFRESHING... ]" : "[ REFRESH_STATUS.SH ]"}
+                <RefreshCw
+                  className={cn(
+                    "size-4",
+                    isRefreshing && "animate-spin motion-reduce:animate-none",
+                  )}
+                />
+                {isRefreshing
+                  ? isMobile
+                    ? "Checking…"
+                    : "Refreshing…"
+                  : isMobile
+                    ? "Refresh"
+                    : "Refresh status"}
               </Button>
-
               {!isMobile && (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded border border-emerald-500/10 bg-emerald-950/5">
-                  <RefreshCw size={10} className="text-emerald-500/40 shrink-0" />
-                  <p className="text-[8px] text-emerald-500/50 leading-normal uppercase">
-                    Submit on CF then trigger refresh
-                  </p>
-                </div>
+                <p className="px-1 text-xs leading-relaxed text-[#929b98]">
+                  Submitted on Codeforces? Refresh to see your latest result.
+                </p>
               )}
-
               {!isMobile && onExtendEndTime && (
                 <>
                   <Button
                     variant="outline"
                     onClick={() => setShowBreakPicker(!showBreakPicker)}
-                    className={cn(buttonClass, "border-emerald-500/35 text-emerald-400 hover:bg-emerald-500/10")}
+                    aria-expanded={showBreakPicker}
+                    className={cn(buttonClass, outlineClass)}
                   >
-                    <Coffee size={12} className="mr-1.5" />
-                    [ COFFEE_BREAK.SH ]
+                    <Coffee className="size-4" />
+                    Take a break
                   </Button>
                   {renderBreakPicker()}
                 </>
               )}
-
               <Button
                 onClick={onFinishTraining}
+                aria-label="Finish session"
                 className={cn(
-                  isMobile
-                    ? "h-9 flex-1 text-[9px] font-bold uppercase tracking-widest rounded font-mono bg-emerald-500 text-emerald-950 hover:bg-emerald-400"
-                    : "w-full h-10 text-[9px] font-bold uppercase tracking-widest rounded font-mono bg-emerald-500 text-emerald-950 hover:bg-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_20px_rgba(16,185,129,0.5)]"
+                  buttonClass,
+                  "bg-[#b5e3c4] text-[#101214] hover:bg-[#ceedd8]",
                 )}
               >
-                <Trophy size={12} className="mr-1.5" />
-                [ FINISH_RUN.EXE ]
+                <Trophy className="size-4" />
+                {isMobile ? "Finish" : "Finish session"}
               </Button>
-
               {!isMobile && (
                 <button
+                  type="button"
                   onClick={onStopTraining}
-                  className="w-full py-1 text-[8px] font-bold uppercase tracking-widest text-emerald-500/40 hover:text-red-400 hover:glow-text-red transition-all flex items-center justify-center gap-1"
+                  className="flex min-h-9 w-full items-center justify-center gap-2 rounded-lg text-xs text-[#929b98] transition-colors hover:text-[#e5a39d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b5e3c4]"
                 >
-                  <Square size={8} />
-                  [ STOP_TRAINING ]
+                  <Square className="size-3" />
+                  Discard session
                 </button>
               )}
             </>
@@ -203,128 +242,159 @@ const TrainingControls = ({
         </div>
       );
     }
-
     return null;
   };
 
   return (
     <>
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:block font-mono text-emerald-400 w-full">
-        <div className="sticky top-6 space-y-4">
-          <m.div variants={fadeUp} initial="hidden" animate="show">
-            <div className="rounded-xl border border-emerald-500/15 bg-[#060a08]/50 p-6 space-y-5 relative overflow-hidden">
-              <div className="absolute inset-0 pointer-events-none z-10 bg-terminal-scanlines opacity-[0.06]" />
-              
-              {isOnBreak ? (
-                renderBreakBanner()
-              ) : (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-[10px] text-emerald-500/40 uppercase tracking-widest">
-                    <Clock size={14} className="text-emerald-400 animate-pulse" />
-                    <span>{isPreContestPeriod ? "STARTING_IN" : "TIME_REMAINING"}</span>
-                  </div>
-                  <CountDown
-                    startTime={training.startTime}
-                    endTime={training.endTime}
-                  />
-                </div>
-              )}
-
-              <div className="h-px bg-emerald-500/10" />
-
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-[10px] text-emerald-500/40 uppercase tracking-widest">
-                  <Target size={14} className="text-emerald-400" />
-                  <span>METRICS_PROGRESS</span>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-emerald-300 glow-text-emerald tabular-nums leading-none">{solvedCount}</span>
-                  <span className="text-xs text-emerald-500/60">/ {totalCount} solved nodes</span>
-                </div>
-              </div>
-
-              <div className="h-px bg-emerald-500/10" />
-
-              {renderActionButtons()}
-            </div>
-          </m.div>
-
+      <aside
+        className="hidden w-full font-sans text-[#f1f3ee] lg:block"
+        aria-label="Session controls"
+      >
+        <div className="sticky top-24 space-y-4">
           <m.div
             variants={fadeUp}
             initial="hidden"
             animate="show"
-            transition={{ delay: 0.1 }}
+            className="space-y-6 rounded-2xl border border-[#2b3031] bg-[#15181a] p-6"
           >
-            <div className="rounded-xl border border-emerald-500/10 bg-transparent p-4">
-              <p className="text-[10px] leading-relaxed text-emerald-500/45 italic">
-                &quot;Precision and speed are the keys to compilation integrity. Stay focused.&quot;
+            {isOnBreak ? (
+              renderBreakBanner()
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-xs text-[#929b98]">
+                  <Clock className="size-4" />
+                  <span>
+                    {isPreContestPeriod ? "Starting in" : "Time remaining"}
+                  </span>
+                </div>
+                <CountDown
+                  startTime={training.startTime}
+                  endTime={training.endTime}
+                />
+              </div>
+            )}
+            <div className="border-t border-[#2b3031] pt-5">
+              <div className="mb-3 flex items-center gap-2 text-xs text-[#929b98]">
+                <Target className="size-4" />
+                <span>Your progress</span>
+              </div>
+              <p className="flex items-baseline gap-2">
+                <span className="font-heading text-4xl font-medium tracking-tight text-[#b5e3c4] tabular-nums">
+                  {solvedCount}
+                </span>
+                <span className="text-sm text-[#929b98]">
+                  / {totalCount} problems solved
+                </span>
               </p>
             </div>
+            <div className="border-t border-[#2b3031] pt-5">
+              {renderActionButtons()}
+            </div>
           </m.div>
+          <p className="px-2 text-xs leading-relaxed text-[#929b98]">
+            Every attempt is useful. Focus on your approach, then take time to
+            review what you learned.
+          </p>
         </div>
-      </div>
+      </aside>
 
-      {/* Mobile Bottom Bar */}
       <AnimatePresence>
         {isTraining && (
           <m.div
-            className="fixed bottom-0 left-0 right-0 z-50 lg:hidden font-mono text-emerald-400"
+            className="fixed inset-x-0 bottom-0 z-40 font-sans text-[#f1f3ee] lg:hidden"
             initial={{ y: 100 }}
             animate={{ y: 0 }}
             exit={{ y: 100 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
           >
-            <div className="mx-3 mb-3 rounded-xl border border-emerald-500/25 bg-black/90 backdrop-blur-2xl shadow-[0_-4px_30px_rgba(0,0,0,0.5)]">
-              <div className="px-4 py-3">
-                {isOnBreak ? (
-                  <div className="flex items-center gap-3">
-                    <Coffee size={14} className="text-cyan-400 shrink-0 animate-pulse" />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[8px] font-bold uppercase tracking-widest text-cyan-400/70 mb-0.5">BREAK</div>
-                      <span className="text-lg font-black text-cyan-300 tabular-nums">
-                        {breakMinutes}:{breakSeconds.toString().padStart(2, "0")}
-                      </span>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={endBreakEarly}
-                      className="text-[9px] font-bold uppercase tracking-wider border-cyan-500/35 bg-transparent text-cyan-300 hover:bg-cyan-500/10 shrink-0 h-7 rounded font-mono"
-                    >
-                      [ RESUME ]
-                    </Button>
+            <div className="m-3 max-h-[75dvh] overflow-y-auto rounded-2xl border border-[#39403c] bg-[#191c1e]/95 p-4 shadow-[0_-8px_32px_rgba(0,0,0,0.2)] backdrop-blur-xl">
+              {isOnBreak ? (
+                <div className="flex items-center gap-3">
+                  <Coffee className="size-5 shrink-0 text-[#b5e3c4]" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs text-[#929b98]">On a break</p>
+                    <p className="font-heading text-2xl tabular-nums">
+                      {breakMinutes}:{breakSeconds.toString().padStart(2, "0")}
+                    </p>
                   </div>
-                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={endBreakEarly}
+                    className="rounded-lg border-[#39403c] bg-transparent text-xs text-[#b5e3c4] hover:bg-[#b5e3c4]/10"
+                  >
+                    Resume
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {renderBreakPicker()}
                   <div className="flex items-center justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[7px] font-bold uppercase tracking-widest text-emerald-500/40 mb-0.5">
-                        {isPreContestPeriod ? "STARTING_IN" : "TIME_LEFT"}
-                      </div>
+                    <div>
+                      <p className="mb-1.5 text-xs text-[#929b98]">
+                        {isPreContestPeriod ? "Starting in" : "Time remaining"}
+                      </p>
                       <CountDown
                         startTime={training.startTime}
                         endTime={training.endTime}
                         compact
                       />
                     </div>
-
-                    <div className="h-10 w-px bg-emerald-500/10" />
-
-                    <div className="text-center shrink-0">
-                      <div className="text-[7px] font-bold uppercase tracking-widest text-emerald-500/40 mb-0.5">SOLVED</div>
-                      <div className="text-base font-black text-emerald-300 glow-text-emerald tabular-nums">
-                        {solvedCount}<span className="text-[10px] font-normal text-emerald-500/40">/{totalCount}</span>
-                      </div>
+                    <div className="ml-auto text-right">
+                      <p className="mb-1.5 text-xs text-[#929b98]">Solved</p>
+                      <p className="font-heading text-2xl text-[#b5e3c4] tabular-nums">
+                        {solvedCount}
+                        <span className="ml-1 text-sm text-[#929b98]">
+                          / {totalCount}
+                        </span>
+                      </p>
                     </div>
-
-                    <div className="h-10 w-px bg-emerald-500/10" />
-
-                    <div className="shrink-0 flex items-center">
-                      {renderActionButtons(true)}
-                    </div>
+                    {!isPreContestPeriod && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="More session actions"
+                        aria-expanded={showMobileActions}
+                        aria-controls="mobile-session-actions"
+                        onClick={() => setShowMobileActions(!showMobileActions)}
+                        className="size-10 shrink-0 rounded-xl text-[#929b98]"
+                      >
+                        <MoreHorizontal className="size-5" />
+                      </Button>
+                    )}
                   </div>
-                )}
-              </div>
+                  {showMobileActions && !isPreContestPeriod && (
+                    <div
+                      id="mobile-session-actions"
+                      className="flex gap-2 border-t border-[#2b3031] pt-3"
+                    >
+                      {onExtendEndTime && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowBreakPicker(!showBreakPicker)}
+                          aria-expanded={showBreakPicker}
+                          className="flex-1 rounded-lg text-xs text-[#929b98]"
+                        >
+                          <Coffee className="size-4" />
+                          Take a break
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={onStopTraining}
+                        className="flex-1 rounded-lg text-xs text-[#e5a39d]"
+                      >
+                        <Square className="size-4" />
+                        Discard
+                      </Button>
+                    </div>
+                  )}
+                  {renderActionButtons(true)}
+                </div>
+              )}
             </div>
           </m.div>
         )}

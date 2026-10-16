@@ -1,11 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { ChevronUp, ChevronDown, RotateCcw, Trophy, Target, Zap } from "lucide-react";
+import { Minus, Plus, RotateCcw, Eye, EyeOff } from "lucide-react";
 import { useLevels } from "@/hooks/roadmap";
 import { useUser } from "@/hooks/auth";
-import { cn } from "@/lib/utils";
 
 interface LevelSelectorProps {
   onLevelChange: (ratings: {
@@ -25,7 +23,8 @@ const LevelSelector = ({
   showRatings,
   setShowRatings,
 }: LevelSelectorProps) => {
-  const { levels, isLoading, getDefaultLevel, getLevelByPerformance } = useLevels();
+  const { levels, isLoading, getDefaultLevel, getLevelByPerformance } =
+    useLevels();
   const { user } = useUser();
 
   const sortedLevels = useMemo(
@@ -53,7 +52,9 @@ const LevelSelector = ({
   }, [sortedLevels, currentRatings]);
 
   const [pendingLevelId, setPendingLevelId] = useState<number | null>(null);
-  const [prevMatchId, setPrevMatchId] = useState<number | null>(matchIdFromRatings);
+  const [prevMatchId, setPrevMatchId] = useState<number | null>(
+    matchIdFromRatings,
+  );
 
   if (matchIdFromRatings !== prevMatchId) {
     setPrevMatchId(matchIdFromRatings);
@@ -73,17 +74,6 @@ const LevelSelector = ({
     () => sortedLevels.reduce((m, l) => Math.max(m, l.id), 0),
     [sortedLevels],
   );
-
-  const getProblemDifficultyColor = (rating: number) => {
-    if (rating < 1200) return "text-slate-400 border-slate-500/20";
-    if (rating < 1400) return "text-green-400 border-green-500/20";
-    if (rating < 1600) return "text-cyan-400 border-cyan-500/20";
-    if (rating < 1900) return "text-blue-400 border-blue-500/20";
-    if (rating < 2100) return "text-purple-400 border-purple-500/20";
-    if (rating < 2300) return "text-amber-400 border-amber-500/20";
-    if (rating < 2400) return "text-orange-400 border-orange-500/20";
-    return "text-red-400 border-red-500/20";
-  };
 
   const applyLevelId = (levelId: number) => {
     const level = sortedLevels.find((l) => l.id === levelId);
@@ -135,158 +125,148 @@ const LevelSelector = ({
     });
   }, [currentLevel, onLevelChange]);
 
-  // Block loading
-  const totalBlocks = 18;
   const levelPercent = maxLevelId > 0 ? (activeLevelId / maxLevelId) * 100 : 0;
-  const filledBlocks = Math.min(totalBlocks, Math.max(0, Math.round((levelPercent / 100) * totalBlocks)));
-  const emptyBlocks = totalBlocks - filledBlocks;
-  const levelBlocks = "█".repeat(filledBlocks) + "░".repeat(emptyBlocks);
+  const recommendedLevel = user?.rating
+    ? getLevelByPerformance(user.rating)?.id
+    : 1;
 
   if (isLoading) {
     return (
-      <div className="border border-emerald-500/15 bg-transparent p-8 text-center animate-pulse font-mono text-emerald-500/40">
-        [SYS] SECURING ROADMAP DIFFICULTY LEVELS... STANDBY
+      <div
+        role="status"
+        className="rounded-2xl border border-[#2b3031] bg-[#15181a] p-8 text-sm text-[#929b98]"
+      >
+        Loading your training levels…
       </div>
     );
   }
 
   return (
-    <div className="font-mono text-emerald-400 space-y-6">
-      {/* Header bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-emerald-500/15 select-none text-xs text-emerald-500/60">
-        <div className="flex items-center gap-2">
-          <Trophy size={14} className="text-emerald-400" />
-          <span className="font-semibold tracking-wider">SYS.LEVELS // CONFIG_DIFFICULTY</span>
-        </div>
-
-        <Button
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-[#929b98]">
+          A little challenge goes a long way.
+        </p>
+        <button
+          type="button"
+          aria-pressed={showRatings}
           onClick={() => setShowRatings((prev) => !prev)}
-          variant="outline"
-          className="h-8 px-3 rounded border border-emerald-500/35 bg-[#060a08] text-emerald-400 font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-500/10 hover:text-emerald-300 hover:border-emerald-500/60 active:scale-[0.98] transition-all font-mono"
+          className="inline-flex shrink-0 items-center gap-2 rounded-lg px-2 py-2 text-xs font-medium text-[#b5e3c4] transition-colors hover:bg-[#b5e3c4]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b5e3c4]"
         >
-          <Target size={11} className="mr-1.5" />
-          {showRatings ? "[ MASK RATING ]" : "[ REVEAL RATING ]"}
-        </Button>
+          {showRatings ? (
+            <EyeOff className="size-4" />
+          ) : (
+            <Eye className="size-4" />
+          )}
+          {showRatings ? "Hide ratings" : "Show ratings"}
+        </button>
       </div>
 
-      <div className="grid lg:grid-cols-12 gap-6 items-start">
-        {/* Left Adjuster block (col-span-5) */}
-        <div className="lg:col-span-5 space-y-4">
-          <div className="relative bg-[#060a08]/50 border border-emerald-500/15 rounded-xl p-6 text-center space-y-3 relative overflow-hidden">
-            <div className="absolute inset-0 pointer-events-none z-10 bg-terminal-scanlines opacity-[0.06]" />
-            <div className="text-[10px] font-bold tracking-[0.2em] text-emerald-500/40 uppercase">TELEMETRY_LEVEL</div>
-            <div className="text-6xl font-black text-emerald-300 glow-text-emerald leading-none py-2 tabular-nums">
-              LVL_{activeLevelId}
-            </div>
-            
-            <div className="flex items-center justify-center gap-6 pt-2 text-[10px] border-t border-emerald-500/10">
-              <div className="flex flex-col items-center">
-                <span className="text-[8px] font-bold text-emerald-500/40 uppercase">TARGET PERFORMANCE</span>
-                <span className="text-sm font-bold text-emerald-300 mt-0.5 tabular-nums">{currentLevel?.Performance || "900"}</span>
-              </div>
-              <div className="w-px h-6 bg-emerald-500/15" />
-              <div className="flex flex-col items-center">
-                <span className="text-[8px] font-bold text-emerald-500/40 uppercase">TIMEOUT PARAM</span>
-                <span className="text-sm font-bold text-emerald-300 mt-0.5 tabular-nums">{currentLevel?.time || "120"} MIN</span>
-              </div>
-            </div>
+      <div className="rounded-2xl border border-[#2b3031] bg-[#15181a] p-4 sm:p-6">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-medium text-[#929b98]">Training level</p>
+            <p className="mt-1 whitespace-nowrap font-heading text-4xl sm:text-5xl font-medium tracking-tight text-[#f1f3ee] tabular-nums">
+              {activeLevelId}
+              <span className="ml-1 text-sm font-normal tracking-normal text-[#929b98]">
+                / {maxLevelId || levels.length}
+              </span>
+            </p>
           </div>
-
-          {/* Level adjustment slider wrapper */}
-          <div className="flex items-center justify-between gap-4 p-3 bg-emerald-950/5 rounded-xl border border-emerald-500/15 font-mono">
-            <Button
+          <div className="flex gap-2">
+            <button
+              type="button"
+              aria-label="Decrease training level"
               onClick={decreaseLevel}
               disabled={selectedIndex <= 0}
-              variant="outline"
-              className="h-10 px-3 rounded border border-emerald-500/35 bg-transparent text-emerald-400 font-bold uppercase hover:bg-emerald-500/10 disabled:opacity-20 transition-all font-mono"
+              className="flex size-9 sm:size-11 items-center justify-center rounded-xl border border-[#39403c] text-[#f1f3ee] transition-colors hover:border-[#b5e3c4] hover:bg-[#b5e3c4]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b5e3c4] disabled:cursor-not-allowed disabled:opacity-30"
             >
-              <ChevronDown className="size-4" />
-            </Button>
-
-            <div className="text-center flex-1">
-              <div className="text-[8px] font-black uppercase tracking-[0.25em] text-emerald-500/40 mb-1.5">SCALE DIFFICULTY</div>
-              <div className="text-[9px] tracking-tight font-mono text-emerald-300 select-none">
-                [{levelBlocks}] {Math.round(levelPercent)}%
-              </div>
-            </div>
-
-            <Button
+              <Minus className="size-4" />
+            </button>
+            <button
+              type="button"
+              aria-label="Increase training level"
               onClick={increaseLevel}
               disabled={
-                selectedIndex < 0 ||
-                selectedIndex >= sortedLevels.length - 1
+                selectedIndex < 0 || selectedIndex >= sortedLevels.length - 1
               }
-              variant="outline"
-              className="h-10 px-3 rounded border border-emerald-500/35 bg-transparent text-emerald-400 font-bold uppercase hover:bg-emerald-500/10 disabled:opacity-20 transition-all font-mono"
+              className="flex size-9 sm:size-11 items-center justify-center rounded-xl border border-[#39403c] text-[#f1f3ee] transition-colors hover:border-[#b5e3c4] hover:bg-[#b5e3c4]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b5e3c4] disabled:cursor-not-allowed disabled:opacity-30"
             >
-              <ChevronUp className="size-4" />
-            </Button>
+              <Plus className="size-4" />
+            </button>
           </div>
         </div>
 
-        {/* Right Difficulty breakdown (col-span-7) */}
-        <div className="lg:col-span-7 space-y-4">
-          <span className="text-[8px] font-bold text-emerald-500/40 uppercase tracking-[0.2em] flex items-center gap-2">
-            <Zap className="size-3 text-emerald-400 animate-pulse" />
-            DIFFICULTY_NODES_TELEMETRY
+        <div
+          className="mt-6 h-1.5 overflow-hidden rounded-full bg-[#2b3031]"
+          aria-hidden="true"
+        >
+          <div
+            className="h-full rounded-full bg-[#b5e3c4] transition-[width] duration-200 motion-reduce:transition-none"
+            style={{ width: `${levelPercent}%` }}
+          />
+        </div>
+        <div className="mt-5 flex flex-wrap justify-between gap-2 text-xs text-[#929b98]">
+          <span>
+            Target performance{" "}
+            <span className="ml-1 font-medium text-[#f1f3ee] tabular-nums">
+              {currentLevel?.Performance || "900"}
+            </span>
           </span>
-          
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { label: "PROBLEM_NODE_01", rating: currentLevel?.P1, style: getProblemDifficultyColor(Number.parseInt(currentLevel?.P1 || "0")) },
-              { label: "PROBLEM_NODE_02", rating: currentLevel?.P2, style: getProblemDifficultyColor(Number.parseInt(currentLevel?.P2 || "0")) },
-              { label: "PROBLEM_NODE_03", rating: currentLevel?.P3, style: getProblemDifficultyColor(Number.parseInt(currentLevel?.P3 || "0")) },
-              { label: "PROBLEM_NODE_04", rating: currentLevel?.P4, style: getProblemDifficultyColor(Number.parseInt(currentLevel?.P4 || "0")) }
-            ].map((p) => (
-              <div
-                key={p.label}
-                className={cn(
-                  "relative p-4 rounded-xl border bg-emerald-950/5 font-mono flex flex-col justify-between",
-                  p.style
-                )}
-              >
-                <div className="flex items-center justify-between text-[8px] font-bold uppercase tracking-widest opacity-60">
-                  <span>{p.label}</span>
-                  <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
-                </div>
-                
-                <div className="mt-2.5">
-                  <span className="text-[8px] font-bold uppercase tracking-wider text-emerald-500/40 block">difficulty rating</span>
-                  <div className="relative h-6 mt-0.5">
-                    <div className={cn("text-base font-black tabular-nums transition-all leading-none", showRatings ? "" : "blur-md opacity-15")}>
-                      {p.rating}
-                    </div>
-                    {!showRatings && (
-                      <div className="absolute inset-0 flex items-center text-[9px] font-black text-emerald-500/30 uppercase tracking-widest">
-                        [ HIDDEN ]
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <span>
+            Level time{" "}
+            <span className="ml-1 font-medium text-[#f1f3ee] tabular-nums">
+              {currentLevel?.time || "120"} min
+            </span>
+          </span>
         </div>
       </div>
 
-      {/* Footer defaults block */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-emerald-500/10">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={resetToDefault}
-            className="h-8 px-3 rounded border border-emerald-500/20 bg-transparent text-emerald-500 hover:text-emerald-300 hover:border-emerald-500/50 transition-all font-mono text-[9px] font-bold uppercase flex items-center gap-1.5"
-          >
-            <RotateCcw className="size-3" />
-            [ RESET_RECOMMENDED ]
-          </button>
-          <span className="text-[9px] text-emerald-500/50">
-            Reset to rating recommended level: {user?.rating ? `LVL_${getLevelByPerformance(user.rating)?.id}` : "LVL_1"}
-          </span>
+      <div>
+        <div className="mb-3 flex items-center justify-between text-xs text-[#929b98]">
+          <span>Problem difficulty</span>
+          <span>{showRatings ? "Ratings visible" : "Ratings hidden"}</span>
         </div>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
+          {[
+            currentLevel?.P1,
+            currentLevel?.P2,
+            currentLevel?.P3,
+            currentLevel?.P4,
+          ].map((rating, index) => (
+            <div
+              key={index}
+              className="rounded-xl border border-[#2b3031] p-3 sm:p-4"
+            >
+              <p className="text-xs text-[#929b98]">
+                {String.fromCharCode(65 + index)}
+              </p>
+              <p className="mt-3 text-base font-medium text-[#f1f3ee] tabular-nums">
+                {showRatings ? (
+                  rating
+                ) : (
+                  <span aria-label="Rating hidden" className="text-[#69746e]">
+                    —
+                  </span>
+                )}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
 
-        <div className="text-[8px] font-bold text-emerald-500/40 uppercase tracking-[0.1em] px-2 py-0.5 rounded border border-emerald-500/10 bg-emerald-950/10">
-          LEVEL RANGE: 1 - {maxLevelId || levels.length}
-        </div>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#2b3031] pt-4">
+        <button
+          type="button"
+          onClick={resetToDefault}
+          className="inline-flex min-h-9 items-center gap-2 rounded-lg text-xs font-medium text-[#b5e3c4] transition-colors hover:text-[#d2eedb] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b5e3c4] focus-visible:ring-offset-4 focus-visible:ring-offset-[#191c1e]"
+        >
+          <RotateCcw className="size-3.5" />
+          Use recommended level
+        </button>
+        <span className="text-xs text-[#929b98]">
+          Level {recommendedLevel ?? 1} for your rating
+        </span>
       </div>
     </div>
   );

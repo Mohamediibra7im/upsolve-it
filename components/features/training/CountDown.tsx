@@ -21,16 +21,18 @@ function Segment({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center rounded border transition-all duration-300 font-mono",
-        compact ? "min-w-[2.5rem] px-1 py-1.5" : "min-w-[3.5rem] px-2 py-2.5 sm:min-w-[4rem]",
+        "flex flex-col items-center justify-center rounded-xl border font-sans",
+        compact
+          ? "min-w-[2.5rem] px-1 py-1.5"
+          : "min-w-[3.5rem] px-3 py-3 sm:min-w-[4rem]",
         urgent
-          ? "border-amber-500/30 bg-amber-950/10 text-amber-400 glow-text-amber"
-          : "border-emerald-500/15 bg-transparent text-emerald-400 glow-text-emerald",
+          ? "border-[#d5b98a]/30 bg-[#d5b98a]/5 text-[#d5b98a]"
+          : "border-[#2b3031] bg-[#101214] text-[#f1f3ee]",
       )}
     >
       <span
         className={cn(
-          "font-black tabular-nums leading-none",
+          "font-heading font-medium tabular-nums leading-none",
           compact ? "text-base" : "text-xl sm:text-2xl",
         )}
       >
@@ -38,8 +40,8 @@ function Segment({
       </span>
       <span
         className={cn(
-          "mt-1 font-bold uppercase tracking-widest text-[8px]",
-          urgent ? "text-amber-500/40" : "text-emerald-500/40",
+          "mt-1.5 text-xs",
+          urgent ? "text-[#d5b98a]" : "text-[#929b98]",
         )}
       >
         {label}
@@ -48,13 +50,19 @@ function Segment({
   );
 }
 
-function Separator({ compact, urgent }: { compact?: boolean; urgent?: boolean }) {
+function Separator({
+  compact,
+  urgent,
+}: {
+  compact?: boolean;
+  urgent?: boolean;
+}) {
   return (
     <span
       className={cn(
-        "flex shrink-0 items-center justify-center font-mono select-none",
+        "flex shrink-0 items-center justify-center font-sans select-none",
         compact ? "pb-2 text-sm" : "pb-4 text-lg",
-        urgent ? "text-amber-500/35" : "text-emerald-500/35",
+        urgent ? "text-[#d5b98a]" : "text-[#69746e]",
       )}
       aria-hidden
     >
@@ -98,12 +106,12 @@ const CountDown = ({ startTime, endTime, compact }: CountDownProps) => {
     return (
       <div
         className={cn(
-          "flex items-center justify-center gap-2 rounded border border-emerald-500/15 bg-transparent font-mono text-emerald-500/40",
-          compact ? "h-10 px-3 text-[10px]" : "h-16 px-4 text-xs",
+          "flex items-center justify-center gap-2 rounded-xl border border-[#2b3031] font-sans text-[#929b98]",
+          compact ? "h-10 px-3 text-xs" : "h-16 px-4 text-xs",
         )}
       >
-        <div className="size-1 animate-pulse rounded-full bg-emerald-500/50" />
-        <span>[ SYNCING_TIME_TELEMETRY... ]</span>
+        <div className="size-1.5 rounded-full bg-[#b5e3c4]" />
+        <span>Syncing timer…</span>
       </div>
     );
   }
@@ -117,31 +125,49 @@ const CountDown = ({ startTime, endTime, compact }: CountDownProps) => {
     return (
       <div
         className={cn(
-          "rounded border font-mono text-center",
+          "rounded-xl border font-sans text-center",
           compact ? "px-3 py-1.5" : "px-4 py-3",
           isStarted
-            ? "border-red-500/30 bg-red-950/10 text-red-400"
-            : "border-cyan-500/30 bg-cyan-950/10 text-cyan-400",
+            ? "border-[#e5a39d]/30 bg-[#e5a39d]/5 text-[#e5a39d]"
+            : "border-[#b5e3c4]/30 bg-[#b5e3c4]/5 text-[#b5e3c4]",
         )}
       >
         {isStarted ? (
-          <p className={cn("font-bold uppercase tracking-widest", compact ? "text-[9px]" : "text-xs")}>
-            [ SESSION_TIME_EXPIRED ]
+          <p className={cn("font-medium", compact ? "text-xs" : "text-sm")}>
+            Time’s up
           </p>
         ) : (
-          <p className={cn("font-bold uppercase tracking-widest", compact ? "text-[9px]" : "text-xs")}>
-            [ COMPILE_START_SOON ]
+          <p className={cn("font-medium", compact ? "text-xs" : "text-sm")}>
+            Starting soon
           </p>
         )}
       </div>
     );
   }
 
+  if (compact) {
+    return (
+      <div
+        role="timer"
+        aria-live="off"
+        aria-label={`${hours} hours, ${minutes} minutes, ${seconds} seconds remaining`}
+        className={cn(
+          "font-heading text-2xl font-medium leading-none tabular-nums tracking-tight",
+          urgent ? "text-[#d5b98a]" : "text-[#f1f3ee]",
+        )}
+      >
+        {hours.toString().padStart(2, "0")}:
+        {minutes.toString().padStart(2, "0")}:
+        {seconds.toString().padStart(2, "0")}
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full font-mono">
+    <div className="w-full font-sans">
       {!isStarted && !compact && (
-        <p className="mb-1.5 text-center text-[8px] font-bold uppercase tracking-[0.2em] text-emerald-500/40">
-          compile_start_in
+        <p className="mb-2 text-center text-xs text-[#929b98]">
+          Your session starts in
         </p>
       )}
       <div
