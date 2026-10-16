@@ -2,7 +2,7 @@
 
 import { AdminState, AdminRetry } from "./AdminState";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { m, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +15,6 @@ import {
   Mail,
   MailOpen,
   ChevronDown,
-  ChevronUp,
   Send,
   Trash2,
   Shield,
@@ -28,6 +27,32 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+
+function MessageDetails({
+  id,
+  open,
+  children,
+}: {
+  id: string;
+  open: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      id={id}
+      aria-hidden={!open}
+      inert={!open}
+      className={cn(
+        "grid transition-[grid-template-rows,opacity] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-opacity motion-reduce:duration-75",
+        open
+          ? "grid-rows-[1fr] opacity-100 duration-200"
+          : "grid-rows-[0fr] opacity-0 duration-150",
+      )}
+    >
+      <div className="min-h-0 overflow-hidden">{children}</div>
+    </div>
+  );
+}
 
 export default function AdminContactMessages() {
   const { messages, isLoading, isError, mutate } = useAdminContactMessages();
@@ -157,7 +182,7 @@ export default function AdminContactMessages() {
           {messages.map((msg) => (
             <m.div
               key={msg._id}
-              layout
+              layout="position"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               className={cn(
@@ -168,6 +193,8 @@ export default function AdminContactMessages() {
               )}
             >
               <button
+                id={`contact-toggle-${msg._id}`}
+                aria-controls={`contact-details-${msg._id}`}
                 aria-expanded={expanded === msg._id}
                 onClick={() =>
                   setExpanded(expanded === msg._id ? null : msg._id)
@@ -231,20 +258,21 @@ export default function AdminContactMessages() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  {expanded === msg._id ? (
-                    <ChevronUp className="size-4 text-[#929b98]" />
-                  ) : (
-                    <ChevronDown className="size-4 text-[#929b98]" />
-                  )}
+                  <ChevronDown
+                    aria-hidden="true"
+                    className={cn(
+                      "size-4 text-[#929b98] transition-transform duration-200 ease-out motion-reduce:transition-none",
+                      expanded === msg._id && "rotate-180",
+                    )}
+                  />
                 </div>
               </button>
 
-              {expanded === msg._id && (
-                <m.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  className="px-4 pb-4 space-y-4 border-t border-[#2b3031] pt-4"
-                >
+              <MessageDetails
+                id={`contact-details-${msg._id}`}
+                open={expanded === msg._id}
+              >
+                <div className="px-4 pb-4 space-y-4 border-t border-[#2b3031] pt-4">
                   <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-4 gap-4 text-[13px] [&_p]:break-words">
                     <div>
                       <span className="text-[#929b98] font-medium">From</span>
@@ -393,8 +421,8 @@ export default function AdminContactMessages() {
                       Delete
                     </Button>
                   </div>
-                </m.div>
-              )}
+                </div>
+              </MessageDetails>
             </m.div>
           ))}
         </AnimatePresence>

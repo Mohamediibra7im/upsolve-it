@@ -46,6 +46,78 @@ describe("AdminContactMessages reply history", () => {
     global.fetch = originalFetch;
   });
 
+  it("retains the details for closing animation while keeping closed controls inaccessible", async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue(response({ messages: [contact] }));
+    mountInbox();
+    const toggle = await screen.findByRole("button", { name: /Website issue/ });
+    fireEvent.click(toggle);
+    const originalMessage = screen.getByText(contact.message);
+    fireEvent.click(toggle);
+    expect(originalMessage).toBeInTheDocument();
+    const detailsId = toggle.getAttribute("aria-controls");
+    expect(detailsId).toBeTruthy();
+    const details = document.getElementById(detailsId!);
+    expect(details).toBeInTheDocument();
+    expect(details).toHaveAttribute("aria-hidden", "true");
+    expect(details).toHaveAttribute("inert");
+    expect(screen.queryByRole("button", { name: "Reply" })).toBeNull();
+
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(details).toHaveAttribute("aria-hidden", "false");
+    expect(details).not.toHaveAttribute("inert");
+    fireEvent.click(screen.getByRole("button", { name: "Reply" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "Your reply" }), {
+      target: { value: "A draft that should survive closing." },
+    });
+
+    fireEvent.click(toggle);
+    expect(details).toBeInTheDocument();
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(details).toHaveAttribute("aria-hidden", "true");
+    expect(details).toHaveAttribute("inert");
+    expect(screen.queryByRole("textbox", { name: "Your reply" })).toBeNull();
+
+    fireEvent.click(toggle);
+    expect(screen.getByRole("textbox", { name: "Your reply" })).toHaveValue(
+      "A draft that should survive closing.",
+    );
+  });
+
+  it("keeps only the selected message interactive when switching or rapidly toggling", async () => {
+    global.fetch = jest.fn().mockResolvedValue(
+      response({
+        messages: [
+          contact,
+          {
+            ...contact,
+            _id: "507f1f77bcf86cd799439012",
+            subject: "Another question",
+          },
+        ],
+      }),
+    );
+    mountInbox();
+    const first = await screen.findByRole("button", { name: /Website issue/ });
+    const second = screen.getByRole("button", { name: /Another question/ });
+    fireEvent.click(first);
+    fireEvent.click(second);
+    expect(first).toHaveAttribute("aria-expanded", "false");
+    expect(second).toHaveAttribute("aria-expanded", "true");
+    expect(
+      document.getElementById(first.getAttribute("aria-controls")!),
+    ).toHaveAttribute("inert");
+    expect(screen.getAllByRole("button", { name: "Reply" })).toHaveLength(1);
+
+    fireEvent.click(second);
+    fireEvent.click(second);
+    fireEvent.click(second);
+    expect(second).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("button", { name: "Reply" })).toBeNull();
+  });
+
   it("shows saved reply text and send time after opening a message", async () => {
     global.fetch = jest
       .fn()
