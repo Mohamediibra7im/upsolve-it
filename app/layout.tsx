@@ -5,7 +5,7 @@ import type { Viewport } from "next";
 import AuthGuard from "@/components/providers/AuthGuard";
 import ThemeProvider from "@/components/providers/ThemeProvider";
 import { ToastProvider } from "@/components/providers/Toast";
-import { Analytics } from "@vercel/analytics/react";
+import Script from "next/script";
 import { cn } from "@/lib/utils";
 import PageTransition from "@/components/shared/PageTransition";
 import StudioBackground from "@/components/layout/StudioBackground";
@@ -76,7 +76,7 @@ export default function RootLayout({
             </LazyMotion>
           </ToastProvider>
         </ThemeProvider>
-        <Analytics />
+        <Script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "700b11106fa44fa299e0fc678b5d6c31"}' />
       </body>
     </html>
   );
