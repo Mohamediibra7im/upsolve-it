@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Eye, EyeOff, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Bar } from "@/components/ui/kit";
 import { TrainingProblem } from "@/types/TrainingProblem";
 import { Training } from "@/types/Training";
 import { SubmissionStatus } from "@/services/codeforces/getTrainingSubmissionStatus";
@@ -52,7 +50,6 @@ const Trainer = ({
 
   const [isFinishDialogOpen, setIsFinishDialogOpen] = useState(false);
   const [isStopDialogOpen, setIsStopDialogOpen] = useState(false);
-  const [showTags, setShowTags] = useState(false);
 
   const solvedCount = useMemo(() => {
     const solvedByStatus = new Set(
@@ -97,93 +94,75 @@ const Trainer = ({
         To save your results, choose Finish session instead.
       </SessionDialog>
 
-      <section aria-label="Your session" className="u-panel">
-        <TrainingControls
-          training={training}
-          isPreContestPeriod={isPreContestPeriod}
-          solvedCount={solvedCount}
-          totalCount={problems.length}
-          isRefreshing={isRefreshing}
-          refreshProblemStatus={refreshProblemStatus}
-          onFinishTraining={() => setIsFinishDialogOpen(true)}
-          onStopTraining={() => setIsStopDialogOpen(true)}
-          onExtendEndTime={onExtendEndTime}
-        />
-        <Bar
-          value={problems.length ? (solvedCount / problems.length) * 100 : 0}
-          label="Problems solved"
-          className="h-1.5 rounded-none"
-        />
-        {training.weaknessFallback && (
-          <p className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-line px-5 py-3 t-sm t-muted">
-            <Badge variant="pending">
-              <Info aria-hidden="true" />
-              Ladder problems
-            </Badge>
-            We’re still learning your strengths. This session uses ladder
-            problems until there’s enough history to target your weak topics.
-          </p>
-        )}
-        {problems.length === 0 && (
-          <p className="u-panel__body t-muted">
-            No problems are available in this session.
-          </p>
-        )}
-        {/* Before the start the problems wait behind locks; once the clock
-            runs they open in the workspace below instead of a list of links. */}
-        {isPreContestPeriod &&
-          problems.map((problem, index) => (
+      {isPreContestPeriod || problems.length === 0 ? (
+        // Before the start: the countdown, and the problems behind their locks.
+        <section aria-label="Your session" className="u-panel">
+          <TrainingControls
+            training={training}
+            isPreContestPeriod={isPreContestPeriod}
+            solvedCount={solvedCount}
+            totalCount={problems.length}
+            isRefreshing={isRefreshing}
+            refreshProblemStatus={refreshProblemStatus}
+            onFinishTraining={() => setIsFinishDialogOpen(true)}
+            onStopTraining={() => setIsStopDialogOpen(true)}
+            onExtendEndTime={onExtendEndTime}
+          />
+          {problems.length === 0 && (
+            <p className="u-panel__body t-muted">
+              No problems are available in this session.
+            </p>
+          )}
+          {problems.map((problem, index) => (
             <ProblemRow
               key={`${problem.contestId}-${problem.index}-${index}`}
               problem={problem}
               index={index}
               startTime={training.startTime}
-              locked={isPreContestPeriod}
-              submissionStatus={submissionStatuses.find(
-                (s) => s.problemId === `${problem.contestId}_${problem.index}`,
-              )}
+              locked
               hideContestDetails={hideContestDetails}
-              onProblemOpen={onProblemOpen}
-              opened={
-                training.serverSessionId
-                  ? Boolean(problem.startedAt)
-                  : undefined
-              }
-              showTags={showTags}
             />
           ))}
-        <div className="u-panel__foot border-t-0">
-          <span>
-            {problems.some((p) => p.judge === "atcoder")
-              ? "Submitted on the judge? Refresh status to see your result. An AtCoder result can take a few minutes to show."
-              : "Submitted on Codeforces? Refresh status to see your result."}
-          </span>
-          {!hideContestDetails && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowTags(!showTags)}
-            >
-              {showTags ? (
-                <EyeOff aria-hidden="true" />
-              ) : (
-                <Eye aria-hidden="true" />
-              )}
-              {showTags ? "Hide topics" : "Show topics"}
-            </Button>
-          )}
-        </div>
-      </section>
-
-      {!isPreContestPeriod && problems.length > 0 && (
-        <div className="mt-6">
+        </section>
+      ) : (
+        // Once the clock runs the whole page is the workspace, edge to edge:
+        // the session's clock and actions sit in its bar.
+        <div className="sw-page">
           <Workspace
-            title={`${formatTrainingModeLabel(normalizeTrainingMode(training.trainingMode))} session`}
+            title={formatTrainingModeLabel(
+              normalizeTrainingMode(training.trainingMode),
+            )}
             problems={problems}
             statuses={submissionStatuses}
             hideDetails={hideContestDetails}
-            showTags={showTags}
             onProblemOpen={onProblemOpen}
+            session={
+              <TrainingControls
+                compact
+                training={training}
+                isPreContestPeriod={false}
+                solvedCount={solvedCount}
+                totalCount={problems.length}
+                isRefreshing={isRefreshing}
+                refreshProblemStatus={refreshProblemStatus}
+                onFinishTraining={() => setIsFinishDialogOpen(true)}
+                onStopTraining={() => setIsStopDialogOpen(true)}
+                onExtendEndTime={onExtendEndTime}
+              />
+            }
+            notice={
+              training.weaknessFallback && (
+                <p className="t-sm t-muted flex flex-wrap items-center gap-x-3 gap-y-2 px-1">
+                  <Badge variant="pending">
+                    <Info aria-hidden="true" />
+                    Ladder problems
+                  </Badge>
+                  We’re still learning your strengths. This session uses ladder
+                  problems until there’s enough history to target your weak
+                  topics.
+                </p>
+              )
+            }
           />
         </div>
       )}

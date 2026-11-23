@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   ArrowUp,
   Check,
   Clock,
   Code2,
   ExternalLink,
+  Eye,
+  EyeOff,
   FileText,
   ListChecks,
   Play,
@@ -85,7 +87,8 @@ export default function Workspace({
   problems,
   statuses,
   hideDetails,
-  showTags,
+  session,
+  notice,
   onProblemOpen,
 }: {
   /** The session's name, shown beside the problem switcher. */
@@ -94,11 +97,15 @@ export default function Workspace({
   statuses: SubmissionStatus[];
   /** Contest mode: ratings and topics stay hidden. */
   hideDetails: boolean;
-  showTags: boolean;
+  /** The session's clock and actions, placed at the end of the bar. */
+  session?: ReactNode;
+  /** A line about this session, shown under the bar. */
+  notice?: ReactNode;
   onProblemOpen: (problem: TrainingProblem) => void;
 }) {
   const { toast } = useToast();
   const [selected, setSelected] = useState(0);
+  const [showTags, setShowTags] = useState(false);
   const problem = problems[Math.min(selected, problems.length - 1)];
   const id = idOf(problem);
 
@@ -355,25 +362,7 @@ export default function Workspace({
           </span>
           <span className="sw-name">{statement?.title ?? problem.name}</span>
         </div>
-        <div className="sw-top__side sw-top__side--end">
-          <a
-            className="u-btn u-btn--ghost u-btn--sm"
-            href={problem.url}
-            target="_blank"
-            rel="noreferrer"
-          >
-            <ExternalLink aria-hidden="true" />
-            {judgeName(problem)}
-          </a>
-          <button
-            type="button"
-            className="u-btn u-btn--sm"
-            onClick={submit}
-            title={`Copies your code and opens the problem on ${judgeName(problem)}, where you submit it`}
-          >
-            <ArrowUp aria-hidden="true" />
-            Submit
-          </button>
+        <div className="sw-top__mid">
           <button
             type="button"
             className="u-btn u-btn--primary u-btn--sm"
@@ -383,8 +372,19 @@ export default function Workspace({
             <Play aria-hidden="true" fill="currentColor" />
             {running ? "Running…" : "Run"}
           </button>
+          <button
+            type="button"
+            className="u-btn u-btn--sm"
+            onClick={submit}
+            title={`Copies your code and opens the problem on ${judgeName(problem)}, where you submit it`}
+          >
+            <ArrowUp aria-hidden="true" />
+            Submit
+          </button>
         </div>
+        <div className="sw-top__side sw-top__side--end">{session}</div>
       </div>
+      {notice}
 
       <div className="sw-grid">
         <section className="u-panel sw-panel" aria-label="Problem">
@@ -392,6 +392,32 @@ export default function Workspace({
             <span className="sw-tab">
               <FileText aria-hidden="true" />
               Problem
+            </span>
+            <span className="sw-head__end">
+              {!hideDetails && (problem.tags ?? []).length > 0 && (
+                <button
+                  type="button"
+                  className="u-btn u-btn--ghost u-btn--sm"
+                  aria-pressed={showTags}
+                  onClick={() => setShowTags(!showTags)}
+                >
+                  {showTags ? (
+                    <EyeOff aria-hidden="true" />
+                  ) : (
+                    <Eye aria-hidden="true" />
+                  )}
+                  Topics
+                </button>
+              )}
+              <a
+                className="u-btn u-btn--ghost u-btn--sm"
+                href={problem.url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <ExternalLink aria-hidden="true" />
+                {judgeName(problem)}
+              </a>
             </span>
           </div>
           <div className="sw-body">

@@ -220,11 +220,14 @@ export default function TrainingPage() {
 
   return (
     <>
-      <PageHead eyebrow="The training room" title="Make room for progress.">
-        <span className="t-muted">
-          Training as <b className="text-ink">{user.codeforcesHandle}</b>
-        </span>
-      </PageHead>
+      {/* a running session is its own page: the workspace, edge to edge */}
+      {!(isTraining && training) && (
+        <PageHead eyebrow="The training room" title="Make room for progress.">
+          <span className="t-muted">
+            Training as <b className="text-ink">{user.codeforcesHandle}</b>
+          </span>
+        </PageHead>
+      )}
 
       <div className="grid gap-6">
         {finishError && (

@@ -4,6 +4,13 @@
    panels, buttons, badges and slot tiles. Only what the site's kit does not
    have is defined here. */
 
+/* A running session leaves the page's centred column and takes the window,
+   from under the site's bar down: the main frame's own padding is undone. */
+.sw-page {
+  width: 100vw;
+  margin: -28px 0 -48px calc(50% - 50vw);
+  padding: 0 12px;
+}
 .sw {
   display: grid;
   gap: 12px;
@@ -13,24 +20,34 @@
   display: none !important;
 }
 
-/* ---- top bar: the session's problems as slot tiles, then the actions ---- */
+/* ---- the bar: the problems, the two actions, then the session itself ---- */
 .sw-top {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 10px 16px;
-  padding: 10px 14px;
+  padding: 8px 12px;
 }
-.sw-top__side {
+.sw-top__side,
+.sw-top__mid {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 12px;
   min-width: 0;
 }
+.sw-top__mid {
+  gap: 8px;
+}
+.sw-top__side--end {
+  justify-content: flex-end;
+  gap: 4px 6px;
+}
+.sw-top__side--end .u-timer {
+  margin-right: 8px;
+}
 .sw-name {
-  max-width: 26ch;
+  max-width: 28ch;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -91,7 +108,8 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
   gap: 12px;
-  height: max(620px, calc(100vh - 132px));
+  /* the window, less the site's bar, this bar and the gaps around them */
+  height: max(560px, calc(100dvh - 160px));
 }
 .sw-col {
   display: grid;
@@ -504,12 +522,12 @@ textarea.sw-field::placeholder {
     padding: 16px;
   }
   .sw-top {
-    padding: 10px 12px;
+    grid-template-columns: minmax(0, 1fr);
   }
   .sw-top__side--end {
-    width: 100%;
+    justify-content: flex-start;
   }
-  .sw-top__side--end .u-btn--primary {
+  .sw-top__mid .u-btn {
     flex: 1;
   }
 }

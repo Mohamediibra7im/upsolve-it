@@ -46,6 +46,8 @@ interface TrainingControlsProps {
   onFinishTraining: () => void;
   onStopTraining: () => void;
   onExtendEndTime: (minutes: number) => void;
+  /** The clock and the actions alone, small, to sit in the workspace's bar. */
+  compact?: boolean;
 }
 
 /** The band across a live session: where you are, the clock, what you can do. */
@@ -59,6 +61,7 @@ const TrainingControls = ({
   onFinishTraining,
   onStopTraining,
   onExtendEndTime,
+  compact,
 }: TrainingControlsProps) => {
   const [breakEndTime, setBreakEndTime] = useState<number | null>(null);
   const [, setTick] = useState(0);
@@ -97,6 +100,93 @@ const TrainingControls = ({
     : isOnBreak
       ? { badge: "pending", icon: Coffee, label: "On a break" }
       : { badge: "solved", icon: Activity, label: "Session in progress" };
+
+  if (compact)
+    return isOnBreak ? (
+      <>
+        <span
+          role="timer"
+          aria-live="off"
+          aria-label={`${breakMinutes} minutes, ${breakSeconds} seconds of break left`}
+          className="u-timer u-timer--sm"
+          data-warn
+        >
+          {pad(breakMinutes)}
+          <small>m</small>
+          {pad(breakSeconds)}
+          <small>s</small>
+        </span>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setBreakEndTime(null)}
+        >
+          <Play aria-hidden="true" />
+          Resume
+        </Button>
+      </>
+    ) : (
+      <>
+        <CountDown
+          compact
+          startTime={training.startTime}
+          endTime={training.endTime}
+        />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="u-btn--sm"
+          aria-label={isRefreshing ? "Refreshing status" : "Refresh status"}
+          title="Submitted on the judge? Refresh to see your result."
+          onClick={refreshProblemStatus}
+          disabled={isRefreshing}
+        >
+          <RefreshCw
+            aria-hidden="true"
+            className={cn(
+              isRefreshing && "animate-spin motion-reduce:animate-none",
+            )}
+          />
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="u-btn--sm"
+              aria-label="Take a break"
+              title="Take a break"
+            >
+              <Coffee aria-hidden="true" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>How long would you like?</DropdownMenuLabel>
+            {BREAK_OPTIONS.map((minutes) => (
+              <DropdownMenuItem
+                key={minutes}
+                onSelect={() => startBreak(minutes)}
+              >
+                <span className="t-num">{minutes}</span> min
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <Button variant="outline" size="sm" onClick={onFinishTraining}>
+          Finish
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="u-btn--sm text-failed"
+          aria-label="Discard this session"
+          title="Discard this session"
+          onClick={onStopTraining}
+        >
+          <X aria-hidden="true" />
+        </Button>
+      </>
+    );
 
   return (
     <div className="grid items-center gap-6 px-5 py-6 lg:grid-cols-[1fr_auto_1fr] lg:gap-8 lg:px-7">

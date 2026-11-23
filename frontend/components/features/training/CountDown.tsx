@@ -3,12 +3,14 @@ import { useState, useEffect } from "react";
 type CountDownProps = {
   startTime: number;
   endTime: number;
+  /** Only the clock, small, for a bar: no label above it. */
+  compact?: boolean;
 };
 
 const pad = (n: number) => n.toString().padStart(2, "0");
 
 /** The session clock with its label: counts down to the start, then to the end. */
-const CountDown = ({ startTime, endTime }: CountDownProps) => {
+const CountDown = ({ startTime, endTime, compact }: CountDownProps) => {
   const [, setTick] = useState<number>(0);
   const [mounted, setMounted] = useState(false);
 
@@ -49,7 +51,7 @@ const CountDown = ({ startTime, endTime }: CountDownProps) => {
 
   return (
     <>
-      <span className="t-eyebrow">
+      <span className={compact ? "sr-only" : "t-eyebrow"}>
         {!isStarted
           ? "Starting in"
           : over
@@ -62,7 +64,7 @@ const CountDown = ({ startTime, endTime }: CountDownProps) => {
         role="timer"
         aria-live="off"
         aria-label={`${hours} hours, ${minutes} minutes, ${seconds} seconds remaining`}
-        className="u-timer"
+        className={compact ? "u-timer u-timer--sm" : "u-timer"}
         data-warn={warn || undefined}
         data-over={over || undefined}
       >
