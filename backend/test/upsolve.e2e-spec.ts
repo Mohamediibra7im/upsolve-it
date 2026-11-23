@@ -117,6 +117,82 @@ describe('upsolve queue against a real database', () => {
     expect(Object.values(error.constraints!)[0]).toContain('2000 characters');
   });
 
+  it('adds the problem a pasted link points to, with details it looked up', async () => {
+    const user = newUser();
+    const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue({
+      json: async () => ({
+        status: 'OK',
+        result: {
+          problems: [
+            {
+              contestId: 1986,
+              index: 'D',
+              name: 'Mathematical Problem',
+              rating: 1400,
+              tags: ['dp'],
+            },
+            { contestId: 1986, index: 'A', name: 'X Axis', tags: [] },
+          ],
+        },
+      }),
+    } as Response);
+
+    const added = await upsolve.addByUrl(
+      user,
+      'codeforces.com/contest/1986/problem/D',
+    );
+    expect(added).toMatchObject({
+      judge: 'codeforces',
+      contestId: 1986,
+      index: 'D',
+      name: 'Mathematical Problem',
+      rating: 1400,
+      tags: ['dp'],
+      url: 'https://codeforces.com/problemset/problem/1986/D',
+      source: 'manual',
+    });
+    await expect(
+      upsolve.addByUrl(
+        user,
+        'https://codeforces.com/problemset/problem/1986/D',
+      ),
+    ).rejects.toThrow('already in your upsolve list');
+    expect(await upsolve.list(user)).toHaveLength(1);
+
+    // no rating on Codeforces: still added, as unrated
+    expect(
+      await upsolve.addByUrl(
+        user,
+        'https://codeforces.com/contest/1986/problem/A',
+      ),
+    ).toMatchObject({ name: 'X Axis', rating: 0 });
+    // not in the problemset: added without its details
+    expect(
+      await upsolve.addByUrl(
+        user,
+        'https://codeforces.com/contest/2019/problem/C',
+      ),
+    ).toMatchObject({ name: 'Problem 2019C', rating: 0, tags: [] });
+
+    // a dismissed problem comes back, and is no longer dismissed
+    await upsolve.deleteOne(user, { contestId: 1986, index: 'D' });
+    expect(await upsolve.listDismissed(user)).toHaveLength(1);
+    await upsolve.addByUrl(
+      user,
+      'https://codeforces.com/contest/1986/problem/D',
+    );
+    expect(await upsolve.listDismissed(user)).toHaveLength(0);
+    expect(await upsolve.list(user)).toHaveLength(3);
+
+    await expect(
+      upsolve.addByUrl(user, 'https://codeforces.com/gym/104114/problem/A'),
+    ).rejects.toThrow('Gym problems cannot be added');
+    await expect(
+      upsolve.addByUrl(user, 'https://leetcode.com/problems/two-sum'),
+    ).rejects.toThrow('not a link to a Codeforces problem');
+    fetchMock.mockRestore();
+  });
+
   it('keeps two judges apart even when they share an identifier', async () => {
     const user = newUser();
     await upsolve.insertMany(user, [

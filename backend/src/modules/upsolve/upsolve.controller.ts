@@ -16,6 +16,7 @@ import { UserStatsService } from '../user-stats/user-stats.service';
 import {
   CreateUpsolveProblemDto,
   UpdateUpsolveProblemDto,
+  AddByUrlDto,
   DeleteUpsolveProblemDto,
   UpsolveNoteDto,
 } from './dto/upsolve-problem.dto';
@@ -61,6 +62,15 @@ export class UpsolveController {
       }
       throw err;
     }
+  }
+
+  /** Add the problem a pasted link points to. */
+  @UseGuards(AuthGuard)
+  @Post('by-url')
+  async addByUrl(@CurrentUser() user: UserDocument, @Body() body: AddByUrlDto) {
+    return {
+      problem: await this.upsolve.addByUrl(user._id.toString(), body.url),
+    };
   }
 
   /** Import failed contest problems and refresh solved status from Codeforces. */

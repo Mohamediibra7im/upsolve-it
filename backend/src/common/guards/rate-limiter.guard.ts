@@ -117,6 +117,11 @@ export class RateLimiterGuard implements CanActivate {
         duration: 60 * 15,
         keyPrefix: 'auth:reset-password',
       },
+      'UpsolveController.addByUrl': {
+        points: 30,
+        duration: 60 * 60,
+        keyPrefix: 'upsolve:add-by-url',
+      },
       'UpsolveController.add': {
         points: 30,
         duration: 60 * 60,

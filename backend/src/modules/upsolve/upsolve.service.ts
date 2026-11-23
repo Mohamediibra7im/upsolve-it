@@ -1,4 +1,6 @@
 import {
+  BadRequestException,
+  ConflictException,
   Injectable,
   Logger,
   NotFoundException,
@@ -16,7 +18,11 @@ import {
   DismissedUpsolve,
   type DismissedUpsolveDocument,
 } from './schemas/dismissed-upsolve.schema';
-import { fetchCodeforcesSubmissions } from '../../common/utils/codeforces-api';
+import {
+  fetchCodeforcesProblemset,
+  fetchCodeforcesSubmissions,
+} from '../../common/utils/codeforces-api';
+import { parseProblemUrl } from './utils/problem-url';
 import { planUpsolveSync, type CfSubmission } from './utils/contest-sync';
 import { problemKey, type ProblemRef } from './schemas/judge';
 
@@ -135,6 +141,48 @@ export class UpsolveService implements OnModuleInit {
       },
     }));
     await this.upsolveModel.bulkWrite(bulkOps);
+  }
+
+  /**
+   * Adds the problem a pasted link points to. Its name, rating and tags are
+   * looked up here, never taken from the client. A problem the user dismissed
+   * earlier comes back, and stays: nothing dismisses it again.
+   */
+  async addByUrl(userId: string, link: string) {
+    const parsed = parseProblemUrl(link);
+    if ('error' in parsed)
+      throw new BadRequestException(
+        parsed.error === 'gym'
+          ? 'Gym problems cannot be added: they have no public problem page.'
+          : 'That is not a link to a Codeforces problem.',
+      );
+    if (parsed.judge !== 'codeforces')
+      throw new BadRequestException(
+        'Only Codeforces problem links can be added for now.',
+      );
+    const key = problemKey(parsed);
+    if (await this.upsolveModel.exists({ user: userId, ...key }))
+      throw new ConflictException(
+        'That problem is already in your upsolve list.',
+      );
+
+    // ponytail: a problem shared by two divisions is in the problemset under
+    // one contest only; pasted from the other it is added without its details.
+    const known = (await fetchCodeforcesProblemset().catch(() => null))
+      ?.get(parsed.contestId as number)
+      ?.find((p) => p.index === parsed.index);
+    const problem = {
+      ...key,
+      name: known?.name ?? `Problem ${parsed.contestId}${parsed.index}`,
+      rating: known?.rating ?? 0,
+      tags: known?.tags ?? [],
+      url: parsed.url,
+      solvedTime: null,
+      source: 'manual' as const,
+    };
+    await this.dismissedModel.deleteOne({ user: userId, ...key });
+    await this.insertMany(userId, [problem]);
+    return problem;
   }
 
   /** Saves the user's note on a problem of their own list. "" clears it. */

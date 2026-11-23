@@ -4,6 +4,9 @@ import { JUDGES, type ContestId, type Judge } from './judge';
 
 export const NOTE_MAX_LENGTH = 2000;
 
+export const UPSOLVE_SOURCES = ['failed', 'unattempted', 'manual'] as const;
+export type UpsolveSource = (typeof UPSOLVE_SOURCES)[number];
+
 export type UpsolvedProblemDocument = HydratedDocument<UpsolvedProblem>;
 
 @Schema({ timestamps: false })
@@ -35,6 +38,10 @@ export class UpsolvedProblem {
 
   @Prop({ type: Number, default: null })
   solvedTime!: number | null;
+
+  /** How it got here: tried and failed, pasted as a link, or next in a contest. */
+  @Prop({ type: String, enum: UPSOLVE_SOURCES, default: 'failed' })
+  source!: UpsolveSource;
 
   /** The user's own words about the problem: why it failed, the key idea. */
   @Prop({ type: String, default: '', maxlength: NOTE_MAX_LENGTH })

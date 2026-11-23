@@ -70,6 +70,13 @@ export class UpdateUpsolveProblemDto extends ProblemRefDto {
 
 export class DeleteUpsolveProblemDto extends ProblemRefDto {}
 
+export class AddByUrlDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(300)
+  url!: string;
+}
+
 export class UpsolveNoteDto extends ProblemRefDto {
   /** An empty note clears it. */
   @IsString()
