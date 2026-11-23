@@ -68,6 +68,9 @@ export class PublicProfileService {
         sessions: stats.totalSessions,
         solved: stats.solvedProblems,
         upsolved: stats.upsolvedSolvedCount,
+        // the upsolve queue as two counts; the problems themselves stay private
+        upsolveTotal: stats.upsolvedCount,
+        waiting: stats.upsolvedCount - stats.upsolvedSolvedCount,
         currentStreak: activity.currentStreak,
         longestStreak: activity.longestStreak,
       },

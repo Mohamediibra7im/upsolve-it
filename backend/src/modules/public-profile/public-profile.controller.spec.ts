@@ -151,6 +151,8 @@ describe('public profile endpoints', () => {
         sessions: 58,
         solved: 412,
         upsolved: 37,
+        upsolveTotal: 46,
+        waiting: 9,
         currentStreak: 6,
         longestStreak: 21,
       },

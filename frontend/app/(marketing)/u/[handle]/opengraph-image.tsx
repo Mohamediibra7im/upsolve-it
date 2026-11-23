@@ -56,7 +56,14 @@ export default async function Image({
         },
         { slot: String(stats.sessions), name: "Training sessions" },
         { slot: String(stats.solved), name: "Solved in training" },
-        { slot: String(stats.upsolved), name: "Problems upsolved" },
+        {
+          slot: String(stats.upsolved),
+          name: "Problems upsolved",
+          value:
+            stats.upsolveTotal > 0
+              ? `${Math.round((stats.upsolved / stats.upsolveTotal) * 100)}% of queue`
+              : undefined,
+        },
         {
           slot: String(stats.currentStreak),
           name: "Day streak",

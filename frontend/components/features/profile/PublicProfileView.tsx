@@ -22,6 +22,9 @@ export type PublicProfile = {
     sessions: number;
     solved: number;
     upsolved: number;
+    /** Every problem that ever sat in the upsolve queue, solved or not. */
+    upsolveTotal: number;
+    waiting: number;
     currentStreak: number;
     longestStreak: number;
   };
@@ -58,6 +61,10 @@ export default function PublicProfileView({
     { month: "long", year: "numeric", timeZone: "UTC" },
   );
 
+  const upsolveRate = Math.round(
+    (stats.upsolved / Math.max(stats.upsolveTotal, 1)) * 100,
+  );
+
   const days = activityWeeks(profile.activity);
   const past = days.filter((d) => d !== null);
   const solvedThisYear = past.reduce((sum, d) => sum + d.solved, 0);
@@ -91,8 +98,17 @@ export default function PublicProfileView({
             value={stats.solved.toLocaleString("en-US")}
           />
           <Stat
-            label="Upsolved"
-            value={stats.upsolved.toLocaleString("en-US")}
+            label="Upsolve rate"
+            value={stats.upsolveTotal > 0 ? upsolveRate : "—"}
+            unit={stats.upsolveTotal > 0 ? "%" : undefined}
+            sub={`${stats.upsolved.toLocaleString("en-US")} of ${plural(stats.upsolveTotal, "problem")} upsolved`}
+          />
+          <Stat
+            label="Still waiting"
+            value={stats.waiting.toLocaleString("en-US")}
+            sub={
+              stats.waiting === 0 ? "Queue is clear" : "in the upsolve queue"
+            }
           />
           <Stat
             label="Current streak"
