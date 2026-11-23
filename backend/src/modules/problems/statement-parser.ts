@@ -10,6 +10,12 @@ export type StatementSection = {
   html: string;
 };
 
+/**
+ * Raised whenever a statement comes out of this file differently, so that
+ * copies kept from before are read again from the judge.
+ */
+export const PARSER_VERSION = 2;
+
 export type ParsedStatement = {
   /** The problem's name, without its letter. */
   title: string;
@@ -41,6 +47,10 @@ const clean = (html: string, base: string) =>
       td: ['colspan', 'rowspan'],
       th: ['colspan', 'rowspan'],
     },
+    // Older Codeforces problems draw each formula as a small picture. The one
+    // class that says so is kept, so the page can set those in the line of
+    // text they belong to instead of treating them as figures.
+    allowedClasses: { img: ['tex-formula'] },
     allowedSchemes: ['https'],
     allowedSchemesByTag: { img: ['https'] },
     allowProtocolRelative: false,

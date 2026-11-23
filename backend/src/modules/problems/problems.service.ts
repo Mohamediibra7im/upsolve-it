@@ -15,6 +15,7 @@ import {
   type ProblemStatementDocument,
 } from './problem-statement.schema';
 import {
+  PARSER_VERSION,
   parseAtcoderStatement,
   parseCodeforcesStatement,
 } from './statement-parser';
@@ -41,8 +42,8 @@ export class ProblemsService {
   async statement(judge: Judge, contestId: number | string, index: string) {
     const key = problemKey({ judge, contestId, index });
     const found = await this.statements.findOne(key).lean();
-    // a copy from before statements were kept in parts is as good as none
-    const kept = found?.sections?.length ? found : null;
+    // a copy made by an older parser is as good as none
+    const kept = found?.version === PARSER_VERSION ? found : null;
     if (kept && Date.now() - kept.fetchedAt.getTime() < FRESH_FOR_MS)
       return kept;
 
@@ -106,10 +107,26 @@ export class ProblemsService {
     const saved = await this.statements
       .findOneAndUpdate(
         key,
-        { $set: { ...parsed, ...key, sourceUrl, fetchedAt: new Date() } },
+        {
+          $set: {
+            ...parsed,
+            ...key,
+            sourceUrl,
+            version: PARSER_VERSION,
+            fetchedAt: new Date(),
+          },
+        },
         { upsert: true, returnDocument: 'after' },
       )
       .lean<ProblemStatement>();
-    return saved ?? { ...parsed, ...key, sourceUrl, fetchedAt: new Date() };
+    return (
+      saved ?? {
+        ...parsed,
+        ...key,
+        sourceUrl,
+        version: PARSER_VERSION,
+        fetchedAt: new Date(),
+      }
+    );
   }
 }

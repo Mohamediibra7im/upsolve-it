@@ -306,11 +306,23 @@ span.sw-tab {
   background: var(--surface-sunk);
   font: 500 13px var(--font-mono);
 }
+/* A figure is drawn for a white page, so it keeps one. It sits in the text
+   where the judge put it, not on a line of its own. */
 .sw-prose img {
+  display: inline-block;
   max-width: 100%;
   height: auto;
+  vertical-align: middle;
   border-radius: var(--radius-sm);
   background: #fff;
+}
+/* Older Codeforces problems draw each formula as a small black picture. It
+   belongs inside its sentence, in the colour of the text around it. */
+.sw-prose img.tex-formula {
+  margin: 0 1px;
+  border-radius: 0;
+  background: none;
+  filter: invert(1);
 }
 .sw-prose table {
   border-collapse: collapse;

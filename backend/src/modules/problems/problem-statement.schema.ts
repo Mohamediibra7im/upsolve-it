@@ -42,6 +42,10 @@ export class ProblemStatement {
   })
   samples!: { input: string; output: string; note?: string }[];
 
+  /** The parser that made this copy; an older one is read again. */
+  @Prop({ default: 0 })
+  version!: number;
+
   /** The page it was read from, shown next to it as its source. */
   @Prop({ required: true })
   sourceUrl!: string;

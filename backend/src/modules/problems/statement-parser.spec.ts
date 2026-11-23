@@ -110,6 +110,21 @@ describe('parseCodeforcesStatement', () => {
     );
   });
 
+  it('keeps the mark of a formula drawn as a picture, and no other class', () => {
+    const old = codeforcesPage.replace(
+      '<p>Given',
+      '<p>Find <img class="tex-formula evil" src="https://espresso.codeforces.com/f.png" style="max-width:100%"> . <img class="figure" src="https://espresso.codeforces.com/g.png"></p><p>Given',
+    );
+    const story = htmlOf(parseCodeforcesStatement(old)!, 'story');
+    expect(story).toContain(
+      '<img class="tex-formula" src="https://espresso.codeforces.com/f.png" />',
+    );
+    expect(story).toContain(
+      '<img src="https://espresso.codeforces.com/g.png" />',
+    );
+    expect(story).not.toContain('evil');
+  });
+
   it('is null for a page without a statement', () => {
     expect(
       parseCodeforcesStatement('<html><body>Just a moment…</body></html>'),
