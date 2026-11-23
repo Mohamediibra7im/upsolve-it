@@ -20,8 +20,15 @@ import {
 import "katex/dist/katex.min.css";
 import "./workspace.css";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { rankKey } from "@/utils/rank";
-import { useToast } from "@/components/providers/Toast";
 import {
   useDraft,
   useRunner,
@@ -104,7 +111,6 @@ export default function Workspace({
   notice?: ReactNode;
   onProblemOpen: (problem: TrainingProblem) => void;
 }) {
-  const { toast } = useToast();
   const [selected, setSelected] = useState(0);
   const [showTags, setShowTags] = useState(false);
   const problem = problems[Math.min(selected, problems.length - 1)];
@@ -181,26 +187,22 @@ export default function Workspace({
     }
   };
 
-  // Copy first, while the click still counts as the user's own action, then
-  // open the judge's submit page for this problem. Pasting is theirs to do.
-  const submit = async () => {
-    let copied = true;
+  // Submit copies the code, then stops to say so: the judge's page opens in
+  // another tab, where a message shown here would never be seen. The page is
+  // opened from the dialog, once the user knows a paste is theirs to do.
+  const [submitStep, setSubmitStep] = useState<{ copied: boolean } | null>(
+    null,
+  );
+  const copyCode = async () => {
     try {
       await navigator.clipboard.writeText(code);
+      return true;
     } catch {
-      copied = false;
+      return false;
     }
-    window.open(submitUrl(problem), "_blank", "noopener,noreferrer");
-    toast({
-      title: copied
-        ? "Code copied, submit page opened"
-        : "Copy your code first",
-      description: copied
-        ? `On ${judgeName(problem)}, click the source box, press Ctrl+V, check the language and submit. Then refresh the status here.`
-        : `The browser did not allow copying. Copy the code yourself and paste it on ${judgeName(problem)}.`,
-      variant: copied ? "success" : "warning",
-    });
   };
+  const submit = async () => setSubmitStep({ copied: await copyCode() });
+  const languageName = LANGUAGES.find((l) => l.id === language)?.name;
 
   const sections = statement?.sections ?? [];
   const part = (kind: string) => sections.filter((s) => s.kind === kind);
@@ -381,7 +383,7 @@ export default function Workspace({
             type="button"
             className="u-btn u-btn--sm"
             onClick={submit}
-            title={`Copies your code and opens the submit page for this problem on ${judgeName(problem)}`}
+            title={`Copies your code, then opens the submit page for this problem on ${judgeName(problem)}`}
           >
             <ArrowUp aria-hidden="true" />
             Submit
@@ -729,6 +731,92 @@ export default function Workspace({
           </section>
         </div>
       </div>
+
+      <Dialog
+        open={submitStep !== null}
+        onOpenChange={(open) => !open && setSubmitStep(null)}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="t-h2">
+              {submitStep?.copied
+                ? "Your code is copied"
+                : "Copy your code first"}
+            </DialogTitle>
+            <DialogDescription className="t-muted">
+              {submitStep?.copied
+                ? `It is on your clipboard. ${judgeName(problem)} only gets it when you paste it there yourself: this site cannot type into another site’s page.`
+                : `The browser did not allow copying. Copy your code from the editor yourself, then paste it on ${judgeName(problem)}.`}
+            </DialogDescription>
+          </DialogHeader>
+          <ol className="sw-steps">
+            <li>
+              <span className="sw-slot" aria-hidden="true">
+                1
+              </span>
+              <span>
+                Open the submit page with the button below. This problem is
+                already chosen there.
+              </span>
+            </li>
+            <li>
+              <span className="sw-slot" aria-hidden="true">
+                2
+              </span>
+              <span>
+                Click the source code box and paste: <kbd>Ctrl</kbd> +{" "}
+                <kbd>V</kbd>, or <kbd>⌘</kbd> + <kbd>V</kbd> on a Mac.
+              </span>
+            </li>
+            <li>
+              <span className="sw-slot" aria-hidden="true">
+                3
+              </span>
+              <span>
+                Check that the language is <b>{languageName}</b>, then press the
+                judge’s own Submit.
+              </span>
+            </li>
+            <li>
+              <span className="sw-slot" aria-hidden="true">
+                4
+              </span>
+              <span>
+                Come back here and press the refresh button beside the clock to
+                see your result.
+              </span>
+            </li>
+          </ol>
+          <div className="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            {!submitStep?.copied && (
+              <Button
+                variant="outline"
+                onClick={async () =>
+                  setSubmitStep({ copied: await copyCode() })
+                }
+              >
+                Try copying again
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => setSubmitStep(null)}>
+              Not now
+            </Button>
+            <Button
+              onClick={() => {
+                window.open(
+                  submitUrl(problem),
+                  "_blank",
+                  "noopener,noreferrer",
+                );
+                setSubmitStep(null);
+              }}
+            >
+              <ExternalLink aria-hidden="true" />
+              Open the submit page
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
