@@ -29,10 +29,10 @@ Both folders ship as one Docker image to one Fly.io app, defined by the root
 
 | Process | What runs | Reachable from |
 |---|---|---|
-| `web` | Next.js app | The internet |
-| `api` | NestJS API | Only `web`, over Fly's private network |
+| `app` | Next.js web app | The internet |
+| `api` | NestJS API | Only `app`, over Fly's private network |
 
-The browser talks to a single origin. `web` forwards `/api/*` to `api`, so
+The browser talks to a single origin. `app` forwards `/api/*` to `api`, so
 there is no cross-origin setup in production.
 
 `.github/workflows/ci.yml` runs the frontend and backend checks on every pull

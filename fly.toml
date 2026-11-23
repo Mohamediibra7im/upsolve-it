@@ -1,6 +1,8 @@
 # One Fly app for the whole product.
-#   web: the Next.js app. The only process reachable from the internet.
-#   api: the NestJS API. Private; `web` forwards /api/* to it over Fly's
+#   app: the Next.js web app. The only process reachable from the internet.
+#        It keeps Fly's default group name so the machines that already
+#        serve the site are updated in place instead of being replaced.
+#   api: the NestJS API. Private; `app` forwards /api/* to it over Fly's
 #        internal network, so the browser only ever talks to one origin.
 #
 # This reuses the existing "upsolve-it-frontend" app because it already holds
@@ -20,11 +22,11 @@ primary_region = "cdg"
   PORT = "3000"
 
 [processes]
-  web = "node frontend/server.js"
+  app = "node frontend/server.js"
   api = "node backend/dist/main"
 
 [http_service]
-  processes = ["web"]
+  processes = ["app"]
   internal_port = 3000
   force_https = true
   auto_stop_machines = "off"
@@ -51,6 +53,6 @@ primary_region = "cdg"
   grace_period = "10s"
 
 [[vm]]
-  processes = ["web", "api"]
+  processes = ["app", "api"]
   size = "shared-cpu-1x"
   memory = "512mb"
