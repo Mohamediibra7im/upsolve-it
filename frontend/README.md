@@ -1,4 +1,4 @@
-# [ UPSOLVE.it ] | Interface Cockpit
+# Upsolve It | Interface Cockpit
 
 > **Frontend Protocol: COMMAND-CONSOLE-V3**
 > A high-fidelity, monospaced dark terminal dashboard for elite competitive programmers.
@@ -7,15 +7,16 @@
 
 ---
 
-## ⚡ Design Philosophy: "The Technical Cockpit"
+## Design: "Track"
 
-The Upsolve.it frontend interface is engineered to feel like a high-end command line workstation. It prioritizes information density, retro-futuristic styling, and precise responsive execution.
+The interface is dark and loud where it counts: a near-black ground, condensed uppercase headlines, sharp corners, and one volt action per view.
 
-- **Locked Dark Mode Theme**: Strict dark-mode visual palette to prevent screen glare and minimize visual load during long coding sessions.
-- **Unified sliding FAB System**: Consolidates auxiliary actions (`[ HELP ]`, `[ NEWS ]`, `[ SUGG ]`) into a single sliding menu triggered via a pulsing CPU icon.
-- **Flat Monospace Components**: High-fidelity terminal aesthetics with square corners, solid borders (`border-emerald-500/15`), typewriter labels, and **ASCII-progress charts** (`[██████░░░░]`).
-- **Telemetry Charts**: Flattened and customized log-style overlays for Area and Bar charts.
-- **Telemetry OG Generation**: Refactored Open Graph metadata images displaying tactical system overlays and rating parameters.
+- **One top bar** on public pages, the app and the admin. No sidebar.
+- **Wide frame**: content sits in a 1440px container.
+- **Lines, not shadows**: panels are a surface with a hairline; shadows only for things that float.
+- **Numbers in mono**: every rating, problem id, duration and clock.
+- **Colour never stands alone**: solved, failed and pending always come with a word and an icon.
+- Tokens and component classes live in `app/globals.css`; shared pieces in `components/ui/kit.tsx`.
 
 ---
 
@@ -26,7 +27,6 @@ The Upsolve.it frontend interface is engineered to feel like a high-end command 
 - **Styling**: Vanilla Tailwind CSS + Custom theme variables
 - **Components**: Radix UI + Custom shadcn primitives
 - **Data Hydration**: SWR (Stale-While-Revalidate)
-- **Transitions**: Framer Motion configured with strict type variants
 - **Icons**: Lucide React
 - **Testing**: Jest + React Testing Library
 

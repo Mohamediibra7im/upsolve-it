@@ -1,7 +1,7 @@
-# [ UPSOLVE.it ] | Intelligence Engine
+# Upsolve It | Intelligence Engine
 
 > **Backend Protocol: NEXUS-CORE v2.0**
-> The scalable intelligence engine powering the Upsolve.it tactical platform.
+> The scalable intelligence engine powering the Upsolve It tactical platform.
 >
 > 🖥️ **Frontend Console**: [frontend--upsolve-it](https://github.com/Mohamediibra7im/upsolve-it)
 

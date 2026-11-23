@@ -1,6 +1,6 @@
 # Comprehensive Usage Guide
 
-Welcome to the Upsolve.it manual. Find practical guidance for setting up your account, training consistently, and learning from your progress.
+Welcome to the Upsolve It manual. Find practical guidance for setting up your account, training consistently, and learning from your progress.
 
 ## Table of Contents
 
@@ -35,7 +35,7 @@ Welcome to the Upsolve.it manual. Find practical guidance for setting up your ac
 
 ### Creating an Account <a name="creating-an-account"></a>
 
-To create an account on Upsolve.it:
+To create an account on Upsolve It:
 
 1. Choose Create account from the home page.
 2. Enter your Codeforces handle. The handle must match your active Codeforces ID.
@@ -67,7 +67,7 @@ The training page helps you build a session around your current level and the sk
 
 ### Training Modes <a name="training-modes"></a>
 
-Upsolve.it supports five training modes:
+Upsolve It supports five training modes:
 
 - **Ladder Mode**: Classic rating-based training. Best for steady progress. Choose a level to set the difficulty of your problem set.
 - **Weakness Mode**: Targets specific tags where your historical stats show lower success rates, helping you give those topics more attention.
@@ -83,7 +83,7 @@ During an active session:
 2. Each problem includes a link to the corresponding Codeforces task, rating level, tag classifications, and a session timer.
 3. Open a problem to read its statement on Codeforces, then work on your solution in your preferred editor.
 4. Submit your code on Codeforces.
-5. Return to Upsolve.it to check your submission status. Use Refresh status to fetch your latest Codeforces result, including Accepted, Wrong answer, or Judging.
+5. Return to Upsolve It to check your submission status. Use Refresh status to fetch your latest Codeforces result, including Accepted, Wrong answer, or Judging.
 
 ### Session Results <a name="session-results"></a>
 

@@ -1,6 +1,6 @@
-# Contributing to [ UPSOLVE.it ]
+# Contributing to Upsolve It
 
-Thank you for your interest in contributing to the Upsolve.it project! We welcome contributions from the competitive programming and engineering community. Please read these guidelines to establish your development pipeline.
+Thank you for your interest in contributing to the Upsolve It project! We welcome contributions from the competitive programming and engineering community. Please read these guidelines to establish your development pipeline.
 
 ---
 
@@ -46,9 +46,8 @@ Thank you for your interest in contributing to the Upsolve.it project! We welcom
 
 ## 🎨 Coding Standards & Aesthetics
 
-- **Strict Dark Monospace Aesthetics**: Avoid adding generic light themes, gradients, or rounded corners (`rounded-xl` or `rounded-full` etc. are generally disabled in the admin dashboard. Keep borders solid and flat: `border border-emerald-500/15`).
+- **Follow the design system**: tokens and component classes (`u-*`, `t-*`) are in `app/globals.css`. Use token colour classes (`bg-surface`, `border-line`, `text-ink-muted`), never hex values. Navigation is the top bar only; there is no sidebar and no mascot, and the interface is dark only (no light theme). Numbers (ratings, ids, clocks) use the mono face (`t-num`).
 - **TypeScript Only**: All code must be strictly typed. Avoid using `any` unless absolutely necessary.
-- **Micro-Interactions**: When writing Framer Motion code, cast transitions explicitly (e.g. `type: "spring" as const`).
 - **Nesting Rules**: Prevent Next.js hydration failures by using the `asChild` prop on Radix / shadcn Dialog components whenever nesting structural `div` or `p` nodes inside `DialogDescription`.
 - **Commit Format**: Write clean, concise uppercase messages (e.g. `ROADMAP: ADD SESSION GATE`, `ACL: UPDATE ROLE DIALOG`).
 

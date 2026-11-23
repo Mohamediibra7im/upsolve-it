@@ -1,16 +1,16 @@
 <div align="center">
 
 <a href="https://upsolve-it.hnuicpc.tech">
-  <img src="frontend/public/brand/mark.svg" alt="Upsolve.it mark" width="72" height="72" />
+  <img src="frontend/public/brand/mark.svg" alt="Upsolve It mark" width="72" height="72" />
 </a>
 
-# Upsolve.it
+# Upsolve It
 
-**Make your next solve count. Codeforces practice, with a plan.**
+**Make your next solve count. Competitive programming practice, with a plan.**
 
-Structured Codeforces training sessions, an automated upsolve queue, weekly email reminders, and progress analytics — built for competitive programmers who want every attempt to pay off.
+Timed problem sets built around your rating, an upsolve queue that keeps every problem you miss, weekly email reminders, and progress analytics — built for competitive programmers who want every attempt to pay off. Works with Codeforces today, and built so other platforms can follow.
 
-[![Live App](https://img.shields.io/badge/Live-upsolve--it.hnuicpc.tech-b5e3c4?style=flat-square&labelColor=183123)](https://upsolve-it.hnuicpc.tech)
+[![Live App](https://img.shields.io/badge/Live-upsolve--it.hnuicpc.tech-c8f52a?style=flat-square&labelColor=0b0c0a)](https://upsolve-it.hnuicpc.tech)
 [![CI/CD](https://github.com/Mohamediibra7im/upsolve-it/actions/workflows/ci.yml/badge.svg)](https://github.com/Mohamediibra7im/upsolve-it/actions/workflows/ci.yml)
 ![Node 24](https://img.shields.io/badge/Node.js-24-339933?style=flat-square&logo=nodedotjs&logoColor=white)
 ![Next.js 16](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=nextdotjs&logoColor=white)
@@ -18,19 +18,21 @@ Structured Codeforces training sessions, an automated upsolve queue, weekly emai
 ![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose_9-47A248?style=flat-square&logo=mongodb&logoColor=white)
 ![Fly.io](https://img.shields.io/badge/Deploy-Fly.io-7B3FE4?style=flat-square&logo=flydotio&logoColor=white)
 
-[Features](#features) · [Architecture](#architecture) · [Quick Start](#quick-start) · [Environment Variables](#environment-variables) · [API Overview](#api-overview) · [Deployment](#deployment--cicd) · [Contributing](#contributing)
+[Features](#features) · [Pages](#pages) · [Architecture](#architecture) · [Quick Start](#quick-start) · [Environment Variables](#environment-variables) · [API Overview](#api-overview) · [Deployment](#deployment--cicd) · [Contributing](#contributing)
 
 </div>
 
 ---
 
-## Why Upsolve.it?
+## Why Upsolve It?
 
-Most rating growth in competitive programming happens **after** the contest timer hits zero. Upsolve.it connects deliberate practice with consistent follow-through:
+Most rating growth in competitive programming happens **after** the contest timer hits zero. Upsolve It connects deliberate practice with consistent follow-through:
 
-1. **Train with structure** — generate Codeforces problem sets tailored to your rating, target level, and weak topics.
-2. **Never lose an unsolved problem** — automatically collect unsolved training problems and failed attempts from recent Codeforces contests.
-3. **Keep showing up** — sync solved status straight from Codeforces, get weekly email nudges for lingering problems, and track streaks and consistency over time.
+1. **Train with structure** — generate problem sets tailored to your rating, target level, and weak topics.
+2. **Never lose an unsolved problem** — automatically collect unsolved training problems and failed attempts from recent contests.
+3. **Keep showing up** — sync solved status straight from your judge, get weekly email nudges for lingering problems, and track streaks and consistency over time.
+
+> **Platforms:** Upsolve It works with **Codeforces** today: your handle, your rating, the problems, and the verdicts all come from there. More platforms are planned.
 
 ---
 
@@ -46,17 +48,22 @@ Most rating growth in competitive programming happens **after** the contest time
 | **Contest** | 4 problems | 120 min | Contest simulation (`rating - 200` to `rating + 200`) with ratings and details hidden |
 | **Endurance** | 6–8 problems | 180–240 min | Extended sets around your current rating to build stamina |
 
-Sessions support tag filtering, per-problem timers, live Codeforces submission polling, and post-session reviews.
+Pick a mode on the training page and its lane opens with everything it needs. Sessions support tag filtering, per-problem timers, live Codeforces submission polling, and post-session reviews.
 
 ### Automated Upsolve Queue & Codeforces Sync
+- **Grouped by round**: The queue is organised by the session or contest each problem was missed in. Every round shows its problem set, what you solved, and what is still open, so you can finish what each round started.
 - **Contest import**: Pulls problems you attempted and did not solve in recent Codeforces contests (90-day window across live, virtual, and out-of-competition participations, excluding gym contests).
 - **One-click status refresh**: Checks your Codeforces submissions and marks tracked problems solved automatically once an `OK` verdict appears.
 - **Persistent dismissals**: Removing a problem records it as dismissed so future syncs will not re-import it.
 
 ### Weekly Upsolve Email Reminders
-- Opt-in verified email reminders configured from your profile.
+- Opt-in verified email reminders, switched on from the upsolve page.
 - An in-process hourly scheduler refreshes Codeforces submissions before emailing (so solved problems are never nagged about) and sends at most one digest per week.
 - Confirmation and one-click unsubscribe links use signed JWT tokens handled at `/email`.
+
+### Profiles
+- **Your profile**: Display name, bio, links (GitHub, LinkedIn, website and more), and a generated avatar picked from [glyph-avatar](https://github.com/nilbuild/glyph-avatar) or your Codeforces photo. Account, email, privacy, and session controls live on a separate **Settings** page.
+- **Public profile (`/u/<handle>`)**: Opt-in and only for verified handles. Shows your identity, rating, training stats, and a 53-week activity heatmap, with its own share image.
 
 ### Analytics, Streaks & Friends
 - **Dashboard & Statistics**: Activity heatmap, training and upsolve streaks, 7-day consistency score, performance charts, per-mode breakdowns, session history, and weakness detection.
@@ -67,6 +74,24 @@ Sessions support tag filtering, per-problem timers, live Codeforces submission p
 - **Codeforces Ownership Verification**: Expiring verification codes placed in your Codeforces profile's *First name* field verify handle ownership and power password recovery.
 - **Hardened HTTP Layer**: Helmet CSP, exact-origin CORS allowlist (no wildcard preview origins), global DTO whitelist validation, Zod startup env validation, and per-endpoint rate limiting (`X-RateLimit-*` & `Retry-After` headers).
 - **Admin Console (`/admin`)**: User directory, role management, account lock/unlock, single & batch Codeforces profile sync, user stats inspection, and structured audit logs.
+- **Announcements**: Admins write an announcement with an optional start and end time and a call to action; it appears once as a pop-up for visitors, members, or both, and each change is audit-logged.
+
+---
+
+## Pages
+
+| Area | Routes |
+| --- | --- |
+| **Public** | `/` landing, `/modes`, `/ladder`, `/how-it-works`, `/faq`, `/about`, `/contact`, `/u/<handle>`, `/privacy`, `/terms` |
+| **Account** | `/login`, `/signup`, `/reset-password`, `/email` (reminder links) |
+| **App** | `/dashboard`, `/training`, `/training/reviews`, `/upsolve`, `/statistics`, `/friends`, `/profile`, `/settings` |
+| **Admin** | `/admin/dashboard`, `/admin/users`, `/admin/announcements`, `/admin/logs` |
+
+Every public page has its own metadata and a generated share image (`opengraph-image.tsx`, one shared template in `frontend/lib/og.tsx`).
+
+### Design System
+
+The interface is one dark theme, "Track": a black ground, a single volt accent, uppercase condensed headings (Barlow Condensed), Barlow for text, and JetBrains Mono for numbers. Tokens and the `u-*` component classes live in [`frontend/app/globals.css`](frontend/app/globals.css); small React pieces are in [`frontend/components/ui/kit.tsx`](frontend/components/ui/kit.tsx). Navigation is a top bar on every screen, with a full-screen menu on phones.
 
 ---
 
@@ -103,28 +128,30 @@ In production, the browser only talks to one origin. Next.js rewrites `/api/*` t
 upsolve-it/
 ├── frontend/
 │   ├── app/
-│   │   ├── (marketing)/     # Landing page, /email reminder redemption, /privacy, /terms
+│   │   ├── (marketing)/     # Landing, /modes, /ladder, /how-it-works, /faq, /about, /contact, /u/[handle], /email, /privacy, /terms
 │   │   ├── (auth)/          # /login, /signup, /reset-password
-│   │   ├── (main)/          # /dashboard, /training, /upsolve, /statistics, /friends, /profile
-│   │   ├── admin/           # /admin/dashboard, /admin/users, /admin/logs
+│   │   ├── (main)/          # /dashboard, /training, /upsolve, /statistics, /friends, /profile, /settings
+│   │   ├── admin/           # /admin/dashboard, /admin/users, /admin/announcements, /admin/logs
 │   │   └── api/             # /api/profile-image avatar validation proxy
 │   ├── components/          # Feature modules, shared widgets, layout shell, UI primitives
 │   ├── hooks/               # SWR data, auth, training, social, and admin hooks
 │   ├── services/            # Codeforces API helpers & training mode/rating calculations
-│   ├── lib/                 # Cookie-aware API client, SEO metadata, utilities
+│   ├── lib/                 # Cookie-aware API client, SEO metadata, share image template, utilities
 │   └── vendor/braces/       # Security-hardened local backport of braces 3.0.3
 ├── backend/
 │   └── src/
 │       ├── config/          # Zod environment validation
 │       ├── common/          # Auth/rate-limit guards, Helmet/CORS setup, filters, CF API client
 │       └── modules/
-│           ├── auth/            # JWT cookies, CF profile verification, password reset
+│           ├── auth/            # JWT cookies, CF profile verification, password reset, profile editing
 │           ├── trainings/       # Training sessions, reviews, streaks & weakness endpoints
 │           ├── training-levels/ # 110 seeded canonical rating levels
 │           ├── upsolve/         # Queue CRUD, CF contest import & solved-status sync
 │           ├── reminders/       # Weekly digest scheduler & signed email links
 │           ├── user-stats/      # Streaks, active days & 7-day consistency
 │           ├── friends/         # Friend requests & friend stats
+│           ├── public-profile/  # Opt-in public profiles for verified handles
+│           ├── announcements/   # Admin-written announcements shown as a pop-up
 │           ├── admin/           # User management, batch sync & platform metrics
 │           ├── audit-logs/      # Administrative & security event trail
 │           └── health/          # /api/health, /ready, /live probes
@@ -141,7 +168,7 @@ upsolve-it/
 
 | Layer | Technologies |
 | --- | --- |
-| **Frontend** | Next.js 16 (App Router, Turbopack, standalone output), React 19, TypeScript 5, Tailwind CSS 3, Radix UI, Framer Motion 12, SWR 2, Recharts 3, Lucide React |
+| **Frontend** | Next.js 16 (App Router, Turbopack, standalone output), React 19, TypeScript 5, Tailwind CSS 3, Radix UI, SWR 2, Recharts 3, Lucide React, glyph-avatar |
 | **Backend** | NestJS 11, TypeScript 5.9, Mongoose 9, `@nestjs/jwt`, Zod 4, `class-validator`, `nestjs-pino`, Helmet, `rate-limiter-flexible`, Nodemailer 10, Swagger |
 | **Testing & Quality** | Jest 30, React Testing Library, Supertest, `mongodb-memory-server` (isolated replica set), ESLint 9, Prettier, `npm audit` |
 | **Infrastructure** | Docker (`node:24-slim`), Fly.io (`cdg` region), GitHub Actions, Cloudflare Web Analytics |
@@ -257,9 +284,11 @@ All API endpoints are served under `/api`, and interactive OpenAPI documentation
 | `/api/levels` | 110 seeded canonical training levels |
 | `/api/upsolve` | Upsolve list CRUD, dismissal tracking & Codeforces contest/status sync (`POST /api/upsolve/sync`) |
 | `/api/reminders` | Weekly email subscription status, opt-in/out & signed link redemption (`POST /api/reminders/redeem`) |
-| `/api/users/me/*` | Streaks & consistency (`/streaks`) and weak-topic analysis (`/weaknesses`) |
+| `/api/users/me/*` | Streaks & consistency (`/streaks`), weak-topic analysis (`/weaknesses`) and profile editing (`PATCH /profile`) |
+| `/api/public-profile` | Public profile by handle (opt-in, verified handles only) and your own visibility setting |
+| `/api/announcements` | The announcement currently on show (`GET /current`) |
 | `/api/friends` | Friend requests lifecycle, friend list & friend statistics |
-| `/api/admin` | Platform stats, user search/roles/lock/unlock, batch CF sync & audit logs |
+| `/api/admin` | Platform stats, user search/roles/lock/unlock, batch CF sync, announcements & audit logs |
 | `/api/health` | Liveness (`/live`), readiness (`/ready`) & combined health checks (exempt from rate limits) |
 
 ---
@@ -336,7 +365,7 @@ Contributions, bug reports, and feature ideas are welcome!
 
 ## Community & Credits
 
-Built for the competitive programming community by **[Mohamed Ibrahim](https://mohamediibrahim.dev/)** and the **[HNU ICPC Community](https://github.com/HNU-ICPC-Community)**.
+Built under the **[HNU - FCSIT ICPC Community](https://hnuicpc.tech)** by **[Mohamed Ibrahim](https://mohamediibrahim.dev/)**.
 
 - **Live App**: [upsolve-it.hnuicpc.tech](https://upsolve-it.hnuicpc.tech)
 - **Issues & Feedback**: [GitHub Issues](https://github.com/Mohamediibra7im/upsolve-it/issues)
