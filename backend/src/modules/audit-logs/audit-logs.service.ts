@@ -91,7 +91,7 @@ export class AuditLogsService {
         .sort({ createdAt: -1 })
         .skip(offset)
         .limit(limit)
-        .populate('performedBy', 'codeforcesHandle avatar')
+        .populate('performedBy', 'codeforcesHandle avatar glyphAvatar')
         .exec(),
       this.auditLogModel.countDocuments(query),
     ]);

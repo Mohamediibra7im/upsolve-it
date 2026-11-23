@@ -1,7 +1,19 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory, raw } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
 export type UserDocument = HydratedDocument<User>;
+
+/** The profile links a user may fill in. `website` is a URL; the rest are usernames. */
+export const LINK_KEYS = [
+  'github',
+  'linkedin',
+  'x',
+  'website',
+  'atcoder',
+  'leetcode',
+  'codechef',
+] as const;
+export type LinkKey = (typeof LINK_KEYS)[number];
 
 @Schema({ timestamps: true })
 export class User {
@@ -59,6 +71,31 @@ export class User {
 
   @Prop({ type: Date, default: null })
   lastReminderAt?: Date | null;
+
+  /** Opt-in: only when true does GET /api/public-profile/:handle answer for this user. */
+  @Prop({ default: false })
+  publicProfile!: boolean;
+
+  // Typed by the user and shown to other people. Written only through
+  // PATCH /api/users/me/profile, which validates every value.
+  @Prop({ default: '' })
+  displayName!: string;
+
+  @Prop({ default: '' })
+  bio!: string;
+
+  @Prop(
+    raw(
+      Object.fromEntries(
+        LINK_KEYS.map((key) => [key, { type: String, default: '' }]),
+      ),
+    ),
+  )
+  links!: Record<LinkKey, string>;
+
+  /** A glyph-avatar value ("v1:…"). Empty means: use the Codeforces photo. */
+  @Prop({ default: '' })
+  glyphAvatar!: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

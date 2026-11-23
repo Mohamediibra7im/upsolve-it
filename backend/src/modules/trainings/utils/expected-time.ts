@@ -1,4 +1,4 @@
-/** Expected solve time in seconds from problem rating (Upsolve.it rules). */
+/** Expected solve time in seconds from problem rating (Upsolve It rules). */
 export function expectedTimeSecondsFromRating(rating: number): number {
   if (rating <= 1200) return 600; // 10 min
   if (rating <= 1600) return 1200; // 20 min (fills 1201-1299 per spec gap)

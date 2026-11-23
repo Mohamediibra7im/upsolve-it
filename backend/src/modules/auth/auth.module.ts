@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
+import { ProfileController } from './profile.controller';
 import { AuthService } from './auth.service';
 import { TransactionsModule } from '../../common/database/transactions.module';
 import {
@@ -41,7 +42,7 @@ import { AuditLogsModule } from '../audit-logs/audit-logs.module';
       }),
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, ProfileController],
   providers: [AuthService],
   exports: [AuthService],
 })

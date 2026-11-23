@@ -77,7 +77,7 @@ export class RemindersService implements OnModuleInit, OnModuleDestroy {
       throw new ServiceUnavailableException('Email is not configured.');
     await nodemailer
       .createTransport({ service: 'gmail', auth: { user: from, pass } })
-      .sendMail({ from: `"Upsolve.it" <${from}>`, to, ...mail });
+      .sendMail({ from: `"Upsolve It" <${from}>`, to, ...mail });
   }
 
   private appUrl(path: string) {

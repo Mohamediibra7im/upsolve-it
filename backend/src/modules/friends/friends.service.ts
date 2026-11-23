@@ -41,6 +41,7 @@ function publicUserPick(u: {
   _id: Types.ObjectId;
   codeforcesHandle: string;
   avatar: string;
+  glyphAvatar?: string;
   rating: number;
   rank: string;
 }) {
@@ -48,6 +49,7 @@ function publicUserPick(u: {
     _id: String(u._id),
     codeforcesHandle: u.codeforcesHandle,
     avatar: u.avatar,
+    glyphAvatar: u.glyphAvatar || '',
     rating: u.rating,
     rank: u.rank,
   };
@@ -225,7 +227,7 @@ export class FriendsService {
                 $in: allIds.map((id) => new Types.ObjectId(id)),
               },
             })
-            .select('codeforcesHandle avatar rating rank')
+            .select('codeforcesHandle avatar glyphAvatar rating rank')
             .lean();
 
     const byId = new Map(users.map((u) => [String(u._id), u]));
@@ -387,16 +389,10 @@ export class FriendsService {
 
     const users = await this.userModel
       .find({ _id: { $in: otherIds.map((id) => new Types.ObjectId(id)) } })
-      .select('codeforcesHandle avatar rating rank')
+      .select('codeforcesHandle avatar glyphAvatar rating rank')
       .lean();
 
-    const friends = users.map((u) => ({
-      _id: String(u._id),
-      codeforcesHandle: u.codeforcesHandle,
-      avatar: u.avatar,
-      rating: u.rating,
-      rank: u.rank,
-    }));
+    const friends = users.map(publicUserPick);
 
     return { friends };
   }

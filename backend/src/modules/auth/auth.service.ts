@@ -16,7 +16,13 @@ import {
   RefreshToken,
   type RefreshTokenDocument,
 } from './schemas/refresh-token.schema';
-import { User, type UserDocument } from './schemas/user.schema';
+import {
+  LINK_KEYS,
+  User,
+  type LinkKey,
+  type UserDocument,
+} from './schemas/user.schema';
+import type { UpdateProfileDto } from './dto/update-profile.dto';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { Types } from 'mongoose';
 import { getRankFromRating } from '../../common/utils/rating';
@@ -59,6 +65,23 @@ function hashRefreshToken(token: string): string {
   return crypto.createHash('sha256').update(token).digest('hex');
 }
 
+/** What a user typed about themselves, with empty strings for anything unset. */
+export function profileFields(user: {
+  displayName?: string;
+  bio?: string;
+  links?: Partial<Record<LinkKey, string>>;
+  glyphAvatar?: string;
+}) {
+  return {
+    displayName: user.displayName || '',
+    bio: user.bio || '',
+    links: Object.fromEntries(
+      LINK_KEYS.map((key) => [key, user.links?.[key] || '']),
+    ) as Record<LinkKey, string>,
+    glyphAvatar: user.glyphAvatar || '',
+  };
+}
+
 function toPublicUser(user: any) {
   return {
     _id: user._id,
@@ -72,6 +95,8 @@ function toPublicUser(user: any) {
     lastSyncTime: user.lastSyncTime,
     role: user.role,
     isVerified: user.isVerified,
+    publicProfile: user.publicProfile === true,
+    ...profileFields(user as User),
   };
 }
 
@@ -519,6 +544,26 @@ export class AuthService {
       message: 'Profile synced successfully',
       user: toPublicUser(updatedUser),
     };
+  }
+
+  /** Partial: only the fields sent are changed. The DTO has validated them. */
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    const set: Record<string, string> = {};
+    for (const key of ['displayName', 'bio', 'glyphAvatar'] as const) {
+      if (dto[key] !== undefined) set[key] = dto[key];
+    }
+    // Paths come from our own key list, never from the request.
+    for (const key of LINK_KEYS) {
+      const value = dto.links?.[key];
+      if (value !== undefined) set[`links.${key}`] = value;
+    }
+    const user = await this.userModel.findByIdAndUpdate(
+      userId,
+      { $set: set },
+      { returnDocument: 'after' },
+    );
+    if (!user) throw new UnauthorizedException('Unauthorized');
+    return { user: toPublicUser(user) };
   }
 
   private async issueTokens(user: UserDocument) {

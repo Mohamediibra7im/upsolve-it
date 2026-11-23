@@ -13,6 +13,8 @@ import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { TrainingLevelsModule } from './modules/training-levels/training-levels.module';
 import { FriendsModule } from './modules/friends/friends.module';
 import { RemindersModule } from './modules/reminders/reminders.module';
+import { PublicProfileModule } from './modules/public-profile/public-profile.module';
+import { AnnouncementsModule } from './modules/announcements/announcements.module';
 import { HealthModule } from './modules/health/health.module';
 import { RateLimiterGuard } from './common/guards/rate-limiter.guard';
 
@@ -89,6 +91,8 @@ import { RateLimiterGuard } from './common/guards/rate-limiter.guard';
     TrainingLevelsModule,
     FriendsModule,
     RemindersModule,
+    PublicProfileModule,
+    AnnouncementsModule,
     HealthModule,
   ],
   controllers: [AppController],

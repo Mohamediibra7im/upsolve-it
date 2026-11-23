@@ -422,7 +422,7 @@ export class AdminService {
 
     const usersQuery = this.userModel
       .find({})
-      .select('codeforcesHandle role rating rank avatar createdAt')
+      .select('codeforcesHandle role rating rank avatar glyphAvatar createdAt')
       .sort({ createdAt: -1 })
       .lean();
 
@@ -454,7 +454,7 @@ export class AdminService {
 
     const updatedUser = await this.userModel
       .findByIdAndUpdate(userId, { role }, { returnDocument: 'after' })
-      .select('codeforcesHandle role rating rank avatar createdAt');
+      .select('codeforcesHandle role rating rank avatar glyphAvatar createdAt');
 
     if (!updatedUser) throw new NotFoundException('User not found');
 
@@ -569,6 +569,7 @@ export class AdminService {
         maxRating: user.maxRating,
         maxRank: user.maxRank,
         avatar: user.avatar,
+        glyphAvatar: user.glyphAvatar || '',
       },
       stats: {
         totalSessions,
@@ -635,7 +636,7 @@ export class AdminService {
         },
         { returnDocument: 'after' },
       )
-      .select('codeforcesHandle role rating rank avatar createdAt');
+      .select('codeforcesHandle role rating rank avatar glyphAvatar createdAt');
 
     const admin = await this.userModel.findById(currentAdminId);
     const adminHandle = admin?.codeforcesHandle || 'Unknown';

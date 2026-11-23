@@ -127,6 +127,24 @@ export class RateLimiterGuard implements CanActivate {
         duration: 60 * 15,
         keyPrefix: 'auth:sync-profile',
       },
+      'ProfileController.update': {
+        points: 30,
+        duration: 60 * 15,
+        keyPrefix: 'profile:update',
+      },
+      // Unauthenticated read. Its own bucket: the web server renders /u/:handle
+      // for every visitor from one address, so it must not share 'global'.
+      'PublicProfileController.read': {
+        points: 120,
+        duration: 60,
+        keyPrefix: 'public-profile:read',
+      },
+      // Unauthenticated read, asked for on every site load: its own bucket too.
+      'AnnouncementsController.current': {
+        points: 120,
+        duration: 60,
+        keyPrefix: 'announcements:current',
+      },
     };
 
     // Health endpoints are hit frequently by Fly.io / Docker health checkers;

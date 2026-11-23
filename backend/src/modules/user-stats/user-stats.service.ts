@@ -14,7 +14,8 @@ import {
   type UpsolvedProblemDocument,
 } from '../upsolve/schemas/upsolved-problem.schema';
 import { applyActivityToStreak } from '../trainings/utils/streak-logic';
-import { toUtcDayKey } from '../trainings/utils/date-key';
+import { addUtcDays, toUtcDayKey } from '../trainings/utils/date-key';
+import { isProblemMarkedSolved } from '../trainings/utils/problem-solved';
 
 @Injectable()
 export class UserStatsService {
@@ -116,6 +117,63 @@ export class UserStatsService {
     }
 
     doc.consistencyScore = Math.round((activeInLast7 / 7) * 100);
+  }
+
+  /**
+   * Streaks and solves per UTC day for the past year, for the public profile.
+   * Read-only (unlike getStreakPayload): an anonymous request must never write.
+   */
+  async getPublicActivity(userId: string, nowMs: number = Date.now()) {
+    const user = new Types.ObjectId(userId);
+    const since = nowMs - 365 * 86_400_000;
+    const [doc, trainings, upsolves] = await Promise.all([
+      this.userStatsModel.findOne({ user }).lean(),
+      this.trainingModel
+        .find({ user, endTime: { $gte: since } })
+        .select(
+          'endTime problems.isSolved problems.solvedAt problems.solvedTime',
+        )
+        .lean(),
+      this.upsolveModel
+        .find({ user, solvedTime: { $ne: null, $gte: since } })
+        .select('solvedTime')
+        .lean(),
+    ]);
+
+    const activity: Record<string, number> = {};
+    const add = (ms: number) => {
+      if (ms < since || ms > nowMs) return;
+      const key = toUtcDayKey(ms);
+      activity[key] = (activity[key] ?? 0) + 1;
+    };
+    for (const t of trainings) {
+      for (const p of t.problems ?? []) {
+        if (isProblemMarkedSolved(p)) {
+          add(p.solvedAt || p.solvedTime || t.endTime);
+        }
+      }
+    }
+    for (const u of upsolves) {
+      if (u.solvedTime) add(u.solvedTime);
+    }
+
+    // A stored streak only counts while its last active day is today or yesterday.
+    const today = toUtcDayKey(nowMs);
+    const yesterday = addUtcDays(today, -1);
+    const live = (streak = 0, last?: string | null) =>
+      last === today || last === yesterday ? streak : 0;
+
+    return {
+      currentStreak: Math.max(
+        live(doc?.trainingStreak, doc?.lastTrainingActivityDate),
+        live(doc?.upsolveStreak, doc?.lastUpsolveActivityDate),
+      ),
+      longestStreak: Math.max(
+        doc?.bestTrainingStreak ?? 0,
+        doc?.bestUpsolveStreak ?? 0,
+      ),
+      activity,
+    };
   }
 
   async getStreakPayload(userId: string) {

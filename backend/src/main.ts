@@ -47,7 +47,7 @@ async function bootstrap() {
           }
         }
         res
-          .set('WWW-Authenticate', 'Basic realm="Upsolve.it API Docs"')
+          .set('WWW-Authenticate', 'Basic realm="Upsolve It API Docs"')
           .status(401)
           .send('Authentication required');
       },
@@ -55,9 +55,9 @@ async function bootstrap() {
   }
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('Upsolve.it - Intelligence Engine')
+    .setTitle('Upsolve It - Intelligence Engine')
     .setDescription(
-      'The scalable intelligence engine powering the Upsolve.it tactical platform.',
+      'The scalable intelligence engine powering the Upsolve It tactical platform.',
     )
     .setVersion('2.0')
     .addTag('Intelligence')
@@ -66,7 +66,7 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('docs', app, document, {
-    customSiteTitle: 'Upsolve.it - Protocol Docs',
+    customSiteTitle: 'Upsolve It - Protocol Docs',
     swaggerOptions: { persistAuthorization: true },
   });
 

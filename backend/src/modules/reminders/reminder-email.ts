@@ -52,14 +52,14 @@ export function renderReminderEmail(
     )
     .join('')}</ul>
 <p><a href="${escapeHtml(links.upsolve)}">Open your upsolve list</a></p>
-<p style="font-size:12px;color:#667">You asked for this weekly reminder on Upsolve.it. <a href="${escapeHtml(links.unsubscribe)}">Stop these emails</a>.</p>
+<p style="font-size:12px;color:#667">You asked for this weekly reminder on Upsolve It. <a href="${escapeHtml(links.unsubscribe)}">Stop these emails</a>.</p>
 </div>`;
   return { subject, text, html };
 }
 
 export function renderConfirmEmail(handle: string, confirmUrl: string) {
   return {
-    subject: 'Confirm your Upsolve.it reminder email',
+    subject: 'Confirm your Upsolve It reminder email',
     text: `Hi ${handle},\n\nConfirm this address to get a weekly upsolve reminder:\n${confirmUrl}\n\nThe link works for 24 hours. If you didn't ask for this, ignore this email.`,
     html: `<div style="font-family:system-ui,sans-serif;max-width:520px;color:#183123"><p>Hi ${escapeHtml(handle)},</p><p><a href="${escapeHtml(confirmUrl)}">Confirm this address</a> to get a weekly upsolve reminder.</p><p style="font-size:12px;color:#667">The link works for 24 hours. If you didn't ask for this, ignore this email.</p></div>`,
   };
