@@ -11,6 +11,11 @@ import { SubmissionStatus } from "@/services/codeforces/getTrainingSubmissionSta
 import SessionDialog from "./trainer/SessionDialog";
 import ProblemRow from "./trainer/ProblemRow";
 import TrainingControls from "./trainer/TrainingControls";
+import Workspace from "@/components/features/solve/Workspace";
+import {
+  formatTrainingModeLabel,
+  normalizeTrainingMode,
+} from "@/services/training/trainingModeLabel";
 
 interface TrainerProps {
   training: Training;
@@ -124,29 +129,34 @@ const Trainer = ({
             No problems are available in this session.
           </p>
         )}
-        {problems.map((problem, index) => (
-          <ProblemRow
-            key={`${problem.contestId}-${problem.index}-${index}`}
-            problem={problem}
-            index={index}
-            startTime={training.startTime}
-            locked={isPreContestPeriod}
-            submissionStatus={submissionStatuses.find(
-              (s) => s.problemId === `${problem.contestId}_${problem.index}`,
-            )}
-            hideContestDetails={hideContestDetails}
-            onProblemOpen={onProblemOpen}
-            opened={
-              training.serverSessionId ? Boolean(problem.startedAt) : undefined
-            }
-            showTags={showTags}
-          />
-        ))}
+        {/* Before the start the problems wait behind locks; once the clock
+            runs they open in the workspace below instead of a list of links. */}
+        {isPreContestPeriod &&
+          problems.map((problem, index) => (
+            <ProblemRow
+              key={`${problem.contestId}-${problem.index}-${index}`}
+              problem={problem}
+              index={index}
+              startTime={training.startTime}
+              locked={isPreContestPeriod}
+              submissionStatus={submissionStatuses.find(
+                (s) => s.problemId === `${problem.contestId}_${problem.index}`,
+              )}
+              hideContestDetails={hideContestDetails}
+              onProblemOpen={onProblemOpen}
+              opened={
+                training.serverSessionId
+                  ? Boolean(problem.startedAt)
+                  : undefined
+              }
+              showTags={showTags}
+            />
+          ))}
         <div className="u-panel__foot border-t-0">
           <span>
             {problems.some((p) => p.judge === "atcoder")
-              ? "Submitted? Refresh status to see your latest result. An AtCoder result can take a few minutes to show."
-              : "Submitted on Codeforces? Refresh status to see your latest result."}
+              ? "Submitted on the judge? Refresh status to see your result. An AtCoder result can take a few minutes to show."
+              : "Submitted on Codeforces? Refresh status to see your result."}
           </span>
           {!hideContestDetails && (
             <Button
@@ -164,6 +174,19 @@ const Trainer = ({
           )}
         </div>
       </section>
+
+      {!isPreContestPeriod && problems.length > 0 && (
+        <div className="mt-6">
+          <Workspace
+            title={`${formatTrainingModeLabel(normalizeTrainingMode(training.trainingMode))} session`}
+            problems={problems}
+            statuses={submissionStatuses}
+            hideDetails={hideContestDetails}
+            showTags={showTags}
+            onProblemOpen={onProblemOpen}
+          />
+        </div>
+      )}
     </>
   );
 };
