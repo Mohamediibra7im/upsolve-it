@@ -164,41 +164,50 @@ export function UserProfileDialog({
                     </span>
                   </div>
                   {shared.problems.length ? (
-                    shared.problems.map((problem) => (
-                      <div
-                        key={`${problem.judge}:${problem.contestId}:${problem.index}`}
-                        className="u-prow"
-                        data-state="failed"
-                      >
-                        <span className="u-prow__slot">{problem.index}</span>
-                        <div className="min-w-0">
-                          <a
-                            className="u-prow__name block"
-                            href={problem.url}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            {problem.name}
-                          </a>
-                          <p className="u-prow__meta truncate">
-                            {problem.judge === "atcoder"
-                              ? `AtCoder ${String(problem.contestId).toUpperCase()}`
-                              : `Contest ${problem.contestId}`}{" "}
-                            · waiting in both queues
-                          </p>
+                    // problems of one contest sit together
+                    [...shared.problems]
+                      .sort((a, b) =>
+                        `${a.judge}:${a.contestId}${a.index}`.localeCompare(
+                          `${b.judge}:${b.contestId}${b.index}`,
+                          "en",
+                          { numeric: true },
+                        ),
+                      )
+                      .map((problem) => (
+                        <div
+                          key={`${problem.judge}:${problem.contestId}:${problem.index}`}
+                          className="u-prow"
+                          data-state="failed"
+                        >
+                          <span className="u-prow__slot">{problem.index}</span>
+                          <div className="min-w-0">
+                            <a
+                              className="u-prow__name block"
+                              href={problem.url}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {problem.name}
+                            </a>
+                            <p className="u-prow__meta truncate">
+                              {problem.judge === "atcoder"
+                                ? `AtCoder ${String(problem.contestId).toUpperCase()}`
+                                : `Contest ${problem.contestId}`}{" "}
+                              · waiting in both queues
+                            </p>
+                          </div>
+                          {problem.rating ? (
+                            <span
+                              className="u-rank t-num"
+                              data-rank={rankKey(problem.rating)}
+                            >
+                              {problem.rating}
+                            </span>
+                          ) : (
+                            <span className="u-prow__rating">—</span>
+                          )}
                         </div>
-                        {problem.rating ? (
-                          <span
-                            className="u-rank t-num"
-                            data-rank={rankKey(problem.rating)}
-                          >
-                            {problem.rating}
-                          </span>
-                        ) : (
-                          <span className="u-prow__rating">—</span>
-                        )}
-                      </div>
-                    ))
+                      ))
                   ) : (
                     <p className="t-sm t-muted px-5 pb-5">
                       Nothing in common right now. When you both miss the same

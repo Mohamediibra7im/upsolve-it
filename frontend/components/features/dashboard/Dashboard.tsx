@@ -13,6 +13,7 @@ import { useHeatmapData, useHistory, useUpsolvedProblems } from "@/hooks/data";
 import { useFriendRequests } from "@/hooks/social";
 import { swrFetcher } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
+import { isResolveDue } from "@/types/UpsolveProblem";
 import { rankName } from "@/utils/rank";
 import { dailyGoal } from "./dailyGoal";
 
@@ -62,6 +63,7 @@ export default function Dashboard() {
   const solved = total - pending.length;
   const cleared = total > 0 ? Math.round((solved / total) * 100) : 0;
   const sessionKeys = sessionProblemKeys(history);
+  const resolving = upsolvedProblems.filter((p) => isResolveDue(p)).length;
   const goal = dailyGoal(upsolvedProblems.map((p) => p.solvedTime));
   const rating = user.rating || 0;
 
@@ -146,12 +148,19 @@ export default function Dashboard() {
               <h2 id="owed-title" className="t-h2">
                 Still owed
               </h2>
-              {pending.length > 0 && (
-                <Badge variant="pending">
-                  <RotateCcw aria-hidden="true" />
-                  <span className="t-num">{pending.length}</span> waiting
-                </Badge>
-              )}
+              <span className="flex flex-wrap items-center gap-2">
+                {resolving > 0 && (
+                  <Badge variant="line">
+                    <span className="t-num">{resolving}</span> to re-solve
+                  </Badge>
+                )}
+                {pending.length > 0 && (
+                  <Badge variant="pending">
+                    <RotateCcw aria-hidden="true" />
+                    <span className="t-num">{pending.length}</span> waiting
+                  </Badge>
+                )}
+              </span>
             </div>
             {pending.length > 0 ? (
               <div>
