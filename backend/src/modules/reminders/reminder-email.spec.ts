@@ -1,4 +1,4 @@
-import { renderReminderEmail } from './reminder-email';
+import { renderConfirmEmail, renderReminderEmail } from './reminder-email';
 
 describe('renderReminderEmail', () => {
   const now = Date.UTC(2026, 10, 23);
@@ -33,5 +33,19 @@ describe('renderReminderEmail', () => {
     expect(mail.html).not.toContain('<script>');
     expect(mail.html).toContain('A &lt;script&gt; &amp; B');
     expect(mail.html).toContain('&lt;b&gt;h&lt;/b&gt;');
+  });
+});
+
+describe('renderConfirmEmail', () => {
+  it('carries the confirm link and escapes the handle', () => {
+    const url = 'https://app/email?action=confirm&token=a.b';
+    const mail = renderConfirmEmail('<i>h</i>', url);
+    expect(mail.text).toContain(url);
+    expect(mail.html).toContain(
+      'href="https://app/email?action=confirm&amp;token=a.b"',
+    );
+    expect(mail.html).toContain('&lt;i&gt;h&lt;/i&gt;');
+    // the logo comes from the same site as the link
+    expect(mail.html).toContain('src="https://app/brand/icon-192.png"');
   });
 });
