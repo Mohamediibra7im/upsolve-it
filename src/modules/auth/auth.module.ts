@@ -4,7 +4,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { XpModule } from '../xp/xp.module';
 import { TransactionsModule } from '../../common/database/transactions.module';
 import {
   PasswordResetChallenge,
@@ -21,7 +20,6 @@ import { AuditLogsModule } from '../audit-logs/audit-logs.module';
   imports: [
     ConfigModule,
     TransactionsModule,
-    XpModule,
     AuditLogsModule,
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },

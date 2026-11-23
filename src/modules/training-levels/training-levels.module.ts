@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 import {
   TrainingLevel,
   TrainingLevelSchema,
@@ -13,7 +12,6 @@ import { TrainingLevelsController } from './training-levels.controller';
     MongooseModule.forFeature([
       { name: TrainingLevel.name, schema: TrainingLevelSchema },
     ]),
-    AuditLogsModule,
   ],
   controllers: [TrainingLevelsController],
   providers: [TrainingLevelsService],

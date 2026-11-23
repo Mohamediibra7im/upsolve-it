@@ -21,7 +21,7 @@ const envSchema = z.object({
   LOG_LEVEL: z
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace'])
     .default('info'),
-  // SMTP (contact/support email). Names must match what ContactService reads.
+  // SMTP credentials for outgoing email.
   SMTP_EMAIL: z.string().email().optional(),
   SMTP_PASSWORD: z.string().optional(),
   CODEFORCES_API_BASE: z.string().url().default('https://codeforces.com/api'),

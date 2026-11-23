@@ -23,7 +23,6 @@ import { getRankFromRating } from '../../common/utils/rating';
 import { shouldSyncProfile } from '../../common/utils/profile';
 import { validatePassword } from '../../common/utils/password';
 import { fetchCodeforcesUserInfo } from '../../common/utils/codeforces-api';
-import { XpService } from '../xp/xp.module';
 import { TransactionsService } from '../../common/database/transactions.module';
 import {
   PasswordResetChallenge,
@@ -95,7 +94,6 @@ export class AuthService {
     @InjectModel(PasswordResetChallenge.name)
     private readonly resetChallengeModel: Model<PasswordResetChallengeDocument>,
     private readonly transactions: TransactionsService,
-    private readonly xp: XpService,
   ) {
     const secret = this.config.get<string>('JWT_REFRESH_SECRET');
     if (!secret)
@@ -673,31 +671,21 @@ export class AuthService {
       );
     }
 
-    const xpEarned = await this.xp.run(async () => {
-      const claimed = await this.userModel.updateOne(
-        {
-          _id: userId,
-          isVerified: false,
-          verificationCode: user.verificationCode,
+    await this.userModel.updateOne(
+      {
+        _id: userId,
+        isVerified: false,
+        verificationCode: user.verificationCode,
+      },
+      {
+        $set: {
+          isVerified: true,
+          verificationCode: null,
+          verificationCodeExpiry: null,
         },
-        {
-          $set: {
-            isVerified: true,
-            verificationCode: null,
-            verificationCodeExpiry: null,
-          },
-        },
-      );
-      if (!claimed.modifiedCount) return 0;
-      return this.xp.award(
-        userId,
-        50,
-        'Codeforces profile verification',
-        'verification',
-        new Types.ObjectId(userId),
-      );
-    });
-    return { message: 'Profile verified successfully', xpEarned };
+      },
+    );
+    return { message: 'Profile verified successfully' };
   }
 
   async logout(refreshTokenValue: string) {

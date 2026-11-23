@@ -1,12 +1,10 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Patch,
   Post,
-  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -15,18 +13,11 @@ import { AdminGuard } from '../../common/guards/admin.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { UserDocument } from '../auth/schemas/user.schema';
 import { AdminService } from './admin.service';
-import { ContactService } from '../contact/contact.service';
-import { TrainingLevelsService } from '../training-levels/training-levels.service';
-import { ReplaceLevelsBodyDto } from '../training-levels/dto/replace-levels.dto';
-import { UpdateRoleDto, SyncBatchDto, ReplyMessageDto } from './dto/admin.dto';
+import { UpdateRoleDto, SyncBatchDto } from './dto/admin.dto';
 
 @Controller('admin')
 export class AdminController {
-  constructor(
-    private readonly admin: AdminService,
-    private readonly trainingLevels: TrainingLevelsService,
-    private readonly contact: ContactService,
-  ) {}
+  constructor(private readonly admin: AdminService) {}
 
   @UseGuards(AuthGuard, AdminGuard)
   @Get('stats')
@@ -111,28 +102,6 @@ export class AdminController {
   }
 
   @UseGuards(AuthGuard, AdminGuard)
-  @Put('levels')
-  async replaceTrainingLevels(
-    @Body() body: ReplaceLevelsBodyDto,
-    @CurrentUser() current: UserDocument,
-  ) {
-    return await this.trainingLevels.replaceAll(body.levels, {
-      adminId: current._id.toString(),
-      adminHandle: current.codeforcesHandle ?? 'admin',
-    });
-  }
-
-  /** Replace DB contents with built-in default levels (110 rows, same as cold-start seed). */
-  @UseGuards(AuthGuard, AdminGuard)
-  @Post('levels/reseed')
-  async reseedTrainingLevels(@CurrentUser() current: UserDocument) {
-    return await this.trainingLevels.reseedFromSeedFile({
-      adminId: current._id.toString(),
-      adminHandle: current.codeforcesHandle ?? 'admin',
-    });
-  }
-
-  @UseGuards(AuthGuard, AdminGuard)
   @Get('logs')
   async listLogs(
     @Query('limit') limit?: string,
@@ -146,44 +115,5 @@ export class AdminController {
       offset ? Number.parseInt(offset) : undefined,
       { action, entity, performedByHandle },
     );
-  }
-
-  @UseGuards(AuthGuard, AdminGuard)
-  @Get('contact')
-  async listContactMessages(
-    @Query('page') page: string = '1',
-    @Query('limit') limit: string = '50',
-  ) {
-    return this.contact.listMessages(
-      Number.parseInt(page, 10) || 1,
-      Number.parseInt(limit, 10) || 50,
-    );
-  }
-
-  @UseGuards(AuthGuard, AdminGuard)
-  @Get('contact/unread')
-  async unreadContactSummary() {
-    return this.contact.unreadSummary();
-  }
-
-  @UseGuards(AuthGuard, AdminGuard)
-  @Patch('contact/:id/read')
-  async markContactRead(@Param('id') id: string) {
-    return this.contact.markAsRead(id);
-  }
-
-  @UseGuards(AuthGuard, AdminGuard)
-  @Post('contact/:id/reply')
-  async replyContactMessage(
-    @Param('id') id: string,
-    @Body() body: ReplyMessageDto,
-  ) {
-    return this.contact.sendReply(id, body.message);
-  }
-
-  @UseGuards(AuthGuard, AdminGuard)
-  @Delete('contact/:id')
-  async deleteContactMessage(@Param('id') id: string) {
-    return this.contact.deleteMessage(id);
   }
 }

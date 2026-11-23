@@ -22,19 +22,6 @@ import {
   type AuditLogFilters,
 } from '../audit-logs/audit-logs.service';
 import { averageEffectiveProblemRatingForSession } from '../trainings/utils/session-performance';
-import {
-  RoadmapLevel,
-  type RoadmapLevelDocument,
-} from '../roadmap/schemas/roadmap-level.schema';
-import { UserXp, type UserXpDocument } from '../roadmap/schemas/user-xp.schema';
-import {
-  UserLevelProgress,
-  type UserLevelProgressDocument,
-} from '../roadmap/schemas/user-level-progress.schema';
-import {
-  UserTopicProgress,
-  type UserTopicProgressDocument,
-} from '../roadmap/schemas/user-topic-progress.schema';
 import { getRankFromRating } from '../../common/utils/rating';
 import { fetchCodeforcesUserInfo } from '../../common/utils/codeforces-api';
 
@@ -49,14 +36,6 @@ export class AdminService {
     private readonly trainingModel: Model<TrainingDocument>,
     @InjectModel(UpsolvedProblem.name)
     private readonly upsolveModel: Model<UpsolvedProblemDocument>,
-    @InjectModel(RoadmapLevel.name)
-    private readonly levelModel: Model<RoadmapLevelDocument>,
-    @InjectModel(UserXp.name)
-    private readonly userXpModel: Model<UserXpDocument>,
-    @InjectModel(UserLevelProgress.name)
-    private readonly userLevelProgressModel: Model<UserLevelProgressDocument>,
-    @InjectModel(UserTopicProgress.name)
-    private readonly userTopicProgressModel: Model<UserTopicProgressDocument>,
     private readonly auditLogs: AuditLogsService,
   ) {}
 
@@ -88,10 +67,6 @@ export class AdminService {
       upsolveTrendRaw,
       activeTrainingUsers,
       activeUpsolveUsers,
-      totalLevels,
-      roadmapXpStats,
-      roadmapLevelStats,
-      roadmapTopicStats,
     ] = await Promise.all([
       this.userModel.aggregate([
         {
@@ -252,44 +227,11 @@ export class AdminService {
           { solvedTime: { $gte: thirtyDaysAgo.getTime() } },
         ],
       }),
-      this.levelModel.countDocuments(),
-      this.userXpModel.aggregate([
-        {
-          $group: {
-            _id: null,
-            totalXpEarned: { $sum: '$totalXp' },
-            usersWithXp: { $sum: 1 },
-          },
-        },
-      ]),
-      this.userLevelProgressModel.aggregate([
-        {
-          $group: {
-            _id: null,
-            totalLevelsCompleted: {
-              $sum: { $cond: ['$isLevelComplete', 1, 0] },
-            },
-          },
-        },
-      ]),
-      this.userTopicProgressModel.aggregate([
-        {
-          $group: {
-            _id: null,
-            totalTopicsCompleted: {
-              $sum: { $cond: ['$isTopicComplete', 1, 0] },
-            },
-          },
-        },
-      ]),
     ]);
 
     const userTotals = userStats[0] ?? {};
     const trainingTotals = trainingStats[0] ?? {};
     const upsolveTotals = upsolveStats[0] ?? {};
-    const roadmapXpTotals = roadmapXpStats[0] ?? {};
-    const roadmapLevelTotals = roadmapLevelStats[0] ?? {};
-    const roadmapTopicTotals = roadmapTopicStats[0] ?? {};
     const totalUsers = userTotals.totalUsers ?? 0;
     const adminUsers = userTotals.adminUsers ?? 0;
     const totalTrainingProblems = trainingTotals.totalTrainingProblems ?? 0;
@@ -345,10 +287,6 @@ export class AdminService {
         totalUpsolvedProblems > 0
           ? Math.round((completedUpsolves / totalUpsolvedProblems) * 100)
           : 0,
-      totalLevels: totalLevels ?? 0,
-      totalXpEarned: roadmapXpTotals.totalXpEarned ?? 0,
-      totalLevelsCompleted: roadmapLevelTotals.totalLevelsCompleted ?? 0,
-      totalTopicsCompleted: roadmapTopicTotals.totalTopicsCompleted ?? 0,
       ratingBands,
       trainingModes,
       activityTrend,
@@ -623,18 +561,6 @@ export class AdminService {
       (t) => t.startTime >= thirtyDaysAgo,
     ).length;
 
-    const [xpDoc, levelsCompleted, topicsCompleted] = await Promise.all([
-      this.userXpModel.findOne({ userId: uid }).lean(),
-      this.userLevelProgressModel.countDocuments({
-        userId: uid,
-        isLevelComplete: true,
-      }),
-      this.userTopicProgressModel.countDocuments({
-        userId: uid,
-        isTopicComplete: true,
-      }),
-    ]);
-
     return {
       user: {
         codeforcesHandle: user.codeforcesHandle,
@@ -643,9 +569,6 @@ export class AdminService {
         maxRating: user.maxRating,
         maxRank: user.maxRank,
         avatar: user.avatar,
-        xp: xpDoc?.totalXp ?? 0,
-        levelsCompleted,
-        topicsCompleted,
       },
       stats: {
         totalSessions,

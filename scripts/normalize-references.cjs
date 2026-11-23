@@ -24,11 +24,7 @@ async function main() {
     }
     schemas(path.resolve(__dirname, '../src/modules'));
     const report = await inspectReferences(connection);
-    const mismatchedXp = await connection.collection('user_xp').aggregate([
-      { $lookup: { from: 'xp_transactions', localField: 'userId', foreignField: 'userId', as: 'ledger' } },
-      { $match: { $expr: { $ne: ['$totalXp', { $sum: '$ledger.amount' }] } } }, { $count: 'count' },
-    ]).toArray();
-    console.log(JSON.stringify({ mode: process.argv.includes('--apply') ? 'apply' : 'read-only', references: report.filter((r) => r.convertible || r.invalid || r.collisions), xpBalancesNeedingReview: mismatchedXp[0]?.count ?? 0 }, null, 2));
+    console.log(JSON.stringify({ mode: process.argv.includes('--apply') ? 'apply' : 'read-only', references: report.filter((r) => r.convertible || r.invalid || r.collisions) }, null, 2));
     if (process.argv.includes('--apply')) {
       const directory = path.resolve(__dirname, '../.tmp');
       fs.mkdirSync(directory, { recursive: true, mode: 0o700 });

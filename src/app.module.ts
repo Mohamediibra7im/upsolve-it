@@ -9,13 +9,9 @@ import { AuthModule } from './modules/auth/auth.module';
 import { TrainingsModule } from './modules/trainings/trainings.module';
 import { UpsolveModule } from './modules/upsolve/upsolve.module';
 import { AdminModule } from './modules/admin/admin.module';
-import { ContactModule } from './modules/contact/contact.module';
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { TrainingLevelsModule } from './modules/training-levels/training-levels.module';
 import { FriendsModule } from './modules/friends/friends.module';
-import { RoadmapModule } from './modules/roadmap/roadmap.module';
-import { WhatsNewModule } from './modules/whats-new/whats-new.module';
-import { SuggestionsModule } from './modules/suggestions/suggestions.module';
 import { HealthModule } from './modules/health/health.module';
 import { RateLimiterGuard } from './common/guards/rate-limiter.guard';
 
@@ -88,13 +84,9 @@ import { RateLimiterGuard } from './common/guards/rate-limiter.guard';
     TrainingsModule,
     UpsolveModule,
     AdminModule,
-    ContactModule,
     AuditLogsModule,
     TrainingLevelsModule,
     FriendsModule,
-    RoadmapModule,
-    WhatsNewModule,
-    SuggestionsModule,
     HealthModule,
   ],
   controllers: [AppController],

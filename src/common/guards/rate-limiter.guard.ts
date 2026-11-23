@@ -72,11 +72,6 @@ export class RateLimiterGuard implements CanActivate {
         duration: 60 * 60,
         keyPrefix: 'auth:verify-profile',
       },
-      'ContactController.send': {
-        points: 3,
-        duration: 60 * 60,
-        keyPrefix: 'contact',
-      },
       'FriendsController.sendRequest': {
         points: 10,
         duration: 60 * 60,

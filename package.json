@@ -21,9 +21,7 @@
     "lint:fix": "npm run lint -- --fix",
     "typecheck": "tsc --project tsconfig.check.json --noEmit --incremental false",
     "references:check": "node scripts/normalize-references.cjs",
-    "references:normalize": "node scripts/normalize-references.cjs --apply",
-    "xp:check": "node scripts/reconcile-xp.cjs",
-    "xp:reconcile": "node scripts/reconcile-xp.cjs --apply"
+    "references:normalize": "node scripts/normalize-references.cjs --apply"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
