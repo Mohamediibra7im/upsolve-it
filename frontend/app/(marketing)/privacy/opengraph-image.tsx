@@ -10,12 +10,13 @@ export default function Image() {
     title: ["Your data,", "plainly."],
     panel: {
       label: "In this policy",
-      value: "4 parts",
+      value: "10 parts",
       rows: [
-        { slot: "1", name: "What we collect" },
-        { slot: "2", name: "How we protect your data" },
-        { slot: "3", name: "Your privacy rights" },
-        { slot: "4", name: "Cookies" },
+        { slot: "2", name: "What we store" },
+        { slot: "4", name: "Who can see it" },
+        { slot: "6", name: "Cookies and your browser" },
+        { slot: "8", name: "Services we rely on" },
+        { slot: "9", name: "Your choices" },
       ],
     },
   });
