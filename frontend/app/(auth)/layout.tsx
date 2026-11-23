@@ -12,7 +12,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <main id="main-content" className="flex-1 w-full">
+    <main id="main-content" className="grid flex-1">
       {children}
     </main>
   );

@@ -4,9 +4,9 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Reset your password",
   description:
-    "Verify your Codeforces account and choose a new Upsolve.it password.",
+    "Verify your Codeforces account and choose a new Upsolve It password.",
 };
 
-export default function Page(props: any) {
-  return <ClientPage {...props} />;
+export default function Page() {
+  return <ClientPage />;
 }

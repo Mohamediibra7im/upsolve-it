@@ -7,24 +7,6 @@ const toast = jest.fn();
 jest.mock("@/components/providers/Toast", () => ({
   useToast: () => ({ toast }),
 }));
-jest.mock("framer-motion", () => {
-  const React = require("react");
-  const element = (tag: string) =>
-    function MotionElement({
-      children,
-      initial: _initial,
-      animate: _animate,
-      exit: _exit,
-      ...props
-    }: any) {
-      return React.createElement(tag, props, children);
-    };
-  return {
-    m: { form: element("form"), div: element("div"), span: element("span") },
-    AnimatePresence: ({ children }: any) => children,
-  };
-});
-
 const reply = (status: number, body: object) =>
   Promise.resolve({
     ok: status < 400,

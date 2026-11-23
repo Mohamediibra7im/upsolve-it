@@ -1,38 +1,41 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Check, ExternalLink } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { PasswordStrengthIndicator } from "@/components/ui/password-strength-indicator";
 import { useToast } from "@/components/providers/Toast";
-import {
-  CheckCircle2,
-  KeyRound,
-  Clock,
-  Shield,
-  Eye,
-  EyeOff,
-  User,
-  Lock,
-  AlertTriangle,
-  ExternalLink,
-  ArrowRight,
-  ShieldCheck,
-  RefreshCw,
-} from "lucide-react";
 import { validatePassword } from "@/utils/passwordValidation";
-import { AuthShell } from "@/components/features/auth";
-import { m as motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
+import {
+  AuthSplit,
+  Countdown,
+  FormError,
+  HandleField,
+  PasswordField,
+  VerificationCode,
+} from "@/components/features/auth";
 import { resolveApiUrl } from "@/lib/apiClient";
+
+const stages = ["enterHandle", "verify", "resetPassword"] as const;
+
+const slab = {
+  eyebrow: "How the reset works",
+  statement: "Three steps and you are back in.",
+  points: [
+    "Find your account",
+    "Show the handle is yours",
+    "Choose a new password",
+  ],
+  note: "We never ask for your Codeforces password.",
+};
 
 export default function ResetPasswordPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [stage, setStage] = useState<
-    "enterHandle" | "verify" | "resetPassword"
-  >("enterHandle");
+  const [stage, setStage] = useState<(typeof stages)[number]>("enterHandle");
   const [handle, setHandle] = useState("");
   const [verificationToken, setVerificationToken] = useState("");
   const [resetToken, setResetToken] = useState("");
@@ -43,8 +46,6 @@ export default function ResetPasswordPage() {
   const [recoveryCode, setRecoveryCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     if (stage === "enterHandle" || expiresAt === null) return;
@@ -52,7 +53,7 @@ export default function ResetPasswordPage() {
       const remaining = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000));
       setCountdown(remaining);
       if (remaining === 0) {
-        setError("Verification time expired. Please start again.");
+        setError("The time to verify expired. Start again to get a new code.");
         setVerificationToken("");
         setResetToken("");
         setRecoveryCode("");
@@ -67,7 +68,7 @@ export default function ResetPasswordPage() {
   const handleStartVerification = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!handle) {
-      setError("Please enter your Codeforces handle.");
+      setError("Enter your Codeforces handle.");
       return;
     }
     setIsLoading(true);
@@ -96,11 +97,11 @@ export default function ResetPasswordPage() {
         setCountdown(Math.ceil((deadline - Date.now()) / 1000));
         setStage("verify");
       } else {
-        setError(data.message || "Failed to start verification.");
+        setError(data.message || "We could not start the reset. Try again.");
       }
     } catch (err) {
       console.error("Initiate reset error:", err);
-      setError("Unable to connect. Please try again.");
+      setError("We could not reach the server. Try again in a minute.");
     } finally {
       setIsLoading(false);
     }
@@ -130,11 +131,14 @@ export default function ResetPasswordPage() {
         setExpiresAt(deadline);
         setStage("resetPassword");
       } else {
-        setError(data.message || "Profile verification failed.");
+        setError(
+          data.message ||
+            "We could not find the code on your profile. Save it on Codeforces, then verify again.",
+        );
       }
     } catch (err) {
       console.error("Verify profile error:", err);
-      setError("Unable to connect. Please try verifying again.");
+      setError("We could not reach the server. Verify again in a minute.");
     } finally {
       setIsLoading(false);
     }
@@ -166,8 +170,8 @@ export default function ResetPasswordPage() {
       const data = await res.json();
       if (res.ok) {
         toast({
-          title: "Password Changed",
-          description: "Your password has been updated successfully.",
+          title: "Password changed",
+          description: "Log in with your new password.",
           variant: "success",
           durationMs: 4000,
         });
@@ -180,314 +184,122 @@ export default function ResetPasswordPage() {
         setStage("enterHandle");
         router.push("/login");
       } else {
-        setError(data.message || "Failed to reset password.");
+        setError(data.message || "We could not save the password. Try again.");
       }
     } catch (err) {
       console.error("Password reset error:", err);
-      setError("Unable to reset your password. Please try again.");
+      setError("We could not reach the server. Try again in a minute.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const stageTitles = {
-    enterHandle: "Find your account",
-    verify: "Verify your account",
-    resetPassword: "Choose a new password",
-  };
-
-  const currentStep = {
-    enterHandle: 1,
-    verify: 2,
-    resetPassword: 3,
-  }[stage];
-
-  const inputClass =
-    "h-12 rounded-xl border-[#343b37] bg-[#131715] pl-11 pr-11 text-sm text-[#f1f3ee] placeholder:text-[#68746c] focus-visible:ring-[#b5e3c4]/40 focus-visible:ring-offset-0";
-  const buttonClass =
-    "h-12 w-full rounded-xl bg-[#b5e3c4] text-sm font-semibold text-[#14241b] hover:bg-[#c7edd3]";
-  const inputIconClass =
-    "pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#747e79]";
-  const revealButtonClass =
-    "absolute right-2 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-[#929b98] transition-colors hover:text-[#f1f3ee] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b5e3c4]";
+  const currentStep = stages.indexOf(stage) + 1;
 
   return (
-    <AuthShell
-      title="Let's get you back in."
-      subtitle="Verify your Codeforces account and set a new password to continue your practice."
-      icon={<ShieldCheck className="size-5" />}
-      back={{ href: "/login", label: "Back to login" }}
+    <AuthSplit
+      step={`Step ${currentStep} of 3`}
+      title={
+        {
+          enterHandle: "Let’s get you back in.",
+          verify: "Show the handle is yours.",
+          resetPassword: "Choose a new password.",
+        }[stage]
+      }
+      lead={
+        {
+          enterHandle:
+            "Enter the Codeforces handle you signed up with. You will add a short code to your Codeforces profile to show it is yours.",
+          verify: (
+            <>
+              Open your{" "}
+              <a
+                href="https://codeforces.com/settings/social"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="t-link inline-flex items-center gap-1"
+              >
+                Codeforces profile settings
+                <ExternalLink className="size-3.5" aria-hidden="true" />
+              </a>
+              , set your <b className="text-ink">First name</b> to this code and
+              save.
+            </>
+          ),
+          resetPassword: (
+            <>
+              The new password is for <b className="text-ink">{handle}</b>. Once
+              it is saved you log in with it.
+            </>
+          ),
+        }[stage]
+      }
+      slab={{ ...slab, current: currentStep }}
     >
-      <div className="space-y-7 text-[#f1f3ee]">
-        <div>
-          <div className="mb-4 flex items-center justify-between">
-            <p className="text-xs text-[#929b98]">Step {currentStep} of 3</p>
-            <div className="flex gap-1.5" aria-hidden="true">
-              {[1, 2, 3].map((step) => (
-                <span
-                  key={step}
-                  className={cn(
-                    "h-1 w-7 rounded-full",
-                    step <= currentStep ? "bg-[#b5e3c4]" : "bg-[#343b37]",
-                  )}
-                />
-              ))}
-            </div>
-          </div>
-          <h2 className="font-heading text-2xl font-medium tracking-[-0.04em]">
-            {stageTitles[stage]}
-          </h2>
+      {stage === "enterHandle" && (
+        <form onSubmit={handleStartVerification} className="grid gap-5">
+          <HandleField
+            value={handle}
+            onChange={(e) => setHandle(e.target.value)}
+          />
+          {error && <FormError>{error}</FormError>}
+          <Button type="submit" size="lg" disabled={isLoading}>
+            {isLoading ? "Starting…" : "Continue"}
+          </Button>
+          <p className="t-muted">
+            Remembered your password?{" "}
+            <Link href="/login" className="t-link">
+              Log in
+            </Link>
+          </p>
+        </form>
+      )}
+      {stage === "verify" && (
+        <div className="grid gap-5">
+          <VerificationCode code={recoveryCode} secondsLeft={countdown} />
+          {error && <FormError>{error}</FormError>}
+          <Button size="lg" onClick={handleVerify} disabled={isLoading}>
+            {isLoading ? "Checking your profile…" : "Verify profile"}
+          </Button>
+          <p className="t-sm t-muted">
+            Keep this page open. You can put your first name back as soon as the
+            handle is verified.
+          </p>
         </div>
-        <AnimatePresence mode="wait">
-          {stage === "enterHandle" && (
-            <motion.form
-              key="enterHandle"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onSubmit={handleStartVerification}
-              className="space-y-5"
-            >
-              <p className="text-[13px] leading-6 text-[#929b98]">
-                Enter your Codeforces handle. You will temporarily add a unique
-                code to your Codeforces profile to confirm ownership.
-              </p>
-              <div className="space-y-2">
-                <label
-                  htmlFor="handle"
-                  className="text-[13px] font-medium text-[#c1cbc3]"
-                >
-                  Codeforces handle
-                </label>
-                <div className="relative">
-                  <Input
-                    id="handle"
-                    type="text"
-                    placeholder="e.g. tourist"
-                    value={handle}
-                    onChange={(e) => setHandle(e.target.value)}
-                    required
-                    className={inputClass}
-                    autoComplete="username"
-                    autoCapitalize="none"
-                    autoCorrect="off"
-                    spellCheck={false}
-                  />
-                  <User className={inputIconClass} />
-                </div>
-              </div>
-              <Button
-                type="submit"
-                className={buttonClass}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <RefreshCw className="size-4 animate-spin" />
-                    Starting verification…
-                  </>
-                ) : (
-                  <>
-                    Continue
-                    <ArrowRight size={16} />
-                  </>
-                )}
-              </Button>
-            </motion.form>
-          )}
-          {stage === "verify" && (
-            <motion.div
-              key="verify"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="space-y-5"
-            >
-              <div className="rounded-2xl border border-[#d3b98b]/20 bg-[#d3b98b]/5 p-5">
-                <div className="mb-3 flex items-center gap-2 text-[#d3b98b]">
-                  <AlertTriangle size={17} />
-                  <h3 className="text-sm font-medium">Confirm your account</h3>
-                </div>
-                <p className="text-[13px] leading-6 text-[#b6bdb9]">
-                  Open your{" "}
-                  <a
-                    href="https://codeforces.com/settings/social"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[#b5e3c4] underline underline-offset-4"
-                  >
-                    Codeforces profile settings <ExternalLink size={12} />
-                  </a>{" "}
-                  and set your <strong>First name</strong> to this code, then
-                  save:
-                </p>
-                <code className="mt-3 block select-all break-all rounded-lg bg-[#131715] p-3 font-mono text-sm text-[#f1f3ee]">
-                  {recoveryCode}
-                </code>
-                <p className="mt-3 text-xs leading-5 text-[#929b98]">
-                  You can restore your first name after verification. Keep this
-                  recovery page open.
-                </p>
-              </div>
-              <div className="flex items-center justify-between rounded-xl border border-[#2b3031] bg-[#131715] px-4 py-3">
-                <span className="flex items-center gap-2 text-xs text-[#929b98]">
-                  <Clock size={14} />
-                  Time remaining
-                </span>
-                <span className="text-2xl font-medium tabular-nums tracking-tight text-[#b5e3c4]">
-                  {Math.floor(countdown / 60)}:
-                  {(countdown % 60).toString().padStart(2, "0")}
-                </span>
-              </div>
-              <Button
-                onClick={handleVerify}
-                className={buttonClass}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <RefreshCw className="size-4 animate-spin" />
-                    Checking profile…
-                  </>
-                ) : (
-                  <>
-                    <Shield size={16} />
-                    Verify profile
-                  </>
-                )}
-              </Button>
-            </motion.div>
-          )}
-          {stage === "resetPassword" && (
-            <motion.form
-              key="resetPassword"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onSubmit={handleResetPassword}
-              className="space-y-5"
-            >
-              <div className="flex items-start gap-3 rounded-xl border border-[#b5e3c4]/15 bg-[#b5e3c4]/5 p-4">
-                <CheckCircle2
-                  size={18}
-                  className="mt-0.5 shrink-0 text-[#b5e3c4]"
-                />
-                <div>
-                  <p className="text-sm font-medium text-[#b5e3c4]">
-                    Account verified
-                  </p>
-                  <p className="mt-1 text-xs leading-5 text-[#929b98]">
-                    Choose a new password for {handle}.
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label
-                  htmlFor="newPassword"
-                  className="text-[13px] font-medium text-[#c1cbc3]"
-                >
-                  New password
-                </label>
-                <div className="relative">
-                  <Input
-                    id="newPassword"
-                    type={showNewPassword ? "text" : "password"}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Create a strong password"
-                    autoComplete="new-password"
-                    required
-                    className={inputClass}
-                  />
-                  <Lock className={inputIconClass} />
-                  <button
-                    type="button"
-                    aria-label={
-                      showNewPassword ? "Hide password" : "Show password"
-                    }
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    className={revealButtonClass}
-                  >
-                    {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-                <PasswordStrengthIndicator
-                  password={newPassword}
-                  className="pt-1"
-                />
-              </div>
-              <div className="space-y-2">
-                <label
-                  htmlFor="confirmNewPassword"
-                  className="text-[13px] font-medium text-[#c1cbc3]"
-                >
-                  Confirm new password
-                </label>
-                <div className="relative">
-                  <Input
-                    id="confirmNewPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={confirmNewPassword}
-                    onChange={(e) => setConfirmNewPassword(e.target.value)}
-                    placeholder="Re-enter your password"
-                    autoComplete="new-password"
-                    required
-                    className={inputClass}
-                  />
-                  <Lock className={inputIconClass} />
-                  <button
-                    type="button"
-                    aria-label={
-                      showConfirmPassword
-                        ? "Hide confirm password"
-                        : "Show confirm password"
-                    }
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className={revealButtonClass}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff size={16} />
-                    ) : (
-                      <Eye size={16} />
-                    )}
-                  </button>
-                </div>
-              </div>
-              <Button
-                type="submit"
-                className={buttonClass}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <RefreshCw className="size-4 animate-spin" />
-                    Updating password…
-                  </>
-                ) : (
-                  <>
-                    <KeyRound size={16} />
-                    Reset password
-                  </>
-                )}
-              </Button>
-            </motion.form>
-          )}
-        </AnimatePresence>
-        {error && (
-          <div
-            role="alert"
-            className="rounded-xl border border-red-400/20 bg-red-400/5 p-4"
-          >
-            <p className="text-[13px] leading-5 text-red-300">{error}</p>
-            <button
-              onClick={() => setError(null)}
-              className="mt-2 rounded-sm text-xs font-medium text-[#b6bdb9] hover:text-[#f1f3ee]"
-            >
-              Dismiss
-            </button>
+      )}
+      {stage === "resetPassword" && (
+        <form onSubmit={handleResetPassword} className="grid gap-5">
+          <div className="flex items-center justify-between gap-3">
+            <Badge variant="solved">
+              <Check />
+              Handle verified
+            </Badge>
+            <Countdown secondsLeft={countdown} />
           </div>
-        )}
-      </div>
-    </AuthShell>
+          <PasswordField
+            id="newPassword"
+            label="New password"
+            placeholder="8+ characters, with a number and a symbol"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            autoComplete="new-password"
+          >
+            <PasswordStrengthIndicator password={newPassword} />
+          </PasswordField>
+          <PasswordField
+            id="confirmNewPassword"
+            label="Confirm new password"
+            placeholder="Repeat your new password"
+            value={confirmNewPassword}
+            onChange={(e) => setConfirmNewPassword(e.target.value)}
+            autoComplete="new-password"
+          />
+          {error && <FormError>{error}</FormError>}
+          <Button type="submit" size="lg" disabled={isLoading}>
+            {isLoading ? "Saving your password…" : "Reset password"}
+          </Button>
+        </form>
+      )}
+    </AuthSplit>
   );
 }

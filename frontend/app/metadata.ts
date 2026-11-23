@@ -23,16 +23,20 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: SOCIAL_TITLE,
     description: SITE_DESCRIPTION,
-    images: [
-      {
-        url: "/opengraph-image",
-        alt: "Upsolve.it — Make your next solve count.",
-      },
-    ],
   },
-  authors: [{ name: "Mohammed Ibrahim" }],
+  authors: [{ name: "Mohamed Ibrahim", url: "https://mohamediibrahim.dev/" }],
+  category: "education",
+  keywords: [
+    "Codeforces",
+    "upsolving",
+    "competitive programming",
+    "competitive programming training",
+    "virtual contest",
+    "ICPC practice",
+    "problem ladder",
+  ],
   creator: SITE_NAME,
-  publisher: "HNU ICPC Community",
+  publisher: "HNU - FCSIT ICPC Community",
   verification: { google: "XjpRVCB0RZUnqyBmFpZUGs8AdwIHbw4WXqEoBPxvnN0" },
   formatDetection: { email: false, address: false, telephone: false },
   robots: {

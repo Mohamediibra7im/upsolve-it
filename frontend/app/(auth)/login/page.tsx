@@ -1,12 +1,12 @@
-import ClientPage from "./page.client";
 import type { Metadata } from "next";
+import { AuthForm } from "@/components/features/auth";
 
 export const metadata: Metadata = {
   title: "Log in",
   description:
-    "Log in to continue your Codeforces practice and review your progress.",
+    "Log in to continue your practice and review your progress.",
 };
 
-export default function Page(props: any) {
-  return <ClientPage {...props} />;
+export default function Page() {
+  return <AuthForm mode="login" />;
 }

@@ -1,2 +1,2 @@
-export { default as AuthShell } from "./AuthShell";
-export { default as Settings } from "./Settings";
+export { default as AuthForm } from "./AuthForm";
+export * from "./AuthFrame";

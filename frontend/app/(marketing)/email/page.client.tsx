@@ -2,29 +2,44 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Check, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import MemberPageState from "@/components/features/profile/MemberPageState";
 import { resolveApiUrl } from "@/lib/apiClient";
 
 const copy = {
   confirm: {
     title: "Confirm your reminder email",
-    description: "You'll get one email a week while problems are waiting in your upsolve list.",
+    description:
+      "You’ll get one email a week while problems are waiting in your upsolve queue.",
     button: "Confirm email",
-    done: "You're set. Your first reminder is on its way.",
+    done: "Reminders are on.",
+    doneDescription:
+      "The first one arrives when problems are waiting in your upsolve queue.",
   },
   unsubscribe: {
     title: "Stop weekly reminders",
-    description: "We'll remove your address and stop sending reminder emails.",
+    description: "We’ll remove your address and stop sending reminder emails.",
     button: "Stop emails",
-    done: "Done. You won't get any more reminder emails.",
+    done: "Reminders are off.",
+    doneDescription: "You won’t get any more reminder emails.",
   },
 };
 
 /** Landing page for the links in confirmation and reminder emails. */
-export default function EmailLinkClient({ action, token }: { action?: string; token?: string }) {
-  const [state, setState] = useState<"idle" | "busy" | "done" | "error">("idle");
-  const text = action === "confirm" || action === "unsubscribe" ? copy[action] : null;
+export default function EmailLinkClient({
+  action,
+  token,
+}: {
+  action?: string;
+  token?: string;
+}) {
+  const [state, setState] = useState<"idle" | "busy" | "done" | "error">(
+    "idle",
+  );
+  const text =
+    action === "confirm" || action === "unsubscribe" ? copy[action] : null;
+  const failed = !text || !token || state === "error";
 
   // The change waits for a click so mail scanners that open links can't trigger it.
   const redeem = async () => {
@@ -42,20 +57,55 @@ export default function EmailLinkClient({ action, token }: { action?: string; to
   };
 
   return (
-    <main id="main-content" className="mx-auto flex min-h-[70dvh] w-full max-w-xl items-center px-5 py-16">
-      {!text || !token || state === "error" ? (
-        <MemberPageState kind="error" title="This link didn't work" description="It may have expired. You can manage reminders from your profile's Account tab." className="w-full">
-          <Button asChild variant="outline"><Link href="/profile">Open profile</Link></Button>
-        </MemberPageState>
-      ) : state === "done" ? (
-        <MemberPageState title={text.done} className="w-full">
-          <Button asChild><Link href="/upsolve">Open your upsolve list</Link></Button>
-        </MemberPageState>
-      ) : (
-        <MemberPageState title={text.title} description={text.description} className="w-full">
-          <Button onClick={redeem} disabled={state === "busy"}>{state === "busy" ? "Working…" : text.button}</Button>
-        </MemberPageState>
-      )}
-    </main>
+    <div className="wrap grid min-h-[70dvh] place-items-center py-16">
+      <section className="u-panel w-full max-w-lg" aria-live="polite">
+        <div className="u-panel__head">
+          <p className="t-eyebrow">Weekly upsolve reminder</p>
+          {failed ? (
+            <Badge variant="failed">
+              <X aria-hidden="true" />
+              Link not valid
+            </Badge>
+          ) : (
+            state === "done" && (
+              <Badge variant="solved">
+                <Check aria-hidden="true" />
+                Done
+              </Badge>
+            )
+          )}
+        </div>
+        <div className="u-panel__body grid justify-items-start gap-4">
+          {failed ? (
+            <>
+              <h1 className="t-h1">This link didn’t work.</h1>
+              <p className="t-muted">
+                It may have expired. You can manage reminders from the Account
+                tab of your profile.
+              </p>
+              <Button asChild variant="outline">
+                <Link href="/settings">Open your settings</Link>
+              </Button>
+            </>
+          ) : state === "done" ? (
+            <>
+              <h1 className="t-h1">{text.done}</h1>
+              <p className="t-muted">{text.doneDescription}</p>
+              <Button asChild>
+                <Link href="/upsolve">Open your upsolve queue</Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <h1 className="t-h1">{text.title}</h1>
+              <p className="t-muted">{text.description}</p>
+              <Button onClick={redeem} disabled={state === "busy"}>
+                {state === "busy" ? "Working…" : text.button}
+              </Button>
+            </>
+          )}
+        </div>
+      </section>
+    </div>
   );
 }

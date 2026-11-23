@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Opening Your Dashboard",
-  description: "Open your Upsolve.it practice dashboard.",
+  description: "Open your Upsolve It practice dashboard.",
   robots: { index: false, follow: true },
 };
 
