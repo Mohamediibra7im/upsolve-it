@@ -14,6 +14,7 @@ import { useFriendRequests } from "@/hooks/social";
 import { swrFetcher } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
 import { rankName } from "@/utils/rank";
+import { dailyGoal } from "./dailyGoal";
 
 type Streaks = {
   trainingStreak: number;
@@ -61,6 +62,7 @@ export default function Dashboard() {
   const solved = total - pending.length;
   const cleared = total > 0 ? Math.round((solved / total) * 100) : 0;
   const sessionKeys = sessionProblemKeys(history);
+  const goal = dailyGoal(upsolvedProblems.map((p) => p.solvedTime));
   const rating = user.rating || 0;
 
   // The same days the API's seven-day consistency counts: a finished session
@@ -190,30 +192,64 @@ export default function Dashboard() {
             </div>
           </section>
 
-          <section
-            className="u-panel u-inverse grid content-between gap-5 p-7 lg:col-span-5"
-            aria-labelledby="next-title"
-          >
-            <div className="grid gap-2.5">
-              <h2 id="next-title" className="t-h2">
-                Your next challenge
-              </h2>
-              <p className="t-eyebrow">Recommended problem rating</p>
-              <p className="t-num-xl">
-                {rating + 100}–{rating + 300}
-              </p>
-              <p className="t-muted">
-                A little outside your comfort zone: 100 to 300 points above your
-                rating.
-              </p>
-            </div>
-            <Link
-              href="/training"
-              className="u-btn u-btn--primary justify-self-start"
+          {goal.done || pending.length > 0 ? (
+            <section
+              className="u-panel u-inverse grid content-between gap-5 p-7 max-sm:p-5 lg:col-span-5"
+              aria-labelledby="goal-title"
             >
-              Find a challenge <ArrowUpRight aria-hidden="true" />
-            </Link>
-          </section>
+              <div className="grid gap-2.5">
+                <h2 id="goal-title" className="t-h2">
+                  Today’s goal
+                </h2>
+                <p className="t-eyebrow">One upsolve a day</p>
+                <p className="t-num-xl">
+                  {goal.done ? 1 : 0} / 1
+                  <span className="sr-only">
+                    {goal.done ? ", done for today" : ", not done yet"}
+                  </span>
+                </p>
+                <p className="t-muted">
+                  {goal.done
+                    ? `Done for today. ${count(goal.streak, "day")} in a row.`
+                    : goal.streak > 0
+                      ? `${count(goal.streak, "day")} in a row so far. Solve one problem from your queue to make it ${goal.streak + 1}.`
+                      : "Solve one problem from your queue today to start a streak."}
+                </p>
+              </div>
+              <Link
+                href="/upsolve"
+                className="u-btn u-btn--primary justify-self-start"
+              >
+                {goal.done ? "Open your queue" : "Pick today’s problem"}{" "}
+                <ArrowUpRight aria-hidden="true" />
+              </Link>
+            </section>
+          ) : (
+            <section
+              className="u-panel u-inverse grid content-between gap-5 p-7 lg:col-span-5"
+              aria-labelledby="next-title"
+            >
+              <div className="grid gap-2.5">
+                <h2 id="next-title" className="t-h2">
+                  Your next challenge
+                </h2>
+                <p className="t-eyebrow">Recommended problem rating</p>
+                <p className="t-num-xl">
+                  {rating + 100}–{rating + 300}
+                </p>
+                <p className="t-muted">
+                  A little outside your comfort zone: 100 to 300 points above
+                  your rating.
+                </p>
+              </div>
+              <Link
+                href="/training"
+                className="u-btn u-btn--primary justify-self-start"
+              >
+                Find a challenge <ArrowUpRight aria-hidden="true" />
+              </Link>
+            </section>
+          )}
 
           <div className="u-panel u-strip lg:col-span-12">
             <Stat
