@@ -6,6 +6,21 @@ import getAllProblems from "@/services/codeforces/getAllProblems";
 import getSolvedProblems from "@/services/codeforces/getSolvedProblems";
 import { User } from "@/types/User";
 import { expectedTimeSecondsFromRating } from "@/services/training/expectedTime";
+import {
+  atcoderKey,
+  withAtcoderProblems,
+  type AtcoderProblem,
+} from "@/services/training/atcoderSlots";
+import { swrFetcher } from "@/lib/apiClient";
+
+/** A user's AtCoder submissions, as GET /api/atcoder/submissions answers. */
+type AtcoderSubmissions = {
+  handle: string | null;
+  submissions: {
+    verdict: string;
+    problem: { contestId: string; index: string };
+  }[];
+};
 
 const PROBLEMS_CACHE_KEY = "codeforces-all-problems";
 const SOLVED_PROBLEMS_CACHE_KEY = (handle: string) =>
@@ -101,6 +116,23 @@ const useProblems = (user: User | null | undefined) => {
     },
   );
 
+  // AtCoder is only asked about for a user who gave their AtCoder username.
+  const hasAtcoder = !!user?.links?.atcoder?.trim();
+  const { data: atcoder } = useSWR<{ problems: AtcoderProblem[] }>(
+    hasAtcoder ? "/api/atcoder/problems" : null,
+    swrFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 6 * 3_600_000,
+    },
+  );
+  const { data: atcoderSubmissions } = useSWR<AtcoderSubmissions>(
+    hasAtcoder ? "/api/atcoder/submissions" : null,
+    swrFetcher,
+    { revalidateOnFocus: false, dedupingInterval: 300000 },
+  );
+
   const refreshSolvedProblems = useCallback(async () => {
     if (!user) {
       return;
@@ -136,6 +168,8 @@ const useProblems = (user: User | null | undefined) => {
       tags: ProblemTag[],
       lb: number | null,
       ub: number | null,
+      /** How many slots to give to AtCoder problems. Tags leave none: AtCoder has no tags. */
+      atcoderCount = 0,
     ) => {
       if (!user || allProblems === undefined || solvedProblems === undefined) {
         return;
@@ -209,10 +243,26 @@ const useProblems = (user: User | null | undefined) => {
         };
       });
 
+      // Until its list has loaded, AtCoder gives nothing and the set stays Codeforces.
+      const mixed =
+        atcoderCount > 0 && tags.length === 0 && atcoder
+          ? withAtcoderProblems(
+              newProblems,
+              ratings,
+              atcoder.problems,
+              new Set(
+                (atcoderSubmissions?.submissions ?? [])
+                  .filter((s) => s.verdict === "OK")
+                  .map((s) => atcoderKey(s.problem)),
+              ),
+              atcoderCount,
+            )
+          : newProblems;
+
       setIsLoading(false);
-      return newProblems.filter((p): p is TrainingProblem => p !== null);
+      return mixed.filter((p): p is TrainingProblem => p !== null);
     },
-    [user, allProblems, solvedProblems],
+    [user, allProblems, solvedProblems, atcoder, atcoderSubmissions],
   );
 
   const getRandomProblems = useCallback(
@@ -221,6 +271,7 @@ const useProblems = (user: User | null | undefined) => {
       lb: number | null,
       ub: number | null,
       customRatings: { P1: number; P2: number; P3: number; P4: number },
+      atcoderCount = 0,
     ) => {
       return getRandomProblemsFromRatings(
         [
@@ -232,6 +283,7 @@ const useProblems = (user: User | null | undefined) => {
         tags,
         lb,
         ub,
+        atcoderCount,
       );
     },
     [getRandomProblemsFromRatings],
@@ -240,6 +292,8 @@ const useProblems = (user: User | null | undefined) => {
   return {
     allProblems: allProblems ?? [],
     solvedProblems: solvedProblems ?? [],
+    /** The user gave an AtCoder username, so sets can draw from AtCoder. */
+    hasAtcoder,
     isLoading: isLoading || isLoadingAll || isLoadingSolved,
     refreshSolvedProblems,
     getRandomProblems,

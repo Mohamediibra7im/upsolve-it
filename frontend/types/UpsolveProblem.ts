@@ -1,13 +1,9 @@
-import type { TrainingProblem } from "./TrainingProblem";
+import type { Judge, TrainingProblem } from "./TrainingProblem";
 
-export type Judge = "codeforces" | "atcoder";
+export type { Judge };
 
 /** A problem of the upsolve queue, as GET /api/upsolve returns it. */
-export type UpsolveProblem = Omit<TrainingProblem, "contestId"> & {
-  /** A number on Codeforces, a contest name such as "abc300" on AtCoder. */
-  contestId: number | string;
-  /** Absent on records the API has not touched yet: those are Codeforces. */
-  judge?: Judge;
+export type UpsolveProblem = TrainingProblem & {
   /** When it joined the queue. */
   createdAt?: string;
   note?: string;

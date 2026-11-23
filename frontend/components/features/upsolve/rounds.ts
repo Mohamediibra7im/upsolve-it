@@ -35,7 +35,7 @@ export type Round = {
 };
 
 const LETTERS = "ABCDEFGH";
-/** Sessions hold Codeforces problems only, named by contest number and index. */
+/** A contest name never looks like a contest number, so one key serves both judges. */
 const keyOf = (p: { contestId: number | string; index: string }) =>
   `${p.contestId}${p.index}`;
 /** Session times are stored in seconds by older records and milliseconds by newer ones. */
@@ -67,11 +67,7 @@ export function buildRounds(
     resolving: list.filter((p) => isResolveDue(p, now)).length,
   });
 
-  const queue = new Map(
-    problems
-      .filter((p) => judgeOf(p) === "codeforces")
-      .map((p) => [keyOf(p), p]),
-  );
+  const queue = new Map(problems.map((p) => [keyOf(p), p]));
   const placed = new Set<string>();
   const rounds: Round[] = [];
 

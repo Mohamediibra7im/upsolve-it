@@ -5,7 +5,6 @@ import { Training } from "@/types/Training";
 import useUser from "@/hooks/auth/useUser";
 import { apiFetcher, swrFetcher } from "@/lib/apiClient";
 import {
-  judgeOf,
   problemId,
   problemRef,
   type Judge,
@@ -64,10 +63,10 @@ const useUpsolvedProblems = () => {
 
   const dismissedIds = useMemo(() => {
     const set = new Set<string>();
-    // Sessions only hold Codeforces problems, so only those are compared.
-    (data?.dismissed ?? [])
-      .filter((d) => judgeOf(d) === "codeforces")
-      .forEach((d) => set.add(`${d.contestId}_${d.index}`));
+    // A contest name never looks like a contest number, so one key serves both judges.
+    (data?.dismissed ?? []).forEach((d) =>
+      set.add(`${d.contestId}_${d.index}`),
+    );
     return set;
   }, [data?.dismissed]);
 
@@ -82,6 +81,7 @@ const useUpsolvedProblems = () => {
           problems.map((p) => [
             `${p.contestId}_${p.index}`,
             {
+              judge: p.judge,
               contestId: p.contestId,
               index: p.index,
               name: p.name,
@@ -147,9 +147,7 @@ const useUpsolvedProblems = () => {
       if (allUnsolved.length === 0) return;
 
       const existingIds = new Set(
-        upsolvedProblems
-          .filter((p) => judgeOf(p) === "codeforces")
-          .map((p) => `${p.contestId}_${p.index}`),
+        upsolvedProblems.map((p) => `${p.contestId}_${p.index}`),
       );
 
       const missingProblems = allUnsolved.filter((p) => {

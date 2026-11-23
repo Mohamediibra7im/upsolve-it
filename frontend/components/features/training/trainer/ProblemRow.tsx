@@ -44,6 +44,7 @@ const ProblemRow = ({
   const isTraining = startTime !== undefined;
   const hideDetails = locked || (isTraining && hideContestDetails);
   const hideRating = hideDetails || (!isTraining && !showRatings);
+  const atcoder = problem.judge === "atcoder";
   const status = isTraining ? submissionStatus?.status : undefined;
   const solved = isTraining && (status === "AC" || Boolean(problem.solvedTime));
 
@@ -99,7 +100,12 @@ const ProblemRow = ({
             "Rating hidden"
           ) : (
             <>
-              Contest <span className="t-num">{problem.contestId}</span>
+              {atcoder ? "AtCoder" : "Contest"}{" "}
+              <span className="t-num">
+                {atcoder
+                  ? String(problem.contestId).toUpperCase()
+                  : problem.contestId}
+              </span>
               {showTags &&
                 (problem.tags ?? []).slice(0, 2).map((tag) => ` · ${tag}`)}
             </>
@@ -114,7 +120,22 @@ const ProblemRow = ({
           —
         </span>
       ) : (
-        <span className="u-prow__rating">{problem.rating}</span>
+        <span
+          className="u-prow__rating"
+          title={
+            atcoder
+              ? "Estimated from its AtCoder difficulty, on the Codeforces scale"
+              : undefined
+          }
+        >
+          {atcoder && (
+            <>
+              <span aria-hidden="true">≈ </span>
+              <span className="sr-only">about </span>
+            </>
+          )}
+          {problem.rating}
+        </span>
       )}
       <span className="flex items-center gap-3 text-ink-muted">
         {verdict}
@@ -123,7 +144,9 @@ const ProblemRow = ({
         ) : (
           <>
             <ArrowUpRight className="size-4" aria-hidden="true" />
-            <span className="sr-only">Opens on Codeforces in a new tab</span>
+            <span className="sr-only">
+              Opens on {atcoder ? "AtCoder" : "Codeforces"} in a new tab
+            </span>
           </>
         )}
       </span>

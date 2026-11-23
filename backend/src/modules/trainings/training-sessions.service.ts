@@ -364,8 +364,10 @@ export class TrainingSessionsService {
       return {
         problemId: p.problemId || makeProblemId(p.contestId, p.index),
         name: p.name,
+        judge: p.judge ?? 'codeforces',
         contestId: p.contestId,
         index: p.index,
+        url: p.url,
         rating: p.rating,
         tags: p.tags ?? [],
         solved: solvedFlag,

@@ -131,7 +131,21 @@ function ProblemRow({
           )}
         </div>
         {problem.rating ? (
-          <span className="u-rank t-num" data-rank={rankKey(problem.rating)}>
+          <span
+            className="u-rank t-num"
+            data-rank={rankKey(problem.rating)}
+            title={
+              judgeOf(problem) === "atcoder"
+                ? "Estimated from its AtCoder difficulty, on the Codeforces scale"
+                : undefined
+            }
+          >
+            {judgeOf(problem) === "atcoder" && (
+              <>
+                <span aria-hidden="true">≈</span>
+                <span className="sr-only">about</span>
+              </>
+            )}
             {problem.rating}
           </span>
         ) : (

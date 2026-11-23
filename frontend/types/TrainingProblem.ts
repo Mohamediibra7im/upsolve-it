@@ -1,7 +1,13 @@
 import { CodeforcesProblem } from "./Codeforces";
 import type { SpeedStatus } from "@/services/training/speedStatus";
 
-type TrainingProblem = CodeforcesProblem & {
+/** The judges a problem can come from. Without one it is a Codeforces problem. */
+export type Judge = "codeforces" | "atcoder";
+
+type TrainingProblem = Omit<CodeforcesProblem, "contestId"> & {
+  /** A number on Codeforces, a contest name such as "abc300" on AtCoder. */
+  contestId: number | string;
+  judge?: Judge;
   url: string;
   solvedTime: number | null;
   problemId?: string;

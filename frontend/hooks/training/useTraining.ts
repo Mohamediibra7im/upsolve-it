@@ -406,6 +406,7 @@ const useTraining = () => {
           customRatings: opts.customRatings,
           problems: problems.map((p) => ({
             problemId: p.problemId ?? `${p.contestId}_${p.index}`,
+            judge: p.judge,
             contestId: p.contestId,
             index: p.index,
             name: p.name,
@@ -452,7 +453,7 @@ const useTraining = () => {
   };
 
   type GenerateResult =
-    | { ok: true; count: number }
+    | { ok: true; count: number; atcoder: number }
     | { ok: false; reason: "pool-not-ready" | "empty-result" };
 
   const generateProblems = (
@@ -460,8 +461,15 @@ const useTraining = () => {
     lb: number | null,
     ub: number | null,
     customRatings: { P1: number; P2: number; P3: number; P4: number },
+    atcoderCount = 0,
   ): GenerateResult => {
-    const newProblems = getRandomProblems(tags, lb, ub, customRatings);
+    const newProblems = getRandomProblems(
+      tags,
+      lb,
+      ub,
+      customRatings,
+      atcoderCount,
+    );
     if (newProblems === undefined) {
       return { ok: false, reason: "pool-not-ready" };
     }
@@ -469,7 +477,11 @@ const useTraining = () => {
     if (newProblems.length === 0) {
       return { ok: false, reason: "empty-result" };
     }
-    return { ok: true, count: newProblems.length };
+    return {
+      ok: true,
+      count: newProblems.length,
+      atcoder: newProblems.filter((p) => p.judge === "atcoder").length,
+    };
   };
 
   const generateProblemsFromRatings = (
@@ -477,8 +489,15 @@ const useTraining = () => {
     tags: ProblemTag[],
     lb: number | null,
     ub: number | null,
+    atcoderCount = 0,
   ): GenerateResult => {
-    const newProblems = getRandomProblemsFromRatings(ratings, tags, lb, ub);
+    const newProblems = getRandomProblemsFromRatings(
+      ratings,
+      tags,
+      lb,
+      ub,
+      atcoderCount,
+    );
     if (newProblems === undefined) {
       return { ok: false, reason: "pool-not-ready" };
     }
@@ -486,7 +505,11 @@ const useTraining = () => {
     if (newProblems.length === 0) {
       return { ok: false, reason: "empty-result" };
     }
-    return { ok: true, count: newProblems.length };
+    return {
+      ok: true,
+      count: newProblems.length,
+      atcoder: newProblems.filter((p) => p.judge === "atcoder").length,
+    };
   };
 
   const notifyProblemOpened = useCallback(

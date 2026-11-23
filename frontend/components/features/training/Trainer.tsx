@@ -144,7 +144,9 @@ const Trainer = ({
         ))}
         <div className="u-panel__foot border-t-0">
           <span>
-            Submitted on Codeforces? Refresh status to see your latest result.
+            {problems.some((p) => p.judge === "atcoder")
+              ? "Submitted? Refresh status to see your latest result. An AtCoder result can take a few minutes to show."
+              : "Submitted on Codeforces? Refresh status to see your latest result."}
           </span>
           {!hideContestDetails && (
             <Button

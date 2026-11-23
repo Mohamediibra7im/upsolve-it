@@ -3,6 +3,13 @@ import { TrainingProblem } from "@/types/TrainingProblem";
 import { CodeforcesSubmission } from "@/types/Codeforces";
 import { SuccessResponse, ErrorResponse, Response } from "@/types/Response";
 import getSubmissions from "@/services/codeforces/getSubmissions";
+import { apiFetcher } from "@/lib/apiClient";
+
+/** What both judges' submissions have in common, as far as a session reads them. */
+type SessionSubmission = Pick<
+  CodeforcesSubmission,
+  "creationTimeSeconds" | "verdict"
+> & { problem: { contestId?: number | string; index: string } };
 
 export type SubmissionStatus = {
   problemId: string; // format: "contestId_index"
@@ -23,7 +30,16 @@ const getTrainingSubmissionStatus = async (
       return ErrorResponse(res.error);
     }
 
-    const submissions = res.data;
+    // AtCoder submissions come through our own API in the same shape. If they
+    // cannot be had, the Codeforces problems of the session are still checked.
+    const atcoder = problems.some((p) => p.judge === "atcoder")
+      ? await apiFetcher<{ submissions: SessionSubmission[] }>(
+          "/api/atcoder/submissions",
+        )
+          .then((r) => r.submissions)
+          .catch(() => [])
+      : [];
+    const submissions: SessionSubmission[] = [...res.data, ...atcoder];
     const submissionStatuses: SubmissionStatus[] = [];
 
     for (const problem of problems) {
@@ -32,13 +48,13 @@ const getTrainingSubmissionStatus = async (
       // Filter submissions for this specific problem that happened during training
       const problemSubmissions = submissions
         .filter(
-          (sub: CodeforcesSubmission) =>
+          (sub: SessionSubmission) =>
             sub.problem.contestId === problem.contestId &&
             sub.problem.index === problem.index &&
             sub.creationTimeSeconds * 1000 >= trainingStartTime, // Only submissions during training
         )
         .sort(
-          (a: CodeforcesSubmission, b: CodeforcesSubmission) =>
+          (a: SessionSubmission, b: SessionSubmission) =>
             b.creationTimeSeconds - a.creationTimeSeconds, // Most recent first
         );
 
@@ -57,7 +73,7 @@ const getTrainingSubmissionStatus = async (
 
       // Check for AC first, as it's the final success state
       const acceptedSubmission = problemSubmissions.find(
-        (sub: CodeforcesSubmission) => sub.verdict === "OK",
+        (sub: SessionSubmission) => sub.verdict === "OK",
       );
 
       if (acceptedSubmission) {

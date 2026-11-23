@@ -15,13 +15,16 @@ import {
   formatTrainingModeLabel,
   normalizeTrainingMode,
 } from "@/services/training/trainingModeLabel";
-import type { TrainingProblem } from "@/types/TrainingProblem";
+import type { Judge, TrainingProblem } from "@/types/TrainingProblem";
 
 type ReviewProblem = {
   problemId: string;
   name: string;
-  contestId: number;
+  judge?: Judge;
+  contestId: number | string;
   index: string;
+  /** Sent since AtCoder joined; older reviews are Codeforces and rebuild it. */
+  url?: string;
   rating: number;
   tags: string[];
   solved: boolean;
@@ -58,7 +61,7 @@ const reading = (p: ReviewProblem) =>
 const minutes = (seconds: number) => Math.round(seconds / 60);
 
 const problemUrl = (p: ReviewProblem) =>
-  `https://codeforces.com/contest/${p.contestId}/problem/${p.index}`;
+  p.url || `https://codeforces.com/contest/${p.contestId}/problem/${p.index}`;
 
 export default function SessionReviewPage() {
   const params = useParams();
@@ -99,6 +102,7 @@ export default function SessionReviewPage() {
   const addOneUpsolve = (p: ReviewProblem) =>
     addUpsolvedProblems([
       {
+        judge: p.judge,
         contestId: p.contestId,
         index: p.index,
         name: p.name,
@@ -236,7 +240,7 @@ export default function SessionReviewPage() {
                   <div className="u-panel__head">
                     <h2 className="t-h2">Problem breakdown</h2>
                     <span className="t-sm t-muted">
-                      Each name opens the problem on Codeforces
+                      Each name opens the problem on its judge
                     </span>
                   </div>
                   <div className="overflow-x-auto">
