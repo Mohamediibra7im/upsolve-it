@@ -1,5 +1,5 @@
 # One image for the whole product. Fly runs it as two process groups
-# (see fly.toml): `web` serves the Next.js app, `api` serves the NestJS API.
+# (see fly.toml): `app` serves the Next.js app, `api` serves the NestJS API.
 
 FROM node:24-slim AS backend-build
 WORKDIR /src/backend
