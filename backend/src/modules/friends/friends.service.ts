@@ -17,6 +17,15 @@ import {
   FriendRequest,
   type FriendRequestDocument,
 } from './schemas/friend-request.schema';
+import {
+  UpsolvedProblem,
+  type UpsolvedProblemDocument,
+} from '../upsolve/schemas/upsolved-problem.schema';
+import {
+  UserStats,
+  type UserStatsDocument,
+} from '../trainings/schemas/user-stats.schema';
+import { addUtcDays, toUtcDayKey } from '../trainings/utils/date-key';
 import { escapeRegex } from './utils/escape-regex';
 import {
   isValidCodeforcesHandleFormat,
@@ -65,7 +74,61 @@ export class FriendsService {
     private readonly friendshipModel: Model<FriendshipDocument>,
     @InjectModel(FriendRequest.name)
     private readonly friendRequestModel: Model<FriendRequestDocument>,
+    @InjectModel(UpsolvedProblem.name)
+    private readonly upsolveModel: Model<UpsolvedProblemDocument>,
+    @InjectModel(UserStats.name)
+    private readonly userStatsModel: Model<UserStatsDocument>,
   ) {}
+
+  /**
+   * How each of the given users stands with their upsolving: problems waiting,
+   * when the oldest one was added, and the upsolve streak if it is still alive.
+   * Numbers only: no problem, note or address leaves through here.
+   */
+  private async upsolveNumbers(userIds: string[], nowMs: number = Date.now()) {
+    const ids = userIds.map((id) => new Types.ObjectId(id));
+    const [waiting, stats] = await Promise.all([
+      this.upsolveModel.aggregate<{
+        _id: Types.ObjectId;
+        waiting: number;
+        oldestAt: Date;
+      }>([
+        { $match: { user: { $in: ids }, solvedTime: null } },
+        {
+          $group: {
+            _id: '$user',
+            waiting: { $sum: 1 },
+            oldestAt: { $min: '$createdAt' },
+          },
+        },
+      ]),
+      this.userStatsModel
+        .find({ user: { $in: ids } })
+        .select('user upsolveStreak lastUpsolveActivityDate')
+        .lean(),
+    ]);
+    const today = toUtcDayKey(nowMs);
+    const yesterday = addUtcDays(today, -1);
+    const waitingOf = new Map(waiting.map((w) => [String(w._id), w]));
+    const statsOf = new Map(stats.map((s) => [String(s.user), s]));
+    return new Map(
+      userIds.map((id) => {
+        const s = statsOf.get(id);
+        // A streak counts only while its last day is today or yesterday.
+        const alive =
+          s?.lastUpsolveActivityDate === today ||
+          s?.lastUpsolveActivityDate === yesterday;
+        return [
+          id,
+          {
+            waiting: waitingOf.get(id)?.waiting ?? 0,
+            oldestAt: waitingOf.get(id)?.oldestAt ?? null,
+            streak: alive ? (s?.upsolveStreak ?? 0) : 0,
+          },
+        ];
+      }),
+    );
+  }
 
   private async findUserByHandleInsensitive(handle: string) {
     const trimmed = handle.trim();
@@ -383,8 +446,13 @@ export class FriendsService {
       return lo === cur ? hi : lo;
     });
 
+    const numbers = await this.upsolveNumbers([
+      String(currentUserId),
+      ...otherIds,
+    ]);
+    const me = numbers.get(String(currentUserId));
     if (otherIds.length === 0) {
-      return { friends: [] as Array<Record<string, unknown>> };
+      return { friends: [] as Array<Record<string, unknown>>, me };
     }
 
     const users = await this.userModel
@@ -392,9 +460,12 @@ export class FriendsService {
       .select('codeforcesHandle avatar glyphAvatar rating rank')
       .lean();
 
-    const friends = users.map(publicUserPick);
+    const friends = users.map((u) => ({
+      ...publicUserPick(u),
+      upsolve: numbers.get(String(u._id)),
+    }));
 
-    return { friends };
+    return { friends, me };
   }
 
   async removeFriend(currentUserId: string, friendUserId: string) {
@@ -434,6 +505,34 @@ export class FriendsService {
     );
 
     return { message: 'Friend removed' };
+  }
+
+  /** Problems still waiting on both the viewer's list and a friend's. */
+  async sharedUpsolves(viewerUserId: string, friendUserId: string) {
+    if (
+      !Types.ObjectId.isValid(friendUserId) ||
+      !(await this.areFriends(viewerUserId, friendUserId))
+    ) {
+      throw new ForbiddenException(
+        'You can only see shared problems with friends',
+      );
+    }
+    const waitingOf = (userId: string) =>
+      this.upsolveModel
+        .find({ user: userId, solvedTime: null })
+        // listed by hand: a note must never be part of this
+        .select('judge contestId index name rating tags url -_id')
+        .sort({ createdAt: 1 })
+        .limit(500)
+        .lean();
+    const [mine, theirs] = await Promise.all([
+      waitingOf(viewerUserId),
+      waitingOf(friendUserId),
+    ]);
+    const key = (p: { judge?: string; contestId: unknown; index: string }) =>
+      `${p.judge ?? 'codeforces'}:${String(p.contestId)}:${p.index}`;
+    const theirKeys = new Set(theirs.map(key));
+    return { problems: mine.filter((p) => theirKeys.has(key(p))) };
   }
 
   async getFriendStats(viewerUserId: string, friendUserId: string) {

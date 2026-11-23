@@ -12,6 +12,14 @@ import {
   FriendRequestSchema,
 } from './schemas/friend-request.schema';
 import { Friendship, FriendshipSchema } from './schemas/friendship.schema';
+import {
+  UpsolvedProblem,
+  UpsolvedProblemSchema,
+} from '../upsolve/schemas/upsolved-problem.schema';
+import {
+  UserStats,
+  UserStatsSchema,
+} from '../trainings/schemas/user-stats.schema';
 
 @Module({
   imports: [
@@ -23,6 +31,8 @@ import { Friendship, FriendshipSchema } from './schemas/friendship.schema';
       { name: Friendship.name, schema: FriendshipSchema },
       { name: FriendRequest.name, schema: FriendRequestSchema },
       { name: User.name, schema: UserSchema },
+      { name: UpsolvedProblem.name, schema: UpsolvedProblemSchema },
+      { name: UserStats.name, schema: UserStatsSchema },
     ]),
   ],
   controllers: [FriendsController],

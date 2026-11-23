@@ -85,6 +85,15 @@ export class FriendsController {
   }
 
   @UseGuards(AuthGuard)
+  @Get(':userId/shared-upsolves')
+  async sharedUpsolves(
+    @CurrentUser() user: UserDocument,
+    @Param('userId') friendUserId: string,
+  ) {
+    return await this.friends.sharedUpsolves(user._id.toString(), friendUserId);
+  }
+
+  @UseGuards(AuthGuard)
   @Delete(':userId')
   async remove(
     @CurrentUser() user: UserDocument,
