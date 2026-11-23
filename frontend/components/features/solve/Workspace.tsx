@@ -486,9 +486,14 @@ export default function Workspace({
               </div>
             ) : (
               <>
-                {part("story").map((sec, i) => (
-                  <Prose key={`story-${i}`} html={sec.html} />
-                ))}
+                {part("story").length > 0 && (
+                  <div className="sw-part">
+                    <h3 className="sw-h">Statement</h3>
+                    {part("story").map((sec, i) => (
+                      <Prose key={i} html={sec.html} />
+                    ))}
+                  </div>
+                )}
                 {(
                   [
                     ["input", "Input"],
@@ -498,34 +503,11 @@ export default function Workspace({
                 ).flatMap(([kind, name]) =>
                   part(kind).map((sec, i) => (
                     <div key={`${kind}-${i}`} className="sw-part">
-                      <span className="u-stat__label">{name || sec.title}</span>
+                      <h3 className="sw-h">{name || sec.title}</h3>
                       <Prose html={sec.html} />
                     </div>
                   )),
                 )}
-                {samples.map((sample, i) => (
-                  <div key={`ex-${i}`} className="sw-ex">
-                    <div className="sw-ex__head">
-                      <i>{i + 1}</i>
-                      Example {i + 1}
-                    </div>
-                    <div className="sw-ex__io">
-                      <div>
-                        <span className="u-stat__label">Input</span>
-                        <pre>{sample.input}</pre>
-                      </div>
-                      <div>
-                        <span className="u-stat__label">Output</span>
-                        <pre>{sample.expected}</pre>
-                      </div>
-                    </div>
-                    {sample.note && (
-                      <div className="sw-ex__why">
-                        <Prose html={sample.note} />
-                      </div>
-                    )}
-                  </div>
-                ))}
                 {(
                   [
                     ["constraints", "Constraints"],
@@ -534,7 +516,7 @@ export default function Workspace({
                 ).flatMap(([kind, name]) =>
                   part(kind).map((sec, i) => (
                     <div key={`${kind}-${i}`} className="sw-part">
-                      <span className="u-stat__label">{name}</span>
+                      <h3 className="sw-h">{name}</h3>
                       <Prose html={sec.html} />
                     </div>
                   )),
@@ -726,6 +708,13 @@ export default function Workspace({
                     <div className="sw-field">
                       <pre>{cases[shownInput].expected}</pre>
                     </div>
+                    {/* the judge's explanation of the sample travels with its case */}
+                    {cases[shownInput].note && (
+                      <>
+                        <span className="u-stat__label">Explanation</span>
+                        <Prose html={cases[shownInput].note!} />
+                      </>
+                    )}
                   </div>
                 )}
               </div>

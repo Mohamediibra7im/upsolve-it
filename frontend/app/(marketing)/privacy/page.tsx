@@ -167,9 +167,9 @@ const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
         <p>
           Your browser also keeps a few things on your own device so the site
           feels quick: a copy of your profile, the session you are in the middle
-          of, and small choices such as an announcement you closed. Signing out
-          removes the copy of your profile; clearing your browser data removes
-          the rest.
+          of, the code you write in the workspace, and small choices such as an
+          announcement you closed. Signing out removes the copy of your profile;
+          clearing your browser data removes the rest.
         </p>
       </>
     ),
@@ -207,7 +207,18 @@ const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
               <B>MongoDB</B> is the database that holds what is listed above.
             </>,
             <>
-              <B>Codeforces</B> answers our questions about your handle.
+              <B>Codeforces</B> answers our questions about your handle, and its
+              problem pages are read to show a problem inside a session.
+            </>,
+            <>
+              <B>AtCoder</B> and <B>AtCoder Problems</B> do the same for an
+              AtCoder username you saved and for AtCoder problems.
+            </>,
+            <>
+              <B>OnlineCompiler</B> runs your code when you press Run. The code
+              and the input it runs on are sent to it, and it keeps them under
+              its own privacy policy, so leave passwords and keys out of code
+              you run. Nothing is sent until you press Run.
             </>,
             <>
               <B>Cloudflare</B> provides the visit counts.

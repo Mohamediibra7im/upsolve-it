@@ -57,7 +57,8 @@
     --radius-sm: 2px;
     --radius-md: 3px;
     --radius-lg: 4px;
-    --container: 1440px;
+    /* "slightly full width": wide on a large screen, never edge to edge */
+    --container: 1760px;
     --gutter: clamp(20px, 4vw, 48px);
 
     /* The same colours as HSL triplets, for the Radix/shadcn primitives and
