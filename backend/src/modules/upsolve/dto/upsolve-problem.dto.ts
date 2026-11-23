@@ -11,6 +11,7 @@ import {
   ValidateBy,
 } from 'class-validator';
 import { JUDGES, type ContestId, type Judge } from '../schemas/judge';
+import { NOTE_MAX_LENGTH } from '../schemas/upsolved-problem.schema';
 
 /** A positive contest number, or a contest name made of letters, digits, "-" and "_". */
 const IsContestId = () =>
@@ -68,3 +69,12 @@ export class UpdateUpsolveProblemDto extends ProblemRefDto {
 }
 
 export class DeleteUpsolveProblemDto extends ProblemRefDto {}
+
+export class UpsolveNoteDto extends ProblemRefDto {
+  /** An empty note clears it. */
+  @IsString()
+  @MaxLength(NOTE_MAX_LENGTH, {
+    message: `A note can be at most ${NOTE_MAX_LENGTH} characters.`,
+  })
+  note!: string;
+}

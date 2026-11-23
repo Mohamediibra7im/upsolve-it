@@ -1,4 +1,9 @@
-import { Injectable, Logger, type OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  type OnModuleInit,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AuthService } from '../auth/auth.service';
@@ -130,6 +135,16 @@ export class UpsolveService implements OnModuleInit {
       },
     }));
     await this.upsolveModel.bulkWrite(bulkOps);
+  }
+
+  /** Saves the user's note on a problem of their own list. "" clears it. */
+  async setNote(userId: string, problem: ProblemRef, note: string) {
+    const { matchedCount } = await this.upsolveModel.updateOne(
+      { user: userId, ...problemKey(problem) },
+      { $set: { note: note.trim() } },
+    );
+    if (!matchedCount)
+      throw new NotFoundException('That problem is not in your upsolve list.');
   }
 
   /**

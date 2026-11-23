@@ -17,6 +17,7 @@ import {
   CreateUpsolveProblemDto,
   UpdateUpsolveProblemDto,
   DeleteUpsolveProblemDto,
+  UpsolveNoteDto,
 } from './dto/upsolve-problem.dto';
 
 @Controller('upsolve')
@@ -87,6 +88,13 @@ export class UpsolveController {
       await this.userStats.recordUpsolveSolved(user._id.toString());
     }
     return { message: 'Upsolved problems updated' };
+  }
+
+  @UseGuards(AuthGuard)
+  @Put('note')
+  async note(@CurrentUser() user: UserDocument, @Body() body: UpsolveNoteDto) {
+    await this.upsolve.setNote(user._id.toString(), body, body.note);
+    return { message: 'Note saved' };
   }
 
   @UseGuards(AuthGuard)

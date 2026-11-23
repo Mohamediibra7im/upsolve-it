@@ -2,6 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types, SchemaTypes } from 'mongoose';
 import { JUDGES, type ContestId, type Judge } from './judge';
 
+export const NOTE_MAX_LENGTH = 2000;
+
 export type UpsolvedProblemDocument = HydratedDocument<UpsolvedProblem>;
 
 @Schema({ timestamps: false })
@@ -33,6 +35,10 @@ export class UpsolvedProblem {
 
   @Prop({ type: Number, default: null })
   solvedTime!: number | null;
+
+  /** The user's own words about the problem: why it failed, the key idea. */
+  @Prop({ type: String, default: '', maxlength: NOTE_MAX_LENGTH })
+  note!: string;
 
   @Prop({ default: Date.now })
   createdAt!: Date;

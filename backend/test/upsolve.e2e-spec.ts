@@ -5,6 +5,9 @@ import { Connection, Types } from 'mongoose';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import { UpsolveModule } from '../src/modules/upsolve/upsolve.module';
 import { UpsolveService } from '../src/modules/upsolve/upsolve.service';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
+import { UpsolveNoteDto } from '../src/modules/upsolve/dto/upsolve-problem.dto';
 
 jest.setTimeout(120_000);
 
@@ -73,6 +76,45 @@ describe('upsolve queue against a real database', () => {
     // The old record is the same problem a new request names, not a second one.
     await upsolve.insertMany(String(user), [problem(1996, 'D')]);
     expect(await upsolve.list(String(user))).toHaveLength(1);
+  });
+
+  it('keeps a note with its problem, for its owner only', async () => {
+    const [owner, stranger] = [newUser(), newUser()];
+    const ref = { contestId: 1986, index: 'D' };
+    const noteOf = async (user: string) => (await upsolve.list(user))[0]?.note;
+    await upsolve.insertMany(owner, [problem(1986, 'D')]);
+    await upsolve.insertMany(stranger, [problem(1986, 'D')]);
+
+    await upsolve.setNote(owner, ref, '  zero times anything is zero  ');
+    expect(await noteOf(owner)).toBe('zero times anything is zero');
+    expect(await noteOf(stranger)).toBe('');
+
+    await upsolve.setNote(owner, ref, 'try every split');
+    await upsolve.insertMany(owner, [problem(1986, 'D')]); // what a sync does
+    expect(await noteOf(owner)).toBe('try every split');
+
+    await upsolve.setNote(owner, ref, '');
+    expect(await noteOf(owner)).toBe('');
+
+    // Someone without the problem cannot write a note onto it.
+    await expect(upsolve.setNote(newUser(), ref, 'not mine')).rejects.toThrow(
+      'not in your upsolve list',
+    );
+
+    await upsolve.setNote(owner, ref, 'gone with the problem');
+    await upsolve.deleteOne(owner, ref);
+    await upsolve.insertMany(owner, [problem(1986, 'D')]);
+    expect(await noteOf(owner)).toBe('');
+  });
+
+  it('refuses a note longer than 2,000 characters', async () => {
+    const check = (note: string) =>
+      validate(
+        plainToInstance(UpsolveNoteDto, { contestId: 1, index: 'A', note }),
+      );
+    expect(await check('a'.repeat(2000))).toHaveLength(0);
+    const [error] = await check('a'.repeat(2001));
+    expect(Object.values(error.constraints!)[0]).toContain('2000 characters');
   });
 
   it('keeps two judges apart even when they share an identifier', async () => {
