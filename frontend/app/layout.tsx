@@ -8,7 +8,6 @@ import Script from "next/script";
 import { cn } from "@/lib/utils";
 import PageTransition from "@/components/shared/PageTransition";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
-import AnnouncementDialog from "@/components/shared/AnnouncementDialog";
 
 const display = Barlow_Condensed({
   subsets: ["latin"],
@@ -64,7 +63,6 @@ export default function RootLayout({
               </PageTransition>
             </AuthGuard>
           </div>
-          <AnnouncementDialog />
         </ToastProvider>
         <Script
           defer

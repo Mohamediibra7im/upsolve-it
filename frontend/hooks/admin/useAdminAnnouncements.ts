@@ -26,8 +26,8 @@ export function useAdminAnnouncements(limit: number, offset: number) {
   };
 }
 
-/** The pop-up asks again, so the admin sees the change without a reload. */
-const refreshPopUp = () =>
+/** The bar asks again, so the admin sees the change without a reload. */
+const refreshBar = () =>
   mutateSwr(
     (key) =>
       typeof key === "string" && key.startsWith("/api/announcements/current"),
@@ -38,10 +38,10 @@ export async function saveAnnouncement(input: AnnouncementInput, id?: string) {
   await (id
     ? apiClient.put(`${BASE}/${id}`, input)
     : apiClient.post(BASE, input));
-  await refreshPopUp();
+  await refreshBar();
 }
 
 export async function deleteAnnouncement(id: string) {
   await apiClient.delete(`${BASE}/${id}`);
-  await refreshPopUp();
+  await refreshBar();
 }

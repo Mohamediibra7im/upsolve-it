@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
 import NavBar from "./NavBar";
 import Footer from "./Footer";
+import AnnouncementBar from "@/components/shared/AnnouncementBar";
 import { cn } from "@/lib/utils";
 
-/** The one frame: top bar, content, footer. `app` puts the content in the wide
+/** The one frame: top bar, announcements, content, footer. `app` puts the content in the wide
  *  1440px container with page padding; public pages manage their own bands. */
 export default function SiteShell({
   children,
@@ -17,6 +18,7 @@ export default function SiteShell({
   return (
     <>
       <NavBar admin={admin} app={app} />
+      <AnnouncementBar />
       <main
         id="main-content"
         className={cn(

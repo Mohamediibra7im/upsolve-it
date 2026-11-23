@@ -74,7 +74,7 @@ Pick a mode on the training page and its lane opens with everything it needs. Se
 - **Codeforces Ownership Verification**: Expiring verification codes placed in your Codeforces profile's *First name* field verify handle ownership and power password recovery.
 - **Hardened HTTP Layer**: Helmet CSP, exact-origin CORS allowlist (no wildcard preview origins), global DTO whitelist validation, Zod startup env validation, and per-endpoint rate limiting (`X-RateLimit-*` & `Retry-After` headers).
 - **Admin Console (`/admin`)**: User directory, role management, account lock/unlock, single & batch Codeforces profile sync, user stats inspection, and structured audit logs.
-- **Announcements**: Admins write an announcement with an optional start and end time and a call to action; it appears once as a pop-up for visitors, members, or both, and each change is audit-logged.
+- **Announcements**: Admins write an announcement with an optional start and end time and a call to action; every live one takes its turn in a bar under the menu, for visitors, members, or both, and its title opens the whole message. Each change is audit-logged.
 
 ---
 
@@ -151,7 +151,7 @@ upsolve-it/
 │           ├── user-stats/      # Streaks, active days & 7-day consistency
 │           ├── friends/         # Friend requests & friend stats
 │           ├── public-profile/  # Opt-in public profiles for verified handles
-│           ├── announcements/   # Admin-written announcements shown as a pop-up
+│           ├── announcements/   # Admin-written announcements shown in a bar
 │           ├── admin/           # User management, batch sync & platform metrics
 │           ├── audit-logs/      # Administrative & security event trail
 │           └── health/          # /api/health, /ready, /live probes
@@ -286,7 +286,7 @@ All API endpoints are served under `/api`, and interactive OpenAPI documentation
 | `/api/reminders` | Weekly email subscription status, opt-in/out & signed link redemption (`POST /api/reminders/redeem`) |
 | `/api/users/me/*` | Streaks & consistency (`/streaks`), weak-topic analysis (`/weaknesses`) and profile editing (`PATCH /profile`) |
 | `/api/public-profile` | Public profile by handle (opt-in, verified handles only) and your own visibility setting |
-| `/api/announcements` | The announcement currently on show (`GET /current`) |
+| `/api/announcements` | The announcements currently on show (`GET /current`) |
 | `/api/friends` | Friend requests lifecycle, friend list & friend statistics |
 | `/api/admin` | Platform stats, user search/roles/lock/unlock, batch CF sync, announcements & audit logs |
 | `/api/health` | Liveness (`/live`), readiness (`/ready`) & combined health checks (exempt from rate limits) |

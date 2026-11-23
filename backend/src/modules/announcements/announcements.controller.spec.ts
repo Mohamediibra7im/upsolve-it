@@ -360,56 +360,58 @@ describe('announcements', () => {
       rows.push(row);
       return row;
     };
-    const titleFor = async (isMember: boolean) =>
-      (await service.current(isMember, now))?.title ?? null;
+    const titlesFor = async (isMember: boolean) =>
+      (await service.current(isMember, now)).map((a) => a.title);
 
-    it('returns null when nothing is eligible', async () => {
+    it('returns nothing when nothing is eligible', async () => {
       store('Draft', { published: false });
       store('Not yet started', { startsAt: at(1) });
       store('Ended', { endsAt: at(-1) });
       store('Ends this instant', { endsAt: now });
       store('Members only', { audience: 'members' });
 
-      expect(await titleFor(false)).toBeNull();
+      expect(await titlesFor(false)).toEqual([]);
     });
 
     it('shows a members-only announcement to a signed-in visitor only', async () => {
       store('For everyone', { createdAt: at(-72) });
       store('Members only', { audience: 'members' });
 
-      expect(await titleFor(false)).toBe('For everyone');
-      expect(await titleFor(true)).toBe('Members only');
+      expect(await titlesFor(false)).toEqual(['For everyone']);
+      expect(await titlesFor(true)).toEqual(['Members only', 'For everyone']);
     });
 
     it('shows an announcement inside its window', async () => {
       store('Running', { startsAt: at(-1), endsAt: at(1) });
-      expect(await titleFor(false)).toBe('Running');
+      expect(await titlesFor(false)).toEqual(['Running']);
     });
 
-    it('picks the newest eligible one, skipping newer ones that are not', async () => {
+    it('returns every eligible one, newest first, skipping the rest', async () => {
       store('Old', { createdAt: at(-72) });
       store('Newest eligible', { createdAt: at(-10) });
       store('Newer draft', { createdAt: at(-5), published: false });
       store('Newer but scheduled', { createdAt: at(-4), startsAt: at(2) });
       store('Newer but ended', { createdAt: at(-3), endsAt: at(-2) });
 
-      expect(await titleFor(false)).toBe('Newest eligible');
+      expect(await titlesFor(false)).toEqual(['Newest eligible', 'Old']);
     });
 
-    it('returns only what the dialog needs', async () => {
+    it('returns only what the web app shows', async () => {
       const row = store('Ladder mode is here', {
         actionLabel: 'Open training',
         actionUrl: '/training',
       });
 
-      expect(await service.current(false, now)).toEqual({
-        id: String(row._id),
-        title: 'Ladder mode is here',
-        message: 'Message',
-        actionLabel: 'Open training',
-        actionUrl: '/training',
-        updatedAt: row.updatedAt,
-      });
+      expect(await service.current(false, now)).toEqual([
+        {
+          id: String(row._id),
+          title: 'Ladder mode is here',
+          message: 'Message',
+          actionLabel: 'Open training',
+          actionUrl: '/training',
+          updatedAt: row.updatedAt,
+        },
+      ]);
     });
 
     it('needs no session, and reads the session when there is one', async () => {
@@ -421,26 +423,29 @@ describe('announcements', () => {
             await request(server())
               .get(`/announcements/current${query}`)
               .expect(200)
-          ).body as { announcement: { title: string } | null }
-        ).announcement?.title;
+          ).body as { announcements: { title: string }[] }
+        ).announcements.map((a) => a.title);
 
       getUserFromAuthHeader.mockResolvedValue(null);
-      expect(await current()).toBe('For everyone');
+      expect(await current()).toEqual(['For everyone']);
       // a browser that believes it is signed in gets a 401 to refresh on
       await request(server())
         .get('/announcements/current?member=1')
         .expect(401);
 
       getUserFromAuthHeader.mockResolvedValue(member);
-      expect(await current()).toBe('Members only');
-      expect(await current('?member=1')).toBe('Members only');
+      expect(await current()).toEqual(['Members only', 'For everyone']);
+      expect(await current('?member=1')).toEqual([
+        'Members only',
+        'For everyone',
+      ]);
     });
 
-    it('answers with a JSON null when there is nothing to show', async () => {
+    it('answers with an empty list when there is nothing to show', async () => {
       getUserFromAuthHeader.mockResolvedValue(null);
       await request(server())
         .get('/announcements/current')
-        .expect(200, { announcement: null });
+        .expect(200, { announcements: [] });
     });
   });
 });

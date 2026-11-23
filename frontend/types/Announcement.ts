@@ -1,6 +1,6 @@
 export type Audience = "everyone" | "members";
 
-/** What the pop-up shows: GET /api/announcements/current. */
+/** One entry of GET /api/announcements/current, as the bar and its pop-up show it. */
 export interface CurrentAnnouncement {
   id: string;
   title: string;

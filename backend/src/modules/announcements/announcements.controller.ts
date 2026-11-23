@@ -35,8 +35,7 @@ export class AnnouncementsController {
     // expired, the 401 makes the web app refresh it and ask again, instead of
     // quietly missing a members-only announcement.
     if (member && !user) throw new UnauthorizedException('Unauthorized');
-    // Wrapped: a bare null would be sent as an empty body, which is not JSON.
-    return { announcement: await this.announcements.current(!!user) };
+    return { announcements: await this.announcements.current(!!user) };
   }
 }
 

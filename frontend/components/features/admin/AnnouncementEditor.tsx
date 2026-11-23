@@ -194,8 +194,8 @@ export function AnnouncementEditor({
             {announcement ? "Edit announcement" : "New announcement"}
           </DialogTitle>
           <DialogDescription className="t-muted">
-            Visitors see it as a pop-up when they open the site, once each.
-            Saving an edit shows it to them again.
+            It joins the bar under the menu, and its title opens the whole
+            message. A visitor who hides the bar sees it again after an edit.
           </DialogDescription>
         </DialogHeader>
 
@@ -319,7 +319,7 @@ export function AnnouncementEditor({
           <div className="grid content-start gap-3">
             <p className="t-eyebrow">Preview</p>
             <div className="u-panel u-panel--sunk p-4 sm:p-6">
-              {/* A picture of the pop-up: its buttons do nothing here. */}
+              {/* A picture of the opened announcement: its buttons do nothing here. */}
               <div
                 inert
                 className="relative mx-auto max-w-md rounded-lg border border-line bg-card p-6 shadow-pop"

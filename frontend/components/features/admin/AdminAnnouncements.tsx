@@ -149,7 +149,8 @@ export default function AdminAnnouncements() {
       <section className="u-panel" aria-label="Announcements">
         <div className="u-panel__head">
           <p className="t-sm t-muted">
-            Visitors see the newest live announcement as a pop-up, once each.
+            Every live announcement takes its turn in the bar under the menu,
+            newest first.
           </p>
           <span className="t-sm t-num t-muted">{total} total</span>
         </div>

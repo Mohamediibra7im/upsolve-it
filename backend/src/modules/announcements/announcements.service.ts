@@ -32,12 +32,12 @@ export class AnnouncementsService {
   ) {}
 
   /**
-   * The one announcement a visitor should see now, or null: the newest that is
-   * published, inside its window and meant for them. Only what the dialog
-   * shows leaves the server.
+   * Every announcement a visitor should see now, newest first: published,
+   * inside its window and meant for them. Only what the web app shows leaves
+   * the server.
    */
   async current(member: boolean, now = new Date()) {
-    // ponytail: reads the newest 50 published and picks in code, so the rule
+    // ponytail: reads the newest 50 published and filters in code, so the rule
     // is one plain predicate. Move the window into the query if an eligible
     // announcement could ever sit behind 50 newer scheduled or ended ones.
     const published = await this.model
@@ -45,22 +45,21 @@ export class AnnouncementsService {
       .sort({ createdAt: -1 })
       .limit(50)
       .lean();
-    const found = published.find(
-      (a) =>
-        (member || a.audience === 'everyone') &&
-        (!a.startsAt || a.startsAt <= now) &&
-        (!a.endsAt || a.endsAt > now),
-    );
-    return found
-      ? {
-          id: String(found._id),
-          title: found.title,
-          message: found.message,
-          actionLabel: found.actionLabel,
-          actionUrl: found.actionUrl,
-          updatedAt: found.updatedAt,
-        }
-      : null;
+    return published
+      .filter(
+        (a) =>
+          (member || a.audience === 'everyone') &&
+          (!a.startsAt || a.startsAt <= now) &&
+          (!a.endsAt || a.endsAt > now),
+      )
+      .map((a) => ({
+        id: String(a._id),
+        title: a.title,
+        message: a.message,
+        actionLabel: a.actionLabel,
+        actionUrl: a.actionUrl,
+        updatedAt: a.updatedAt,
+      }));
   }
 
   async list(limit: number, offset: number) {
