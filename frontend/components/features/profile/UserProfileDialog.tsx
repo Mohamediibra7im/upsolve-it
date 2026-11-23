@@ -14,6 +14,8 @@ import { Rank, Stat } from "@/components/ui/kit";
 import { apiFetcher } from "@/lib/apiClient";
 import { formatAvgProblemRating } from "@/services/training/formatAvgProblemRating";
 import type { UserTrainingStatsView } from "@/types/userTrainingStats";
+import type { UpsolveProblem } from "@/types/UpsolveProblem";
+import { rankKey } from "@/utils/rank";
 import { Achievements, isEarned, trainingAchievements } from "./Achievements";
 import MemberPageState from "./MemberPageState";
 
@@ -37,6 +39,15 @@ export function UserProfileDialog({
   const openerRef = useRef<HTMLElement | null>(null);
   const { data, error, isLoading, mutate } = useSWR<UserTrainingStatsView>(
     open && userId ? `${statsBase}/${userId}/stats` : null,
+    apiFetcher,
+    { revalidateOnFocus: false, dedupingInterval: 10000 },
+  );
+
+  // Only friends share their queue: the admin view has no such list.
+  const { data: shared } = useSWR<{ problems: UpsolveProblem[] }>(
+    open && userId && statsBase === "/api/friends"
+      ? `/api/friends/${userId}/shared-upsolves`
+      : null,
     apiFetcher,
     { revalidateOnFocus: false, dedupingInterval: 10000 },
   );
@@ -138,6 +149,64 @@ export function UserProfileDialog({
                   value={formatAvgProblemRating(stats.averageRating)}
                 />
               </div>
+
+              {shared && (
+                <section
+                  className="border-b border-line"
+                  aria-labelledby="shared-title"
+                >
+                  <div className="flex flex-wrap items-baseline justify-between gap-2 px-5 pb-2 pt-5">
+                    <h3 id="shared-title" className="t-h3">
+                      You are both stuck on
+                    </h3>
+                    <span className="t-sm t-muted t-num">
+                      {shared.problems.length} in common
+                    </span>
+                  </div>
+                  {shared.problems.length ? (
+                    shared.problems.map((problem) => (
+                      <div
+                        key={`${problem.judge}:${problem.contestId}:${problem.index}`}
+                        className="u-prow"
+                        data-state="failed"
+                      >
+                        <span className="u-prow__slot">{problem.index}</span>
+                        <div className="min-w-0">
+                          <a
+                            className="u-prow__name block"
+                            href={problem.url}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {problem.name}
+                          </a>
+                          <p className="u-prow__meta truncate">
+                            {problem.judge === "atcoder"
+                              ? `AtCoder ${String(problem.contestId).toUpperCase()}`
+                              : `Contest ${problem.contestId}`}{" "}
+                            · waiting in both queues
+                          </p>
+                        </div>
+                        {problem.rating ? (
+                          <span
+                            className="u-rank t-num"
+                            data-rank={rankKey(problem.rating)}
+                          >
+                            {problem.rating}
+                          </span>
+                        ) : (
+                          <span className="u-prow__rating">—</span>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="t-sm t-muted px-5 pb-5">
+                      Nothing in common right now. When you both miss the same
+                      problem, it shows here so you can upsolve it together.
+                    </p>
+                  )}
+                </section>
+              )}
 
               <section className="grid gap-4 p-5">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">

@@ -25,7 +25,16 @@ import {
   isValidCodeforcesHandleFormat,
   normalizeCodeforcesHandleInput,
 } from "@/services/codeforces/handle";
-import type { FriendSummary } from "@/types/Friend";
+import { Badge } from "@/components/ui/badge";
+import type { FriendSummary, UpsolveStanding } from "@/types/Friend";
+
+const NO_STANDING: UpsolveStanding = { waiting: 0, oldestAt: null, streak: 0 };
+const days = (n: number) => `${n} ${n === 1 ? "day" : "days"}`;
+/** "12 days" since the oldest waiting problem was added; a dash with none. */
+const oldest = (at: string | null) =>
+  at
+    ? days(Math.max(0, Math.floor((Date.now() - Date.parse(at)) / 86_400_000)))
+    : "—";
 
 function Person({ who }: { who: FriendSummary }) {
   return <UserAvatar {...who} size={32} />;
@@ -36,6 +45,7 @@ export default function FriendsPage() {
   const router = useRouter();
   const {
     friends,
+    me,
     isLoading,
     isError: friendsError,
     mutate: mutateFriends,
@@ -63,6 +73,21 @@ export default function FriendsPage() {
   const sortedFriends = [...friends].sort((a, b) =>
     a.codeforcesHandle.localeCompare(b.codeforcesHandle),
   );
+  // The standings: you among your friends, longest live streak first, then
+  // the shorter queue.
+  const standings = [
+    ...sortedFriends.map((who) => ({ who, isMe: false })),
+    ...(user
+      ? [{ who: { ...user, upsolve: me } as FriendSummary, isMe: true }]
+      : []),
+  ]
+    .map((row) => ({ ...row, upsolve: row.who.upsolve ?? NO_STANDING }))
+    .sort(
+      (a, b) =>
+        b.upsolve.streak - a.upsolve.streak ||
+        a.upsolve.waiting - b.upsolve.waiting ||
+        a.who.codeforcesHandle.localeCompare(b.who.codeforcesHandle),
+    );
 
   const sendRequest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -340,55 +365,81 @@ export default function FriendsPage() {
           progress.
         </EmptyState>
       ) : (
-        <section className="u-panel">
+        <section className="u-panel" aria-labelledby="standings-title">
           <div className="u-panel__head">
-            <h2 className="t-h2">Your friends</h2>
-            <span className="t-num t-muted">{sortedFriends.length}</span>
+            <h2 id="standings-title" className="t-h2">
+              Upsolve standings
+            </h2>
+            <span className="t-sm t-muted">
+              You and <span className="t-num">{sortedFriends.length}</span>{" "}
+              {sortedFriends.length === 1 ? "friend" : "friends"}
+            </span>
           </div>
           <div className="overflow-x-auto">
             <table className="u-table">
               <thead>
                 <tr>
+                  <th className="num">#</th>
                   <th>Handle</th>
-                  <th>Rank</th>
-                  <th className="num">Rating</th>
+                  <th className="num">Streak</th>
+                  <th className="num">Waiting</th>
+                  <th className="num">Oldest</th>
                   <th>
                     <span className="sr-only">Actions</span>
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {sortedFriends.map((f) => (
-                  <tr key={f._id}>
+                {standings.map(({ who, isMe, upsolve }, i) => (
+                  <tr
+                    key={who._id}
+                    className={isMe ? "[&>td]:bg-accent-soft" : undefined}
+                  >
+                    <td className="num">{i + 1}</td>
                     <td>
                       <span className="flex items-center gap-3">
-                        <Person who={f} />
-                        <b>{f.codeforcesHandle}</b>
+                        <Person who={who} />
+                        <span className="grid min-w-0">
+                          <b className="flex items-center gap-2 whitespace-nowrap">
+                            {who.codeforcesHandle}
+                            {isMe && <Badge variant="accent">You</Badge>}
+                          </b>
+                          <Rank
+                            rating={who.rating}
+                            showRating
+                            className="t-sm"
+                          />
+                        </span>
                       </span>
                     </td>
-                    <td>
-                      <Rank rating={f.rating} />
+                    <td className="num whitespace-nowrap">
+                      {days(upsolve.streak)}
                     </td>
-                    <td className="num">{f.rating || "—"}</td>
+                    <td className="num">{upsolve.waiting}</td>
+                    <td className="num whitespace-nowrap">
+                      {oldest(upsolve.oldestAt)}
+                    </td>
                     <td>
-                      <span className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setProfileId(f._id)}
-                        >
-                          View progress
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="u-btn--sm"
-                          aria-label={`Remove ${f.codeforcesHandle}`}
-                          onClick={() => setRemoving(f)}
-                        >
-                          <Trash2 />
-                        </Button>
-                      </span>
+                      {!isMe && (
+                        <span className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setProfileId(who._id)}
+                          >
+                            View progress
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="u-btn--sm"
+                            aria-label={`Remove ${who.codeforcesHandle}`}
+                            onClick={() => setRemoving(who)}
+                          >
+                            <Trash2 />
+                          </Button>
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -396,8 +447,8 @@ export default function FriendsPage() {
             </table>
           </div>
           <div className="u-panel__foot">
-            Open a friend’s progress to see their sessions, solved problems and
-            achievements.
+            Ranked by upsolve streak, then by the shorter queue. Open a friend
+            to see the problems you are both stuck on.
           </div>
         </section>
       )}
