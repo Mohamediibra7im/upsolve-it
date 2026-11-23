@@ -66,6 +66,13 @@ export function publicPageMetadata(path: PublicPagePath): Metadata {
   const page = PUBLIC_PAGES[path];
   const title = path === "/" ? SITE_TITLE : `${page.title} | ${SITE_NAME}`;
   const socialTitle = path === "/" ? SOCIAL_TITLE : title;
+  // The home page's image is app/opengraph-image.tsx, one level above the
+  // page, and a page's own openGraph replaces what its parents set. So the
+  // home page names it. Every other page has its image beside it.
+  const images =
+    path === "/"
+      ? [{ url: "/opengraph-image", width: 1200, height: 630, alt: title }]
+      : undefined;
   return {
     title: { absolute: title },
     description: page.description,
@@ -77,11 +84,13 @@ export function publicPageMetadata(path: PublicPagePath): Metadata {
       siteName: SITE_NAME,
       locale: "en_US",
       type: "website",
+      ...(images && { images }),
     },
     twitter: {
       card: "summary_large_image",
       title: socialTitle,
       description: page.description,
+      ...(images && { images }),
     },
     robots: {
       index: true,
