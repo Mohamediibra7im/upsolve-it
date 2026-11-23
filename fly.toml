@@ -5,9 +5,7 @@
 #   api: the NestJS API. Private; `app` forwards /api/* to it over Fly's
 #        internal network, so the browser only ever talks to one origin.
 #
-# This reuses the existing "upsolve-it-frontend" app because it already holds
-# the upsolve-it.hnuicpc.tech certificate. Fly apps cannot be renamed.
-app = "upsolve-it-frontend"
+app = "upsolve-it"
 primary_region = "cdg"
 
 [build]
@@ -15,7 +13,7 @@ primary_region = "cdg"
 
 [build.args]
   NEXT_PUBLIC_API_BASE_URL = ""
-  API_INTERNAL_URL = "http://api.process.upsolve-it-frontend.internal:3000"
+  API_INTERNAL_URL = "http://api.process.upsolve-it.internal:3000"
 
 [env]
   NODE_ENV = "production"
