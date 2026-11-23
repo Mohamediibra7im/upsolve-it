@@ -10,13 +10,13 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Trash2 } from "lucide-react";
-import { TrainingProblem } from "@/types/TrainingProblem";
+import type { UpsolveProblem } from "@/types/UpsolveProblem";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  problem?: TrainingProblem | null;
+  problem?: UpsolveProblem | null;
   isLoading?: boolean;
 }
 

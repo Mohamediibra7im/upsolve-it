@@ -2,12 +2,12 @@ import type { ReactNode } from "react";
 import { Check, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { Training } from "@/types/Training";
-import type { TrainingProblem } from "@/types/TrainingProblem";
 
-/** GET /api/upsolve also returns when each problem joined the queue. */
-export type UpsolveProblem = TrainingProblem & { createdAt?: string };
+import type { UpsolveProblem } from "@/types/UpsolveProblem";
 
-const problemKey = (p: { contestId: number; index: string }) =>
+export type { UpsolveProblem };
+
+const problemKey = (p: { contestId: number | string; index: string }) =>
   `${p.contestId}${p.index}`;
 
 /** Every problem that appeared in one of your training sessions. */

@@ -4,7 +4,7 @@ import ClientOnly from "@/components/shared/ClientOnly";
 import { useHeatmapData } from "@/hooks/data";
 import { cn } from "@/lib/utils";
 import type { Training } from "@/types/Training";
-import type { TrainingProblem } from "@/types/TrainingProblem";
+import type { UpsolveProblem } from "@/types/UpsolveProblem";
 
 const DAY_MS = 86_400_000;
 
@@ -20,7 +20,7 @@ export default function ActivityHeatmap({
   className,
 }: {
   history: Training[];
-  upsolvedProblems?: TrainingProblem[];
+  upsolvedProblems?: UpsolveProblem[];
   className?: string;
 }) {
   const { values } = useHeatmapData(history, upsolvedProblems);

@@ -1,18 +1,44 @@
 import { useCallback, useMemo } from "react";
-import useSWR from "swr";
+import useSWR, { mutate as mutateGlobal } from "swr";
 import { TrainingProblem } from "@/types/TrainingProblem";
 import { Training } from "@/types/Training";
 import useUser from "@/hooks/auth/useUser";
 import { apiFetcher, swrFetcher } from "@/lib/apiClient";
+import {
+  judgeOf,
+  problemId,
+  problemRef,
+  type Judge,
+  type UpsolveProblem,
+} from "@/types/UpsolveProblem";
 
 /** Shape of a dismissed-problem record returned by the API */
-type DismissedProblemId = { contestId: number; index: string };
+type DismissedProblemId = {
+  judge?: Judge;
+  contestId: number | string;
+  index: string;
+};
 
 /** Combined response shape from GET /api/upsolve */
 interface UpsolveResponse {
-  items: TrainingProblem[];
+  items: UpsolveProblem[];
   dismissed: DismissedProblemId[];
 }
+
+/** What POST /api/upsolve/sync answers. */
+export type UpsolveSyncResult = {
+  added: number;
+  solved: number;
+  resolved: number;
+  /** AtCoder could not be reached; the Codeforces part still ran. */
+  atcoderSkipped: boolean;
+};
+
+const json = (method: string, body: unknown): RequestInit => ({
+  method,
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(body),
+});
 
 const useUpsolvedProblems = () => {
   const { user } = useUser();
@@ -26,16 +52,22 @@ const useUpsolvedProblems = () => {
       errorRetryCount: 2,
       errorRetryInterval: 3000,
       dedupingInterval: 60_000,
-    }
+    },
   );
 
   const upsolvedProblems = useMemo(() => data?.items ?? [], [data]);
 
-  const dismissedProblems = useMemo(() => data?.dismissed ?? [], [data?.dismissed]);
+  const dismissedProblems = useMemo(
+    () => data?.dismissed ?? [],
+    [data?.dismissed],
+  );
 
   const dismissedIds = useMemo(() => {
     const set = new Set<string>();
-    (data?.dismissed ?? []).forEach((d) => set.add(`${d.contestId}_${d.index}`));
+    // Sessions only hold Codeforces problems, so only those are compared.
+    (data?.dismissed ?? [])
+      .filter((d) => judgeOf(d) === "codeforces")
+      .forEach((d) => set.add(`${d.contestId}_${d.index}`));
     return set;
   }, [data?.dismissed]);
 
@@ -74,41 +106,31 @@ const useUpsolvedProblems = () => {
       }
       await mutate();
     },
-    [mutate]
+    [mutate],
   );
 
   // ── Dismiss (delete) a problem from upsolve queue ──────────────────
   const deleteUpsolvedProblem = useCallback(
-    async (problem: TrainingProblem) => {
+    async (problem: UpsolveProblem) => {
       mutate(
         (currentData) => ({
           items: (currentData?.items ?? []).filter(
-            (p) => p.contestId !== problem.contestId || p.index !== problem.index
+            (p) => problemId(p) !== problemId(problem),
           ),
-          dismissed: [
-            ...(currentData?.dismissed ?? []),
-            { contestId: problem.contestId, index: problem.index },
-          ],
+          dismissed: [...(currentData?.dismissed ?? []), problemRef(problem)],
         }),
-        false
+        false,
       );
 
       try {
-        await apiFetcher("/api/upsolve", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contestId: problem.contestId,
-            index: problem.index,
-          }),
-        });
+        await apiFetcher("/api/upsolve", json("DELETE", problemRef(problem)));
         mutate();
       } catch (error) {
         console.error("Failed to dismiss problem:", error);
         mutate();
       }
     },
-    [mutate]
+    [mutate],
   );
 
   // ── Sync unsolved problems from training history ───────────────────
@@ -125,7 +147,9 @@ const useUpsolvedProblems = () => {
       if (allUnsolved.length === 0) return;
 
       const existingIds = new Set(
-        upsolvedProblems.map((p) => `${p.contestId}_${p.index}`)
+        upsolvedProblems
+          .filter((p) => judgeOf(p) === "codeforces")
+          .map((p) => `${p.contestId}_${p.index}`),
       );
 
       const missingProblems = allUnsolved.filter((p) => {
@@ -137,18 +161,69 @@ const useUpsolvedProblems = () => {
         await addUpsolvedProblems(missingProblems);
       }
     },
-    [data, upsolvedProblems, dismissedIds, addUpsolvedProblems]
+    [data, upsolvedProblems, dismissedIds, addUpsolvedProblems],
   );
 
   // ── Import failed contest problems + refresh solved status from Codeforces ──
   const syncWithCodeforces = useCallback(async () => {
-    const result = await apiFetcher<{ added: number; solved: number }>(
-      "/api/upsolve/sync",
-      { method: "POST" }
-    );
+    const result = await apiFetcher<UpsolveSyncResult>("/api/upsolve/sync", {
+      method: "POST",
+    });
     await mutate();
+    // a newly solved problem moves the upsolve streak the dashboard shows
+    if (result.solved > 0) void mutateGlobal("/api/users/me/streaks");
     return result;
   }, [mutate]);
+
+  // ── Add the problem a pasted link points to ────────────────────────
+  // Throws with the server's own message (not a problem link, already queued…).
+  const addByUrl = useCallback(
+    async (url: string) => {
+      const { problem } = await apiFetcher<{ problem: UpsolveProblem }>(
+        "/api/upsolve/by-url",
+        json("POST", { url }),
+      );
+      await mutate();
+      return problem;
+    },
+    [mutate],
+  );
+
+  // ── Save (or clear, with "") the note on a problem ─────────────────
+  const saveNote = useCallback(
+    async (problem: UpsolveProblem, note: string) => {
+      await apiFetcher(
+        "/api/upsolve/note",
+        json("PUT", { ...problemRef(problem), note }),
+      );
+      // The server stored exactly this, so the list is updated without a refetch.
+      mutate(
+        (current) =>
+          current && {
+            ...current,
+            items: current.items.map((p) =>
+              problemId(p) === problemId(problem)
+                ? { ...p, note: note.trim() }
+                : p,
+            ),
+          },
+        false,
+      );
+    },
+    [mutate],
+  );
+
+  // ── Give up on a due re-solve: the problem stops coming back ───────
+  const skipResolve = useCallback(
+    async (problem: UpsolveProblem) => {
+      await apiFetcher(
+        "/api/upsolve/resolve/skip",
+        json("POST", problemRef(problem)),
+      );
+      await mutate();
+    },
+    [mutate],
+  );
 
   return {
     upsolvedProblems,
@@ -157,6 +232,9 @@ const useUpsolvedProblems = () => {
     error,
     deleteUpsolvedProblem,
     addUpsolvedProblems,
+    addByUrl,
+    saveNote,
+    skipResolve,
     syncWithCodeforces,
     syncWithHistory,
     refreshUpsolvedProblems: mutate,

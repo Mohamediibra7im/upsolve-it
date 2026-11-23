@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Training } from "@/types/Training";
-import { TrainingProblem } from "@/types/TrainingProblem";
+import type { UpsolveProblem } from "@/types/UpsolveProblem";
 
 export interface HeatmapValue {
   date: string;
@@ -14,7 +14,7 @@ export interface HeatmapData {
 
 export const useHeatmapData = (
   history: Training[],
-  upsolvedProblems: TrainingProblem[] = [],
+  upsolvedProblems: UpsolveProblem[] = [],
 ): HeatmapData => {
   return useMemo(() => {
     const dailyCounts: { [key: string]: number } = {};

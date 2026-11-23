@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import * as Popover from "@radix-ui/react-popover";
@@ -10,11 +10,11 @@ import { EmptyState, PageHead } from "@/components/ui/kit";
 import { useToast } from "@/components/providers/Toast";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import ReminderSettings from "@/components/features/profile/ReminderSettings";
-import { UpsolveRounds, buildRounds } from "@/components/features/upsolve";
+import { AddByLink, UpsolveRounds } from "@/components/features/upsolve";
 import { useUser } from "@/hooks/auth";
 import { useHistory, useUpsolvedProblems } from "@/hooks/data";
 import { swrFetcher } from "@/lib/apiClient";
-import type { TrainingProblem } from "@/types/TrainingProblem";
+import type { UpsolveProblem } from "@/types/UpsolveProblem";
 
 /** The weekly email, behind one button that says whether it is on. */
 function ReminderButton() {
@@ -62,6 +62,9 @@ export default function UpsolvePage() {
     error,
     refreshUpsolvedProblems,
     deleteUpsolvedProblem,
+    addByUrl,
+    saveNote,
+    skipResolve,
     syncWithCodeforces,
     syncWithHistory,
   } = useUpsolvedProblems();
@@ -69,8 +72,9 @@ export default function UpsolvePage() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [hasAutoSynced, setHasAutoSynced] = useState(false);
   // Kept apart from the open flag so the problem stays visible while the dialog closes.
-  const [problemToDelete, setProblemToDelete] =
-    useState<TrainingProblem | null>(null);
+  const [problemToDelete, setProblemToDelete] = useState<UpsolveProblem | null>(
+    null,
+  );
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -92,18 +96,24 @@ export default function UpsolvePage() {
     }
   }, [history, isLoading, error, syncWithHistory, hasAutoSynced]);
 
-  const rounds = useMemo(
-    () => buildRounds(upsolvedProblems, history),
-    [upsolvedProblems, history],
-  );
-
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      const { added, solved } = await syncWithCodeforces();
+      const { added, solved, resolved, atcoderSkipped } =
+        await syncWithCodeforces();
       toast({
-        title: "Synced with Codeforces",
-        description: `${added} added from recent contests, ${solved} marked solved.`,
+        title: atcoderSkipped
+          ? "Synced with Codeforces only"
+          : "Synced with Codeforces",
+        description: [
+          `${added} added from recent contests, ${solved} marked solved`,
+          resolved > 0 &&
+            `${resolved} re-solve${resolved === 1 ? "" : "s"} passed`,
+          atcoderSkipped && "AtCoder did not answer and was skipped",
+        ]
+          .filter(Boolean)
+          .join(", ")
+          .concat("."),
         variant: "success",
       });
     } catch {
@@ -160,25 +170,44 @@ export default function UpsolvePage() {
           </Button>
         </div>
       ) : total > 0 ? (
-        <UpsolveRounds
-          rounds={rounds}
-          onDelete={(problem) => {
-            setProblemToDelete(problem);
-            setIsConfirmOpen(true);
-          }}
-        />
+        <div className="grid gap-6">
+          <AddByLink onAdd={addByUrl} />
+          <UpsolveRounds
+            problems={upsolvedProblems}
+            history={history}
+            onDelete={(problem) => {
+              setProblemToDelete(problem);
+              setIsConfirmOpen(true);
+            }}
+            onSaveNote={saveNote}
+            onSkipResolve={async (problem) => {
+              try {
+                await skipResolve(problem);
+              } catch {
+                toast({
+                  title: "The re-solve was not skipped",
+                  description: "Try again in a moment.",
+                  variant: "destructive",
+                });
+              }
+            }}
+          />
+        </div>
       ) : (
-        <EmptyState
-          title="You’re all caught up."
-          action={
-            <Link href="/training" className="u-btn">
-              Start a training session
-            </Link>
-          }
-        >
-          Problems you miss in sessions and contests land here on their own.
-          Nothing is waiting right now.
-        </EmptyState>
+        <div className="grid gap-6">
+          <AddByLink onAdd={addByUrl} />
+          <EmptyState
+            title="You’re all caught up."
+            action={
+              <Link href="/training" className="u-btn">
+                Start a training session
+              </Link>
+            }
+          >
+            Problems you miss in sessions and contests land here on their own.
+            Nothing is waiting right now.
+          </EmptyState>
+        </div>
       )}
 
       <ConfirmDialog
