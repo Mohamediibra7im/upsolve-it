@@ -88,21 +88,12 @@ export default function TrainingPage() {
     );
   }, [customRatings]);
 
-  // How many problems of a set come from AtCoder; the rest are Codeforces.
-  const [atcoderCount, setAtcoderCount] = useState(() => {
-    if (globalThis.window === undefined) return 0;
-    const stored = Number(localStorage.getItem("training-tracker-atcoder"));
-    return Number.isInteger(stored) && stored > 0 ? stored : 0;
-  });
-  useEffect(() => {
-    localStorage.setItem("training-tracker-atcoder", String(atcoderCount));
-  }, [atcoderCount]);
+  // With an AtCoder username, each slot of a set is as likely to come from
+  // AtCoder as from Codeforces. AtCoder problems carry no tags, so a set drawn
+  // by tag is Codeforces only.
   const hasAtcoder = !!user?.links?.atcoder?.trim();
-  const slots = selectedMode === "endurance" ? 6 : 4;
-  // AtCoder problems carry no tags, so a set drawn by tag is Codeforces only.
   const tagged = selectedTags.length > 0 || selectedMode === "weakness";
-  const atcoderWanted =
-    hasAtcoder && !tagged ? Math.min(atcoderCount, slots) : 0;
+  const mixesAtcoder = hasAtcoder && !tagged;
 
   const [showRatings, setShowRatings] = useState(false);
   const [level, setLevel] = useState<Level>();
@@ -129,23 +120,9 @@ export default function TrainingPage() {
 
     const reportGenerate = (result: {
       ok: boolean;
-      atcoder?: number;
       reason?: "pool-not-ready" | "empty-result";
     }) => {
-      if (result.ok) {
-        const got = result.atcoder ?? 0;
-        if (got < atcoderWanted)
-          toast({
-            title:
-              got === 0
-                ? "No AtCoder problem fit this set"
-                : `Only ${got} AtCoder ${got === 1 ? "problem" : "problems"} fit this set`,
-            variant: "warning",
-            description:
-              "AtCoder had nothing unsolved near the other ratings, or its list is still loading. The rest come from Codeforces.",
-          });
-        return;
-      }
+      if (result.ok) return;
       if (result.reason === "pool-not-ready") {
         toast({
           title: "Still loading problem data",
@@ -197,11 +174,12 @@ export default function TrainingPage() {
       selectedTags,
       null,
       null,
-      atcoderWanted,
+      // a coin per slot: how many of this set go to AtCoder
+      mixesAtcoder ? base.ratings.filter(() => Math.random() < 0.5).length : 0,
     );
     reportGenerate(r);
   }, [
-    atcoderWanted,
+    mixesAtcoder,
     user,
     selectedMode,
     weakness,
@@ -296,50 +274,21 @@ export default function TrainingPage() {
                   currentRatings={customRatings}
                   note={LEVEL_NOTE[selectedMode]}
                 />
-                {hasAtcoder ? (
-                  <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-                    <span className="grid gap-0.5">
-                      <span className="u-stat__label" id="atcoder-count">
-                        AtCoder problems in this set
-                      </span>
-                      <span className="t-sm t-muted">
-                        {tagged
-                          ? selectedMode === "weakness"
-                            ? "Weakness sets are drawn by tag, so they come from Codeforces only."
-                            : "Tags are chosen, so this set comes from Codeforces only."
-                          : "The rest come from Codeforces. A rating marked ≈ is an estimate."}
-                      </span>
-                    </span>
-                    <div
-                      className="u-seg max-w-full overflow-x-auto"
-                      role="group"
-                      aria-labelledby="atcoder-count"
-                    >
-                      {Array.from({ length: slots + 1 }, (_, n) => (
-                        <button
-                          key={n}
-                          type="button"
-                          className="t-num disabled:cursor-not-allowed disabled:opacity-50"
-                          aria-pressed={
-                            (tagged ? 0 : Math.min(atcoderCount, slots)) === n
-                          }
-                          disabled={tagged}
-                          onClick={() => setAtcoderCount(n)}
-                        >
-                          {n}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <p className="t-sm t-muted">
-                    Want AtCoder problems in your sets?{" "}
-                    <Link href="/settings" className="t-link">
-                      Add your AtCoder username
-                    </Link>{" "}
-                    in Settings.
-                  </p>
-                )}
+                <p className="t-sm t-muted">
+                  {mixesAtcoder ? (
+                    "Sets mix in AtCoder problems at random. A rating marked ≈ is an estimate."
+                  ) : hasAtcoder ? (
+                    "Sets drawn by tag come from Codeforces only: AtCoder problems have no tags."
+                  ) : (
+                    <>
+                      Want AtCoder problems mixed into your sets?{" "}
+                      <Link href="/settings" className="t-link">
+                        Add your AtCoder username
+                      </Link>{" "}
+                      in Settings.
+                    </>
+                  )}
+                </p>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div
                     className="u-seg"

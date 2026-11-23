@@ -453,7 +453,7 @@ const useTraining = () => {
   };
 
   type GenerateResult =
-    | { ok: true; count: number; atcoder: number }
+    | { ok: true; count: number }
     | { ok: false; reason: "pool-not-ready" | "empty-result" };
 
   const generateProblems = (
@@ -477,11 +477,7 @@ const useTraining = () => {
     if (newProblems.length === 0) {
       return { ok: false, reason: "empty-result" };
     }
-    return {
-      ok: true,
-      count: newProblems.length,
-      atcoder: newProblems.filter((p) => p.judge === "atcoder").length,
-    };
+    return { ok: true, count: newProblems.length };
   };
 
   const generateProblemsFromRatings = (
@@ -505,11 +501,7 @@ const useTraining = () => {
     if (newProblems.length === 0) {
       return { ok: false, reason: "empty-result" };
     }
-    return {
-      ok: true,
-      count: newProblems.length,
-      atcoder: newProblems.filter((p) => p.judge === "atcoder").length,
-    };
+    return { ok: true, count: newProblems.length };
   };
 
   const notifyProblemOpened = useCallback(
