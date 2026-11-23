@@ -309,31 +309,42 @@ export class UpsolveService implements OnModuleInit {
           ? 'Gym problems cannot be added: they have no public problem page.'
           : 'That is not a link to a Codeforces or AtCoder problem.',
       );
-    const key = problemKey(parsed);
+    // ponytail: a problem shared by two divisions is in the problemset under
+    // one contest only; pasted from the other it is added without its details.
+    const task = parsed.url.slice(parsed.url.lastIndexOf('/') + 1);
+    const codeforces =
+      parsed.judge === 'codeforces'
+        ? (await fetchCodeforcesProblemset().catch(() => null))
+            ?.get(parsed.contestId as number)
+            ?.find((p) => p.index === parsed.index)
+        : undefined;
+    // An AtCoder task is stored under its home contest and letter, so a link
+    // to a re-run of it is the same problem as a link to the original.
+    const atcoder =
+      parsed.judge === 'atcoder'
+        ? (await fetchAtcoderCatalog().catch(() => null))?.problems.get(task)
+        : undefined;
+    const key = problemKey({
+      judge: parsed.judge,
+      contestId: atcoder?.contestId ?? parsed.contestId,
+      index: atcoder?.index ?? parsed.index,
+    });
     if (await this.upsolveModel.exists({ user: userId, ...key }))
       throw new ConflictException(
         'That problem is already in your upsolve list.',
       );
 
-    // ponytail: a problem shared by two divisions is in the problemset under
-    // one contest only; pasted from the other it is added without its details.
-    const known =
-      parsed.judge === 'codeforces'
-        ? (await fetchCodeforcesProblemset().catch(() => null))
-            ?.get(parsed.contestId as number)
-            ?.find((p) => p.index === parsed.index)
-        : (await fetchAtcoderCatalog().catch(() => null))?.problems.get(
-            parsed.url.slice(parsed.url.lastIndexOf('/') + 1),
-          );
-    const details = known as
-      | { name: string; index?: string; rating?: number; tags?: string[] }
-      | undefined;
     const problem = {
       ...key,
-      name: details?.name ?? `Problem ${parsed.contestId}${parsed.index}`,
-      rating: details?.rating ?? 0,
-      tags: details?.tags ?? [],
-      url: parsed.url,
+      name:
+        codeforces?.name ??
+        atcoder?.name ??
+        `Problem ${parsed.contestId}${parsed.index}`,
+      rating: codeforces?.rating ?? 0,
+      tags: codeforces?.tags ?? [],
+      url: atcoder
+        ? `https://atcoder.jp/contests/${atcoder.contestId}/tasks/${task}`
+        : parsed.url,
       solvedTime: null,
       source: 'manual' as const,
     };

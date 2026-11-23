@@ -10,7 +10,9 @@ const UNJUDGED = /^(WJ|WR|\d+\/\d+)/;
 /**
  * AtCoder submissions in the shape the sync planner reads, so one planner
  * serves both judges. A submission counts as contest participation when it
- * was made while its contest was running; AtCoder has no ratings or tags here.
+ * was made while the contest it was sent in was running. The problem itself
+ * is named by its home contest and letter, so a task failed in a contest and
+ * solved later in a re-run of it is one problem. No ratings or tags here.
  */
 export function toPlannerSubmissions(
   submissions: AtcoderSubmission[],
@@ -29,12 +31,12 @@ export function toPlannerSubmissions(
         creationTimeSeconds: s.epoch_second,
         verdict: s.result === 'AC' ? 'OK' : s.result,
         problem: {
-          contestId: s.contest_id,
+          contestId: task?.contestId ?? s.contest_id,
           index:
             task?.index ??
             s.problem_id.slice(s.problem_id.lastIndexOf('_') + 1).toUpperCase(),
           name: task?.name ?? s.problem_id,
-          url: `https://atcoder.jp/contests/${s.contest_id}/tasks/${s.problem_id}`,
+          url: `https://atcoder.jp/contests/${task?.contestId ?? s.contest_id}/tasks/${s.problem_id}`,
         },
         author: { participantType: during ? 'CONTESTANT' : 'PRACTICE' },
       };

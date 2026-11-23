@@ -1,4 +1,5 @@
 import { AtcoderService, codeforcesRating } from './atcoder.service';
+import { homeContest } from '../../common/utils/atcoder-api';
 
 const answer = (body: unknown) =>
   Promise.resolve({
@@ -23,6 +24,25 @@ describe('codeforcesRating', () => {
   it('stays between 800 and 3500', () => {
     expect(codeforcesRating(5)).toBe(800);
     expect(codeforcesRating(4383)).toBe(3500);
+  });
+});
+
+describe('homeContest', () => {
+  const rerun = { contestId: 'adt_all_20261027_2', index: 'H' };
+  it('is the contest the task id starts with, wherever the task list points', () => {
+    expect(
+      homeContest('abc300_e', [rerun, { contestId: 'abc300', index: 'E' }]),
+    ).toEqual({ contestId: 'abc300', index: 'E' });
+  });
+
+  it('is otherwise a contest that is not a daily training re-run', () => {
+    expect(
+      homeContest('1202Contest_a', [
+        rerun,
+        { contestId: 'DEGwer2023', index: 'A' },
+      ]),
+    ).toEqual({ contestId: 'DEGwer2023', index: 'A' });
+    expect(homeContest('x_a', [rerun])).toEqual(rerun);
   });
 });
 
@@ -51,6 +71,7 @@ describe('AtcoderService', () => {
             name: `Task ${l.toUpperCase()}`,
           })),
         );
+      if (url.endsWith('contest-problem.json')) return answer([]);
       if (url.endsWith('problem-models.json'))
         return answer({
           abc300_a: { difficulty: -1147, is_experimental: false },

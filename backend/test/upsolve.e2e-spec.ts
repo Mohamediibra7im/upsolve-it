@@ -303,8 +303,30 @@ describe('upsolve queue against a real database', () => {
           return answer([
             { id: 'abc300', start_epoch_second: start, duration_second: 6000 },
           ]);
+        // As the real list does, it files one task under a daily training
+        // re-run with another letter; the pairs below say where it belongs.
         if (url.endsWith('problems.json'))
-          return answer(['a', 'b', 'c', 'd', 'e'].map(task));
+          return answer(
+            ['a', 'b', 'c', 'd', 'e'].map((l) =>
+              l === 'b'
+                ? { ...task(l), contest_id: 'adt_easy_1', problem_index: 'F' }
+                : task(l),
+            ),
+          );
+        if (url.endsWith('contest-problem.json'))
+          return answer([
+            {
+              contest_id: 'adt_easy_1',
+              problem_id: 'abc300_b',
+              problem_index: 'F',
+            },
+            {
+              contest_id: 'abc300',
+              problem_id: 'abc300_b',
+              problem_index: 'B',
+            },
+          ]);
+        if (url.endsWith('problem-models.json')) return answer({});
         if (url.includes('/user/submissions'))
           return submissions instanceof Error
             ? Promise.reject(submissions)
@@ -358,6 +380,14 @@ describe('upsolve queue against a real database', () => {
       });
       expect((await upsolve.syncAll(user, handles)).added).toBe(0);
       expect((await upsolve.list(user)).map((p) => p.index)).toEqual(['B']);
+
+      // a link to the re-run of a task is the task itself: already in the list
+      await expect(
+        upsolve.addByUrl(
+          user,
+          'https://atcoder.jp/contests/adt_easy_1/tasks/abc300_b',
+        ),
+      ).rejects.toThrow('already in your upsolve list');
 
       // an AtCoder link can be pasted too
       expect(

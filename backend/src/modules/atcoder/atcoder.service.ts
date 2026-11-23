@@ -99,8 +99,9 @@ export class AtcoderService {
           : UNJUDGED.test(s.result)
             ? 'TESTING'
             : 'WRONG_ANSWER',
+      // by the task's home contest and letter, whichever contest it was sent in
       problem: {
-        contestId: s.contest_id,
+        contestId: problems.get(s.problem_id)?.contestId ?? s.contest_id,
         index:
           problems.get(s.problem_id)?.index ??
           s.problem_id.slice(s.problem_id.lastIndexOf('_') + 1).toUpperCase(),

@@ -19,15 +19,34 @@ export type AtcoderCatalog = {
   /** contest id → when it ran */
   contests: Map<string, { start: number; duration: number }>;
   /**
-   * task id ("abc300_a") → its letter, name and contest, plus the difficulty
-   * AtCoder Problems estimates for it (on AtCoder's rating scale) when it has
-   * a settled one.
+   * task id ("abc300_a") → its name, the contest and letter it is known by
+   * (see `homeContest`), plus the difficulty AtCoder Problems estimates for
+   * it (on AtCoder's rating scale) when it has a settled one.
    */
   problems: Map<
     string,
     { index: string; name: string; contestId: string; difficulty?: number }
   >;
 };
+
+/**
+ * The one contest and letter a task is known by. A task can be listed in
+ * several contests under different letters: its own, a sister contest, and
+ * the daily training re-runs ("adt_..."), which is often where the task list
+ * itself points. Its own contest is the one its id starts with; failing
+ * that, any contest that is not a re-run.
+ */
+export function homeContest(
+  taskId: string,
+  listed: { contestId: string; index: string }[],
+) {
+  const own = taskId.slice(0, taskId.lastIndexOf('_')).toLowerCase();
+  return (
+    listed.find((c) => c.contestId.toLowerCase() === own) ??
+    listed.find((c) => !c.contestId.toLowerCase().startsWith('adt_')) ??
+    listed[0]
+  );
+}
 
 /**
  * AtCoder Problems' own display rule: estimates under 400 are squeezed
@@ -57,12 +76,25 @@ export async function fetchAtcoderCatalog(
 ): Promise<AtcoderCatalog> {
   if (catalog && nowMs - catalog.at < CATALOG_TTL_MS) return catalog.value;
   try {
-    const [contests, problems, models] = await Promise.all([
+    const [contests, problems, pairs, models] = await Promise.all([
       getJson(`${BASE}/resources/contests.json`),
       getJson(`${BASE}/resources/problems.json`),
+      // Without it a task keeps the one contest the task list names for it.
+      getJson(`${BASE}/resources/contest-problem.json`).catch(() => []),
       // Without the estimates the catalog still serves names and letters.
       getJson(`${BASE}/resources/problem-models.json`).catch(() => ({})),
     ]);
+    const listedIn = new Map<string, { contestId: string; index: string }[]>();
+    for (const pair of pairs as any[]) {
+      const id = String(pair.problem_id);
+      listedIn.set(id, [
+        ...(listedIn.get(id) ?? []),
+        {
+          contestId: String(pair.contest_id),
+          index: String(pair.problem_index),
+        },
+      ]);
+    }
     const value: AtcoderCatalog = {
       contests: new Map(
         (contests as any[]).map((c) => [
@@ -78,12 +110,19 @@ export async function fetchAtcoderCatalog(
           const model = (models as Record<string, any>)[p.id];
           const settled =
             typeof model?.difficulty === 'number' && !model.is_experimental;
+          const home = homeContest(String(p.id), [
+            ...(listedIn.get(String(p.id)) ?? []),
+            {
+              contestId: String(p.contest_id),
+              index: String(p.problem_index),
+            },
+          ]);
           return [
             String(p.id),
             {
-              index: String(p.problem_index),
+              index: home.index,
               name: String(p.name),
-              contestId: String(p.contest_id),
+              contestId: home.contestId,
               ...(settled
                 ? { difficulty: clipDifficulty(Number(model.difficulty)) }
                 : {}),
