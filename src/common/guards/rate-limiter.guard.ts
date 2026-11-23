@@ -72,6 +72,16 @@ export class RateLimiterGuard implements CanActivate {
         duration: 60 * 60,
         keyPrefix: 'auth:verify-profile',
       },
+      'RemindersController.subscribe': {
+        points: 3,
+        duration: 60 * 60,
+        keyPrefix: 'reminders:subscribe',
+      },
+      'RemindersController.redeem': {
+        points: 20,
+        duration: 60 * 60,
+        keyPrefix: 'reminders:redeem',
+      },
       'UpsolveController.sync': {
         points: 30,
         duration: 60 * 60,

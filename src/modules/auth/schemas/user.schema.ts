@@ -49,6 +49,16 @@ export class User {
 
   @Prop({ default: 0 })
   authVersion!: number;
+
+  /** Address for the weekly upsolve reminder. Private: never selected by default. */
+  @Prop({ type: String, default: null, select: false })
+  reminderEmail?: string | null;
+
+  @Prop({ default: false })
+  reminderEmailVerified!: boolean;
+
+  @Prop({ type: Date, default: null })
+  lastReminderAt?: Date | null;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
