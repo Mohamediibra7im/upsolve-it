@@ -230,6 +230,12 @@ export default function ProfileSettings({
                         {message}
                       </p>
                     )}
+                    {key === "atcoder" && !message && (
+                      <p className="u-hint">
+                        Also brings your AtCoder contests into the upsolve
+                        queue.
+                      </p>
+                    )}
                   </div>
                 );
               })}
