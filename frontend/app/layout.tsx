@@ -1,5 +1,10 @@
 import "./globals.css";
-import { Barlow_Condensed, Barlow, JetBrains_Mono } from "next/font/google";
+import {
+  Barlow_Condensed,
+  Barlow,
+  IBM_Plex_Sans,
+  JetBrains_Mono,
+} from "next/font/google";
 import type React from "react";
 import type { Viewport } from "next";
 import AuthGuard from "@/components/providers/AuthGuard";
@@ -20,6 +25,16 @@ const sans = Barlow({
   weight: ["400", "500", "600", "700"],
   display: "swap",
   variable: "--ff-sans",
+});
+// For reading a problem statement: wider letters than Barlow, and an l, an I
+// and a 1 that cannot be mistaken for each other, which matters in a text
+// full of variable names.
+const reading = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  display: "swap",
+  variable: "--ff-reading",
 });
 const mono = JetBrains_Mono({
   subsets: ["latin"],
@@ -46,7 +61,12 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
       data-scroll-behavior="smooth"
-      className={cn(display.variable, sans.variable, mono.variable)}
+      className={cn(
+        display.variable,
+        sans.variable,
+        reading.variable,
+        mono.variable,
+      )}
     >
       <body
         className="font-sans antialiased overflow-x-hidden"

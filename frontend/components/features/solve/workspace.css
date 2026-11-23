@@ -4,9 +4,9 @@
    panels, buttons, badges and slot tiles. Only what the site's kit does not
    have is defined here. */
 
-/* A running session keeps the site's width and takes the window's height,
-   from under the site's bar down: most of the main frame's own top and
-   bottom padding is undone. */
+/* A running session keeps the site's width, like every other page, and
+   takes the window's height from under the site's bar down: most of the main
+   frame's own top and bottom padding is undone. */
 .sw-page {
   margin: -28px 0 -48px;
 }
@@ -270,12 +270,15 @@ span.sw-tab {
 }
 
 /* a judge's own HTML, cleaned by the server, set in the site's type */
+/* The problem is read for minutes at a time, so it gets the reading face,
+   a size up from the rest of the page. */
 .sw-prose {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
-  font-size: 15px;
-  line-height: 25px;
+  font-family: var(--ff-reading), var(--font-sans);
+  font-size: 17px;
+  line-height: 29px;
 }
 .sw-prose ul,
 .sw-prose ol {
@@ -297,7 +300,7 @@ span.sw-tab {
   padding: 9px 12px;
   border-radius: var(--radius-md);
   background: var(--surface-sunk);
-  font: 500 13px/21px var(--font-mono);
+  font: 500 14px/22px var(--font-mono);
   overflow-x: auto;
 }
 .sw-prose code {
@@ -326,7 +329,7 @@ span.sw-tab {
 }
 .sw-prose table {
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 15px;
 }
 .sw-prose th,
 .sw-prose td {
@@ -359,7 +362,7 @@ span.sw-tab {
 .sw-prose h3,
 .sw-prose h4 {
   font-weight: 600;
-  font-size: 15px;
+  font-size: 17px;
 }
 .sw-prose .katex {
   font-size: 1.06em;
