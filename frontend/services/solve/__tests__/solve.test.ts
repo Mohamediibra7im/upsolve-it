@@ -1,5 +1,6 @@
 import { sameOutput } from "../compareOutput";
 import { renderStatementMath } from "../statementMath";
+import { submitUrl } from "../submitUrl";
 
 describe("sameOutput", () => {
   it("ignores spacing and line breaks", () => {
@@ -43,5 +44,25 @@ describe("renderStatementMath", () => {
 
   it("shows a formula it cannot read as text, without throwing", () => {
     expect(() => renderStatementMath("$$$\\notacommand{$$$")).not.toThrow();
+  });
+});
+
+describe("submitUrl", () => {
+  it("opens the judge's submit page with the problem chosen", () => {
+    expect(
+      submitUrl({
+        contestId: 1986,
+        index: "D",
+        url: "https://codeforces.com/contest/1986/problem/D",
+      }),
+    ).toBe("https://codeforces.com/problemset/submit/1986/D");
+    expect(
+      submitUrl({
+        judge: "atcoder",
+        contestId: "abc300",
+        index: "E",
+        url: "https://atcoder.jp/contests/abc300/tasks/abc300_e",
+      }),
+    ).toBe("https://atcoder.jp/contests/abc300/submit?taskScreenName=abc300_e");
   });
 });

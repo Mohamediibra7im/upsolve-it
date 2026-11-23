@@ -32,6 +32,7 @@ import type { SubmissionStatus } from "@/services/codeforces/getTrainingSubmissi
 import { sameOutput } from "@/services/solve/compareOutput";
 import { LANGUAGES, type LanguageId } from "@/services/solve/languages";
 import { renderStatementMath } from "@/services/solve/statementMath";
+import { submitUrl } from "@/services/solve/submitUrl";
 import type { TrainingProblem } from "@/types/TrainingProblem";
 import CodeEditor from "./CodeEditor";
 
@@ -180,6 +181,8 @@ export default function Workspace({
     }
   };
 
+  // Copy first, while the click still counts as the user's own action, then
+  // open the judge's submit page for this problem. Pasting is theirs to do.
   const submit = async () => {
     let copied = true;
     try {
@@ -187,12 +190,14 @@ export default function Workspace({
     } catch {
       copied = false;
     }
-    window.open(problem.url, "_blank", "noopener,noreferrer");
+    window.open(submitUrl(problem), "_blank", "noopener,noreferrer");
     toast({
-      title: copied ? "Code copied" : "Copy your code first",
+      title: copied
+        ? "Code copied, submit page opened"
+        : "Copy your code first",
       description: copied
-        ? `Paste it on ${judgeName(problem)} and submit there. Then refresh the status here.`
-        : `The browser did not allow copying. Copy the code yourself, then submit it on ${judgeName(problem)}.`,
+        ? `On ${judgeName(problem)}, click the source box, press Ctrl+V, check the language and submit. Then refresh the status here.`
+        : `The browser did not allow copying. Copy the code yourself and paste it on ${judgeName(problem)}.`,
       variant: copied ? "success" : "warning",
     });
   };
@@ -376,7 +381,7 @@ export default function Workspace({
             type="button"
             className="u-btn u-btn--sm"
             onClick={submit}
-            title={`Copies your code and opens the problem on ${judgeName(problem)}, where you submit it`}
+            title={`Copies your code and opens the submit page for this problem on ${judgeName(problem)}`}
           >
             <ArrowUp aria-hidden="true" />
             Submit
