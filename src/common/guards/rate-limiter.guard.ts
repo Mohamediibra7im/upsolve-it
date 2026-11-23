@@ -72,6 +72,11 @@ export class RateLimiterGuard implements CanActivate {
         duration: 60 * 60,
         keyPrefix: 'auth:verify-profile',
       },
+      'UpsolveController.sync': {
+        points: 30,
+        duration: 60 * 60,
+        keyPrefix: 'upsolve:sync',
+      },
       'FriendsController.sendRequest': {
         points: 10,
         duration: 60 * 60,

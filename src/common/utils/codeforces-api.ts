@@ -25,3 +25,27 @@ export async function fetchCodeforcesUserInfo(handles: string): Promise<any[]> {
   }
   return data.result;
 }
+
+/** Every submission of a handle, newest first (Codeforces `user.status`). */
+export async function fetchCodeforcesSubmissions(
+  handle: string,
+): Promise<any[]> {
+  let data: any;
+  try {
+    const res = await fetch(
+      `https://codeforces.com/api/user.status?handle=${encodeURIComponent(handle)}`,
+      { signal: AbortSignal.timeout(15000) },
+    );
+    data = await res.json();
+  } catch {
+    throw new BadRequestException(
+      'Unable to reach Codeforces API. Please try again later.',
+    );
+  }
+  if (data?.status !== 'OK' || !Array.isArray(data.result)) {
+    throw new BadRequestException(
+      'Codeforces API is currently unavailable. Please try again later.',
+    );
+  }
+  return data.result;
+}

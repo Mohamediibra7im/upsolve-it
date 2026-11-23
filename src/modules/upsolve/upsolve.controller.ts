@@ -62,6 +62,19 @@ export class UpsolveController {
     }
   }
 
+  /** Import failed contest problems and refresh solved status from Codeforces. */
+  @UseGuards(AuthGuard)
+  @Post('sync')
+  async sync(@CurrentUser() user: UserDocument) {
+    const userId = user._id.toString();
+    const result = await this.upsolve.syncFromCodeforces(
+      userId,
+      user.codeforcesHandle,
+    );
+    if (result.solved > 0) await this.userStats.recordUpsolveSolved(userId);
+    return result;
+  }
+
   @UseGuards(AuthGuard)
   @Put()
   async update(

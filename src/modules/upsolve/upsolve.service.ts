@@ -11,6 +11,8 @@ import {
   DismissedUpsolve,
   type DismissedUpsolveDocument,
 } from './schemas/dismissed-upsolve.schema';
+import { fetchCodeforcesSubmissions } from '../../common/utils/codeforces-api';
+import { planUpsolveSync, type CfSubmission } from './utils/contest-sync';
 
 @Injectable()
 export class UpsolveService {
@@ -41,6 +43,32 @@ export class UpsolveService {
       .limit(500)
       .select('contestId index -_id')
       .lean();
+  }
+
+  /**
+   * Pulls the user's Codeforces submissions, adds problems they failed in
+   * recent contests, and marks tracked problems they have since solved.
+   */
+  async syncFromCodeforces(userId: string, handle: string) {
+    const [submissions, tracked, dismissed] = await Promise.all([
+      fetchCodeforcesSubmissions(handle),
+      this.upsolveModel
+        .find({ user: userId })
+        .select('contestId index solvedTime -_id')
+        .lean(),
+      this.dismissedModel
+        .find({ user: userId })
+        .select('contestId index -_id')
+        .lean(),
+    ]);
+    const { toAdd, solved } = planUpsolveSync(
+      submissions as CfSubmission[],
+      tracked,
+      dismissed,
+    );
+    await this.insertMany(userId, toAdd);
+    if (solved.length) await this.bulkUpdateSolvedTime(userId, solved);
+    return { added: toAdd.length, solved: solved.length };
   }
 
   async insertMany(userId: string, problems: any[]) {
