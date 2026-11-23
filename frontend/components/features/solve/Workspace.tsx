@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import "katex/dist/katex.min.css";
 import "./workspace.css";
+import { Badge } from "@/components/ui/badge";
+import { rankKey } from "@/utils/rank";
 import { useToast } from "@/components/providers/Toast";
 import {
   useDraft,
@@ -199,7 +201,7 @@ export default function Workspace({
   );
   if (running)
     resultView = (
-      <div className="sw-running" style={{ display: "flex" }} role="status">
+      <div className="sw-running" role="status">
         <i />
         Running your code on {cases.length || 1}{" "}
         {cases.length > 1 ? "cases" : "case"}…
@@ -245,38 +247,43 @@ export default function Workspace({
             Runtime {slowest} ms
           </span>
         </div>
-        <div className="sw-cases" role="group" aria-label="Results by case">
+        <div className="sw-slots" role="group" aria-label="Results by case">
           {outcomes.map((o, i) => (
             <button
               key={i}
               type="button"
+              className="sw-slot"
               aria-pressed={i === shown}
+              data-state={o === "pass" || o === "ran" ? "ok" : "bad"}
+              data-fill=""
               onClick={() => setOpenResult(i)}
             >
-              <i className={o === "pass" || o === "ran" ? "ok" : "bad"} />
-              Case {i + 1}
+              {i + 1}
               <span className="sr-only">
-                {o === "pass" ? ", passed" : o === "ran" ? ", ran" : ", failed"}
+                {o === "pass"
+                  ? ", case passed"
+                  : o === "ran"
+                    ? ", case ran"
+                    : ", case failed"}
               </span>
             </button>
           ))}
         </div>
-        <div data-caseview>
-          <span className="sw-label">Input</span>
+        <div className="sw-case">
+          <span className="u-stat__label">Input</span>
           <div className="sw-field">
             <pre>{shownCase.input || " "}</pre>
           </div>
-          <span className="sw-label">Your output</span>
+          <span className="u-stat__label">Your output</span>
           <div
-            className={
-              outcomes[shown] === "wrong" ? "sw-field bad" : "sw-field"
-            }
+            className="sw-field"
+            data-tone={outcomes[shown] === "wrong" ? "bad" : undefined}
           >
             <pre>{result.output || " "}</pre>
           </div>
           {shownCase.expected !== undefined && (
             <>
-              <span className="sw-label">Expected</span>
+              <span className="u-stat__label">Expected</span>
               <div className="sw-field">
                 <pre>{shownCase.expected}</pre>
               </div>
@@ -284,10 +291,10 @@ export default function Workspace({
           )}
           {result.error && (
             <>
-              <span className="sw-label">
+              <span className="u-stat__label">
                 {result.status === "ok" ? "Error stream" : "Error"}
               </span>
-              <div className="sw-field err">
+              <div className="sw-field" data-tone="warn">
                 <pre>{result.error}</pre>
               </div>
             </>
@@ -303,76 +310,54 @@ export default function Workspace({
   const shownInput = Math.min(openCase, Math.max(cases.length - 1, 0));
   const isAdded = shownInput >= samples.length;
 
+  const rank = !hideDetails && problem.rating ? rankKey(problem.rating) : null;
+
   return (
     <div className="sw">
-      <div className="sw-top">
+      <div className="u-panel sw-top">
         <div className="sw-top__side">
-          <span className="sw-ghost">
-            <ListChecks aria-hidden="true" />
-            {title}
-          </span>
+          <span className="t-eyebrow">{title}</span>
           <span
-            className="sw-probs"
+            className="sw-slots"
             role="group"
             aria-label="Problems of this session"
           >
             {problems.map((p, i) => {
               const status = statuses.find(
-                (s) => s.problemId === idOf(p),
+                (st) => st.problemId === idOf(p),
               )?.status;
               const solved = status === "AC" || Boolean(p.solvedTime);
+              const state = solved
+                ? "accepted"
+                : status === "WA"
+                  ? "wrong answer"
+                  : "";
               return (
                 <button
                   key={idOf(p)}
                   type="button"
+                  className="sw-slot"
                   aria-pressed={i === selected}
                   data-state={
                     solved ? "ok" : status === "WA" ? "bad" : undefined
                   }
-                  title={`Problem ${letter(i)}${solved ? ", accepted" : status === "WA" ? ", wrong answer" : ""}`}
+                  title={`Problem ${letter(i)}${state && `, ${state}`}`}
                   onClick={() => setSelected(i)}
                 >
-                  {solved && i !== selected ? (
-                    <Check aria-hidden="true" />
-                  ) : (
-                    letter(i)
-                  )}
+                  {solved ? <Check aria-hidden="true" /> : letter(i)}
                   <span className="sr-only">
-                    {solved
-                      ? " accepted"
-                      : status === "WA"
-                        ? " wrong answer"
-                        : ""}
+                    {solved && `Problem ${letter(i)}`}
+                    {state && `, ${state}`}
                   </span>
                 </button>
               );
             })}
           </span>
-        </div>
-        <div className="sw-top__mid">
-          <button
-            type="button"
-            className="sw-run"
-            onClick={runCode}
-            disabled={running}
-          >
-            <Play aria-hidden="true" fill="currentColor" />
-            {running ? "Running…" : "Run"}
-          </button>
-          <button
-            type="button"
-            className="sw-submit"
-            onClick={submit}
-            title={`Copies your code and opens the problem on ${judgeName(problem)}, where you submit it`}
-          >
-            <ArrowUp aria-hidden="true" />
-            Submit
-          </button>
+          <span className="sw-name">{statement?.title ?? problem.name}</span>
         </div>
         <div className="sw-top__side sw-top__side--end">
-          <span className="sw-name">{statement?.title ?? problem.name}</span>
           <a
-            className="sw-ghost sw-ghost--line"
+            className="u-btn u-btn--ghost u-btn--sm"
             href={problem.url}
             target="_blank"
             rel="noreferrer"
@@ -380,46 +365,69 @@ export default function Workspace({
             <ExternalLink aria-hidden="true" />
             {judgeName(problem)}
           </a>
+          <button
+            type="button"
+            className="u-btn u-btn--sm"
+            onClick={submit}
+            title={`Copies your code and opens the problem on ${judgeName(problem)}, where you submit it`}
+          >
+            <ArrowUp aria-hidden="true" />
+            Submit
+          </button>
+          <button
+            type="button"
+            className="u-btn u-btn--primary u-btn--sm"
+            onClick={runCode}
+            disabled={running}
+          >
+            <Play aria-hidden="true" fill="currentColor" />
+            {running ? "Running…" : "Run"}
+          </button>
         </div>
       </div>
 
       <div className="sw-grid">
-        <section className="sw-panel" aria-label="Problem">
-          <div className="sw-tabs">
-            <span className="sw-tabs__title">
+        <section className="u-panel sw-panel" aria-label="Problem">
+          <div className="sw-head">
+            <span className="sw-tab">
               <FileText aria-hidden="true" />
-              Description
+              Problem
             </span>
           </div>
           <div className="sw-body">
             <h2 className="sw-title">
-              {letter(selected)}. {statement?.title ?? problem.name}
+              <span className="sw-slot" aria-hidden="true">
+                {letter(selected)}
+              </span>
+              <span>
+                <span className="sr-only">Problem {letter(selected)}: </span>
+                {statement?.title ?? problem.name}
+              </span>
             </h2>
             <div className="sw-meta">
-              {!hideDetails && !!problem.rating && (
-                <span className="sw-pill sw-pill--mid">
-                  {problem.judge === "atcoder" && "≈ "}
+              {rank && (
+                <span className="u-rank t-num" data-rank={rank}>
+                  {problem.judge === "atcoder" && (
+                    <>
+                      <span aria-hidden="true">≈</span>
+                      <span className="sr-only">about</span>
+                    </>
+                  )}
                   {problem.rating}
                 </span>
               )}
-              <span className="sw-pill">
+              <Badge variant="line">
                 {judgeName(problem)}{" "}
                 {problem.judge === "atcoder"
                   ? String(problem.contestId).toUpperCase()
                   : problem.contestId}
-              </span>
-              {statement?.timeLimit && (
-                <span className="sw-pill">{statement.timeLimit}</span>
-              )}
-              {statement?.memoryLimit && (
-                <span className="sw-pill">{statement.memoryLimit}</span>
-              )}
+              </Badge>
+              {statement?.timeLimit && <Badge>{statement.timeLimit}</Badge>}
+              {statement?.memoryLimit && <Badge>{statement.memoryLimit}</Badge>}
               {showTags &&
                 !hideDetails &&
                 (problem.tags ?? []).map((tag) => (
-                  <span key={tag} className="sw-pill">
-                    {tag}
-                  </span>
+                  <Badge key={tag}>{tag}</Badge>
                 ))}
             </div>
 
@@ -432,13 +440,12 @@ export default function Workspace({
                 <i />
                 <i />
                 <i />
-                <i />
               </div>
             ) : error || !statement ? (
               <div className="sw-prose" role="alert">
                 <p>
-                  The problem could not be loaded here. You can still write and
-                  run code against your own input.
+                  The problem could not be loaded here. You can still write your
+                  code and run it against input of your own.
                 </p>
                 <p>
                   <a href={problem.url} target="_blank" rel="noreferrer">
@@ -453,60 +460,59 @@ export default function Workspace({
               </div>
             ) : (
               <>
-                {part("story").map((s, i) => (
-                  <Prose key={`story-${i}`} html={s.html} />
+                {part("story").map((sec, i) => (
+                  <Prose key={`story-${i}`} html={sec.html} />
                 ))}
-                {part("input").map((s, i) => (
-                  <div key={`in-${i}`} className="sw-ex">
-                    <b>Input</b>
-                    <Prose html={s.html} />
-                  </div>
-                ))}
-                {part("output").map((s, i) => (
-                  <div key={`out-${i}`} className="sw-ex">
-                    <b>Output</b>
-                    <Prose html={s.html} />
-                  </div>
-                ))}
-                {part("other").map((s, i) => (
-                  <div key={`other-${i}`} className="sw-ex">
-                    <b>{s.title}</b>
-                    <Prose html={s.html} />
-                  </div>
-                ))}
-                {samples.map((s, i) => (
-                  <div key={`ex-${i}`} className="sw-ex">
-                    <b>Example {i + 1}</b>
-                    <div className="sw-ex__body">
-                      <div>
-                        <span>Input</span>
-                        <pre>{s.input}</pre>
-                      </div>
-                      <div>
-                        <span>Output</span>
-                        <pre>{s.expected}</pre>
-                      </div>
-                      {s.note && (
-                        <div>
-                          <span>Explanation</span>
-                          <Prose html={s.note} />
-                        </div>
-                      )}
+                {(
+                  [
+                    ["input", "Input"],
+                    ["output", "Output"],
+                    ["other", ""],
+                  ] as const
+                ).flatMap(([kind, name]) =>
+                  part(kind).map((sec, i) => (
+                    <div key={`${kind}-${i}`} className="sw-part">
+                      <span className="u-stat__label">{name || sec.title}</span>
+                      <Prose html={sec.html} />
                     </div>
+                  )),
+                )}
+                {samples.map((sample, i) => (
+                  <div key={`ex-${i}`} className="sw-ex">
+                    <div className="sw-ex__head">
+                      <i>{i + 1}</i>
+                      Example {i + 1}
+                    </div>
+                    <div className="sw-ex__io">
+                      <div>
+                        <span className="u-stat__label">Input</span>
+                        <pre>{sample.input}</pre>
+                      </div>
+                      <div>
+                        <span className="u-stat__label">Output</span>
+                        <pre>{sample.expected}</pre>
+                      </div>
+                    </div>
+                    {sample.note && (
+                      <div className="sw-ex__why">
+                        <Prose html={sample.note} />
+                      </div>
+                    )}
                   </div>
                 ))}
-                {part("constraints").map((s, i) => (
-                  <div key={`con-${i}`} className="sw-ex">
-                    <b>Constraints</b>
-                    <Prose html={s.html} />
-                  </div>
-                ))}
-                {part("note").map((s, i) => (
-                  <div key={`note-${i}`} className="sw-ex">
-                    <b>Note</b>
-                    <Prose html={s.html} />
-                  </div>
-                ))}
+                {(
+                  [
+                    ["constraints", "Constraints"],
+                    ["note", "Note"],
+                  ] as const
+                ).flatMap(([kind, name]) =>
+                  part(kind).map((sec, i) => (
+                    <div key={`${kind}-${i}`} className="sw-part">
+                      <span className="u-stat__label">{name}</span>
+                      <Prose html={sec.html} />
+                    </div>
+                  )),
+                )}
                 <p className="sw-src">
                   From {judgeName(problem)}.{" "}
                   <a
@@ -524,34 +530,34 @@ export default function Workspace({
         </section>
 
         <div className="sw-col">
-          <section className="sw-panel sw-panel--code" aria-label="Code">
-            <div className="sw-tabs">
-              <span className="sw-tabs__title">
+          <section
+            className="u-panel sw-panel sw-panel--code"
+            aria-label="Code"
+          >
+            <div className="sw-head">
+              <span className="sw-tab">
                 <Code2 aria-hidden="true" />
                 Code
               </span>
-            </div>
-            <div className="sw-bar">
-              <label className="sr-only" htmlFor="sw-language">
-                Language
-              </label>
-              <select
-                id="sw-language"
-                className="sw-select"
-                value={language}
-                onChange={(e) => setLanguage(e.target.value as LanguageId)}
-              >
-                {LANGUAGES.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.name}
-                  </option>
-                ))}
-              </select>
-              <span className="sw-bar__end">
-                <span>Saved on this device</span>
+              <span className="sw-head__end">
+                <label className="sr-only" htmlFor="sw-language">
+                  Language
+                </label>
+                <select
+                  id="sw-language"
+                  className="sw-select"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as LanguageId)}
+                >
+                  {LANGUAGES.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.name}
+                    </option>
+                  ))}
+                </select>
                 <button
                   type="button"
-                  className="sw-icon"
+                  className="u-btn u-btn--ghost u-btn--icon u-btn--sm"
                   aria-label="Reset to the starting code"
                   title="Reset to the starting code"
                   onClick={() => {
@@ -576,48 +582,58 @@ export default function Workspace({
               label={`Your code for problem ${letter(selected)}`}
             />
             <div className="sw-foot">
-              <span>Escape, then Tab, leaves the editor</span>
-              <span>Ctrl + Enter runs</span>
+              <span>Saved on this device</span>
+              <span>
+                Ctrl + Enter runs. Escape, then Tab, leaves the editor.
+              </span>
             </div>
           </section>
 
-          <section className="sw-panel sw-panel--io" aria-label="Test cases">
-            <div className="sw-tabs" role="tablist">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={pane === "case"}
-                onClick={() => setPane("case")}
-              >
-                <ListChecks aria-hidden="true" />
-                Testcase
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={pane === "result"}
-                onClick={() => setPane("result")}
-              >
-                <SquareTerminal aria-hidden="true" />
-                Test Result
-              </button>
+          <section className="u-panel sw-panel" aria-label="Test cases">
+            <div className="sw-head" role="tablist">
+              <span>
+                <button
+                  type="button"
+                  role="tab"
+                  className="sw-tab"
+                  style={{ height: "100%" }}
+                  aria-selected={pane === "case"}
+                  onClick={() => setPane("case")}
+                >
+                  <ListChecks aria-hidden="true" />
+                  Cases
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  className="sw-tab"
+                  style={{ height: "100%" }}
+                  aria-selected={pane === "result"}
+                  onClick={() => setPane("result")}
+                >
+                  <SquareTerminal aria-hidden="true" />
+                  Result
+                </button>
+              </span>
             </div>
             {pane === "case" ? (
               <div className="sw-body">
-                <div className="sw-cases" role="group" aria-label="Test cases">
+                <div className="sw-slots" role="group" aria-label="Test cases">
                   {cases.map((_, i) => (
                     <button
                       key={i}
                       type="button"
+                      className="sw-slot"
                       aria-pressed={i === shownInput}
                       onClick={() => setOpenCase(i)}
                     >
-                      Case {i + 1}
+                      {i + 1}
+                      <span className="sr-only">, case</span>
                     </button>
                   ))}
                   <button
                     type="button"
-                    className="sw-add"
+                    className="sw-slot sw-slot--add"
                     aria-label="Add a case of your own"
                     title="Add a case of your own"
                     onClick={() => {
@@ -633,11 +649,11 @@ export default function Workspace({
                 </div>
                 {cases.length === 0 ? (
                   <p className="sw-empty">
-                    No sample cases yet. Add a case of your own with the plus.
+                    No sample cases here. Add a case of your own with the plus.
                   </p>
                 ) : isAdded ? (
-                  <div data-caseview>
-                    <label className="sw-label" htmlFor="sw-own-input">
+                  <div className="sw-case">
+                    <label className="u-stat__label" htmlFor="sw-own-input">
                       Your input
                     </label>
                     <textarea
@@ -659,8 +675,7 @@ export default function Workspace({
                     />
                     <button
                       type="button"
-                      className="sw-link"
-                      style={{ justifySelf: "start" }}
+                      className="u-btn u-btn--ghost u-btn--sm justify-self-start"
                       onClick={() => {
                         setAdded((all) => ({
                           ...all,
@@ -671,20 +686,17 @@ export default function Workspace({
                         setOpenCase(Math.max(shownInput - 1, 0));
                       }}
                     >
-                      <X
-                        aria-hidden="true"
-                        style={{ display: "inline", verticalAlign: "-2px" }}
-                      />{" "}
+                      <X aria-hidden="true" />
                       Remove this case
                     </button>
                   </div>
                 ) : (
-                  <div data-caseview>
-                    <span className="sw-label">Input</span>
+                  <div className="sw-case">
+                    <span className="u-stat__label">Input</span>
                     <div className="sw-field">
                       <pre>{cases[shownInput].input}</pre>
                     </div>
-                    <span className="sw-label">Expected output</span>
+                    <span className="u-stat__label">Expected output</span>
                     <div className="sw-field">
                       <pre>{cases[shownInput].expected}</pre>
                     </div>

@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { fetchAtcoderCatalog } from '../../common/utils/atcoder-api';
+import { readPage } from '../../common/utils/read-page';
 import { problemKey, type Judge } from '../upsolve/schemas/judge';
 import {
   ProblemStatement,
@@ -73,21 +74,20 @@ export class ProblemsService {
     throw new NotFoundException('That AtCoder problem is not known.');
   }
 
+  /** The judge's page, asked for under the site's own name: no browser disguise. */
+  private readPage(url: string) {
+    const site = this.config.get<string>('APP_URL');
+    return readPage(
+      url,
+      `UpsolveIt/1.0 (problem statement viewer${site ? `; +${site}` : ''})`,
+    );
+  }
+
   private async read(key: ReturnType<typeof problemKey>) {
     const sourceUrl = await this.sourceUrl(key);
     let page: string;
     try {
-      // Named for what it is, with the site it belongs to: no browser disguise.
-      const site = this.config.get<string>('APP_URL');
-      const res = await fetch(sourceUrl, {
-        headers: {
-          'User-Agent': `UpsolveIt/1.0 (problem statement viewer${site ? `; +${site}` : ''})`,
-          Accept: 'text/html',
-        },
-        signal: AbortSignal.timeout(12_000),
-      });
-      if (!res.ok) throw new Error(`answered ${res.status}`);
-      page = await res.text();
+      page = await this.readPage(sourceUrl);
     } catch {
       throw new ServiceUnavailableException(
         'The problem could not be loaded from its judge. Open it there instead.',

@@ -20,13 +20,9 @@ describe('problem statements', () => {
   let mongo: MongoMemoryReplSet;
   let db: Connection;
   let problems: ProblemsService;
-  let fetchMock: jest.SpyInstance;
-  let answer: () => Promise<Response>;
-  const ok = (body: string) => () =>
-    Promise.resolve({
-      ok: true,
-      text: () => Promise.resolve(body),
-    } as Response);
+  let readMock: jest.SpyInstance;
+  let answer: () => Promise<string>;
+  const ok = (body: string) => () => Promise.resolve(body);
 
   beforeAll(async () => {
     mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
@@ -53,9 +49,15 @@ describe('problem statements', () => {
     problems = module.get(ProblemsService);
   });
   beforeEach(() => {
-    fetchMock = jest.spyOn(global, 'fetch').mockImplementation(() => answer());
+    // the one place the service touches the network
+    readMock = jest
+      .spyOn(
+        problems as unknown as { readPage: () => Promise<string> },
+        'readPage',
+      )
+      .mockImplementation(() => answer());
   });
-  afterEach(() => fetchMock.mockRestore());
+  afterEach(() => readMock.mockRestore());
   afterAll(async () => {
     await db?.close();
     await mongo?.stop();
@@ -73,18 +75,15 @@ describe('problem statements', () => {
       samples: [{ input: '1 2\n', output: '3\n' }],
       sourceUrl: 'https://codeforces.com/problemset/problem/1986/A',
     });
-    // it says who is asking, and does not pose as a browser
-    const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe('https://codeforces.com/problemset/problem/1986/A');
-    expect(init.headers['User-Agent']).toBe(
-      'UpsolveIt/1.0 (problem statement viewer; +https://app.example)',
+    expect(readMock).toHaveBeenCalledWith(
+      'https://codeforces.com/problemset/problem/1986/A',
     );
 
     answer = () => Promise.reject(new Error('must not be asked again'));
     expect((await problems.statement('codeforces', 1986, 'a')).title).toBe(
       'Sum',
     );
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(readMock).toHaveBeenCalledTimes(1);
   });
 
   it('asks the judge once when two readers arrive together', async () => {
@@ -94,7 +93,7 @@ describe('problem statements', () => {
       problems.statement('codeforces', 1986, 'B'),
     ]);
     expect([a.title, b.title]).toEqual(['Together', 'Together']);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(readMock).toHaveBeenCalledTimes(1);
   });
 
   it('falls back to an old copy when the judge does not answer, and says so when it has none', async () => {
@@ -103,7 +102,7 @@ describe('problem statements', () => {
     await db
       .model('ProblemStatement')
       .updateOne({ index: 'C' }, { $set: { fetchedAt: new Date(0) } });
-    answer = () => Promise.resolve({ ok: false, status: 403 } as Response);
+    answer = () => Promise.reject(new Error('answered 403'));
     expect((await problems.statement('codeforces', 1986, 'C')).title).toBe(
       'Old',
     );
@@ -130,6 +129,6 @@ describe('problem statements', () => {
     await expect(
       problems.statement('codeforces', 'evil.example/x', 'A'),
     ).rejects.toThrow('not a Codeforces problem');
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(readMock).not.toHaveBeenCalled();
   });
 });
