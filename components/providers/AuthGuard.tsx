@@ -15,7 +15,7 @@ const protectedRoots = [
   "/friends",
 ];
 
-const unauthedRoots = ["/", "/login", "/signup", "/reset-password"];
+const unauthedRoots = ["/", "/login", "/signup", "/reset-password", "/email"];
 
 function routeIsProtected(pathname: string | null): boolean {
   if (!pathname) return false;

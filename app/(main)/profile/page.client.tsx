@@ -14,6 +14,7 @@ import { isTrainingProblemCountedSolved, trainingSessionHasSolve } from "@/servi
 import {
   ProfileHeader,
   ConsoleAccountCard,
+  ReminderSettings,
   MilestoneProgressCard,
   StreaksCard,
   ProfileStatsGrid,
@@ -304,6 +305,7 @@ export default function ProfilePage() {
             {activeDir === "security" && (
               <div className="max-w-2xl mx-auto space-y-4">
                 <ConsoleAccountCard user={user} logout={logout} />
+                <ReminderSettings />
               </div>
             )}
           </div>
