@@ -1,5 +1,5 @@
 export type ReminderProblem = {
-  contestId: number;
+  contestId: number | string;
   index: string;
   name: string;
   url: string;
@@ -137,7 +137,7 @@ export function renderReminderEmail(
     .map(
       (p, i) => `<tr>
 <td width="44" valign="top" style="padding:14px 0;border-top:1px solid ${C.line}"><div style="width:32px;height:32px;border-radius:2px;background:${C.sunk};box-shadow:inset 0 0 0 2px ${C.failed};font:600 13px/32px ${FONT.mono};color:${C.ink};text-align:center">${i + 1}</div></td>
-<td valign="top" style="padding:14px 0;border-top:1px solid ${C.line}"><a href="${escapeHtml(p.url)}" style="font:600 16px/20px ${FONT.text};color:${C.ink};text-decoration:none">${escapeHtml(p.name)}</a><div style="margin-top:3px;font:500 12px/16px ${FONT.mono};color:${C.muted}">${p.contestId}${escapeHtml(p.index)} &middot; waiting ${plural(daysSince(p.createdAt, nowMs), 'day')}</div></td>
+<td valign="top" style="padding:14px 0;border-top:1px solid ${C.line}"><a href="${escapeHtml(p.url)}" style="font:600 16px/20px ${FONT.text};color:${C.ink};text-decoration:none">${escapeHtml(p.name)}</a><div style="margin-top:3px;font:500 12px/16px ${FONT.mono};color:${C.muted}">${escapeHtml(String(p.contestId))}${escapeHtml(p.index)} &middot; waiting ${plural(daysSince(p.createdAt, nowMs), 'day')}</div></td>
 </tr>`,
     )
     .join('');

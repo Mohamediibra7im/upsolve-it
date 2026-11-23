@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AuthService } from '../auth/auth.service';
@@ -13,9 +13,22 @@ import {
 } from './schemas/dismissed-upsolve.schema';
 import { fetchCodeforcesSubmissions } from '../../common/utils/codeforces-api';
 import { planUpsolveSync, type CfSubmission } from './utils/contest-sync';
+import { problemKey, type ProblemRef } from './schemas/judge';
+
+/** A Codeforces problem as the sync planner reads it. */
+type CfTracked = {
+  contestId: number;
+  index: string;
+  solvedTime?: number | null;
+};
+
+/** The unique index from before problems carried a judge. */
+const LEGACY_INDEX = 'user_1_contestId_1_index_1';
 
 @Injectable()
-export class UpsolveService {
+export class UpsolveService implements OnModuleInit {
+  private readonly logger = new Logger(UpsolveService.name);
+
   constructor(
     private readonly auth: AuthService,
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
@@ -24,6 +37,28 @@ export class UpsolveService {
     @InjectModel(DismissedUpsolve.name)
     private readonly dismissedModel: Model<DismissedUpsolveDocument>,
   ) {}
+
+  /**
+   * Records written before problems carried a judge are Codeforces problems.
+   * Safe to run on every start: it only touches records still missing one.
+   */
+  async onModuleInit() {
+    for (const model of [
+      this.upsolveModel,
+      this.dismissedModel,
+    ] as Model<any>[]) {
+      const { modifiedCount } = await model.updateMany(
+        { judge: { $exists: false } },
+        { $set: { judge: 'codeforces' } },
+      );
+      if (modifiedCount)
+        this.logger.log(
+          `Marked ${modifiedCount} ${model.modelName} records as Codeforces`,
+        );
+      // The old index would stop two judges from sharing a contest id.
+      await model.collection.dropIndex(LEGACY_INDEX).catch(() => undefined);
+    }
+  }
 
   async list(userId: string) {
     return await this.upsolveModel
@@ -41,7 +76,7 @@ export class UpsolveService {
     return await this.dismissedModel
       .find({ user: userId })
       .limit(500)
-      .select('contestId index -_id')
+      .select('judge contestId index -_id')
       .lean();
   }
 
@@ -53,13 +88,13 @@ export class UpsolveService {
     const [submissions, tracked, dismissed] = await Promise.all([
       fetchCodeforcesSubmissions(handle),
       this.upsolveModel
-        .find({ user: userId })
+        .find({ user: userId, judge: 'codeforces' })
         .select('contestId index solvedTime -_id')
-        .lean(),
+        .lean<CfTracked[]>(),
       this.dismissedModel
-        .find({ user: userId })
+        .find({ user: userId, judge: 'codeforces' })
         .select('contestId index -_id')
-        .lean(),
+        .lean<CfTracked[]>(),
     ]);
     const { toAdd, solved } = planUpsolveSync(
       submissions as CfSubmission[],
@@ -71,27 +106,26 @@ export class UpsolveService {
     return { added: toAdd.length, solved: solved.length };
   }
 
-  async insertMany(userId: string, problems: any[]) {
+  async insertMany(userId: string, problems: (ProblemRef & object)[]) {
     if (!problems.length) return;
     await this.upsolveModel.bulkWrite(
       problems.map((p) => ({
         updateOne: {
-          filter: { user: userId, contestId: p.contestId, index: p.index },
-          update: { $setOnInsert: { ...p, user: userId } },
+          filter: { user: userId, ...problemKey(p) },
+          update: { $setOnInsert: { ...p, ...problemKey(p), user: userId } },
           upsert: true,
         },
       })),
     );
   }
 
-  async bulkUpdateSolvedTime(userId: string, problems: any[]) {
+  async bulkUpdateSolvedTime(
+    userId: string,
+    problems: (ProblemRef & { solvedTime?: number | null })[],
+  ) {
     const bulkOps = problems.map((problem) => ({
       updateOne: {
-        filter: {
-          user: userId,
-          contestId: problem.contestId,
-          index: problem.index,
-        },
+        filter: { user: userId, ...problemKey(problem) },
         update: { $set: { solvedTime: problem.solvedTime } },
       },
     }));
@@ -103,12 +137,12 @@ export class UpsolveService {
    * as dismissed so the auto-sync logic won't re-add it from
    * training history.
    */
-  async deleteOne(userId: string, contestId: number, index: string) {
+  async deleteOne(userId: string, problem: ProblemRef) {
+    const key = problemKey(problem);
     // 1. Remove the problem from the active upsolve list
     const deleteResult = await this.upsolveModel.deleteOne({
       user: userId,
-      contestId,
-      index,
+      ...key,
     });
 
     // 2. Record the dismissal to prevent re-sync from history.
@@ -116,15 +150,8 @@ export class UpsolveService {
     //    somehow dismisses the same problem twice.
     if (deleteResult.deletedCount > 0) {
       await this.dismissedModel.updateOne(
-        { user: userId, contestId, index },
-        {
-          $setOnInsert: {
-            user: userId,
-            contestId,
-            index,
-            dismissedAt: new Date(),
-          },
-        },
+        { user: userId, ...key },
+        { $setOnInsert: { user: userId, ...key, dismissedAt: new Date() } },
         { upsert: true },
       );
     }

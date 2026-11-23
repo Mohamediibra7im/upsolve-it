@@ -24,6 +24,9 @@ const createModel = () => ({
   bulkWrite: jest.fn(),
 });
 
+/** How { contestId: 1, index: 'A' } is stored: no judge means Codeforces. */
+const cf = { judge: 'codeforces', contestId: 1, index: 'A' };
+
 describe('UpsolveService', () => {
   let service: UpsolveService;
   let upsolveModel: ReturnType<typeof createModel>;
@@ -90,7 +93,7 @@ describe('UpsolveService', () => {
 
       expect(dismissedModel.find).toHaveBeenCalledWith({ user: 'uid' });
       expect(limitFn).toHaveBeenCalledWith(500);
-      expect(selectFn).toHaveBeenCalledWith('contestId index -_id');
+      expect(selectFn).toHaveBeenCalledWith('judge contestId index -_id');
       expect(leanFn).toHaveBeenCalled();
       expect(result).toEqual(docs);
     });
@@ -115,8 +118,8 @@ describe('UpsolveService', () => {
       expect(upsolveModel.bulkWrite).toHaveBeenCalledWith([
         {
           updateOne: {
-            filter: { user: 'uid', contestId: 1, index: 'A' },
-            update: { $setOnInsert: { ...problems[0], user: 'uid' } },
+            filter: { user: 'uid', ...cf },
+            update: { $setOnInsert: { ...problems[0], ...cf, user: 'uid' } },
             upsert: true,
           },
         },
@@ -134,7 +137,7 @@ describe('UpsolveService', () => {
       expect(upsolveModel.bulkWrite).toHaveBeenCalledWith([
         {
           updateOne: {
-            filter: { user: 'uid', contestId: 1, index: 'A' },
+            filter: { user: 'uid', ...cf },
             update: { $set: { solvedTime: 1000 } },
           },
         },
@@ -148,20 +151,21 @@ describe('UpsolveService', () => {
       upsolveModel.deleteOne.mockResolvedValue(deleteResult);
       dismissedModel.updateOne.mockResolvedValue(undefined);
 
-      const result = await service.deleteOne('uid', 1, 'A');
-
-      expect(upsolveModel.deleteOne).toHaveBeenCalledWith({
-        user: 'uid',
+      const result = await service.deleteOne('uid', {
         contestId: 1,
         index: 'A',
       });
+
+      expect(upsolveModel.deleteOne).toHaveBeenCalledWith({
+        user: 'uid',
+        ...cf,
+      });
       expect(dismissedModel.updateOne).toHaveBeenCalledWith(
-        { user: 'uid', contestId: 1, index: 'A' },
+        { user: 'uid', ...cf },
         {
           $setOnInsert: expect.objectContaining({
             user: 'uid',
-            contestId: 1,
-            index: 'A',
+            ...cf,
             dismissedAt: expect.any(Date),
           }),
         },
@@ -173,14 +177,28 @@ describe('UpsolveService', () => {
     it('skips dismissal when nothing deleted', async () => {
       upsolveModel.deleteOne.mockResolvedValue({ deletedCount: 0 });
 
-      await service.deleteOne('uid', 1, 'A');
+      await service.deleteOne('uid', { contestId: 1, index: 'A' });
 
       expect(upsolveModel.deleteOne).toHaveBeenCalledWith({
         user: 'uid',
-        contestId: 1,
-        index: 'A',
+        ...cf,
       });
       expect(dismissedModel.updateOne).not.toHaveBeenCalled();
     });
+  });
+
+  it('keeps the same contest id on two judges apart', async () => {
+    await service.insertMany('uid', [
+      { contestId: 300, index: 'A' },
+      { judge: 'atcoder', contestId: '300', index: 'A' },
+    ]);
+
+    const filters = upsolveModel.bulkWrite.mock.calls[0][0].map(
+      (op: any) => op.updateOne.filter,
+    );
+    expect(filters).toEqual([
+      { user: 'uid', judge: 'codeforces', contestId: 300, index: 'A' },
+      { user: 'uid', judge: 'atcoder', contestId: '300', index: 'A' },
+    ]);
   });
 });

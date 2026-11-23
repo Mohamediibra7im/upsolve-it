@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types, SchemaTypes } from 'mongoose';
+import { JUDGES, type ContestId, type Judge } from './judge';
 
 export type DismissedUpsolveDocument = HydratedDocument<DismissedUpsolve>;
 
@@ -10,7 +11,7 @@ export type DismissedUpsolveDocument = HydratedDocument<DismissedUpsolve>;
  * for unsolved problems) would re-insert deleted problems on every page load,
  * causing the "delete doesn't stick" bug.
  *
- * A unique compound index on { user, contestId, index } prevents duplicates
+ * A unique compound index on { user, judge, contestId, index } prevents duplicates
  * and enables fast look-ups during sync.
  */
 @Schema({ timestamps: false })
@@ -18,8 +19,11 @@ export class DismissedUpsolve {
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User', required: true })
   user!: Types.ObjectId;
 
-  @Prop({ required: true })
-  contestId!: number;
+  @Prop({ type: String, enum: JUDGES, default: 'codeforces' })
+  judge!: Judge;
+
+  @Prop({ type: SchemaTypes.Mixed, required: true })
+  contestId!: ContestId;
 
   @Prop({ required: true })
   index!: string;
@@ -33,6 +37,6 @@ export const DismissedUpsolveSchema =
 
 // Ensure each user+problem combo is unique and look-ups are fast
 DismissedUpsolveSchema.index(
-  { user: 1, contestId: 1, index: 1 },
+  { user: 1, judge: 1, contestId: 1, index: 1 },
   { unique: true },
 );

@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types, SchemaTypes } from 'mongoose';
+import { JUDGES, type ContestId, type Judge } from './judge';
 
 export type UpsolvedProblemDocument = HydratedDocument<UpsolvedProblem>;
 
@@ -8,8 +9,12 @@ export class UpsolvedProblem {
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User', required: true })
   user!: Types.ObjectId;
 
-  @Prop({ required: true })
-  contestId!: number;
+  @Prop({ type: String, enum: JUDGES, default: 'codeforces' })
+  judge!: Judge;
+
+  /** A number on Codeforces, a name such as "abc300" on AtCoder. */
+  @Prop({ type: SchemaTypes.Mixed, required: true })
+  contestId!: ContestId;
 
   @Prop({ required: true })
   index!: string;
@@ -36,6 +41,6 @@ export class UpsolvedProblem {
 export const UpsolvedProblemSchema =
   SchemaFactory.createForClass(UpsolvedProblem);
 UpsolvedProblemSchema.index(
-  { user: 1, contestId: 1, index: 1 },
+  { user: 1, judge: 1, contestId: 1, index: 1 },
   { unique: true },
 );

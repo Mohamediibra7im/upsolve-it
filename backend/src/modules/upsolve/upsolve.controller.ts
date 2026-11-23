@@ -95,11 +95,7 @@ export class UpsolveController {
     @CurrentUser() user: UserDocument,
     @Body() body: DeleteUpsolveProblemDto,
   ) {
-    await this.upsolve.deleteOne(
-      user._id.toString(),
-      body.contestId,
-      body.index,
-    );
+    await this.upsolve.deleteOne(user._id.toString(), body);
     return { message: 'Problem deleted from upsolve list' };
   }
 }
