@@ -35,9 +35,7 @@ export async function inspectReferences(connection: Connection) {
     for (const [index, options] of model.schema.indexes()) {
       if (
         !options.unique ||
-        !Object.keys(index as Record<string, unknown>).some((key) =>
-          fields.some((f) => f.field === key),
-        )
+        !Object.keys(index).some((key) => fields.some((f) => f.field === key))
       )
         continue;
       const key = Object.fromEntries(
