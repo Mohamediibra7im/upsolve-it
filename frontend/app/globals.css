@@ -100,6 +100,15 @@
     scroll-padding-top: 5rem;
   }
 
+  /* A scrolling box holds its own absolutely placed children (such as
+     .sr-only labels). Without this they are measured against the page, and
+     one at the far end of a wide table makes phones zoom the page out. */
+  .overflow-x-auto,
+  .overflow-y-auto,
+  .overflow-auto {
+    position: relative;
+  }
+
   body {
     min-height: 100vh;
     background: var(--ground);
@@ -947,6 +956,21 @@
     align-items: center;
     gap: 12px;
     margin-left: auto;
+  }
+  /* phones: the bar must never be wider than the screen, or the browser
+     zooms the whole page out */
+  @media (max-width: 640px) {
+    .u-nav {
+      gap: 12px;
+    }
+    .u-nav__end {
+      gap: 8px;
+    }
+  }
+  @media (max-width: 359px) {
+    .u-nav .u-brand > span {
+      display: none;
+    }
   }
   .u-count {
     display: inline-grid;

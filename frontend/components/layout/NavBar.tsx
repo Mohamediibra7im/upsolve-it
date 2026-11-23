@@ -237,7 +237,7 @@ export default function NavBar({
                   Log in
                 </Link>
                 <Link href="/signup" className="u-btn u-btn--primary">
-                  Get started <ArrowUpRight />
+                  Get started <ArrowUpRight className="max-sm:hidden" />
                 </Link>
               </>
             )}
@@ -254,7 +254,7 @@ export default function NavBar({
             </SheetTrigger>
             <SheetContent
               side="right"
-              className="flex w-full flex-col gap-0 border-line bg-ground p-0 sm:w-[380px]"
+              className="flex h-dvh w-full flex-col gap-0 border-line bg-ground p-0 sm:w-[380px]"
             >
               <SheetHeader className="h-16 shrink-0 justify-center space-y-0 border-b border-line px-5 text-left">
                 <SheetTitle className="sr-only">Menu</SheetTitle>
