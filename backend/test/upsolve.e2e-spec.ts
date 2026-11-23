@@ -189,7 +189,7 @@ describe('upsolve queue against a real database', () => {
     ).rejects.toThrow('Gym problems cannot be added');
     await expect(
       upsolve.addByUrl(user, 'https://leetcode.com/problems/two-sum'),
-    ).rejects.toThrow('not a link to a Codeforces problem');
+    ).rejects.toThrow('not a link to a Codeforces or AtCoder problem');
     fetchMock.mockRestore();
   });
 
@@ -269,6 +269,129 @@ describe('upsolve queue against a real database', () => {
       null,
       1000,
     ]);
+  });
+
+  describe('AtCoder', () => {
+    const now = Math.floor(Date.now() / 1000);
+    const start = now - 5 * 86_400; // abc300 ran five days ago, for 100 minutes
+    const task = (letter: string) => ({
+      id: `abc300_${letter}`,
+      contest_id: 'abc300',
+      problem_index: letter.toUpperCase(),
+      name: `Task ${letter.toUpperCase()}`,
+    });
+    const submission = (letter: string, result: string, at: number) => ({
+      epoch_second: at,
+      problem_id: `abc300_${letter}`,
+      contest_id: 'abc300',
+      result,
+    });
+    let submissions: ReturnType<typeof submission>[] | Error = [];
+    let fetchMock: jest.SpyInstance;
+
+    beforeEach(() => {
+      // The answers of Codeforces and AtCoder Problems, as recorded shapes.
+      fetchMock = jest.spyOn(global, 'fetch').mockImplementation((input) => {
+        const url = String(input);
+        const answer = (body: unknown) =>
+          Promise.resolve({ ok: true, json: async () => body } as Response);
+        if (url.includes('user.status'))
+          return answer({ status: 'OK', result: [] });
+        if (url.includes('problemset.problems'))
+          return answer({ status: 'OK', result: { problems: [] } });
+        if (url.endsWith('contests.json'))
+          return answer([
+            { id: 'abc300', start_epoch_second: start, duration_second: 6000 },
+          ]);
+        if (url.endsWith('problems.json'))
+          return answer(['a', 'b', 'c', 'd', 'e'].map(task));
+        if (url.includes('/user/submissions'))
+          return submissions instanceof Error
+            ? Promise.reject(submissions)
+            : answer(submissions);
+        return Promise.reject(new Error(`unexpected request to ${url}`));
+      });
+    });
+    afterEach(() => fetchMock.mockRestore());
+
+    it('imports contest failures, marks them solved and respects dismissals', async () => {
+      const user = newUser();
+      const handles = { codeforces: 'someone', atcoder: 'someone_ac' };
+      const inContest = start + 600;
+      submissions = [
+        submission('a', 'AC', inContest),
+        submission('b', 'WA', inContest),
+        submission('e', 'TLE', inContest),
+        submission('c', 'WA', now - 86_400), // practice after the contest
+        submission('d', 'WA', inContest),
+        submission('d', 'AC', now - 86_400), // failed, then solved since
+        submission('a', 'WJ', inContest), // not judged yet: not an attempt
+      ];
+
+      expect(await upsolve.syncAll(user, handles)).toEqual({
+        added: 2,
+        solved: 0,
+        resolved: 0,
+        atcoderSkipped: false,
+      });
+      const added = await upsolve.list(user);
+      expect(
+        added.map((p) => `${p.judge}:${p.contestId}${p.index}`).sort(),
+      ).toEqual(['atcoder:abc300B', 'atcoder:abc300E']);
+      expect(added.find((p) => p.index === 'B')).toMatchObject({
+        name: 'Task B',
+        rating: 0,
+        url: 'https://atcoder.jp/contests/abc300/tasks/abc300_b',
+        solvedTime: null,
+      });
+
+      submissions = [...submissions, submission('b', 'AC', now - 3600)];
+      expect(await upsolve.syncAll(user, handles)).toMatchObject({
+        added: 0,
+        solved: 1,
+      });
+
+      await upsolve.deleteOne(user, {
+        judge: 'atcoder',
+        contestId: 'abc300',
+        index: 'E',
+      });
+      expect((await upsolve.syncAll(user, handles)).added).toBe(0);
+      expect((await upsolve.list(user)).map((p) => p.index)).toEqual(['B']);
+
+      // an AtCoder link can be pasted too
+      expect(
+        await upsolve.addByUrl(
+          user,
+          'https://atcoder.jp/contests/abc300/tasks/abc300_c',
+        ),
+      ).toMatchObject({
+        judge: 'atcoder',
+        contestId: 'abc300',
+        index: 'C',
+        name: 'Task C',
+      });
+    });
+
+    it('still finishes the Codeforces sync when AtCoder cannot be reached', async () => {
+      submissions = new Error('connection reset');
+      expect(
+        await upsolve.syncAll(newUser(), {
+          codeforces: 'someone',
+          atcoder: 'someone_ac',
+        }),
+      ).toEqual({ added: 0, solved: 0, resolved: 0, atcoderSkipped: true });
+    });
+
+    it('asks AtCoder nothing for a user without an AtCoder handle', async () => {
+      const result = await upsolve.syncAll(newUser(), {
+        codeforces: 'someone',
+      });
+      expect(result.atcoderSkipped).toBe(false);
+      expect(
+        fetchMock.mock.calls.some(([url]) => String(url).includes('kenkoooo')),
+      ).toBe(false);
+    });
   });
 
   it('keeps two judges apart even when they share an identifier', async () => {

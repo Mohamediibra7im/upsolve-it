@@ -181,12 +181,15 @@ export class RemindersService implements OnModuleInit, OnModuleDestroy {
       for (;;) {
         const user = await this.userModel
           .findOneAndUpdate(due, { $set: { lastReminderAt: new Date(nowMs) } })
-          .select('+reminderEmail codeforcesHandle');
+          .select('+reminderEmail codeforcesHandle links');
         if (!user) break;
         try {
-          // Refresh from Codeforces first so solved problems are not nagged about.
+          // Refresh from the judges first so solved problems are not nagged about.
           await this.upsolve
-            .syncFromCodeforces(String(user._id), user.codeforcesHandle)
+            .syncAll(String(user._id), {
+              codeforces: user.codeforcesHandle,
+              atcoder: user.links?.atcoder,
+            })
             .catch(() => undefined);
           const pending = await this.upsolveModel
             .find({ user: user._id, solvedTime: null })

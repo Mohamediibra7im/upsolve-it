@@ -44,9 +44,12 @@ describe('weekly upsolve reminders', () => {
     }).compile();
     db = module.get(getConnectionToken());
     reminders = module.get(RemindersService);
-    jest
-      .spyOn(module.get(UpsolveService), 'syncFromCodeforces')
-      .mockResolvedValue({ added: 0, solved: 0, resolved: 0 });
+    jest.spyOn(module.get(UpsolveService), 'syncAll').mockResolvedValue({
+      added: 0,
+      solved: 0,
+      resolved: 0,
+      atcoderSkipped: false,
+    });
     jest
       .spyOn(nodemailer, 'createTransport')
       .mockReturnValue({ sendMail } as any);

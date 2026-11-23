@@ -24,16 +24,24 @@ import {
 } from '../../common/utils/codeforces-api';
 import { parseProblemUrl } from './utils/problem-url';
 import {
+  CONTEST_IMPORT_WINDOW_DAYS,
   afterResolve,
   planUnattempted,
   planUpsolveSync,
   type CfSubmission,
 } from './utils/contest-sync';
-import { problemKey, type ProblemRef } from './schemas/judge';
+import {
+  fetchAtcoderCatalog,
+  fetchAtcoderSubmissions,
+} from '../../common/utils/atcoder-api';
+import { toPlannerSubmissions } from './utils/atcoder-sync';
+import { problemKey, type Judge, type ProblemRef } from './schemas/judge';
 
-/** A Codeforces problem as the sync planner reads it. */
+type SyncPlan = ReturnType<typeof planUpsolveSync>;
+
+/** A tracked problem as the sync planner reads it. */
 type CfTracked = {
-  contestId: number;
+  contestId: number | string;
   index: string;
   solvedTime?: number | null;
   resolveDueAt?: Date | null;
@@ -98,54 +106,127 @@ export class UpsolveService implements OnModuleInit {
       .lean();
   }
 
+  /** What the sync planner needs to know about one judge's part of the list. */
+  private async trackedOn(userId: string, judge: Judge) {
+    return await Promise.all([
+      this.upsolveModel
+        .find({ user: userId, judge })
+        .select('contestId index solvedTime resolveDueAt resolveStage -_id')
+        .lean<CfTracked[]>(),
+      this.dismissedModel
+        .find({ user: userId, judge })
+        .select('contestId index -_id')
+        .lean<CfTracked[]>(),
+    ]);
+  }
+
+  /** Stores what a sync decided for one judge and reports the counts. */
+  private async applySync(
+    userId: string,
+    judge: Judge,
+    toAdd: (ProblemRef & object)[],
+    { solved, resolved }: Pick<SyncPlan, 'solved' | 'resolved'>,
+  ) {
+    await this.insertMany(
+      userId,
+      toAdd.map((p) => ({ ...p, judge })),
+    );
+    if (solved.length)
+      await this.bulkUpdateSolvedTime(
+        userId,
+        solved.map((p) => ({ ...p, judge })),
+      );
+    if (resolved.length)
+      await this.upsolveModel.bulkWrite(
+        resolved.map((p) => ({
+          updateOne: {
+            filter: { user: userId, ...problemKey({ ...p, judge }) },
+            update: { $set: afterResolve(p.resolveStage, p.passedAt) },
+          },
+        })),
+      );
+    return {
+      added: toAdd.length,
+      solved: solved.length,
+      resolved: resolved.length,
+    };
+  }
+
   /**
    * Pulls the user's Codeforces submissions, adds problems they failed in
    * recent contests plus the first problem of each they never tried, and
    * marks tracked problems they have since solved.
    */
   async syncFromCodeforces(userId: string, handle: string) {
-    const [submissions, tracked, dismissed] = await Promise.all([
-      fetchCodeforcesSubmissions(handle),
-      this.upsolveModel
-        .find({ user: userId, judge: 'codeforces' })
-        .select('contestId index solvedTime resolveDueAt resolveStage -_id')
-        .lean<CfTracked[]>(),
-      this.dismissedModel
-        .find({ user: userId, judge: 'codeforces' })
-        .select('contestId index -_id')
-        .lean<CfTracked[]>(),
+    const [submissions, [tracked, dismissed]] = await Promise.all([
+      fetchCodeforcesSubmissions(handle) as Promise<CfSubmission[]>,
+      this.trackedOn(userId, 'codeforces'),
     ]);
-    const { toAdd, solved, resolved } = planUpsolveSync(
-      submissions as CfSubmission[],
-      tracked,
-      dismissed,
-    );
+    const plan = planUpsolveSync(submissions, tracked, dismissed);
     // Without the problem list this sync simply adds no unattempted problems.
     const problemset = await fetchCodeforcesProblemset().catch(() => null);
     const next = problemset
       ? planUnattempted(
-          submissions as CfSubmission[],
+          submissions,
           (contestId) => problemset.get(contestId),
-          [...tracked, ...toAdd],
+          [...tracked, ...plan.toAdd],
           dismissed,
         )
       : [];
-    await this.insertMany(userId, [...toAdd, ...next]);
-    if (solved.length) await this.bulkUpdateSolvedTime(userId, solved);
-    if (resolved.length)
-      await this.upsolveModel.bulkWrite(
-        resolved.map((p) => ({
-          updateOne: {
-            filter: { user: userId, ...problemKey(p) },
-            update: { $set: afterResolve(p.resolveStage, p.passedAt) },
-          },
-        })),
-      );
-    return {
-      added: toAdd.length + next.length,
-      solved: solved.length,
-      resolved: resolved.length,
-    };
+    return await this.applySync(
+      userId,
+      'codeforces',
+      [...plan.toAdd, ...next],
+      plan,
+    );
+  }
+
+  /**
+   * The same for AtCoder: problems tried and not solved while their contest
+   * ran, and tracked problems solved since. AtCoder gives no rating or tags.
+   *
+   * ponytail: only submissions from the import window are read, so a problem
+   * tracked for longer than that and solved before the window is not noticed;
+   * read further back if lists ever hold problems that old.
+   */
+  async syncFromAtcoder(userId: string, handle: string) {
+    const since = Date.now() / 1000 - CONTEST_IMPORT_WINDOW_DAYS * 24 * 60 * 60;
+    const [submissions, catalog, [tracked, dismissed]] = await Promise.all([
+      fetchAtcoderSubmissions(handle, since),
+      fetchAtcoderCatalog(),
+      this.trackedOn(userId, 'atcoder'),
+    ]);
+    const plan = planUpsolveSync(
+      toPlannerSubmissions(submissions, catalog),
+      tracked,
+      dismissed,
+    );
+    return await this.applySync(userId, 'atcoder', plan.toAdd, plan);
+  }
+
+  /**
+   * Syncs every judge the user has a handle for. Codeforces must succeed;
+   * AtCoder failing only sets `atcoderSkipped`, and the rest still counts.
+   */
+  async syncAll(
+    userId: string,
+    handles: { codeforces: string; atcoder?: string },
+  ) {
+    const total = await this.syncFromCodeforces(userId, handles.codeforces);
+    const atcoder = handles.atcoder?.trim();
+    if (!atcoder) return { ...total, atcoderSkipped: false };
+    try {
+      const more = await this.syncFromAtcoder(userId, atcoder);
+      return {
+        added: total.added + more.added,
+        solved: total.solved + more.solved,
+        resolved: total.resolved + more.resolved,
+        atcoderSkipped: false,
+      };
+    } catch (err) {
+      this.logger.warn(`AtCoder sync skipped: ${(err as Error).message}`);
+      return { ...total, atcoderSkipped: true };
+    }
   }
 
   async insertMany(userId: string, problems: (ProblemRef & object)[]) {
@@ -226,11 +307,7 @@ export class UpsolveService implements OnModuleInit {
       throw new BadRequestException(
         parsed.error === 'gym'
           ? 'Gym problems cannot be added: they have no public problem page.'
-          : 'That is not a link to a Codeforces problem.',
-      );
-    if (parsed.judge !== 'codeforces')
-      throw new BadRequestException(
-        'Only Codeforces problem links can be added for now.',
+          : 'That is not a link to a Codeforces or AtCoder problem.',
       );
     const key = problemKey(parsed);
     if (await this.upsolveModel.exists({ user: userId, ...key }))
@@ -240,14 +317,22 @@ export class UpsolveService implements OnModuleInit {
 
     // ponytail: a problem shared by two divisions is in the problemset under
     // one contest only; pasted from the other it is added without its details.
-    const known = (await fetchCodeforcesProblemset().catch(() => null))
-      ?.get(parsed.contestId as number)
-      ?.find((p) => p.index === parsed.index);
+    const known =
+      parsed.judge === 'codeforces'
+        ? (await fetchCodeforcesProblemset().catch(() => null))
+            ?.get(parsed.contestId as number)
+            ?.find((p) => p.index === parsed.index)
+        : (await fetchAtcoderCatalog().catch(() => null))?.problems.get(
+            parsed.url.slice(parsed.url.lastIndexOf('/') + 1),
+          );
+    const details = known as
+      | { name: string; index?: string; rating?: number; tags?: string[] }
+      | undefined;
     const problem = {
       ...key,
-      name: known?.name ?? `Problem ${parsed.contestId}${parsed.index}`,
-      rating: known?.rating ?? 0,
-      tags: known?.tags ?? [],
+      name: details?.name ?? `Problem ${parsed.contestId}${parsed.index}`,
+      rating: details?.rating ?? 0,
+      tags: details?.tags ?? [],
       url: parsed.url,
       solvedTime: null,
       source: 'manual' as const,

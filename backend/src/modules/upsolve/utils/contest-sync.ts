@@ -1,18 +1,27 @@
-/** The subset of a Codeforces `user.status` submission this module reads. */
+/**
+ * The subset of a Codeforces `user.status` submission this module reads.
+ * Another judge's submissions are put in this shape too (see atcoder-sync),
+ * with a contest name for an id and the problem's own `url`.
+ */
 export type CfSubmission = {
   creationTimeSeconds: number;
   verdict?: string;
   problem: {
-    contestId?: number;
+    contestId?: number | string;
     index: string;
     name: string;
     rating?: number;
     tags?: string[];
+    /** Left out on Codeforces, where it follows from the contest and index. */
+    url?: string;
   };
   author: { participantType: string };
 };
 
-export type ProblemKey = { contestId: number; index: string };
+export type ProblemKey = { contestId: number | string; index: string };
+
+const isGym = (contestId: number | string) =>
+  typeof contestId === 'number' && contestId >= GYM_CONTEST_ID_START;
 
 export type UpsolveCandidate = ProblemKey & {
   name: string;
@@ -91,7 +100,7 @@ export function planUpsolveSync(
   const toAdd = new Map<string, UpsolveCandidate>();
   for (const s of submissions) {
     const { contestId, index } = s.problem;
-    if (contestId == null || contestId >= GYM_CONTEST_ID_START) continue;
+    if (contestId == null || isGym(contestId)) continue;
     if (!CONTEST_PARTICIPATION.has(s.author.participantType)) continue;
     if (s.creationTimeSeconds < windowStart) continue;
     const key = keyOf({ contestId, index });
@@ -102,7 +111,9 @@ export function planUpsolveSync(
       name: s.problem.name,
       rating: s.problem.rating ?? 0,
       tags: s.problem.tags ?? [],
-      url: `https://codeforces.com/problemset/problem/${contestId}/${index}`,
+      url:
+        s.problem.url ??
+        `https://codeforces.com/problemset/problem/${contestId}/${index}`,
       solvedTime: null,
       createdAt: new Date(s.creationTimeSeconds * 1000),
     });
@@ -161,8 +172,9 @@ export function planUnattempted(
   for (const s of submissions) {
     const { contestId, index } = s.problem;
     if (contestId == null) continue;
+    if (typeof contestId !== 'number') continue;
     submitted.add(keyOf({ contestId, index }));
-    if (contestId >= GYM_CONTEST_ID_START) continue;
+    if (isGym(contestId)) continue;
     if (!CONTEST_PARTICIPATION.has(s.author.participantType)) continue;
     if (s.creationTimeSeconds < windowStart) continue;
     takenPart.set(

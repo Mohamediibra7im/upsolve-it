@@ -74,15 +74,15 @@ export class UpsolveController {
     };
   }
 
-  /** Import failed contest problems and refresh solved status from Codeforces. */
+  /** Import failed contest problems and refresh solved status from every judge. */
   @UseGuards(AuthGuard)
   @Post('sync')
   async sync(@CurrentUser() user: UserDocument) {
     const userId = user._id.toString();
-    const result = await this.upsolve.syncFromCodeforces(
-      userId,
-      user.codeforcesHandle,
-    );
+    const result = await this.upsolve.syncAll(userId, {
+      codeforces: user.codeforcesHandle,
+      atcoder: user.links?.atcoder,
+    });
     if (result.solved > 0) await this.userStats.recordUpsolveSolved(userId);
     return result;
   }
