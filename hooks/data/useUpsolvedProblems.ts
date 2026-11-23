@@ -3,7 +3,6 @@ import useSWR from "swr";
 import { TrainingProblem } from "@/types/TrainingProblem";
 import { Training } from "@/types/Training";
 import useUser from "@/hooks/auth/useUser";
-import useSolvedProblems from "./useSolvedProblems";
 import { apiFetcher, swrFetcher } from "@/lib/apiClient";
 
 /** Shape of a dismissed-problem record returned by the API */
@@ -17,11 +16,6 @@ interface UpsolveResponse {
 
 const useUpsolvedProblems = () => {
   const { user } = useUser();
-  const {
-    isLoading: isProblemsLoading,
-    refreshSolvedProblems,
-  } = useSolvedProblems(user);
-
   // ── Single SWR hook fetching combined { items, dismissed } ──────────
   const swrKey = user ? "/api/upsolve" : null;
   const { data, isLoading, error, mutate } = useSWR<UpsolveResponse>(
@@ -135,25 +129,24 @@ const useUpsolvedProblems = () => {
     [upsolvedProblems, dismissedIds, addUpsolvedProblems]
   );
 
-  // ── Manual refresh: re-fetch solved + sync history ─────────────────
-  const onRefreshUpsolvedProblems = useCallback(
-    async (history?: Training[]) => {
-      refreshSolvedProblems();
-      if (history) {
-        await syncWithHistory(history);
-      }
-    },
-    [refreshSolvedProblems, syncWithHistory]
-  );
+  // ── Import failed contest problems + refresh solved status from Codeforces ──
+  const syncWithCodeforces = useCallback(async () => {
+    const result = await apiFetcher<{ added: number; solved: number }>(
+      "/api/upsolve/sync",
+      { method: "POST" }
+    );
+    await mutate();
+    return result;
+  }, [mutate]);
 
   return {
     upsolvedProblems,
     dismissedProblems,
-    isLoading: isLoading || isProblemsLoading,
+    isLoading,
     error,
     deleteUpsolvedProblem,
     addUpsolvedProblems,
-    onRefreshUpsolvedProblems,
+    syncWithCodeforces,
     syncWithHistory,
     refreshUpsolvedProblems: mutate,
   };

@@ -9,11 +9,9 @@ import type { User } from "@/types/User";
 
 type DashboardHeroProps = {
   user: User;
-  roadmapXp: number;
-  xpLevel: number;
-  xpProgress: number;
-  xpToNext: number;
-  xpTitle: string;
+  upsolvePending: number;
+  upsolveSolved: number;
+  upsolveTotal: number;
   friendRequestCount: number;
   isSyncing: boolean;
   onSync: () => void;
@@ -21,17 +19,16 @@ type DashboardHeroProps = {
 
 export default function DashboardHero({
   user,
-  roadmapXp,
-  xpLevel,
-  xpProgress,
-  xpToNext,
-  xpTitle,
+  upsolvePending,
+  upsolveSolved,
+  upsolveTotal,
   friendRequestCount,
   isSyncing,
   onSync,
 }: DashboardHeroProps) {
   const reduceMotion = useReducedMotion();
   const circumference = 2 * Math.PI * 62;
+  const solveRate = upsolveTotal > 0 ? Math.round((upsolveSolved / upsolveTotal) * 100) : 0;
 
   return (
     <m.section
@@ -88,38 +85,38 @@ export default function DashboardHero({
 
         <div className="flex min-w-0 flex-col justify-center border-t border-border bg-background/25 px-6 py-8 sm:px-8 lg:border-l lg:border-t-0 lg:px-9">
           <div className="flex items-center justify-between gap-4">
-            <p className="text-sm font-medium text-foreground">Your learning journey</p>
-            <span className="rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">{xpTitle}</span>
+            <p className="text-sm font-medium text-foreground">Your upsolve queue</p>
+            <span className="rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary tabular-nums">{solveRate}% cleared</span>
           </div>
           <div className="flex items-center justify-center gap-4 py-7 sm:gap-9">
-            <div className="relative shrink-0" role="img" aria-label={`Level ${xpLevel}, ${Math.round(xpProgress)} percent to level ${xpLevel + 1}`}>
+            <div className="relative shrink-0" role="img" aria-label={`${upsolvePending} problems waiting, ${solveRate} percent of your queue solved`}>
               <svg viewBox="0 0 144 144" className="size-28 -rotate-90 sm:size-36" aria-hidden="true">
                 <circle cx="72" cy="72" r="62" fill="none" stroke="currentColor" strokeWidth="5" className="text-border" />
                 <m.circle
                   cx="72" cy="72" r="62" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round"
                   strokeDasharray={circumference}
                   initial={false}
-                  animate={{ strokeDashoffset: circumference * (1 - xpProgress / 100) }}
+                  animate={{ strokeDashoffset: circumference * (1 - solveRate / 100) }}
                   transition={{ duration: reduceMotion ? 0 : 0.8, ease: "easeOut" }}
                   className="text-primary"
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-xs text-muted-foreground">Level</span>
-                <span className="mt-1 font-heading text-5xl font-medium leading-none tracking-tight text-foreground tabular-nums">{xpLevel}</span>
+                <span className="text-xs text-muted-foreground">Waiting</span>
+                <span className="mt-1 font-heading text-5xl font-medium leading-none tracking-tight text-foreground tabular-nums">{upsolvePending}</span>
               </div>
             </div>
             <div className="min-w-0">
-              <p className="break-all font-heading text-3xl font-medium tracking-tight text-foreground tabular-nums">{roadmapXp.toLocaleString()}</p>
-              <p className="mt-1 text-xs text-muted-foreground">Total experience</p>
+              <p className="break-all font-heading text-3xl font-medium tracking-tight text-foreground tabular-nums">{upsolveSolved.toLocaleString()}</p>
+              <p className="mt-1 text-xs text-muted-foreground">Upsolved so far</p>
               <div className="mt-5 h-px w-8 bg-border" />
-              <p className="mt-4 text-sm font-medium text-primary tabular-nums">{xpToNext} XP to go</p>
-              <p className="mt-1 text-xs text-muted-foreground">Until level {xpLevel + 1}</p>
+              <p className="mt-4 text-sm font-medium text-primary tabular-nums">{upsolveTotal.toLocaleString()} tracked</p>
+              <p className="mt-1 text-xs text-muted-foreground">Problems in your list</p>
             </div>
           </div>
           <div className="flex items-center justify-between border-t border-border pt-4 text-xs text-muted-foreground">
-            <span>Every problem moves you forward.</span>
-            <Link href="/roadmap" className="ml-3 shrink-0 rounded text-primary transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Explore your roadmap"><ArrowUpRight className="size-4" /></Link>
+            <span>Every problem you revisit makes you stronger.</span>
+            <Link href="/upsolve" className="ml-3 shrink-0 rounded text-primary transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Open your upsolve list"><ArrowUpRight className="size-4" /></Link>
           </div>
         </div>
       </div>

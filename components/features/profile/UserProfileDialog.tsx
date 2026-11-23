@@ -20,9 +20,6 @@ export interface UserTrainingStatsView {
     rank: string;
     maxRating: number;
     maxRank: string;
-    xp?: number;
-    levelsCompleted?: number;
-    topicsCompleted?: number;
   };
   stats: {
     totalSessions: number;
@@ -52,6 +49,8 @@ interface UserProfileDialogProps {
   userId: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** API prefix that serves `/:userId/stats`. Friends by default; admin screens pass the admin prefix. */
+  statsBase?: string;
 }
 
 // Codeforces rating bands.
@@ -69,29 +68,15 @@ const getRankAesthetics = (rating: number) => {
   return { text: "text-red-500 font-semibold", border: "border-red-500/40", bg: "bg-red-500/15", label: "Legendary Grandmaster" };
 };
 
-const getXPLevel = (xp: number) => {
-  const level = Math.floor(xp / 1000) + 1;
-  const nextLevelXp = level * 1000;
-  const prevLevelXp = (level - 1) * 1000;
-  const progressPercent = Math.min(100, Math.max(0, ((xp - prevLevelXp) / 1000) * 100));
-
-  let title = "Novice";
-  if (xp >= 5000) title = "Legend";
-  else if (xp >= 3000) title = "Champion";
-  else if (xp >= 1500) title = "Strategist";
-  else if (xp >= 500) title = "Tactician";
-
-  return { level, nextLevelXp, progressPercent, title };
-};
-
 export function UserProfileDialog({
   userId,
   open,
   onOpenChange,
+  statsBase = "/api/friends",
 }: Readonly<UserProfileDialogProps>) {
   const openerRef = useRef<HTMLElement | null>(null);
   const { data: userStats, error, isLoading, mutate } = useSWR<UserTrainingStatsView>(
-    open && userId ? `/api/roadmap/users/${userId}/stats` : null,
+    open && userId ? `${statsBase}/${userId}/stats` : null,
     apiFetcher,
     {
       revalidateOnFocus: false,
@@ -101,8 +86,6 @@ export function UserProfileDialog({
 
   const stats = userStats?.stats;
   const user = userStats?.user;
-  const xp = user?.xp ?? 0;
-  const { level, progressPercent, title: xpTitle } = getXPLevel(xp);
   const aesthetic = getRankAesthetics(user?.rating ?? 0);
 
   // Compute Achievements (Gamified Badges)
@@ -184,14 +167,7 @@ export function UserProfileDialog({
                 ].map((metric) => <div key={metric.label} className="rounded-2xl border border-border bg-card p-4"><dt className="text-xs text-muted-foreground">{metric.label}</dt><dd className="mt-2 font-heading text-2xl font-medium tabular-nums text-foreground">{metric.value}</dd></div>)}
               </dl>
 
-              <section className="grid gap-6 sm:grid-cols-2">
-                <div className="rounded-2xl border border-border bg-card p-5">
-                  <div className="flex items-center justify-between gap-3"><h3 className="text-sm font-medium text-foreground">Roadmap progress</h3><span className="text-xs text-primary">Level {level}</span></div>
-                  <p className="mt-4 font-heading text-3xl font-medium tracking-tight tabular-nums text-primary">{xp.toLocaleString()} <span className="font-sans text-xs text-muted-foreground">XP</span></p>
-                  <p className="mt-1 text-sm text-muted-foreground">{xpTitle}</p>
-                  <StudioProgress value={progressPercent} label="Progress toward the next XP level" className="mt-5" />
-                  <p className="mt-2 text-xs text-muted-foreground">{1000 - (xp % 1000)} XP to the next level</p>
-                </div>
+              <section>
                 <div className="space-y-5 py-1">
                   {[
                     { label: "Solve rate", value: stats.solvingRate, detail: `${stats.solvedProblems} of ${stats.totalProblems} problems` },

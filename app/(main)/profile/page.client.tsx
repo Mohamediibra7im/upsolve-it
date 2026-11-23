@@ -4,9 +4,8 @@ import { Button } from "@/components/ui/button";
 
 import MemberPageState from "@/components/features/profile/MemberPageState";
 
-import { Trophy, Crown, Flame, Award, Target, Zap, CheckCircle, Sparkles } from "lucide-react";
+import { Trophy, Crown, Flame, Award, Target, Zap, CheckCircle } from "lucide-react";
 import { useUser } from "@/hooks/auth";
-import { useRoadmapUserSummary } from "@/hooks/roadmap";
 import { useHistory, useUpsolvedProblems } from "@/hooks/data";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
@@ -15,6 +14,7 @@ import { isTrainingProblemCountedSolved, trainingSessionHasSolve } from "@/servi
 import {
   ProfileHeader,
   ConsoleAccountCard,
+  ReminderSettings,
   MilestoneProgressCard,
   StreaksCard,
   ProfileStatsGrid,
@@ -51,7 +51,6 @@ type StreakPayload = {
 
 export default function ProfilePage() {
   const { user, isLoading, syncProfile, logout } = useUser();
-  const { summary, isLoading: isSummaryLoading, error: summaryError, mutateSummary } = useRoadmapUserSummary(!!user);
   const { history, error: historyError, refresh: refreshHistory } = useHistory();
   const { upsolvedProblems: _upsolvedProblems } = useUpsolvedProblems();
   const { data: streaks } = useSWR<StreakPayload>(
@@ -92,8 +91,8 @@ export default function ProfilePage() {
     return [...history].sort((a, b) => b.startTime - a.startTime).slice(0, 5);
   }, [history]);
 
-  if (isLoading || (user && isSummaryLoading)) {
-    return <MemberPageState kind="loading" title="Opening your profile" description="Gathering your practice and roadmap progress." />;
+  if (isLoading) {
+    return <MemberPageState kind="loading" title="Opening your profile" description="Gathering your practice progress." />;
   }
 
   if (!user) return null;
@@ -110,17 +109,17 @@ export default function ProfilePage() {
     Math.max(0, ((rating - currentTierStart) / (milestone.target - currentTierStart)) * 100),
   );
 
-  const profileStats = [
-    { label: "Current rating", value: user.rating || 0, sub: user.rank || "Unrated", icon: Trophy, tone: "text-foreground" },
-    { label: "Best rating", value: user.maxRating || 0, sub: user.maxRank || "Unrated", icon: Crown, tone: "text-primary" },
-    { label: "Roadmap XP", value: summary?.totalXp?.toLocaleString() || 0, sub: "All time XP", icon: Flame, tone: "text-primary" },
-    { label: "Problems solved", value: summary?.problemsSolved || 0, sub: "Roadmap practice", icon: Award, tone: "text-foreground" },
-    { label: "Topics completed", value: summary?.topicsCompleted || 0, sub: "Skills unlocked", icon: Target, tone: "text-foreground" },
-  ];
-
   const upsolvedSolvedCount = _upsolvedProblems.filter(
     (p) => p.solvedTime !== null && p.solvedTime !== undefined,
   ).length;
+
+  const profileStats = [
+    { label: "Current rating", value: user.rating || 0, sub: user.rank || "Unrated", icon: Trophy, tone: "text-foreground" },
+    { label: "Best rating", value: user.maxRating || 0, sub: user.maxRank || "Unrated", icon: Crown, tone: "text-primary" },
+    { label: "Upsolved", value: upsolvedSolvedCount, sub: "Problems revisited and solved", icon: Award, tone: "text-primary" },
+    { label: "Still to upsolve", value: _upsolvedProblems.length - upsolvedSolvedCount, sub: "Waiting in your list", icon: Target, tone: "text-foreground" },
+    { label: "Upsolve streak", value: streaks?.upsolveStreak ?? 0, sub: "Days in a row", icon: Flame, tone: "text-foreground" },
+  ];
 
   const achievements = [
     {
@@ -171,22 +170,6 @@ export default function ProfilePage() {
       unlocked: (streaks?.consistencyScore ?? 0) >= 80,
       color: "text-primary border-primary/20 bg-primary/10",
     },
-    {
-      id: "topic-crusher",
-      name: "Topic explorer",
-      desc: "Complete 5 roadmap topics",
-      icon: Award,
-      unlocked: (summary?.topicsCompleted ?? 0) >= 5,
-      color: "text-primary border-primary/20 bg-primary/10",
-    },
-    {
-      id: "xp-overlord",
-      name: "Dedicated learner",
-      desc: "Earn 5,000 roadmap XP",
-      icon: Sparkles,
-      unlocked: (summary?.totalXp ?? 0) >= 5000,
-      color: "text-primary border-primary/20 bg-primary/10",
-    },
   ];
 
   const directories = [
@@ -201,8 +184,8 @@ export default function ProfilePage() {
       <div className="mx-auto w-full space-y-6 max-w-7xl">
 
         {/* Profile Status Identity Header */}
-        <ProfileHeader user={user} summary={summary} syncProfile={syncProfile} />
-        {(summaryError || historyError) && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-5"><div><p className="text-sm font-medium text-foreground">Some progress is unavailable</p><p className="mt-1 text-sm text-muted-foreground">Try again to bring your latest statistics into view.</p></div><Button variant="outline" onClick={() => Promise.all([mutateSummary(), refreshHistory()])}>Try again</Button></div>}
+        <ProfileHeader user={user} syncProfile={syncProfile} />
+        {historyError && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-5"><div><p className="text-sm font-medium text-foreground">Some progress is unavailable</p><p className="mt-1 text-sm text-muted-foreground">Try again to bring your latest statistics into view.</p></div><Button variant="outline" onClick={() => refreshHistory()}>Try again</Button></div>}
 
 
         <div className="relative overflow-hidden rounded-2xl border border-border bg-background">
@@ -231,7 +214,7 @@ export default function ProfilePage() {
           <div className="p-4 sm:p-6 relative z-10 min-h-[380px] bg-background">
             {activeDir === "overview" && (
               <div className="space-y-6">
-                {/* Profile Stats Row (Rating / XP / Solved) */}
+                {/* Profile stats row */}
                 <ProfileStatsGrid profileStats={profileStats} />
 
                 {/* Sub layout for metrics */}
@@ -271,10 +254,6 @@ export default function ProfilePage() {
                         <div className="flex flex-wrap justify-between gap-x-3 gap-y-1 py-0.5">
                           <span>Account ID</span>
                           <span className="text-primary">#{user._id.slice(-8).toUpperCase()}</span>
-                        </div>
-                        <div className="flex flex-wrap justify-between gap-x-3 gap-y-1 py-0.5">
-                          <span>Current level</span>
-                          <span className="text-foreground">{summary?.currentLevel?.title || "Novice"}</span>
                         </div>
                         <div className="flex flex-wrap justify-between gap-x-3 gap-y-1 py-0.5">
                           <span>Role</span>
@@ -326,6 +305,7 @@ export default function ProfilePage() {
             {activeDir === "security" && (
               <div className="max-w-2xl mx-auto space-y-4">
                 <ConsoleAccountCard user={user} logout={logout} />
+                <ReminderSettings />
               </div>
             )}
           </div>

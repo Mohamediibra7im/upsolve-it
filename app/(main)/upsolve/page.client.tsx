@@ -10,6 +10,7 @@ import { useUpsolvedProblems, useHistory } from "@/hooks/data";
 import { useUser } from "@/hooks/auth";
 import { UpsolvedProblemsList } from "@/components/features/upsolve";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
+import { useToast } from "@/components/providers/Toast";
 import { Button } from "@/components/ui/button";
 import {
   RefreshCw,
@@ -19,7 +20,7 @@ import {
   Trophy,
   ArrowRight,
 } from "lucide-react";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { m } from "framer-motion";
 import Link from "next/link";
 
@@ -32,11 +33,41 @@ export default function UpsolvePage() {
     error,
     refreshUpsolvedProblems,
     deleteUpsolvedProblem,
-    onRefreshUpsolvedProblems,
+    syncWithCodeforces,
     syncWithHistory,
   } = useUpsolvedProblems();
 
+  const { toast } = useToast();
   const [hasAutoSynced, setHasAutoSynced] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  // Pull failed contest problems and solved status from Codeforces once per visit.
+  const userId = user?._id;
+  const syncedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!userId || syncedFor.current === userId) return;
+    syncedFor.current = userId;
+    syncWithCodeforces().catch(() => {});
+  }, [userId, syncWithCodeforces]);
+
+  const handleRefresh = async () => {
+    setIsSyncing(true);
+    try {
+      const { added, solved } = await syncWithCodeforces();
+      toast({
+        title: "Synced with Codeforces",
+        description: `${added} added from recent contests, ${solved} marked solved.`,
+      });
+    } catch {
+      toast({
+        title: "Sync failed",
+        description: "Codeforces didn't respond. Try again in a moment.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   useEffect(() => {
     if (!hasAutoSynced && history && history.length > 0 && upsolvedProblems) {
@@ -90,17 +121,18 @@ export default function UpsolvePage() {
                 Come back stronger.
               </h1>
               <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
-                Revisit the problems that challenged you. Take your time, try a new approach, and turn each attempt into progress.
+                Problems you couldn’t solve in contests and training sessions land here automatically. Take your time, try a new approach, and turn each attempt into progress.
               </p>
             </div>
 
             <Button
-              onClick={() => onRefreshUpsolvedProblems(history)}
+              onClick={handleRefresh}
+              disabled={isSyncing}
               className="h-10 px-6 rounded-lg border border-border bg-transparent text-primary font-medium text-xs hover:bg-primary/10 hover:text-foreground hover:border-border active:scale-[0.98] transition-all font-sans shrink-0"
               variant="outline"
             >
-              <RefreshCw size={12} className="mr-2" />
-              Refresh status
+              <RefreshCw size={12} className={isSyncing ? "mr-2 animate-spin motion-reduce:animate-none" : "mr-2"} />
+              {isSyncing ? "Syncing…" : "Sync with Codeforces"}
             </Button>
           </div>
         </m.div>

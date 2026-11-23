@@ -6,15 +6,13 @@ import { ArrowUpRight, RefreshCw, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { User } from "@/types/User";
-import type { UserRoadmapSummary } from "@/types/Roadmap";
 
 interface ProfileHeaderProps {
   user: User;
-  summary: UserRoadmapSummary | undefined;
   syncProfile: () => void;
 }
 
-export default function ProfileHeader({ user, summary, syncProfile }: ProfileHeaderProps) {
+export default function ProfileHeader({ user, syncProfile }: ProfileHeaderProps) {
   return (
     <m.section initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="rounded-[2rem] border border-border bg-card p-6 sm:p-8 lg:p-10">
       <div className="mb-8 flex items-center justify-between gap-4">
@@ -38,10 +36,6 @@ export default function ProfileHeader({ user, summary, syncProfile }: ProfileHea
           </div>
         </div>
         <Button onClick={syncProfile} variant="outline" className="h-11 shrink-0 self-start rounded-xl border-border bg-transparent px-5 text-sm text-foreground lg:self-center"><RefreshCw className="mr-2 size-4" />Sync profile</Button>
-      </div>
-      <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-border pt-5 text-sm text-muted-foreground">
-        <span>Learning <span className="font-medium text-foreground">{summary?.currentLevel?.title || "Novice"}</span></span>
-        <span><span className="font-medium tabular-nums text-primary">{(summary?.totalXp || 0).toLocaleString()}</span> total XP</span>
       </div>
     </m.section>
   );

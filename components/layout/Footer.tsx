@@ -20,22 +20,15 @@ const footerLinks = {
     { label: "Statistics", href: "/statistics" },
     { label: "Upsolve list", href: "/upsolve" },
   ],
-  Support: [
-    { label: "Help center", href: "/help" },
-    { label: "Documentation", href: "/docs" },
-    { label: "Quick start", href: "/help/quick-start" },
-    { label: "FAQ", href: "/help/faq" },
-    { label: "Contact support", href: "/help/support" },
-  ],
-  Community: [
-    { label: "What's new", href: "/whats-new" },
-    { label: "Suggestions", href: "/suggestions" },
-    { label: "Report a bug", href: "/report" },
+  Help: [
+    {
+      label: "Report a bug",
+      href: "https://github.com/Mohamediibra7im/upsolve-it/issues",
+    },
   ],
   Legal: [
     { label: "Privacy policy", href: "/privacy" },
     { label: "Terms of service", href: "/terms" },
-    { label: "Code of conduct", href: "/community" },
   ],
 };
 const accountRoutes = new Set([
@@ -43,7 +36,6 @@ const accountRoutes = new Set([
   "/training",
   "/statistics",
   "/upsolve",
-  "/report",
 ]);
 
 const socialLinks = [
@@ -71,8 +63,8 @@ export default function Footer() {
   return (
     <footer className="border-t border-white/[0.07] bg-[#101214] pb-7 pt-14 font-sans sm:pt-16">
       <div className="mx-auto max-w-[1280px] px-5 sm:px-8 lg:px-10">
-        <div className="grid grid-cols-2 gap-x-8 gap-y-10 pb-12 sm:grid-cols-4 lg:grid-cols-6">
-          <div className="col-span-2 sm:col-span-4 lg:col-span-2">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-10 pb-12 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="col-span-2 sm:col-span-3 lg:col-span-2">
             <Link href="/" aria-label="Upsolve.it home" className="inline-flex">
               <Brand />
             </Link>

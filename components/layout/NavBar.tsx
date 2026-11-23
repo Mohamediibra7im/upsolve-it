@@ -15,8 +15,6 @@ import {
   Compass,
   ExternalLink,
   Users,
-  Trophy,
-  BookOpen,
   UserRound,
   Settings,
 } from "lucide-react";
@@ -48,21 +46,16 @@ const guestLinks = [
   { href: "/#features", label: "Features", icon: Layers },
   { href: "/#how-it-works", label: "How it works", icon: Compass },
   { href: "/#community", label: "Community", icon: Users },
-  { href: "/docs", label: "Documentation", icon: BookOpen },
 ];
 const primaryLinks = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/training", label: "Training", icon: Target },
-  { href: "/roadmap", label: "Roadmap", icon: Compass },
   { href: "/upsolve", label: "Upsolve", icon: Layers },
   { href: "/statistics", label: "Statistics", icon: LineChart },
-  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
 ];
 const secondaryLinks = [
   { href: "/training/reviews", label: "Reviews", icon: ClipboardList },
   { href: "/friends", label: "Friends", icon: Users },
-  { href: "/levels", label: "Levels", icon: Trophy },
-  { href: "/docs", label: "Documentation", icon: BookOpen },
 ];
 const menuItemClass =
   "cursor-pointer rounded-lg px-3 py-2.5 text-[13px] text-[#b6bdb9] focus:bg-white/[0.06] focus:text-[#f1f3ee]";

@@ -1,6 +1,5 @@
 export { useAdminLogs } from "./useAdminLogs";
 export type { AuditLog } from "./useAdminLogs";
-export { useAdminRoadmapLevels, useAdminRoadmapTopics } from "./useAdminRoadmap";
 export {
   useAdminUsers,
   updateUserRole,
@@ -9,24 +8,3 @@ export {
 } from "./useAdminUsers";
 export { useAdminStats } from "./useAdminStats";
 export type { AdminStats } from "./useAdminStats";
-export {
-  useWhatsNewPublished,
-  useWhatsNewAdmin,
-  createWhatsNewEntry,
-  updateWhatsNewEntry,
-  deleteWhatsNewEntry,
-} from "./useWhatsNew";
-export type { WhatsNewEntry } from "./useWhatsNew";
-export {
-  useSuggestions,
-  useSuggestionsAdmin,
-  createSuggestion,
-  updateSuggestion,
-  deleteSuggestion,
-} from "./useSuggestions";
-export type { Suggestion } from "./useSuggestions";
-export { useUnreadContact } from "./useUnreadContact";
-export type {
-  UnreadContactSummary,
-  UnreadContactItem,
-} from "./useUnreadContact";
