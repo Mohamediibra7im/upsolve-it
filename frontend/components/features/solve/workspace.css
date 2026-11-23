@@ -245,9 +245,11 @@ span.sw-tab {
   margin-top: 6px;
   padding-top: 18px;
   border-top: 1px solid var(--line);
-  font: 700 20px/1 var(--font-display);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font:
+    700 23px/1.1 KaTeX_Main,
+    "Latin Modern Roman",
+    "Times New Roman",
+    serif;
   color: var(--ink);
 }
 .sw-h::before {
@@ -270,15 +272,24 @@ span.sw-tab {
 }
 
 /* a judge's own HTML, cleaned by the server, set in the site's type */
-/* The problem is read for minutes at a time, so it gets the reading face,
-   a size up from the rest of the page. */
+/* The problem is set the way LaTeX sets it: in Computer Modern, the face
+   its formulas are already in (KaTeX ships it), justified, with hyphens.
+   Text and math then read as one typeset page, as a statement does on its
+   judge. The faces after the first are for a letter Computer Modern lacks. */
 .sw-prose {
   display: grid;
   gap: 12px;
   min-width: 0;
-  font-family: var(--ff-reading), var(--font-sans);
-  font-size: 17px;
-  line-height: 29px;
+  font-family:
+    KaTeX_Main, "Latin Modern Roman", "CMU Serif", "Times New Roman", serif;
+  font-size: 19px;
+  line-height: 30px;
+  text-align: justify;
+  hyphens: auto;
+}
+.sw-prose .katex {
+  /* the text is already in the formulas' face and size */
+  font-size: 1em;
 }
 .sw-prose ul,
 .sw-prose ol {
@@ -300,14 +311,20 @@ span.sw-tab {
   padding: 9px 12px;
   border-radius: var(--radius-md);
   background: var(--surface-sunk);
-  font: 500 14px/22px var(--font-mono);
+  /* LaTeX's own typewriter face for what a statement sets verbatim */
+  font:
+    400 17px/26px KaTeX_Typewriter,
+    var(--font-mono);
+  text-align: left;
   overflow-x: auto;
 }
 .sw-prose code {
   padding: 1px 5px;
   border-radius: var(--radius-sm);
   background: var(--surface-sunk);
-  font: 500 13px var(--font-mono);
+  font:
+    400 0.92em KaTeX_Typewriter,
+    var(--font-mono);
 }
 /* A figure is drawn for a white page, so it keeps one. It sits in the text
    where the judge put it, not on a line of its own. */
@@ -329,7 +346,8 @@ span.sw-tab {
 }
 .sw-prose table {
   border-collapse: collapse;
-  font-size: 15px;
+  font-size: 17px;
+  text-align: left;
 }
 .sw-prose th,
 .sw-prose td {
@@ -361,12 +379,10 @@ span.sw-tab {
 }
 .sw-prose h3,
 .sw-prose h4 {
-  font-weight: 600;
-  font-size: 17px;
+  font-weight: 700;
+  font-size: 19px;
 }
-.sw-prose .katex {
-  font-size: 1.06em;
-}
+
 .sw-prose .katex-display {
   margin: 4px 0;
   padding: 2px 0;
