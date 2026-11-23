@@ -23,7 +23,6 @@ import {
   RotateCcw,
   ScrollText,
   KeyRound,
-  Sparkles,
   Zap,
   Trophy,
   ArrowRight,
@@ -56,7 +55,6 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-const XP_REWARD = 50;
 
 function TimerBar({ pct, isLow }: { pct: number; isLow: boolean }) {
   const barRef = useRef<HTMLDivElement>(null);
@@ -132,7 +130,6 @@ const VerifyCodeforcesDialog = ({
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
-  const [xpAwarded, setXpAwarded] = useState<number | null>(null);
   const [timerStartedAt, setTimerStartedAt] = useState<number | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
@@ -233,8 +230,7 @@ const VerifyCodeforcesDialog = ({
     setError(null);
     try {
       const res = await verifyCodeforcesProfile();
-      if (res.success && res.data) {
-        setXpAwarded(res.data.xpEarned);
+      if (res.success) {
         navigateStep("success");
       } else if (!res.success) {
         setError(res.error || "Verification failed");
@@ -269,7 +265,6 @@ const VerifyCodeforcesDialog = ({
     setExpiresAt(null);
     setError(null);
     setCopied(false);
-    setXpAwarded(null);
     onClose();
   };
 
@@ -334,7 +329,7 @@ const VerifyCodeforcesDialog = ({
                 />
               ) : (
                 <span className="text-xs font-medium   text-primary">
-                  Reward: +{XP_REWARD} XP
+                  Reward: verified badge
                 </span>
               )}
             </div>
@@ -435,7 +430,7 @@ const VerifyCodeforcesDialog = ({
                     </span>
                   </div>
                   <span className="font-medium text-foreground">
-                    +{XP_REWARD} XP &amp; verified badge
+                    Verified badge
                   </span>
                 </div>
 
@@ -755,9 +750,6 @@ const VerifyCodeforcesDialog = ({
                         <div className="flex items-center gap-1.5 justify-center">
                           <ShieldCheck className="size-4" />
                           <span>Verify profile</span>
-                          <span className="text-xs text-primary-foreground/65 font-medium">
-                            (+{XP_REWARD} XP)
-                          </span>
                         </div>
                       )}
                     </Button>
@@ -797,13 +789,6 @@ const VerifyCodeforcesDialog = ({
                     Profile verified
                   </DialogTitle>
                 </div>
-
-                {xpAwarded !== null && (
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-muted/40 border border-border rounded-xl text-xs font-medium text-foreground">
-                    <Sparkles className="size-3.5 text-primary " />
-                    <span>Earned: +{xpAwarded} XP</span>
-                  </div>
-                )}
 
                 <p className="text-xs text-muted-foreground max-w-xs mx-auto  leading-relaxed">
                   Your Codeforces profile is connected. You’re ready to train,

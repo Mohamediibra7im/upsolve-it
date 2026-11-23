@@ -13,8 +13,6 @@ const protectedRoots = [
   "/statistics",
   "/upsolve",
   "/friends",
-  "/roadmap",
-  "/report",
 ];
 
 const unauthedRoots = ["/", "/login", "/signup", "/reset-password"];

@@ -50,7 +50,7 @@ export default function VerificationRequired({
             ))}
           </ol>
           <div className="mb-6 rounded-xl bg-primary/5 px-4 py-3 text-xs text-primary">
-            Earn 50 XP and a verified profile badge.
+            Earn a verified profile badge.
           </div>
           <Button
             onClick={() => setShowVerifyDialog(true)}

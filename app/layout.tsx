@@ -9,7 +9,6 @@ import Script from "next/script";
 import { cn } from "@/lib/utils";
 import PageTransition from "@/components/shared/PageTransition";
 import StudioBackground from "@/components/layout/StudioBackground";
-import SystemConsoleFab from "@/components/layout/SystemConsoleFab";
 import { LazyMotion, domMax, MotionConfig } from "framer-motion";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 
@@ -70,7 +69,6 @@ export default function RootLayout({
                       <ErrorBoundary>{children}</ErrorBoundary>
                     </PageTransition>
                   </AuthGuard>
-                  <SystemConsoleFab />
                 </div>
               </MotionConfig>
             </LazyMotion>

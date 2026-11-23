@@ -645,6 +645,7 @@ export default function AdminUserManagement() {
       />
 
       <UserProfileDialog
+        statsBase="/api/admin/users"
         userId={statsDialog.userId}
         open={statsDialog.open}
         onOpenChange={(open) =>

@@ -46,20 +46,20 @@ export default function DashboardStatCards({ stats }: DashboardStatCardsProps) {
 export function buildDashboardStats({
   user,
   totalSolved,
-  roadmapProblemsSolved,
+  upsolveSolved,
   historyLength,
-  roadmapTopicsCompleted,
+  upsolvePending,
 }: {
   user: User;
   totalSolved: number;
-  roadmapProblemsSolved: number;
+  upsolveSolved: number;
   historyLength: number;
-  roadmapTopicsCompleted: number;
+  upsolvePending: number;
 }): StatItem[] {
   return [
     { label: "Codeforces rating", value: user.rating || 0, sub: user.rank || "Newbie", icon: Trophy },
     { label: "Personal best", value: user.maxRating || 0, sub: user.maxRank || "Newbie", icon: TrendingUp },
-    { label: "Problems solved", value: totalSolved, sub: `${roadmapProblemsSolved} from your roadmap`, icon: CheckCircle2 },
-    { label: "Training sessions", value: historyLength, sub: `${roadmapTopicsCompleted} topics completed`, icon: Layers3 },
+    { label: "Problems solved", value: totalSolved, sub: `${upsolveSolved} upsolved`, icon: CheckCircle2 },
+    { label: "Training sessions", value: historyLength, sub: `${upsolvePending} problems to upsolve`, icon: Layers3 },
   ];
 }

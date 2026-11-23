@@ -1,9 +1,6 @@
 import Link from "next/link";
 import {
   ArrowUpRight,
-  Check,
-  GitBranch,
-  LockKeyhole,
   RotateCcw,
   ChartNoAxesCombined,
   CalendarDays,
@@ -35,70 +32,6 @@ export default function FeaturesSection({
           Keep your learning, attempts, and progress together.
         </p>
       </div>
-      <article className={styles.roadmapStory}>
-        <div className={styles.storyCopy}>
-          <span className={styles.storyIcon}>
-            <GitBranch size={22} />
-          </span>
-          <h3>
-            Give your curiosity
-            <br />
-            some direction.
-          </h3>
-          <p>
-            A guided roadmap takes you from the fundamentals to the techniques
-            you’ve been meaning to learn. Follow the path at your own pace.
-          </p>
-          <Link
-            href={signedIn ? "/roadmap" : "/signup"}
-            className={styles.darkLink}
-          >
-            Explore the learning path
-            <ArrowUpRight size={17} />
-          </Link>
-        </div>
-        <div
-          className={styles.pathPreview}
-          aria-label="Example roadmap progression"
-        >
-          <div className={styles.pathHeading}>
-            <span>Your learning path</span>
-            <span>Keep moving forward</span>
-          </div>
-          <div className={styles.pathRow}>
-            <span className={styles.pathComplete}>
-              <Check size={17} />
-            </span>
-            <div>
-              <strong>The foundations</strong>
-              <p>Get comfortable with the essentials.</p>
-            </div>
-            <span className={styles.pathState}>Completed</span>
-          </div>
-          <div className={`${styles.pathRow} ${styles.currentPath}`}>
-            <span className={styles.pathCurrent}>
-              <span />
-            </span>
-            <div>
-              <strong>Patterns & techniques</strong>
-              <p>Turn familiar ideas into useful tools.</p>
-            </div>
-            <ArrowUpRight size={18} />
-          </div>
-          <div className={styles.pathRow}>
-            <span className={styles.pathLocked}>
-              <LockKeyhole size={15} />
-            </span>
-            <div>
-              <strong>The next challenge</strong>
-              <p>Bring it all together.</p>
-            </div>
-          </div>
-          <div className={styles.pathFootnote}>
-            Every topic builds on what came before.
-          </div>
-        </div>
-      </article>
       <article className={styles.upsolveStory}>
         <div className={styles.queuePreview}>
           <div className={styles.queueHeading}>

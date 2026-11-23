@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowUpRight, Flame, Target, Trophy, CircleCheck } from "lucide-react";
+import { Flame, Target, Trophy, CircleCheck } from "lucide-react";
 
 type StreakPayload = {
   trainingStreak: number;
@@ -12,10 +11,9 @@ type StreakPayload = {
 
 type DashboardStreaksProps = {
   streaks: StreakPayload | undefined;
-  roadmapRank: number;
 };
 
-export default function DashboardStreaks({ streaks, roadmapRank }: DashboardStreaksProps) {
+export default function DashboardStreaks({ streaks }: DashboardStreaksProps) {
   const streakItems = [
     { label: "Training streak", value: streaks?.trainingStreak ?? 0, unit: "days", icon: Flame },
     { label: "Upsolve streak", value: streaks?.upsolveStreak ?? 0, unit: "days", icon: Target },
@@ -30,10 +28,6 @@ export default function DashboardStreaks({ streaks, roadmapRank }: DashboardStre
           <h2 id="consistency-title" className="font-heading text-lg font-medium tracking-tight text-foreground">Small steps. Lasting progress.</h2>
           <p className="mt-1 text-xs text-muted-foreground">Keep showing up. Your consistency makes the difference.</p>
         </div>
-        <Link href="/leaderboard" className="group flex items-center gap-3 rounded-full border border-border bg-background/30 px-3.5 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-          Global rank <span className="font-semibold text-foreground tabular-nums">{roadmapRank ? `#${roadmapRank}` : "—"}</span>
-          <ArrowUpRight className="size-3.5 text-primary transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-        </Link>
       </div>
       <div className="grid grid-cols-2 gap-x-6 gap-y-6 lg:grid-cols-4">
         {streakItems.map((item) => (

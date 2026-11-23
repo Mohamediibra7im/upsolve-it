@@ -1,6 +1,6 @@
 "use client";
 
-import { useHeatmapData, RoadmapActivityData } from "@/hooks/data";
+import { useHeatmapData } from "@/hooks/data";
 import { Training } from "@/types/Training";
 import { TrainingProblem } from "@/types/TrainingProblem";
 import { useMemo, useState } from "react";
@@ -24,13 +24,11 @@ import {
 interface ActivityHeatmapProps {
   history: Training[];
   upsolvedProblems?: TrainingProblem[];
-  roadmapActivity?: RoadmapActivityData;
 }
 
 const ActivityHeatmap = ({
   history,
   upsolvedProblems = [],
-  roadmapActivity = { problemDates: [], topicDates: [] },
 }: ActivityHeatmapProps) => {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
@@ -38,7 +36,6 @@ const ActivityHeatmap = ({
   const { values: heatmapData, totalSolved } = useHeatmapData(
     history,
     upsolvedProblems,
-    roadmapActivity,
   );
 
   // Extract all unique years from history
@@ -54,23 +51,15 @@ const ActivityHeatmap = ({
       years.add(new Date(ms).getFullYear());
     };
 
-    const processDateString = (dateStr: string) => {
-      const d = new Date(dateStr);
-      if (!Number.isNaN(d.getTime())) {
-        years.add(d.getFullYear());
-      }
-    };
 
     history.forEach((t) => {
       processTime(t.endTime);
       t.problems?.forEach((p) => processTime(p.solvedTime));
     });
     upsolvedProblems.forEach((p) => processTime(p.solvedTime));
-    roadmapActivity.problemDates?.forEach(processDateString);
-    roadmapActivity.topicDates?.forEach(processDateString);
 
     return Array.from(years).sort((a, b) => b - a);
-  }, [history, upsolvedProblems, roadmapActivity, currentYear]);
+  }, [history, upsolvedProblems, currentYear]);
 
   // Group data by months for the selected year
   const monthsData = useMemo(() => {
@@ -254,7 +243,7 @@ const ActivityHeatmap = ({
           </div>
           <p className="w-full text-xs leading-5 text-muted-foreground">
             The calendar shows activity from the past 12 months. Milestones
-            include problem solves and completed roadmap topics.
+            include problem solves.
           </p>
         </div>
       </section>

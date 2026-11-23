@@ -8,14 +8,9 @@ import {
   LayoutDashboard,
   Users,
   Database,
-  Layers,
   ArrowUpRight,
   Menu,
   ChevronLeft,
-  Compass,
-  Sparkles,
-  Lightbulb,
-  MailQuestion,
 } from "lucide-react";
 import { useUser } from "@/hooks/auth";
 import Loader from "@/components/shared/Loader";
@@ -35,17 +30,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { AdminNotificationBell } from "@/components/features/admin/AdminNotificationBell";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/admin/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/users", label: "Members", icon: Users },
-  { href: "/admin/levels", label: "Training levels", icon: Layers },
-  { href: "/admin/roadmap", label: "Roadmap", icon: Compass },
-  { href: "/admin/whats-new", label: "Product updates", icon: Sparkles },
-  { href: "/admin/suggestions", label: "Resources", icon: Lightbulb },
-  { href: "/admin/contact", label: "Support inbox", icon: MailQuestion },
   { href: "/admin/logs", label: "Activity log", icon: Database },
 ];
 
@@ -254,7 +243,6 @@ export default function AdminLayoutClient({
                 <Shield size={12} />
                 Admin workspace
               </span>
-              <AdminNotificationBell />
             </div>
           </header>
           <main

@@ -1,6 +1,4 @@
-import Link from "next/link";
 import {
-  ArrowUpRight,
   SlidersHorizontal,
   Code2,
   RotateCcw,
@@ -35,10 +33,6 @@ export default function WorkflowSection() {
           A simple loop.
           <br />A lasting habit.
         </h2>
-        <Link href="/help/quick-start" className={styles.textButton}>
-          Read the getting started guide
-          <ArrowUpRight size={17} />
-        </Link>
       </div>
       <ol className={styles.steps}>
         {steps.map(({ icon: Icon, title, text }, index) => (

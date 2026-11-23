@@ -19,7 +19,6 @@ import {
 import {
   Activity,
   BarChart3,
-  CheckCircle2,
   Gauge,
   LineChart,
   ShieldCheck,
@@ -207,13 +206,6 @@ export function AdminDashboardView({
       )} problems`,
       icon: Target,
       tone: "amber" as const,
-    },
-    {
-      label: "Roadmap levels",
-      value: formatNumber(stats.totalLevels),
-      detail: `${formatNumber(stats.totalLevelsCompleted)} levels completed`,
-      icon: CheckCircle2,
-      tone: "cyan" as const,
     },
     {
       label: "Best performance",
@@ -598,14 +590,6 @@ export function AdminDashboardView({
             {
               label: "Completed Upsolves",
               value: formatNumber(stats.completedUpsolves),
-            },
-            {
-              label: "Total XP Earned",
-              value: formatNumber(stats.totalXpEarned),
-            },
-            {
-              label: "Topics Completed",
-              value: formatNumber(stats.totalTopicsCompleted),
             },
           ].map((item) => (
             <div

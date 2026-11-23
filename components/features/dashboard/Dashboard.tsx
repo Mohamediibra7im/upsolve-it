@@ -7,7 +7,6 @@ import { useFriendRequests } from "@/hooks/social";
 import { useHistory } from "@/hooks/data";
 import { useUpsolvedProblems } from "@/hooks/data";
 import { useHeatmapData } from "@/hooks/data";
-import { useRoadmapUserSummary, useRoadmapLeaderboard, useRoadmapActivity } from "@/hooks/roadmap";
 import useSWR from "swr";
 import { swrFetcher } from "@/lib/apiClient";
 
@@ -31,10 +30,10 @@ export default function Dashboard() {
   const { upsolvedProblems, isLoading: isUpsolveLoading, error: upsolveError, refreshUpsolvedProblems } = useUpsolvedProblems();
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const { summary, error: summaryError, mutateSummary } = useRoadmapUserSummary(!!user);
-  const { leaderboard } = useRoadmapLeaderboard({ limit: 5 });
-  const { activity: roadmapActivity } = useRoadmapActivity(!!user);
-  const { totalSolved } = useHeatmapData(history || [], upsolvedProblems || [], roadmapActivity);
+  const { totalSolved } = useHeatmapData(history || [], upsolvedProblems || []);
+  const pendingUpsolves = (upsolvedProblems || []).filter((p) => !p.solvedTime);
+  const upsolveTotal = upsolvedProblems?.length ?? 0;
+  const upsolveSolved = upsolveTotal - pendingUpsolves.length;
 
   const { data: streaks } = useSWR<StreakPayload>(
     user ? "/api/users/me/streaks" : null,
@@ -51,37 +50,14 @@ export default function Dashboard() {
   // but handle the edge case gracefully)
   if (!user) return null;
 
-  // XP and rank derived from roadmap summary (loads async — show 0 until ready)
-  const roadmapXp = summary?.totalXp ?? 0;
-  const roadmapProblemsSolved = summary?.problemsSolved ?? 0;
-  const roadmapTopicsCompleted = summary?.topicsCompleted ?? 0;
-  const myRank = leaderboard?.find((e) => String(e.userId) === String(user._id));
-  const roadmapRank = myRank?.rank ?? 0;
-
-  // XP level calculation
-  const xpLevel = Math.floor(roadmapXp / 500) + 1;
-  const xpProgress = ((roadmapXp % 500) / 500) * 100;
-  const xpToNext = 500 - (roadmapXp % 500);
-
-  const xpTitle =
-    roadmapXp > 5000
-      ? "Legend"
-      : roadmapXp > 3000
-        ? "Champion"
-        : roadmapXp > 1500
-          ? "Strategist"
-          : roadmapXp > 500
-            ? "Tactician"
-            : "Novice";
-
   // Secondary data loading — history and upsolve can still be arriving;
   // pass empty arrays so stat cards render instantly with whatever is cached.
   const stats = buildDashboardStats({
     user,
     totalSolved,
-    roadmapProblemsSolved,
+    upsolveSolved,
     historyLength: history?.length || 0,
-    roadmapTopicsCompleted,
+    upsolvePending: pendingUpsolves.length,
   });
 
   const secondaryLoading = isHistoryLoading || isUpsolveLoading;
@@ -91,37 +67,31 @@ export default function Dashboard() {
       {/* Hero renders immediately — no dependency on history/upsolve */}
       <DashboardHero
         user={user}
-        roadmapXp={roadmapXp}
-        xpLevel={xpLevel}
-        xpProgress={xpProgress}
-        xpToNext={xpToNext}
-        xpTitle={xpTitle}
+        upsolvePending={pendingUpsolves.length}
+        upsolveSolved={upsolveSolved}
+        upsolveTotal={upsolveTotal}
         friendRequestCount={friendRequestCount}
         isSyncing={isSyncing}
         onSync={handleSync}
       />
 
-      {(historyError || upsolveError || summaryError) && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-5"><p className="text-sm text-muted-foreground">Some progress is unavailable. Try again to see your latest statistics.</p><Button variant="outline" onClick={() => Promise.all([refreshHistory(), refreshUpsolvedProblems(), mutateSummary()])}>Try again</Button></div>}
+      {(historyError || upsolveError) && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-5"><p className="text-sm text-muted-foreground">Some progress is unavailable. Try again to see your latest statistics.</p><Button variant="outline" onClick={() => Promise.all([refreshHistory(), refreshUpsolvedProblems()])}>Try again</Button></div>}
 
       {/* Stat cards — shows 0s while secondary data loads, fills in quickly */}
       <DashboardStatCards stats={stats} />
 
-      <DashboardStreaks streaks={streaks} roadmapRank={roadmapRank} />
+      <DashboardStreaks streaks={streaks} />
 
       {/* Show matching placeholders while secondary data loads. */}
       {secondaryLoading ? (
-        <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3" role="status" aria-label="Loading your progress">
+        <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2" role="status" aria-label="Loading your progress">
           <div className="h-80 animate-pulse rounded-3xl border border-border bg-card motion-reduce:animate-none" />
           <div className="h-80 animate-pulse rounded-3xl border border-border bg-card motion-reduce:animate-none" />
-          <div className="h-80 animate-pulse rounded-3xl border border-border bg-card motion-reduce:animate-none md:col-span-2 xl:col-span-1" />
         </div>
       ) : (
         <DashboardSidebar
           user={user}
-          roadmapXp={roadmapXp}
-          roadmapProblemsSolved={roadmapProblemsSolved}
-          summary={summary}
-          leaderboard={leaderboard}
+          pendingUpsolves={pendingUpsolves}
         />
       )}
     </div>

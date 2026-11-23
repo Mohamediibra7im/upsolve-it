@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Minus, Plus, RotateCcw, Eye, EyeOff } from "lucide-react";
-import { useLevels } from "@/hooks/roadmap";
+import { useLevels } from "@/hooks/training";
 import { useUser } from "@/hooks/auth";
 
 interface LevelSelectorProps {

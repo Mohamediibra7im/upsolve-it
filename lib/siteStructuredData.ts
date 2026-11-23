@@ -29,10 +29,9 @@ export const siteStructuredData = {
       featureList: [
         "Five Codeforces training modes",
         "Problem rating and topic selection",
-        "Guided competitive programming roadmap",
         "Unsolved problem queue",
         "Session reviews and performance tracking",
-        "Practice streaks and community leaderboard",
+        "Practice streaks",
       ],
     },
     {
