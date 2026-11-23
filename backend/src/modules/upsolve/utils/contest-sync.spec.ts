@@ -1,4 +1,8 @@
-import { planUpsolveSync, type CfSubmission } from './contest-sync';
+import {
+  planUnattempted,
+  planUpsolveSync,
+  type CfSubmission,
+} from './contest-sync';
 
 const NOW = Date.UTC(2026, 10, 23);
 const daysAgo = (d: number) => Math.floor(NOW / 1000) - d * 86400;
@@ -76,5 +80,74 @@ describe('planUpsolveSync', () => {
     expect(solved).toEqual([
       { contestId: 1900, index: 'C', solvedTime: daysAgo(2) * 1000 },
     ]);
+  });
+});
+
+describe('planUnattempted', () => {
+  const contest = (...letters: string[]) =>
+    letters.map((index) => ({ index, name: `Problem ${index}`, rating: 1500 }));
+  const problems: Record<number, ReturnType<typeof contest>> = {
+    2000: contest('A', 'B', 'C', 'D'),
+    2001: contest('A', 'B'),
+    1500: contest('A', 'B'),
+  };
+  const plan = (
+    submissions: CfSubmission[],
+    tracked: { contestId: number; index: string }[] = [],
+    dismissed: { contestId: number; index: string }[] = [],
+  ) =>
+    planUnattempted(
+      submissions,
+      (id) => problems[id],
+      tracked,
+      dismissed,
+      NOW,
+    ).map((p) => `${p.contestId}${p.index}`);
+
+  it('adds the first problem of a contest the user never submitted to', () => {
+    const submissions = [
+      sub(2000, 'A', 'OK', 'CONTESTANT', daysAgo(3)),
+      sub(2000, 'B', 'WRONG_ANSWER', 'CONTESTANT', daysAgo(3)),
+      // C was tried later, in practice: it still counts as attempted
+      sub(2000, 'C', 'WRONG_ANSWER', 'PRACTICE', daysAgo(1)),
+    ];
+    expect(plan(submissions)).toEqual(['2000D']);
+    expect(
+      planUnattempted(submissions, (id) => problems[id], [], [], NOW)[0],
+    ).toMatchObject({
+      name: 'Problem D',
+      rating: 1500,
+      source: 'unattempted',
+      url: 'https://codeforces.com/problemset/problem/2000/D',
+      createdAt: new Date(daysAgo(3) * 1000),
+    });
+  });
+
+  it('adds nothing when every problem was attempted', () => {
+    expect(
+      plan([
+        sub(2001, 'A', 'OK', 'VIRTUAL', daysAgo(5)),
+        sub(2001, 'B', 'WRONG_ANSWER', 'VIRTUAL', daysAgo(5)),
+      ]),
+    ).toEqual([]);
+  });
+
+  it('adds nothing in place of a problem that is tracked or was dismissed', () => {
+    const submissions = [sub(2000, 'A', 'OK', 'CONTESTANT', daysAgo(3))];
+    expect(plan(submissions, [{ contestId: 2000, index: 'B' }])).toEqual([]);
+    expect(plan(submissions, [], [{ contestId: 2000, index: 'B' }])).toEqual(
+      [],
+    );
+  });
+
+  it('ignores practice, old contests, gyms and contests it has no list for', () => {
+    expect(
+      plan([
+        sub(2000, 'A', 'OK', 'PRACTICE', daysAgo(3)),
+        sub(1500, 'A', 'OK', 'CONTESTANT', daysAgo(200)),
+        sub(104000, 'A', 'OK', 'CONTESTANT', daysAgo(3)),
+        sub(2099, 'A', 'OK', 'CONTESTANT', daysAgo(3)),
+      ]),
+    ).toEqual([]);
   });
 });

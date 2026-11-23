@@ -21,6 +21,8 @@ export type UpsolveCandidate = ProblemKey & {
   url: string;
   solvedTime: null;
   createdAt: Date;
+  /** Left out for a problem the user tried and failed. */
+  source?: 'unattempted';
 };
 
 /** Submissions made while taking part in a contest, as opposed to practice. */
@@ -41,10 +43,6 @@ const keyOf = (p: ProblemKey) => `${p.contestId}_${p.index}`;
  * Decides what a sync should change, from the user's Codeforces submissions:
  * - `toAdd`: problems attempted during a recent contest and never solved since.
  * - `solved`: tracked problems that now have an accepted submission.
- *
- * ponytail: only problems the user submitted to are imported. Adding the first
- * unattempted problem of each contest needs the contest's problem list
- * (one more Codeforces call per contest); add it when that is worth the calls.
  */
 export function planUpsolveSync(
   submissions: CfSubmission[],
@@ -95,4 +93,61 @@ export function planUpsolveSync(
     }));
 
   return { toAdd: [...toAdd.values()], solved };
+}
+
+/**
+ * The next step up from each recent contest the user took part in: its first
+ * problem, in contest order, they never submitted to. At most one per contest,
+ * and none when that problem is already tracked or was dismissed.
+ * `problemsOf` gives a contest's problems in order, or nothing if unknown.
+ */
+export function planUnattempted(
+  submissions: CfSubmission[],
+  problemsOf: (
+    contestId: number,
+  ) =>
+    | { index: string; name: string; rating?: number; tags?: string[] }[]
+    | undefined,
+  tracked: ProblemKey[],
+  dismissed: ProblemKey[],
+  nowMs: number = Date.now(),
+): UpsolveCandidate[] {
+  const windowStart = nowMs / 1000 - CONTEST_IMPORT_WINDOW_DAYS * 24 * 60 * 60;
+  const submitted = new Set<string>();
+  /** contest → the user's last submission while taking part in it */
+  const takenPart = new Map<number, number>();
+  for (const s of submissions) {
+    const { contestId, index } = s.problem;
+    if (contestId == null) continue;
+    submitted.add(keyOf({ contestId, index }));
+    if (contestId >= GYM_CONTEST_ID_START) continue;
+    if (!CONTEST_PARTICIPATION.has(s.author.participantType)) continue;
+    if (s.creationTimeSeconds < windowStart) continue;
+    takenPart.set(
+      contestId,
+      Math.max(takenPart.get(contestId) ?? 0, s.creationTimeSeconds),
+    );
+  }
+
+  const skip = new Set([...tracked, ...dismissed].map(keyOf));
+  const next: UpsolveCandidate[] = [];
+  for (const [contestId, when] of takenPart) {
+    const problem = problemsOf(contestId)?.find(
+      (p) => !submitted.has(keyOf({ contestId, index: p.index })),
+    );
+    if (!problem || skip.has(keyOf({ contestId, index: problem.index })))
+      continue;
+    next.push({
+      contestId,
+      index: problem.index,
+      name: problem.name,
+      rating: problem.rating ?? 0,
+      tags: problem.tags ?? [],
+      url: `https://codeforces.com/problemset/problem/${contestId}/${problem.index}`,
+      solvedTime: null,
+      createdAt: new Date(when * 1000),
+      source: 'unattempted',
+    });
+  }
+  return next;
 }

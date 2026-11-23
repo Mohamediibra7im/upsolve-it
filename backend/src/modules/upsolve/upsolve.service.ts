@@ -23,7 +23,11 @@ import {
   fetchCodeforcesSubmissions,
 } from '../../common/utils/codeforces-api';
 import { parseProblemUrl } from './utils/problem-url';
-import { planUpsolveSync, type CfSubmission } from './utils/contest-sync';
+import {
+  planUnattempted,
+  planUpsolveSync,
+  type CfSubmission,
+} from './utils/contest-sync';
 import { problemKey, type ProblemRef } from './schemas/judge';
 
 /** A Codeforces problem as the sync planner reads it. */
@@ -93,7 +97,8 @@ export class UpsolveService implements OnModuleInit {
 
   /**
    * Pulls the user's Codeforces submissions, adds problems they failed in
-   * recent contests, and marks tracked problems they have since solved.
+   * recent contests plus the first problem of each they never tried, and
+   * marks tracked problems they have since solved.
    */
   async syncFromCodeforces(userId: string, handle: string) {
     const [submissions, tracked, dismissed] = await Promise.all([
@@ -112,9 +117,19 @@ export class UpsolveService implements OnModuleInit {
       tracked,
       dismissed,
     );
-    await this.insertMany(userId, toAdd);
+    // Without the problem list this sync simply adds no unattempted problems.
+    const problemset = await fetchCodeforcesProblemset().catch(() => null);
+    const next = problemset
+      ? planUnattempted(
+          submissions as CfSubmission[],
+          (contestId) => problemset.get(contestId),
+          [...tracked, ...toAdd],
+          dismissed,
+        )
+      : [];
+    await this.insertMany(userId, [...toAdd, ...next]);
     if (solved.length) await this.bulkUpdateSolvedTime(userId, solved);
-    return { added: toAdd.length, solved: solved.length };
+    return { added: toAdd.length + next.length, solved: solved.length };
   }
 
   async insertMany(userId: string, problems: (ProblemRef & object)[]) {
