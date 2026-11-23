@@ -8,6 +8,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { TrainingsModule } from './modules/trainings/trainings.module';
 import { UpsolveModule } from './modules/upsolve/upsolve.module';
+import { AtcoderModule } from './modules/atcoder/atcoder.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { TrainingLevelsModule } from './modules/training-levels/training-levels.module';
@@ -86,6 +87,7 @@ import { RateLimiterGuard } from './common/guards/rate-limiter.guard';
     AuthModule,
     TrainingsModule,
     UpsolveModule,
+    AtcoderModule,
     AdminModule,
     AuditLogsModule,
     TrainingLevelsModule,

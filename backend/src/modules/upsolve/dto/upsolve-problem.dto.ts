@@ -14,7 +14,7 @@ import { JUDGES, type ContestId, type Judge } from '../schemas/judge';
 import { NOTE_MAX_LENGTH } from '../schemas/upsolved-problem.schema';
 
 /** A positive contest number, or a contest name made of letters, digits, "-" and "_". */
-const IsContestId = () =>
+export const IsContestId = () =>
   ValidateBy({
     name: 'isContestId',
     validator: {

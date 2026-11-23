@@ -1,6 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types, SchemaTypes } from 'mongoose';
 
+import {
+  JUDGES,
+  type ContestId,
+  type Judge,
+} from '../../upsolve/schemas/judge';
+
 export type TrainingDocument = HydratedDocument<Training>;
 
 export type TrainingMode =
@@ -10,7 +16,10 @@ export type TrainingStatus = 'active' | 'completed' | 'abandoned';
 
 export type TrainingProblemStored = {
   problemId: string;
-  contestId: number;
+  /** Absent on sessions from before AtCoder: those are Codeforces. */
+  judge?: Judge;
+  /** A number on Codeforces, a contest name such as "abc300" on AtCoder. */
+  contestId: ContestId;
   index: string;
   name: string;
   rating: number;
@@ -31,7 +40,8 @@ export type TrainingProblemStored = {
 
 const ProblemShape = {
   problemId: { type: String, required: true },
-  contestId: { type: Number, required: true },
+  judge: { type: String, enum: JUDGES, default: 'codeforces' },
+  contestId: { type: SchemaTypes.Mixed, required: true },
   index: { type: String, required: true },
   name: { type: String, required: true },
   rating: { type: Number, required: true },

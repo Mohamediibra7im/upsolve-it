@@ -295,6 +295,7 @@ export class TrainingSessionsService {
         await this.upsolve.insertMany(
           userId,
           unsolved.map((p) => ({
+            judge: p.judge,
             contestId: p.contestId,
             index: p.index,
             name: p.name,

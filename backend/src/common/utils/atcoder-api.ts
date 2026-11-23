@@ -8,6 +8,7 @@ const PAGE_SIZE = 500;
 const MAX_PAGES = 4;
 
 export type AtcoderSubmission = {
+  id: number;
   epoch_second: number;
   problem_id: string;
   contest_id: string;
@@ -17,9 +18,25 @@ export type AtcoderSubmission = {
 export type AtcoderCatalog = {
   /** contest id → when it ran */
   contests: Map<string, { start: number; duration: number }>;
-  /** task id ("abc300_a") → its letter and name */
-  problems: Map<string, { index: string; name: string }>;
+  /**
+   * task id ("abc300_a") → its letter, name and contest, plus the difficulty
+   * AtCoder Problems estimates for it (on AtCoder's rating scale) when it has
+   * a settled one.
+   */
+  problems: Map<
+    string,
+    { index: string; name: string; contestId: string; difficulty?: number }
+  >;
 };
+
+/**
+ * AtCoder Problems' own display rule: estimates under 400 are squeezed
+ * towards zero so that no problem shows a negative difficulty.
+ */
+export const clipDifficulty = (difficulty: number) =>
+  Math.round(
+    difficulty >= 400 ? difficulty : 400 / Math.exp(1 - difficulty / 400),
+  );
 
 async function getJson(url: string): Promise<any> {
   const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
@@ -40,9 +57,11 @@ export async function fetchAtcoderCatalog(
 ): Promise<AtcoderCatalog> {
   if (catalog && nowMs - catalog.at < CATALOG_TTL_MS) return catalog.value;
   try {
-    const [contests, problems] = await Promise.all([
+    const [contests, problems, models] = await Promise.all([
       getJson(`${BASE}/resources/contests.json`),
       getJson(`${BASE}/resources/problems.json`),
+      // Without the estimates the catalog still serves names and letters.
+      getJson(`${BASE}/resources/problem-models.json`).catch(() => ({})),
     ]);
     const value: AtcoderCatalog = {
       contests: new Map(
@@ -55,10 +74,22 @@ export async function fetchAtcoderCatalog(
         ]),
       ),
       problems: new Map(
-        (problems as any[]).map((p) => [
-          String(p.id),
-          { index: String(p.problem_index), name: String(p.name) },
-        ]),
+        (problems as any[]).map((p) => {
+          const model = (models as Record<string, any>)[p.id];
+          const settled =
+            typeof model?.difficulty === 'number' && !model.is_experimental;
+          return [
+            String(p.id),
+            {
+              index: String(p.problem_index),
+              name: String(p.name),
+              contestId: String(p.contest_id),
+              ...(settled
+                ? { difficulty: clipDifficulty(Number(model.difficulty)) }
+                : {}),
+            },
+          ];
+        }),
       ),
     };
     catalog = { at: nowMs, value };
@@ -71,17 +102,19 @@ export async function fetchAtcoderCatalog(
 
 /**
  * A handle's submissions since `fromSecond`, oldest first.
- * ponytail: at most 2,000 (four pages); someone submitting more than that in
- * the import window loses the newest ones until the window moves on.
+ * ponytail: at most `maxPages` pages of 500; someone with more than that
+ * since `fromSecond` loses the newest ones until the caller asks again from
+ * where this answer ended.
  */
 export async function fetchAtcoderSubmissions(
   handle: string,
   fromSecond: number,
+  maxPages: number = MAX_PAGES,
 ): Promise<AtcoderSubmission[]> {
   const all: AtcoderSubmission[] = [];
   try {
     let from = Math.floor(fromSecond);
-    for (let page = 0; page < MAX_PAGES; page++) {
+    for (let page = 0; page < maxPages; page++) {
       if (page > 0) await new Promise((r) => setTimeout(r, 1000));
       const batch = (await getJson(
         `${BASE}/atcoder-api/v3/user/submissions?user=${encodeURIComponent(handle)}&from_second=${from}`,

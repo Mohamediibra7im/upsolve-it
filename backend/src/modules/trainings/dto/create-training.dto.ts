@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import {
+  IsIn,
   IsArray,
   IsBoolean,
   IsEnum,
@@ -11,14 +12,25 @@ import {
   ValidateNested,
 } from 'class-validator';
 
+import { IsContestId } from '../../upsolve/dto/upsolve-problem.dto';
+import {
+  JUDGES,
+  type ContestId,
+  type Judge,
+} from '../../upsolve/schemas/judge';
+
 export class TrainingProblemDto {
   @IsOptional()
   @IsString()
   problemId?: string;
 
-  @IsInt()
-  @Min(1)
-  contestId!: number;
+  /** Left out for a Codeforces problem. */
+  @IsOptional()
+  @IsIn(JUDGES)
+  judge?: Judge;
+
+  @IsContestId()
+  contestId!: ContestId;
 
   @IsString()
   index!: string;
