@@ -1,211 +1,96 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
-import { m as motion, AnimatePresence } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, Check, Clock, ExternalLink } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogTitle,
   DialogDescription,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { useUser } from "@/hooks/auth";
 import {
-  ArrowLeft,
-  CheckCircle2,
-  Copy,
-  ExternalLink,
-  ShieldCheck,
-  Shield,
-  Clock,
-  UserCheck,
-  RotateCcw,
-  ScrollText,
-  KeyRound,
-  Zap,
-  Trophy,
-  ArrowRight,
-} from "lucide-react";
-import StudioMascot from "./StudioMascot";
+  Countdown,
+  FormError,
+  VerificationCode,
+} from "@/components/features/auth";
+import { useUser } from "@/hooks/auth";
 import { cn } from "@/lib/utils";
 
-type Step = "intro" | "step1" | "step2" | "step3" | "success";
+const order = ["intro", "step1", "step2", "step3", "success"] as const;
+type Step = (typeof order)[number];
+
+const copy: Record<Step, { title: string; text: string }> = {
+  intro: {
+    title: "Verify your handle",
+    text: "Show that the Codeforces handle on this account is yours. Log in to Codeforces before you start: the code only lasts a short time.",
+  },
+  step1: {
+    title: "Open your Codeforces settings",
+    text: "Log in to Codeforces and open the Social page of your settings. That is where your first name is.",
+  },
+  step2: {
+    title: "Paste this code",
+    text: "Set your First name on Codeforces to this code, then save the changes.",
+  },
+  step3: {
+    title: "Save, then verify",
+    text: "Check that you pressed Save changes on the Codeforces settings page. We will look for the code on your profile.",
+  },
+  success: {
+    title: "Handle verified",
+    text: "Your Codeforces profile is connected. You can put your first name back and start training.",
+  },
+};
+
+const introSteps = [
+  "Open your Codeforces profile settings",
+  "Paste a short code into your first name and save",
+  "Verify here, then put your name back",
+];
 
 interface VerifyCodeforcesDialogProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const slideVariants = {
-  enter: (direction: number) => ({
-    x: direction > 0 ? 150 : -150,
-    opacity: 0,
-  }),
-  center: { x: 0, opacity: 1 },
-  exit: (direction: number) => ({
-    x: direction > 0 ? -150 : 150,
-    opacity: 0,
-  }),
-};
-
-function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
-
-
-function TimerBar({ pct, isLow }: { pct: number; isLow: boolean }) {
-  const barRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (barRef.current) {
-      barRef.current.style.width = `${pct}%`;
-    }
-  });
-
-  return (
-    <div
-      ref={barRef}
-      className={`h-full rounded-xl transition-all duration-1000 linear ${isLow ? "bg-red-500" : "bg-primary/90"}`}
-    />
-  );
-}
-
-const steps = [
-  { icon: ScrollText, label: "Settings" },
-  { icon: KeyRound, label: "Code" },
-  { icon: ShieldCheck, label: "Verify" },
-];
-
-interface CountdownTimerProps {
-  expiresAt: number | null;
-  timerStartedAt: number | null;
-  timeLeft: number;
-}
-
-const CountdownTimer = ({
-  expiresAt,
-  timerStartedAt,
-  timeLeft,
-}: CountdownTimerProps) => {
-  if (!expiresAt || !timerStartedAt) return null;
-  const totalDuration = Math.max(
-    1,
-    Math.ceil((expiresAt - timerStartedAt) / 1000),
-  );
-  const elapsed = Math.max(0, totalDuration - timeLeft);
-  const pct = Math.max(
-    0,
-    Math.min(100, ((totalDuration - elapsed) / totalDuration) * 100),
-  );
-  const isLow = timeLeft <= 60;
-
-  return (
-    <div className="flex items-center gap-2">
-      <div
-        className={`flex items-center gap-1.5 text-xs font-medium ${isLow ? "text-red-400" : "text-primary"}`}
-      >
-        <Clock className="size-3" />
-        <span>{formatTime(timeLeft)}</span>
-      </div>
-      <div className="w-16 h-1 rounded-xl bg-muted/40 border border-border overflow-hidden">
-        <TimerBar pct={pct} isLow={isLow} />
-      </div>
-    </div>
-  );
-};
-
 const VerifyCodeforcesDialog = ({
   isOpen,
   onClose,
 }: VerifyCodeforcesDialogProps) => {
   const [step, setStep] = useState<Step>("intro");
-  const [direction, setDirection] = useState(1);
   const [verificationCode, setVerificationCode] = useState("");
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [timerStartedAt, setTimerStartedAt] = useState<number | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
 
   const { generateVerificationCode, verifyCodeforcesProfile } = useUser();
 
   useEffect(() => {
-    if (expiresAt && (step === "step2" || step === "step3")) {
-      if (!timerStartedAt) {
-        setTimerStartedAt(Date.now());
-      }
+    if (expiresAt === null) return;
+    const timer = setInterval(
+      () =>
+        setTimeLeft(Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000))),
+      1000,
+    );
+    return () => clearInterval(timer);
+  }, [expiresAt]);
 
-      const tick = () => {
-        const remaining = Math.max(
-          0,
-          Math.ceil((expiresAt - Date.now()) / 1000),
-        );
-        setTimeLeft(remaining);
-        if (remaining <= 0 && intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-      };
-      tick();
-      intervalRef.current = setInterval(tick, 1000);
-      return () => {
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-      };
-    } else {
-      setTimeLeft(0);
-    }
-  }, [expiresAt, step, timerStartedAt]);
+  const stepNumber = order.indexOf(step);
+  const inSteps = stepNumber >= 1 && stepNumber <= 3;
+  const isExpired = expiresAt !== null && timeLeft <= 0 && inSteps;
 
-  const isExpired =
-    expiresAt !== null &&
-    timeLeft <= 0 &&
-    step !== "intro" &&
-    step !== "success";
-
-  const navigateStep = useCallback(
-    (next: Step) => {
-      setDirection(
-        ["intro", "step1", "step2", "step3", "success"].indexOf(next) >
-          ["intro", "step1", "step2", "step3", "success"].indexOf(step)
-          ? 1
-          : -1,
-      );
-      setStep(next);
-    },
-    [step],
-  );
-
-  const handleStart = async () => {
-    setIsGenerating(true);
+  const goTo = (next: Step) => {
     setError(null);
-    try {
-      const res = await generateVerificationCode();
-      if (res.success && res.data) {
-        setVerificationCode(res.data.code);
-        setExpiresAt(res.data.expiresAt);
-        setTimerStartedAt(Date.now());
-        navigateStep("step1");
-      } else if (!res.success) {
-        setError(res.error || "Failed to generate code");
-      }
-    } catch {
-      setError("Something went wrong");
-    } finally {
-      setIsGenerating(false);
-    }
+    setStep(next);
   };
 
-  const handleRegenerate = async () => {
+  const requestCode = async (next: Step) => {
     setIsGenerating(true);
     setError(null);
     try {
@@ -213,13 +98,15 @@ const VerifyCodeforcesDialog = ({
       if (res.success && res.data) {
         setVerificationCode(res.data.code);
         setExpiresAt(res.data.expiresAt);
-        setTimerStartedAt(Date.now());
-        navigateStep("step2");
+        setTimeLeft(
+          Math.max(0, Math.ceil((res.data.expiresAt - Date.now()) / 1000)),
+        );
+        goTo(next);
       } else if (!res.success) {
-        setError(res.error || "Failed to generate code");
+        setError(res.error || "We could not create a code. Try again.");
       }
     } catch {
-      setError("Something went wrong");
+      setError("We could not reach the server. Try again in a minute.");
     } finally {
       setIsGenerating(false);
     }
@@ -230,32 +117,16 @@ const VerifyCodeforcesDialog = ({
     setError(null);
     try {
       const res = await verifyCodeforcesProfile();
-      if (res.success) {
-        navigateStep("success");
-      } else if (!res.success) {
-        setError(res.error || "Verification failed");
-      }
+      if (res.success) setStep("success");
+      else
+        setError(
+          res.error ||
+            "We could not find the code on your profile. Save it on Codeforces, then verify again.",
+        );
     } catch {
-      setError("Something went wrong");
+      setError("We could not reach the server. Verify again in a minute.");
     } finally {
       setIsVerifying(false);
-    }
-  };
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(verificationCode);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      const textArea = document.createElement("textarea");
-      textArea.value = verificationCode;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -264,12 +135,35 @@ const VerifyCodeforcesDialog = ({
     setVerificationCode("");
     setExpiresAt(null);
     setError(null);
-    setCopied(false);
     onClose();
   };
 
-  const currentStepIndex =
-    step === "step1" ? 0 : step === "step2" ? 1 : step === "step3" ? 2 : -1;
+  const newCode = isGenerating ? "Creating your code…" : null;
+  const action = isExpired
+    ? {
+        label: newCode ?? "Get a new code",
+        run: () => requestCode("step2"),
+        busy: isGenerating,
+      }
+    : {
+        intro: {
+          label: newCode ?? "Start verification",
+          run: () => requestCode("step1"),
+          busy: isGenerating,
+        },
+        step1: { label: "Show my code", run: () => goTo("step2"), busy: false },
+        step2: {
+          label: "I have saved the code",
+          run: () => goTo("step3"),
+          busy: false,
+        },
+        step3: {
+          label: isVerifying ? "Checking your profile…" : "Verify profile",
+          run: handleVerify,
+          busy: isVerifying,
+        },
+        success: { label: "Continue", run: handleClose, busy: false },
+      }[step];
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -286,527 +180,98 @@ const VerifyCodeforcesDialog = ({
             returnFocusRef.current.focus();
           }
         }}
-        className="sm:max-w-lg border border-border bg-card p-0 font-sans text-foreground overflow-x-hidden overflow-y-auto shadow-none"
+        className="gap-5 sm:max-w-md"
       >
-        <VisuallyHidden>
-          <DialogTitle>Verify your Codeforces profile</DialogTitle>
-          <DialogDescription>
-            Complete the verification steps to unlock all features and prove
-            your Codeforces identity.
+        <DialogHeader className="pr-8 text-left">
+          <p className="t-eyebrow">
+            {inSteps ? `Step ${stepNumber} of 3` : "Handle verification"}
+          </p>
+          <DialogTitle className="t-h2">{copy[step].title}</DialogTitle>
+          <DialogDescription className="t-muted">
+            {copy[step].text}
           </DialogDescription>
-        </VisuallyHidden>
+        </DialogHeader>
 
-        {/* Verification progress */}
-        {step !== "intro" && step !== "success" && (
-          <div className="relative border-b border-border">
-            <div className="h-0.5 bg-muted">
-              <motion.div
-                className="h-full bg-primary"
-                initial={{ width: "0%" }}
-                animate={{
-                  width:
-                    step === "step1"
-                      ? "33%"
-                      : step === "step2"
-                        ? "66%"
-                        : "100%",
-                }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-              />
-            </div>
-            <div className="flex items-center justify-between px-6 py-2.5 bg-muted/40">
-              <div className="flex items-center gap-2">
-                <Shield className="size-3.5 text-primary" />
-                <span className="text-xs font-medium   text-foreground">
-                  Verify your profile
-                </span>
-              </div>
-              {step === "step2" || step === "step3" ? (
-                <CountdownTimer
-                  expiresAt={expiresAt}
-                  timerStartedAt={timerStartedAt}
-                  timeLeft={timeLeft}
-                />
-              ) : (
-                <span className="text-xs font-medium   text-primary">
-                  Reward: verified badge
-                </span>
-              )}
-            </div>
-            {/* Step indicators */}
-            <div className="flex items-center justify-center gap-1 py-2 px-6 bg-background/30 border-t border-border">
-              {steps.map((s, i) => {
-                const isActive = i === currentStepIndex;
-                const isDone = i < currentStepIndex;
-                return (
-                  <div key={s.label} className="flex items-center gap-1.5">
-                    <span
-                      className={cn(
-                        "text-xs font-medium  ",
-                        isDone
-                          ? "text-muted-foreground"
-                          : isActive
-                            ? "text-foreground"
-                            : "text-muted-foreground",
-                      )}
-                    >
-                      {isDone ? "✓ " : `${i + 1}. `}
-                      {s.label}
-                    </span>
-                    {i < steps.length - 1 && (
-                      <span className="text-muted-foreground font-medium">
-                        &gt;
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+        {step === "intro" && (
+          <ol className="grid gap-3">
+            {introSteps.map((text, i) => (
+              <li key={text} className="flex items-center gap-3">
+                <span className="u-step">{i + 1}</span>
+                {text}
+              </li>
+            ))}
+          </ol>
         )}
 
-        <div className="p-6">
-          <AnimatePresence mode="wait" custom={direction}>
-            {/* INTRO STEP */}
-            {step === "intro" && (
-              <motion.div
-                key="intro"
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.25 }}
-                className="space-y-5"
-              >
-                {/* Introduction */}
-                <div className="relative border border-border bg-muted/40 p-5 text-center rounded-xl">
-                  <div className="relative space-y-3">
-                    <div className="mx-auto size-11 rounded-xl bg-primary/5 border border-border flex items-center justify-center text-primary">
-                      <Shield className="size-5" />
-                    </div>
-                    <div>
-                      <h2 className="font-heading text-2xl font-medium tracking-tight text-foreground">
-                        Verify your profile
-                      </h2>
-                      <p className="text-xs text-muted-foreground   mt-1">
-                        Prove your Codeforces identity and unlock features
-                      </p>
-                    </div>
-                  </div>
-                </div>
+        {step === "step1" && (
+          <a
+            href="https://codeforces.com/settings/social"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="u-btn"
+          >
+            Open Codeforces settings
+            <ExternalLink aria-hidden="true" />
+          </a>
+        )}
 
-                {/* Verification steps */}
-                <div className="space-y-1.5 text-xs  ">
-                  <p className="font-medium text-muted-foreground">
-                    {"Three quick steps"}
-                  </p>
-                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-background border border-border">
-                    <ScrollText className="size-3.5 text-muted-foreground shrink-0" />
-                    <span className="text-muted-foreground">
-                      Open your Codeforces profile settings
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-background border border-border">
-                    <KeyRound className="size-3.5 text-muted-foreground shrink-0" />
-                    <span className="text-muted-foreground">
-                      Paste a verification code in your first name
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-background border border-border">
-                    <ShieldCheck className="size-3.5 text-muted-foreground shrink-0" />
-                    <span className="text-muted-foreground">
-                      Verify and unlock your profile badge
-                    </span>
-                  </div>
-                </div>
-
-                {/* Rewards preview */}
-                <div className="flex items-center justify-between p-3 rounded-xl border border-border bg-muted/40 text-xs  ">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="size-4 text-primary " />
-                    <span className="font-medium text-foreground">
-                      Verification reward
-                    </span>
-                  </div>
-                  <span className="font-medium text-foreground">
-                    Verified badge
-                  </span>
-                </div>
-
-                {error && (
-                  <div className="p-2.5 rounded-xl bg-red-950/10 border border-red-500/20 text-red-400 text-xs   text-center">
-                    {error}
-                  </div>
-                )}
-
-                <Button
-                  onClick={handleStart}
-                  disabled={isGenerating}
-                  className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium   text-xs shadow-none transition-all"
-                >
-                  {isGenerating ? (
-                    <div className="flex items-center gap-2">
-                      <div className="size-3.5 border-2 border-emerald-950/30 border-t-emerald-950 rounded-full animate-spin" />
-                      <span>Preparing…</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1.5 justify-center">
-                      <Zap className="size-3.5" />
-                      <span>Start verification</span>
-                    </div>
-                  )}
-                </Button>
-              </motion.div>
-            )}
-
-            {/* STEP 1 */}
-            {step === "step1" && (
-              <motion.div
-                key="step1"
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.25 }}
-                className="space-y-4"
-              >
-                <div className="flex items-center justify-between text-xs font-medium ">
-                  <button
-                    onClick={() => navigateStep("intro")}
-                    className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <ArrowLeft className="size-3.5" />
-                    Back
-                  </button>
-                  <span className="text-muted-foreground">Step 1 of 3</span>
-                </div>
-
-                <div className="space-y-2 text-center py-2">
-                  <h3 className="font-heading text-2xl font-medium tracking-tight text-foreground">
-                    Open Codeforces settings
-                  </h3>
-                  <p className="text-xs text-muted-foreground  max-w-xs mx-auto leading-relaxed">
-                    Navigate to the following settings page while logged in to
-                    Codeforces:
-                  </p>
-                </div>
-
-                <div className="space-y-3">
-                  <a
-                    href="https://codeforces.com/settings/social"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-1.5 w-full h-10 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-xs   transition-all shadow-none"
-                  >
-                    Open Codeforces settings
-                    <ExternalLink className="size-3.5" />
-                  </a>
-
-                  <div className="text-center font-sans text-xs">
-                    <a
-                      href="https://codeforces.com/settings/social"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-foreground transition-colors underline decoration-border"
-                    >
-                      cf/settings/social
-                    </a>
-                  </div>
-                </div>
-
-                <div className="p-3 rounded-xl bg-background border border-border text-xs text-muted-foreground  leading-relaxed text-center">
-                  {"This opens the public details on your Codeforces profile."}
-                </div>
-
-                <Button
-                  onClick={() => navigateStep("step2")}
-                  className="w-full h-10 rounded-xl border border-border bg-transparent text-primary font-medium   text-xs hover:bg-primary/10 transition-all font-sans"
-                >
-                  <div className="flex items-center gap-1.5 justify-center">
-                    <span>Continue</span>
-                    <ArrowRight className="size-3.5" />
-                  </div>
-                </Button>
-              </motion.div>
-            )}
-
-            {/* STEP 2 */}
+        {isExpired ? (
+          <div className="u-panel u-panel--sunk grid gap-2 p-4">
+            <Badge variant="pending" className="justify-self-start">
+              <Clock />
+              Code expired
+            </Badge>
+            <p className="t-muted">
+              The code ran out of time. Get a new one to continue.
+            </p>
+          </div>
+        ) : (
+          <>
             {step === "step2" && (
-              <motion.div
-                key="step2"
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.25 }}
-                className="space-y-4"
-              >
-                <div className="flex items-center justify-between text-xs font-medium ">
-                  <button
-                    onClick={() => navigateStep("step1")}
-                    className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <ArrowLeft className="size-3.5" />
-                    Back
-                  </button>
-                  <span className="text-muted-foreground">Step 2 of 3</span>
-                </div>
-
-                <div className="space-y-2 text-center py-2">
-                  <h3 className="font-heading text-2xl font-medium tracking-tight text-foreground">
-                    Paste verification code
-                  </h3>
-                  <p className="text-xs text-muted-foreground  max-w-xs mx-auto leading-relaxed">
-                    Edit the First Name input box on Codeforces and paste this
-                    exact token:
-                  </p>
-                </div>
-
-                {isExpired ? (
-                  <div className="text-center space-y-4">
-                    <div className="p-4 rounded-xl bg-red-950/5 border border-red-500/20 space-y-2">
-                      <div className="flex items-center justify-center gap-2 text-red-400">
-                        <Clock className="size-4 " />
-                        <p className="text-xs font-medium  ">
-                          Verification Code Expired
-                        </p>
-                      </div>
-                      <p className="text-xs text-muted-foreground  leading-relaxed">
-                        Codes expire after 2 minutes. Request a new code to
-                        continue.
-                      </p>
-                    </div>
-
-                    {error && (
-                      <div className="p-2.5 rounded-xl bg-red-950/10 border border-red-500/20 text-red-400 text-xs   text-center">
-                        {error}
-                      </div>
-                    )}
-
-                    <Button
-                      onClick={handleRegenerate}
-                      disabled={isGenerating}
-                      className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium   text-xs shadow-none transition-all"
-                    >
-                      {isGenerating ? (
-                        <div className="flex items-center gap-2">
-                          <div className="size-3.5 border-2 border-emerald-950/30 border-t-emerald-950 rounded-full animate-spin" />
-                          <span>Creating code…</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5 justify-center">
-                          <RotateCcw className="size-3.5" />
-                          <span>Get a new code</span>
-                        </div>
-                      )}
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    {/* Code display */}
-                    <div className="relative">
-                      <div className="flex items-center gap-2 bg-background border border-border rounded-xl p-1">
-                        <div className="flex-1 h-10 px-3 flex items-center font-sans text-base font-semibold  text-foreground">
-                          {verificationCode}
-                        </div>
-                        <Button
-                          variant="secondary"
-                          onClick={handleCopy}
-                          className="h-8 px-3 gap-1 rounded-xl font-medium text-xs   bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
-                        >
-                          {copied ? (
-                            <>
-                              <CheckCircle2 className="size-3.5 text-primary" />
-                              Copied
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="size-3.5" />
-                              Copy
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-muted-foreground  leading-relaxed text-center">
-                      This unique token proves profile ownership. You can
-                      temporarily revert your settings after verification.
-                    </p>
-
-                    <Button
-                      onClick={() => navigateStep("step3")}
-                      disabled={isExpired}
-                      className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium   text-xs shadow-none transition-all"
-                    >
-                      <div className="flex items-center gap-1.5 justify-center">
-                        <span>I have pasted the code</span>
-                        <ArrowRight className="size-3.5" />
-                      </div>
-                    </Button>
-                  </>
-                )}
-              </motion.div>
-            )}
-
-            {/* STEP 3 */}
-            {step === "step3" && (
-              <motion.div
-                key="step3"
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.25 }}
-                className="space-y-4"
-              >
-                <div className="flex items-center justify-between text-xs font-medium ">
-                  <button
-                    onClick={() => navigateStep("step2")}
-                    className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <ArrowLeft className="size-3.5" />
-                    Back
-                  </button>
-                  <span className="text-muted-foreground">Step 3 of 3</span>
-                </div>
-
-                <div className="space-y-2 text-center py-2">
-                  <h3 className="font-heading text-2xl font-medium tracking-tight text-foreground">
-                    Save settings &amp; verify
-                  </h3>
-                  <p className="text-xs text-muted-foreground  max-w-xs mx-auto leading-relaxed">
-                    Make sure you hit the &quot;Save Changes&quot; button at the
-                    bottom of the Codeforces settings page.
-                  </p>
-                </div>
-
-                <p className="text-xs text-muted-foreground   text-center">
-                  {"Ready? Check your profile to finish."}
+              <>
+                <VerificationCode
+                  code={verificationCode}
+                  secondsLeft={timeLeft}
+                />
+                <p className="t-sm t-muted">
+                  The code shows the handle is yours. You can put your first
+                  name back as soon as it is verified.
                 </p>
-
-                {isExpired ? (
-                  <div className="text-center space-y-4">
-                    <div className="p-4 rounded-xl bg-red-950/5 border border-red-500/20 space-y-2">
-                      <div className="flex items-center justify-center gap-2 text-red-400">
-                        <Clock className="size-4 " />
-                        <p className="text-xs font-medium  ">
-                          Verification Code Expired
-                        </p>
-                      </div>
-                      <p className="text-xs text-muted-foreground  leading-relaxed">
-                        Codes expire after 2 minutes. Request a new code to
-                        continue.
-                      </p>
-                    </div>
-
-                    {error && (
-                      <div className="p-2.5 rounded-xl bg-red-950/10 border border-red-500/20 text-red-400 text-xs   text-center">
-                        {error}
-                      </div>
-                    )}
-
-                    <Button
-                      onClick={handleRegenerate}
-                      disabled={isGenerating}
-                      className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium   text-xs shadow-none transition-all"
-                    >
-                      {isGenerating ? (
-                        <div className="flex items-center gap-2">
-                          <div className="size-3.5 border-2 border-emerald-950/30 border-t-emerald-950 rounded-full animate-spin" />
-                          <span>Creating code…</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5 justify-center">
-                          <RotateCcw className="size-3.5" />
-                          <span>Get a new code</span>
-                        </div>
-                      )}
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    {error && (
-                      <div className="p-2.5 rounded-xl bg-red-950/10 border border-red-500/20 text-red-400 text-xs   text-center">
-                        {error}
-                      </div>
-                    )}
-
-                    <Button
-                      onClick={handleVerify}
-                      disabled={isVerifying}
-                      className="w-full h-11 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium   text-xs shadow-none transition-all"
-                    >
-                      {isVerifying ? (
-                        <div className="flex items-center gap-2 justify-center">
-                          <div className="size-3.5 border-2 border-emerald-950/30 border-t-emerald-950 rounded-full animate-spin" />
-                          <span>Checking your profile…</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5 justify-center">
-                          <ShieldCheck className="size-4" />
-                          <span>Verify profile</span>
-                        </div>
-                      )}
-                    </Button>
-                  </>
-                )}
-              </motion.div>
+              </>
             )}
-
-            {/* SUCCESS STEP */}
-            {step === "success" && (
-              <motion.div
-                key="success"
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.25 }}
-                className="text-center py-2 space-y-5"
-              >
-                <div className="relative">
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="mx-auto size-16 rounded-xl bg-primary/5 border border-border flex items-center justify-center text-primary shadow-none"
-                  >
-                    <ShieldCheck className="size-8 text-primary" />
-                  </motion.div>
-                </div>
-
-                <StudioMascot pose="celebrate" className="mx-auto w-32" />
-                <div className="space-y-1">
-                  <p className="text-xs font-medium   text-muted-foreground">
-                    {"Verification complete"}
-                  </p>
-                  <DialogTitle className="text-lg font-medium text-white  ">
-                    Profile verified
-                  </DialogTitle>
-                </div>
-
-                <p className="text-xs text-muted-foreground max-w-xs mx-auto  leading-relaxed">
-                  Your Codeforces profile is connected. You’re ready to train,
-                  track your progress, and join the community.
-                </p>
-
-                <Button
-                  onClick={handleClose}
-                  className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium   text-xs shadow-none transition-all"
-                >
-                  <div className="flex items-center gap-1.5 justify-center">
-                    <UserCheck className="size-4" />
-                    <span>Continue to your account</span>
-                  </div>
-                </Button>
-              </motion.div>
+            {(step === "step1" || step === "step3") && (
+              <div className="u-panel u-panel--sunk flex items-center justify-between gap-3 px-4 py-3">
+                <span className="t-eyebrow">Time left</span>
+                <Countdown secondsLeft={timeLeft} />
+              </div>
             )}
-          </AnimatePresence>
+          </>
+        )}
+
+        {step === "success" && (
+          <Badge variant="solved" className="justify-self-start">
+            <Check />
+            Verified
+          </Badge>
+        )}
+
+        {error && <FormError>{error}</FormError>}
+
+        <div
+          className={cn(
+            "flex flex-col-reverse gap-2 sm:flex-row",
+            inSteps ? "sm:justify-between" : "sm:justify-end",
+          )}
+        >
+          {inSteps && (
+            <Button variant="ghost" onClick={() => goTo(order[stepNumber - 1])}>
+              <ArrowLeft />
+              Back
+            </Button>
+          )}
+          <Button onClick={action.run} disabled={action.busy}>
+            {action.label}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

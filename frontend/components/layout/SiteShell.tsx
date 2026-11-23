@@ -3,22 +3,28 @@ import NavBar from "./NavBar";
 import Footer from "./Footer";
 import { cn } from "@/lib/utils";
 
-/** Shared public/member frame keeps navigation, page spacing, and footer consistent. */
+/** The one frame: top bar, content, footer. `app` puts the content in the wide
+ *  1440px container with page padding; public pages manage their own bands. */
 export default function SiteShell({
   children,
-  contentClassName,
+  app = false,
+  admin = false,
 }: {
   children: ReactNode;
-  contentClassName?: string;
+  app?: boolean;
+  admin?: boolean;
 }) {
   return (
     <>
-      <NavBar />
+      <NavBar admin={admin} app={app} />
       <main
         id="main-content"
-        className="min-h-[calc(100dvh-4.75rem)] min-w-0 flex-1"
+        className={cn(
+          "min-h-[calc(100dvh-4rem)] min-w-0 flex-1",
+          app && "wrap pb-[72px] pt-10",
+        )}
       >
-        <div className={cn("min-w-0", contentClassName)}>{children}</div>
+        {children}
       </main>
       <Footer />
     </>

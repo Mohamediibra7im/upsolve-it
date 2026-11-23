@@ -11,8 +11,8 @@ export default function GlobalError({
       <body
         style={{
           margin: 0,
-          background: "#101214",
-          color: "#f1f3ee",
+          background: "#0b0c0a",
+          color: "#f2f4ec",
           fontFamily: "system-ui, sans-serif",
         }}
       >
@@ -27,7 +27,7 @@ export default function GlobalError({
         >
           <section
             role="alert"
-            style={{ width: "100%", maxWidth: 440, textAlign: "center" }}
+            style={{ width: "100%", maxWidth: 440, textAlign: "left" }}
           >
             <svg
               width="48"
@@ -36,10 +36,10 @@ export default function GlobalError({
               fill="none"
               aria-hidden="true"
             >
-              <rect width="40" height="40" rx="12" fill="#b5e3c4" />
+              <rect width="40" height="40" rx="12" fill="#c8f52a" />
               <path
                 d="M10 12v12a7 7 0 0 0 14 0V10m-6 6 6-6 6 6"
-                stroke="#183123"
+                stroke="#0b0c0a"
                 strokeWidth="4"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -49,8 +49,8 @@ export default function GlobalError({
               style={{
                 marginTop: 28,
                 fontSize: 32,
-                fontWeight: 500,
-                letterSpacing: "-0.04em",
+                fontWeight: 700,
+                letterSpacing: "-0.025em",
                 lineHeight: 1.2,
               }}
             >
@@ -58,22 +58,22 @@ export default function GlobalError({
             </h1>
             <p
               style={{
-                color: "#a0a8a4",
+                color: "#aab19d",
                 fontSize: 15,
                 lineHeight: 1.8,
                 marginBottom: 28,
               }}
             >
-              Upsolve.it couldn’t load this time. Your practice will be here
+              Upsolve It couldn’t load this time. Your practice will be here
               when you’re back.
             </p>
             <button
               onClick={reset}
               style={{
                 border: 0,
-                borderRadius: 12,
-                background: "#b5e3c4",
-                color: "#183123",
+                borderRadius: 8,
+                background: "#c8f52a",
+                color: "#0b0c0a",
                 padding: "14px 24px",
                 font: "inherit",
                 fontWeight: 600,

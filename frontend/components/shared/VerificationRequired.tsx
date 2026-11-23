@@ -1,10 +1,23 @@
 "use client";
+
 import { useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, ArrowRight, ShieldCheck } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AuthSplit } from "@/components/features/auth";
+import { useUser } from "@/hooks/auth";
 import VerifyCodeforcesDialog from "./VerifyCodeforcesDialog";
-import Brand from "@/components/layout/Brand";
+
+const slab = {
+  eyebrow: "Handle verification",
+  statement: "Show the handle is yours.",
+  points: [
+    "Open your Codeforces profile settings",
+    "Paste a short code into your first name",
+    "Verify, then put your name back",
+  ],
+  current: 1,
+  note: "It takes about two minutes.",
+};
 
 export default function VerificationRequired({
   children,
@@ -14,59 +27,36 @@ export default function VerificationRequired({
   isVerified: boolean;
 }) {
   const [showVerifyDialog, setShowVerifyDialog] = useState(false);
+  const { user, logout } = useUser();
   if (isVerified) return <>{children}</>;
   return (
-    <main
-      id="main-content"
-      className="flex min-h-dvh items-center justify-center px-5 py-12"
-    >
-      <div className="w-full max-w-md">
-        <Link href="/" className="mb-8 inline-flex">
-          <Brand />
-        </Link>
-        <section className="rounded-3xl border border-border bg-card p-7 sm:p-9">
-          <span className="mb-6 flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <ShieldCheck size={25} />
-          </span>
-          <h1 className="font-heading text-3xl font-medium tracking-tight">
-            Make your profile yours.
-          </h1>
-          <p className="mt-4 text-sm leading-7 text-muted-foreground">
-            Verify your Codeforces handle to connect your practice and unlock
-            your account.
-          </p>
-          <ol className="my-7 space-y-5">
-            {[
-              "Open your Codeforces profile settings.",
-              "Add a verification code to your first name.",
-              "Verify your profile, then restore your name.",
-            ].map((step, i) => (
-              <li key={step} className="flex gap-3 text-sm leading-6">
-                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs text-primary">
-                  {i + 1}
-                </span>
-                {step}
-              </li>
-            ))}
-          </ol>
-          <div className="mb-6 rounded-xl bg-primary/5 px-4 py-3 text-xs text-primary">
-            Earn a verified profile badge.
-          </div>
-          <Button
-            onClick={() => setShowVerifyDialog(true)}
-            className="h-12 w-full rounded-xl"
-          >
-            Start verification <ArrowRight size={16} />
+    <main id="main-content" className="grid flex-1">
+      <AuthSplit
+        step="One step before you train"
+        title="Verify your handle."
+        lead={
+          <>
+            Your sessions, rating and upsolve queue belong to{" "}
+            <b className="text-ink">
+              {user?.codeforcesHandle ?? "your Codeforces handle"}
+            </b>
+            , so we check the handle is yours first. You add a short code to
+            your Codeforces profile, we read it, and you take it off again.
+          </>
+        }
+        slab={slab}
+        footnote="We never ask for your Codeforces password."
+      >
+        <div className="grid gap-3">
+          <Button size="lg" onClick={() => setShowVerifyDialog(true)}>
+            Start verification
           </Button>
-        </section>
-        <Link
-          href="/"
-          className="mt-6 inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-primary"
-        >
-          <ArrowLeft size={14} />
-          Back to home
-        </Link>
-      </div>
+          <Button variant="ghost" onClick={logout}>
+            <LogOut />
+            Sign out
+          </Button>
+        </div>
+      </AuthSplit>
       <VerifyCodeforcesDialog
         isOpen={showVerifyDialog}
         onClose={() => setShowVerifyDialog(false)}

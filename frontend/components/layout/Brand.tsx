@@ -1,24 +1,18 @@
 import { cn } from "@/lib/utils";
 
+/** The mark: a U with an up arrow on a rounded tile. Geometry never changes;
+ *  the tile takes `accent` and the stroke `on-accent` (see .u-mark). */
 export function BrandMark({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 40 40"
       fill="none"
       aria-hidden="true"
-      className={cn("size-10 shrink-0", className)}
+      className={cn("u-mark size-7 shrink-0", className)}
     >
-      <rect width="40" height="40" rx="12" fill="#b5e3c4" />
+      <rect width="40" height="40" rx="12" />
       <path
-        d="M10 12v12a7 7 0 0 0 14 0V10"
-        stroke="#183123"
-        strokeWidth="4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="m18 16 6-6 6 6"
-        stroke="#183123"
+        d="M10 12v12a7 7 0 0 0 14 0V10m-6 6 6-6 6 6"
         strokeWidth="4"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -35,11 +29,11 @@ export default function Brand({
   className?: string;
 }) {
   return (
-    <span className={cn("inline-flex items-center gap-2.5", className)}>
-      <BrandMark className="size-8" />
+    <span className={cn("u-brand", className)}>
+      <BrandMark />
       {!compact && (
-        <span className="font-heading text-[21px] font-semibold leading-none tracking-[-0.065em] text-foreground">
-          upsolve<span className="font-medium text-primary">.it</span>
+        <span>
+          Upsolve<em>It</em>
         </span>
       )}
     </span>

@@ -1,5 +1,3 @@
-import React from 'react';
-
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation((query) => ({
@@ -39,22 +37,6 @@ jest.mock('next/navigation', () => ({
   }),
   usePathname: () => '/',
   useSearchParams: () => new URLSearchParams(),
-}));
-
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: (props: any) => React.createElement('div', props),
-    span: (props: any) => React.createElement('span', props),
-    article: (props: any) => React.createElement('article', props),
-  },
-  AnimatePresence: ({ children }: any) => children,
-  LazyMotion: ({ children }: any) => children,
-  domMax: {},
-  MotionConfig: ({ children }: any) => children,
-  m: {
-    div: (props: any) => React.createElement('div', props),
-    article: (props: any) => React.createElement('article', props),
-  },
 }));
 
 jest.mock('@/lib/utils', () => ({

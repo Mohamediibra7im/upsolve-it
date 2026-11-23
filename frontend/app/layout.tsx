@@ -1,27 +1,31 @@
 import "./globals.css";
-import localFont from "next/font/local";
+import { Barlow_Condensed, Barlow, JetBrains_Mono } from "next/font/google";
 import type React from "react";
 import type { Viewport } from "next";
 import AuthGuard from "@/components/providers/AuthGuard";
-import ThemeProvider from "@/components/providers/ThemeProvider";
 import { ToastProvider } from "@/components/providers/Toast";
 import Script from "next/script";
 import { cn } from "@/lib/utils";
 import PageTransition from "@/components/shared/PageTransition";
-import StudioBackground from "@/components/layout/StudioBackground";
-import { LazyMotion, domMax, MotionConfig } from "framer-motion";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
+import AnnouncementDialog from "@/components/shared/AnnouncementDialog";
 
-const studioSans = localFont({
-  src: "./fonts/Montserrat-VariableFont_wght.ttf",
+const display = Barlow_Condensed({
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
   display: "swap",
-  variable: "--font-host",
+  variable: "--ff-display",
 });
-
-const studioMono = localFont({
-  src: "./fonts/Monda-VariableFont_wght.ttf",
+const sans = Barlow({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
-  variable: "--font-mono",
+  variable: "--ff-sans",
+});
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--ff-mono",
 });
 
 export { metadata } from "./metadata";
@@ -29,7 +33,7 @@ export { metadata } from "./metadata";
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#101214",
+  themeColor: "#0b0c0a",
   colorScheme: "dark",
 };
 
@@ -43,38 +47,30 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
       data-scroll-behavior="smooth"
-      className={cn(studioSans.variable, studioMono.variable)}
+      className={cn(display.variable, sans.variable, mono.variable)}
     >
       <body
         className="font-sans antialiased overflow-x-hidden"
         suppressHydrationWarning
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          forcedTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <ToastProvider>
-            <LazyMotion features={domMax} strict>
-              <MotionConfig reducedMotion="user">
-                <div className="relative isolate flex min-h-screen flex-col bg-background">
-                  <StudioBackground />
-                  <a href="#main-content" className="skip-link">
-                    Skip to content
-                  </a>
-                  <AuthGuard>
-                    <PageTransition>
-                      <ErrorBoundary>{children}</ErrorBoundary>
-                    </PageTransition>
-                  </AuthGuard>
-                </div>
-              </MotionConfig>
-            </LazyMotion>
-          </ToastProvider>
-        </ThemeProvider>
-        <Script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "700b11106fa44fa299e0fc678b5d6c31"}' />
+        <ToastProvider>
+          <div className="relative isolate flex min-h-screen flex-col">
+            <a href="#main-content" className="skip-link">
+              Skip to content
+            </a>
+            <AuthGuard>
+              <PageTransition>
+                <ErrorBoundary>{children}</ErrorBoundary>
+              </PageTransition>
+            </AuthGuard>
+          </div>
+          <AnnouncementDialog />
+        </ToastProvider>
+        <Script
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon='{"token": "700b11106fa44fa299e0fc678b5d6c31"}'
+        />
       </body>
     </html>
   );

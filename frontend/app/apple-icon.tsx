@@ -8,16 +8,16 @@ export default function Icon() {
         display: "flex",
         width: "100%",
         height: "100%",
-        background: "#101214",
+        background: "#c8f52a",
         alignItems: "center",
         justifyContent: "center",
       }}
     >
       <svg width="140" height="140" viewBox="0 0 40 40" fill="none">
-        <rect width="40" height="40" rx="12" fill="#b5e3c4" />
+        <rect width="40" height="40" rx="12" fill="#c8f52a" />
         <path
           d="M10 12v12a7 7 0 0 0 14 0V10m-6 6 6-6 6 6"
-          stroke="#183123"
+          stroke="#0b0c0a"
           strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"

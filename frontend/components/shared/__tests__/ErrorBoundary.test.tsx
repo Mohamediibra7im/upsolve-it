@@ -1,44 +1,44 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import ErrorBoundary from '@/components/shared/ErrorBoundary';
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import ErrorBoundary from "@/components/shared/ErrorBoundary";
 
 function ThrowError({ shouldThrow }: { shouldThrow: boolean }) {
   if (shouldThrow) {
-    throw new Error('Test error');
+    throw new Error("Test error");
   }
   return <div>Child content</div>;
 }
 
-describe('ErrorBoundary', () => {
-  it('renders children when no error', () => {
+describe("ErrorBoundary", () => {
+  it("renders children when no error", () => {
     render(
       <ErrorBoundary>
         <ThrowError shouldThrow={false} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
-    expect(screen.getByText('Child content')).toBeTruthy();
+    expect(screen.getByText("Child content")).toBeTruthy();
   });
 
-  it('renders fallback UI when error occurs', () => {
+  it("renders fallback UI when error occurs", () => {
     render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
-    expect(screen.getByText('Something went wrong')).toBeTruthy();
+    expect(screen.getByText("Something went wrong")).toBeTruthy();
     expect(screen.getByText(/apologize for the inconvenience/)).toBeTruthy();
   });
 
-  it('shows retry button', () => {
+  it("shows retry button", () => {
     render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
-    expect(screen.getByText('Refresh Page')).toBeTruthy();
+    expect(screen.getByText("Refresh Page")).toBeTruthy();
   });
 
-  it('renders custom fallback when provided', () => {
+  it("renders custom fallback when provided", () => {
     function CustomFallback() {
       return <div data-testid="custom-fallback">Custom Error</div>;
     }
@@ -46,29 +46,29 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary fallback={<CustomFallback />}>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
-    expect(screen.getByTestId('custom-fallback')).toBeTruthy();
-    expect(screen.queryByText('Something went wrong')).toBeNull();
+    expect(screen.getByTestId("custom-fallback")).toBeTruthy();
+    expect(screen.queryByText("Something went wrong")).toBeNull();
   });
 
-  it('resets error state on retry click', () => {
+  it("resets error state on retry click", () => {
     const { unmount } = render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
-    expect(screen.getByText('Something went wrong')).toBeTruthy();
+    expect(screen.getByText("Something went wrong")).toBeTruthy();
     unmount();
 
     const { getByText } = render(
       <ErrorBoundary>
         <ThrowError shouldThrow={false} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
-    expect(getByText('Child content')).toBeTruthy();
+    expect(getByText("Child content")).toBeTruthy();
   });
 });

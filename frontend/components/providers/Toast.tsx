@@ -9,8 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Check, AlertTriangle, AlertCircle, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Check, CircleAlert, Info, TriangleAlert, X } from "lucide-react";
 
 type ToastVariant = "default" | "success" | "warning" | "destructive";
 
@@ -28,47 +27,51 @@ type ToastContextValue = {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
+// Problems stay longer than confirmations: they take longer to read and act on.
+const DURATION: Record<ToastVariant, number> = {
+  default: 4000,
+  success: 4000,
+  warning: 6000,
+  destructive: 8000,
+};
+const MAX_VISIBLE = 3;
+
+const ICON: Record<ToastVariant, typeof Check> = {
+  default: Info,
+  success: Check,
+  warning: TriangleAlert,
+  destructive: CircleAlert,
+};
+
 export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   const [items, setItems] = useState<ToastItem[]>([]);
-  const timersRef = useRef<Record<string, number>>({});
 
   const remove = useCallback((id: string) => {
     setItems((prev) => prev.filter((i) => i.id !== id));
-    const t = timersRef.current[id];
-    if (t) {
-      window.clearTimeout(t);
-      delete timersRef.current[id];
-    }
   }, []);
 
-  const toast = useCallback(
-    (item: Omit<ToastItem, "id">) => {
-      const id = Math.random().toString(36).slice(2);
-      const durationMs = item.durationMs ?? 2800;
-      const next: ToastItem = { ...item, id, durationMs };
-      setItems((prev) => [...prev, next]);
-      timersRef.current[id] = window.setTimeout(() => remove(id), durationMs);
-    },
-    [remove],
-  );
+  const toast = useCallback((item: Omit<ToastItem, "id">) => {
+    const id = Math.random().toString(36).slice(2);
+    setItems((prev) =>
+      [
+        // the same message again replaces the one on screen instead of stacking
+        ...prev.filter(
+          (i) => i.title !== item.title || i.description !== item.description,
+        ),
+        { ...item, id },
+      ].slice(-MAX_VISIBLE),
+    );
+  }, []);
 
   const value = useMemo(() => ({ toast }), [toast]);
-
-  useEffect(() => {
-    const timersAtMount = timersRef.current;
-    return () => {
-      Object.values(timersAtMount).forEach((t) => window.clearTimeout(t));
-    };
-  }, []);
 
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed z-[200] top-24 right-4 left-4 sm:left-auto sm:top-24 sm:bottom-auto flex flex-col gap-2 pointer-events-none max-w-sm sm:max-w-md mx-auto sm:mx-0">
+      {/* Bottom corner: clear of the page's main action, which sits top right. */}
+      <div role="region" aria-label="Notifications" className="u-toasts">
         {items.map((item) => (
-          <div key={item.id} className="pointer-events-auto">
-            <ToastCard item={item} onClose={() => remove(item.id)} />
-          </div>
+          <ToastCard key={item.id} item={item} onClose={remove} />
         ))}
       </div>
     </ToastContext.Provider>
@@ -81,90 +84,64 @@ export const useToast = () => {
   return ctx;
 };
 
-const variantClasses: Record<ToastVariant, string> = {
-  default: "border-border bg-card text-foreground",
-  success: "border-primary bg-card text-foreground",
-  warning: "border-amber-500/30 bg-card text-amber-400",
-  destructive: "border-red-500/30 bg-card text-red-400",
-};
-
-const variantIcons: Record<
-  ToastVariant,
-  React.ComponentType<{ className?: string }>
-> = {
-  default: AlertCircle,
-  success: Check,
-  warning: AlertTriangle,
-  destructive: AlertCircle,
-};
-
-const variantBarColors: Record<ToastVariant, string> = {
-  default: "bg-primary",
-  success: "bg-primary/90",
-  warning: "bg-amber-500",
-  destructive: "bg-red-500",
-};
-
 const ToastCard = ({
   item,
   onClose,
 }: {
   item: ToastItem;
-  onClose: () => void;
+  onClose: (id: string) => void;
 }) => {
-  const { title, description, variant = "default" } = item;
-  const IconComponent = variantIcons[variant];
+  const { id, title, description, variant = "default" } = item;
+  const Icon = ICON[variant];
+  const duration = item.durationMs ?? DURATION[variant];
+
+  // The clock stops while the pointer or the keyboard focus is on the toast.
+  const [paused, setPaused] = useState(false);
+  const remaining = useRef(duration);
+  useEffect(() => {
+    if (paused) return;
+    const started = Date.now();
+    const timer = window.setTimeout(() => onClose(id), remaining.current);
+    return () => {
+      window.clearTimeout(timer);
+      remaining.current -= Date.now() - started;
+    };
+  }, [paused, id, onClose]);
 
   return (
     <div
       role={variant === "destructive" ? "alert" : "status"}
-      className={cn(
-        "relative overflow-hidden rounded-2xl border bg-card font-sans p-5",
-        "shadow-none animate-in fade-in-0 zoom-in-95 slide-in-from-top-3",
-        "duration-200 ease-out hover:border-primary/20 transition-all",
-        variantClasses[variant],
-      )}
+      data-variant={variant}
+      className="u-toast animate-in fade-in-0 slide-in-from-bottom-2 duration-200"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
     >
-      <div className="flex items-start gap-3">
-        {/* Icon */}
-        <div className="flex-shrink-0 mt-0.5">
-          <IconComponent className="size-4" />
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          {title && (
-            <div className="font-medium text-xs   mb-1 leading-tight">
-              {title}
-            </div>
-          )}
-          {description && (
-            <div className="text-xs text-muted-foreground leading-relaxed">
-              {description}
-            </div>
-          )}
-        </div>
-
-        {/* Close Button */}
-        <button
-          aria-label="Close notification"
-          className="flex-shrink-0 p-0.5 rounded text-muted-foreground hover:text-primary transition-colors"
-          onClick={onClose}
-        >
-          <X className="size-3.5" />
-        </button>
+      <span className="u-toast__icon" aria-hidden="true">
+        <Icon />
+      </span>
+      <div className="min-w-0 self-center">
+        {title && <b className="block">{title}</b>}
+        {description && (
+          <span className="t-sm t-muted block">{description}</span>
+        )}
       </div>
-
-      {/* Progress Bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-muted/40">
-        <div
-          className={cn(
-            "h-full animate-progress-shrink origin-left",
-            variantBarColors[variant],
-          )}
-          style={{ animationDuration: `${item.durationMs ?? 2800}ms` }}
-        />
-      </div>
+      <button
+        type="button"
+        aria-label="Close notification"
+        className="u-btn u-btn--ghost u-btn--icon u-btn--sm"
+        onClick={() => onClose(id)}
+      >
+        <X />
+      </button>
+      <i
+        className="u-toast__clock animate-progress-shrink"
+        style={{
+          animationDuration: `${duration}ms`,
+          animationPlayState: paused ? "paused" : "running",
+        }}
+      />
     </div>
   );
 };

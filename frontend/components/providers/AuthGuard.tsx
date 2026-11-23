@@ -9,13 +9,33 @@ import VerificationRequired from "@/components/shared/VerificationRequired";
 const protectedRoots = [
   "/dashboard",
   "/profile",
+  "/settings",
   "/training",
   "/statistics",
   "/upsolve",
   "/friends",
 ];
 
-const unauthedRoots = ["/", "/login", "/signup", "/reset-password", "/email"];
+const unauthedRoots = [
+  "/",
+  "/login",
+  "/signup",
+  "/reset-password",
+  "/email",
+  "/modes",
+  "/ladder",
+  "/how-it-works",
+  "/faq",
+  "/about",
+  "/contact",
+  "/privacy",
+  "/terms",
+  "/u",
+];
+
+// A signed-in visitor has no use for these: they go straight to the dashboard.
+// The landing page stays open to them: the logo leads there.
+const guestOnly = ["/login", "/signup"];
 
 function routeIsProtected(pathname: string | null): boolean {
   if (!pathname) return false;
@@ -41,9 +61,13 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
 
   const shouldRedirect = !isLoading && !user && isProtectedRoute;
 
+  const shouldEnterApp =
+    !isLoading && !!user && guestOnly.includes(pathname ?? "");
+
   useEffect(() => {
     if (shouldRedirect) router.push("/");
-  }, [shouldRedirect, router]);
+    else if (shouldEnterApp) router.replace("/dashboard");
+  }, [shouldRedirect, shouldEnterApp, router]);
 
   // Handle loading state
   if (isLoading && isProtectedRoute) {
@@ -53,6 +77,9 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   // Return null while redirect is pending
   if (shouldRedirect) {
     return null;
+  }
+  if (shouldEnterApp) {
+    return <Loader message="Opening your dashboard…" />;
   }
 
   // Block unverified users from all pages (except public/login pages)

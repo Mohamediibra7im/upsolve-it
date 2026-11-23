@@ -10,7 +10,7 @@ const Avatar = React.forwardRef<
   <AvatarPrimitive.Root
     ref={ref}
     className={cn(
-      "relative flex size-10 shrink-0 overflow-hidden rounded-xl border border-border",
+      "relative flex size-10 shrink-0 overflow-hidden rounded-full border border-line-strong",
       className,
     )}
     {...props}
@@ -25,23 +25,38 @@ const AvatarImage = React.forwardRef<
   const [retry, setRetry] = React.useState({ source, attempt: 0 });
   const attempt = retry.source === source ? retry.attempt : 0;
   const [failedSource, setFailedSource] = React.useState<typeof src>();
-  const currentSource = typeof source === "string" && source.startsWith("/api/profile-image?") && attempt
-    ? `${source}&retry=${attempt}` : source;
+  const currentSource =
+    typeof source === "string" &&
+    source.startsWith("/api/profile-image?") &&
+    attempt
+      ? `${source}&retry=${attempt}`
+      : source;
   React.useEffect(() => {
-    if (typeof source !== "string" || !source.startsWith("/api/profile-image?") || failedSource !== currentSource || attempt >= 2) return;
-    const timer = window.setTimeout(() => setRetry({ source, attempt: attempt + 1 }), [2000, 10000][attempt]);
+    if (
+      typeof source !== "string" ||
+      !source.startsWith("/api/profile-image?") ||
+      failedSource !== currentSource ||
+      attempt >= 2
+    )
+      return;
+    const timer = window.setTimeout(
+      () => setRetry({ source, attempt: attempt + 1 }),
+      [2000, 10000][attempt],
+    );
     return () => window.clearTimeout(timer);
   }, [source, currentSource, failedSource, attempt]);
-  return <AvatarPrimitive.Image
-    ref={ref}
-    src={currentSource}
-    className={cn("aspect-square size-full object-cover", className)}
-    {...props}
-    onLoadingStatusChange={(status) => {
-      setFailedSource(status === "error" ? currentSource : undefined);
-      onLoadingStatusChange?.(status);
-    }}
-  />;
+  return (
+    <AvatarPrimitive.Image
+      ref={ref}
+      src={currentSource}
+      className={cn("aspect-square size-full object-cover", className)}
+      {...props}
+      onLoadingStatusChange={(status) => {
+        setFailedSource(status === "error" ? currentSource : undefined);
+        onLoadingStatusChange?.(status);
+      }}
+    />
+  );
 });
 AvatarImage.displayName = AvatarPrimitive.Image.displayName;
 const AvatarFallback = React.forwardRef<
@@ -51,7 +66,7 @@ const AvatarFallback = React.forwardRef<
   <AvatarPrimitive.Fallback
     ref={ref}
     className={cn(
-      "flex size-full items-center justify-center rounded-[inherit] bg-secondary text-sm font-medium text-primary",
+      "flex size-full items-center justify-center rounded-[inherit] bg-secondary font-mono text-xs font-semibold text-foreground",
       className,
     )}
     {...props}
