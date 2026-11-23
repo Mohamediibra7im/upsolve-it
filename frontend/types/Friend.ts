@@ -2,6 +2,7 @@ export interface FriendSummary {
   _id: string;
   codeforcesHandle: string;
   avatar: string;
+  glyphAvatar?: string;
   rating: number;
   rank: string;
 }

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { NO_INDEX_ROBOTS } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Your upsolve list",
+  title: "Upsolve queue",
   description:
     "Return to unfinished problems, organize your practice, and track every follow-up solve.",
   robots: NO_INDEX_ROBOTS,

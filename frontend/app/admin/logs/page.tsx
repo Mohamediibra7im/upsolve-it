@@ -1,12 +1,11 @@
-import ClientPage from "./page.client";
 import type { Metadata } from "next";
+import { AdminLogsView } from "@/components/features/admin";
 
 export const metadata: Metadata = {
-  title: "Activity log",
-  description:
-    "Review administrative activity and changes across the platform.",
+  title: "Logs",
+  description: "Review admin actions and changes across the platform.",
 };
 
-export default function Page(props: any) {
-  return <ClientPage {...props} />;
+export default function Page() {
+  return <AdminLogsView />;
 }

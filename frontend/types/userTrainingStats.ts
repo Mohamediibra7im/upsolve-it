@@ -1,6 +1,7 @@
 export interface UserTrainingStatsView {
   user: {
     avatar: any;
+    glyphAvatar?: string;
     codeforcesHandle: string;
     rating: number;
     rank: string;

@@ -1,12 +1,11 @@
-import ClientPage from "./page.client";
 import type { Metadata } from "next";
+import { AdminUserManagement } from "@/components/features/admin";
 
 export const metadata: Metadata = {
-  title: "Member management",
-  description:
-    "Manage community members, account roles, and Codeforces profile information.",
+  title: "Users",
+  description: "Manage users, admin roles and Codeforces ratings.",
 };
 
-export default function Page(props: any) {
-  return <ClientPage {...props} />;
+export default function Page() {
+  return <AdminUserManagement />;
 }

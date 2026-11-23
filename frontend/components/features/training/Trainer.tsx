@@ -1,178 +1,168 @@
 "use client";
 
+import { useState, useEffect, useMemo } from "react";
+import { Eye, EyeOff, Info } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Bar } from "@/components/ui/kit";
 import { TrainingProblem } from "@/types/TrainingProblem";
 import { Training } from "@/types/Training";
-import { useState, useEffect, useMemo } from "react";
 import { SubmissionStatus } from "@/services/codeforces/getTrainingSubmissionStatus";
-
-import StopTrainingDialog from "./trainer/StopTrainingDialog";
-import FinishTrainingDialog from "./trainer/FinishTrainingDialog";
-import ProblemsCard from "./trainer/ProblemsCard";
+import SessionDialog from "./trainer/SessionDialog";
+import ProblemRow from "./trainer/ProblemRow";
 import TrainingControls from "./trainer/TrainingControls";
-import { cn } from "@/lib/utils";
-
-type TrainerStatus = "idle" | "training" | "refreshing";
-
-interface TrainerDisplayOptions {
-  showRatings: boolean;
-  hideContestDetails?: boolean;
-}
 
 interface TrainerProps {
-  status: TrainerStatus;
-  training: Training | null;
-  problems: TrainingProblem[] | null;
-  onGenerateProblems: () => void;
-  onStartSession: () => void;
-  stopTraining: () => void;
+  training: Training;
+  isRefreshing: boolean;
+  submissionStatuses: SubmissionStatus[];
   refreshProblemStatus: () => void;
   finishTraining: () => void;
-  finishError?: string | null;
-  isFinishing?: boolean;
-  submissionStatuses: SubmissionStatus[];
-  display: TrainerDisplayOptions;
-  onProblemOpen?: (problem: TrainingProblem) => void;
-  isPoolLoading?: boolean;
-  onExtendEndTime?: (minutes: number) => void;
+  stopTraining: () => void;
+  onProblemOpen: (problem: TrainingProblem) => void;
+  onExtendEndTime: (minutes: number) => void;
 }
 
+/** A live session: the clock band, the progress line, and the problems. */
 const Trainer = ({
-  status,
   training,
-  problems,
-  onGenerateProblems,
-  onStartSession,
-  stopTraining,
+  isRefreshing,
+  submissionStatuses,
   refreshProblemStatus,
   finishTraining,
-  finishError,
-  isFinishing,
-  submissionStatuses,
-  display,
+  stopTraining,
   onProblemOpen,
-  isPoolLoading,
   onExtendEndTime,
 }: TrainerProps) => {
-  const isTraining = status === "training" || status === "refreshing";
-  const isRefreshing = status === "refreshing";
-  const { showRatings, hideContestDetails } = display;
   const [currentTime, setCurrentTime] = useState(Date.now());
 
   useEffect(() => {
-    if (!isTraining || !training?.startTime) return;
     const interval = setInterval(() => setCurrentTime(Date.now()), 1000);
     return () => clearInterval(interval);
-  }, [isTraining, training?.startTime]);
+  }, []);
 
-  const isPreContestPeriod = useMemo(() => {
-    return (
-      isTraining && !!training?.startTime && currentTime < training.startTime
-    );
-  }, [isTraining, training?.startTime, currentTime]);
+  const isPreContestPeriod = currentTime < training.startTime;
+  const hideContestDetails = training.trainingMode === "contest";
+  const { problems } = training;
 
   const [isFinishDialogOpen, setIsFinishDialogOpen] = useState(false);
   const [isStopDialogOpen, setIsStopDialogOpen] = useState(false);
   const [showTags, setShowTags] = useState(false);
 
-  const confirmFinish = () => {
-    setIsFinishDialogOpen(false);
-    finishTraining();
-  };
-
-  const confirmStop = () => {
-    setIsStopDialogOpen(false);
-    stopTraining();
-  };
-
-  const currentProblems =
-    isTraining && training?.problems ? training.problems : problems;
-
   const solvedCount = useMemo(() => {
-    if (!isTraining || !currentProblems?.length) return 0;
     const solvedByStatus = new Set(
       submissionStatuses
         .filter((s) => s.status === "AC")
         .map((s) => s.problemId),
     );
-    return currentProblems.filter((p) => {
-      const pid = `${p.contestId}_${p.index}`;
-      return Boolean(p.solvedTime) || solvedByStatus.has(pid);
-    }).length;
-  }, [isTraining, currentProblems, submissionStatuses]);
-
-  const totalCount = currentProblems?.length ?? 0;
+    return problems.filter(
+      (p) =>
+        Boolean(p.solvedTime) ||
+        solvedByStatus.has(`${p.contestId}_${p.index}`),
+    ).length;
+  }, [problems, submissionStatuses]);
 
   return (
-    <div className={cn(isTraining ? "pb-44 font-sans lg:pb-0" : "font-sans")}>
-      {finishError && (
-        <div
-          role="alert"
-          className="mb-4 rounded-xl border border-red-400/30 bg-red-400/5 p-4 text-sm text-red-300"
-        >
-          <p>{finishError} Your training is still saved on this device.</p>
-          <button
-            type="button"
-            onClick={finishTraining}
-            disabled={isFinishing}
-            className="mt-3 rounded-lg border border-current px-4 py-2 font-medium disabled:opacity-50"
-          >
-            {isFinishing ? "Saving…" : "Retry saving training"}
-          </button>
-        </div>
-      )}
-      <StopTrainingDialog
-        isOpen={isStopDialogOpen}
-        onCancel={() => setIsStopDialogOpen(false)}
-        onConfirm={confirmStop}
-      />
-
-      <FinishTrainingDialog
+    <>
+      <SessionDialog
         isOpen={isFinishDialogOpen}
+        title="Ready to wrap up?"
+        confirmLabel="Finish session"
         onCancel={() => setIsFinishDialogOpen(false)}
-        onConfirm={confirmFinish}
-      />
-
-      <div
-        className={cn(
-          "gap-6",
-          isTraining
-            ? "lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-8"
-            : "grid-cols-1",
-        )}
+        onConfirm={() => {
+          setIsFinishDialogOpen(false);
+          finishTraining();
+        }}
       >
-        <ProblemsCard
-          currentProblems={currentProblems}
-          isTraining={isTraining}
-          solvedCount={solvedCount}
-          totalCount={totalCount}
-          submissionStatuses={submissionStatuses}
-          startTime={training?.startTime ?? null}
-          onGenerateProblems={onGenerateProblems}
-          onStartSession={onStartSession}
-          problems={problems}
-          showRatings={showRatings}
-          hideContestDetails={hideContestDetails}
-          onProblemOpen={onProblemOpen}
-          isPoolLoading={isPoolLoading}
-          showTags={showTags}
-          onToggleTags={() => setShowTags(!showTags)}
-          weaknessFallback={isTraining && !!training?.weaknessFallback}
-        />
+        We’ll save your session and take you to your results. Unsolved problems
+        go to your upsolve queue, so you can return to them later.
+      </SessionDialog>
+      <SessionDialog
+        isOpen={isStopDialogOpen}
+        title="Discard this session?"
+        confirmLabel="Discard session"
+        destructive
+        onCancel={() => setIsStopDialogOpen(false)}
+        onConfirm={() => {
+          setIsStopDialogOpen(false);
+          stopTraining();
+        }}
+      >
+        This session and its progress will be discarded. This can’t be undone.
+        To save your results, choose Finish session instead.
+      </SessionDialog>
 
+      <section aria-label="Your session" className="u-panel">
         <TrainingControls
           training={training}
-          isTraining={isTraining}
           isPreContestPeriod={isPreContestPeriod}
           solvedCount={solvedCount}
-          totalCount={totalCount}
+          totalCount={problems.length}
           isRefreshing={isRefreshing}
           refreshProblemStatus={refreshProblemStatus}
           onFinishTraining={() => setIsFinishDialogOpen(true)}
           onStopTraining={() => setIsStopDialogOpen(true)}
           onExtendEndTime={onExtendEndTime}
         />
-      </div>
-    </div>
+        <Bar
+          value={problems.length ? (solvedCount / problems.length) * 100 : 0}
+          label="Problems solved"
+          className="h-1.5 rounded-none"
+        />
+        {training.weaknessFallback && (
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-line px-5 py-3 t-sm t-muted">
+            <Badge variant="pending">
+              <Info aria-hidden="true" />
+              Ladder problems
+            </Badge>
+            We’re still learning your strengths. This session uses ladder
+            problems until there’s enough history to target your weak topics.
+          </p>
+        )}
+        {problems.length === 0 && (
+          <p className="u-panel__body t-muted">
+            No problems are available in this session.
+          </p>
+        )}
+        {problems.map((problem, index) => (
+          <ProblemRow
+            key={`${problem.contestId}-${problem.index}-${index}`}
+            problem={problem}
+            index={index}
+            startTime={training.startTime}
+            locked={isPreContestPeriod}
+            submissionStatus={submissionStatuses.find(
+              (s) => s.problemId === `${problem.contestId}_${problem.index}`,
+            )}
+            hideContestDetails={hideContestDetails}
+            onProblemOpen={onProblemOpen}
+            opened={
+              training.serverSessionId ? Boolean(problem.startedAt) : undefined
+            }
+            showTags={showTags}
+          />
+        ))}
+        <div className="u-panel__foot border-t-0">
+          <span>
+            Submitted on Codeforces? Refresh status to see your latest result.
+          </span>
+          {!hideContestDetails && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowTags(!showTags)}
+            >
+              {showTags ? (
+                <EyeOff aria-hidden="true" />
+              ) : (
+                <Eye aria-hidden="true" />
+              )}
+              {showTags ? "Hide topics" : "Show topics"}
+            </Button>
+          )}
+        </div>
+      </section>
+    </>
   );
 };
 

@@ -54,6 +54,15 @@ const useUser = () => {
     };
   }, [mutate, router]);
 
+  /** Stores a user the server just returned, for every component that reads it. */
+  const setUser = useCallback(
+    (next: User) => {
+      localStorage.setItem("user", JSON.stringify(next));
+      mutate(next, false);
+    },
+    [mutate],
+  );
+
   const login = useCallback(
     async (codeforcesHandle: string, password: string): Promise<Response<User>> => {
       try {
@@ -196,6 +205,7 @@ const useUser = () => {
     user: user ?? null,
     isLoading: !isReady,
     error,
+    setUser,
     register,
     login,
     logout,

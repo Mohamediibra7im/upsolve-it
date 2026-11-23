@@ -2,7 +2,8 @@
 
 import { useState, type FormEvent } from "react";
 import useSWR from "swr";
-import { Mail } from "lucide-react";
+import { Check, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiFetcher, swrFetcher } from "@/lib/apiClient";
@@ -10,11 +11,16 @@ import { useToast } from "@/components/providers/Toast";
 
 type ReminderStatus = { email: string | null; verified: boolean };
 
-/** Opt in to (or out of) the weekly "problems you still owe" email. */
+/** The control that opts in to (or out of) the weekly "problems you still owe" email.
+ *  It is the bare control: the page that mounts it supplies the title and the explanation. */
 export default function ReminderSettings() {
-  const { data, mutate } = useSWR<ReminderStatus>("/api/reminders", swrFetcher, {
-    revalidateOnFocus: false,
-  });
+  const { data, mutate } = useSWR<ReminderStatus>(
+    "/api/reminders",
+    swrFetcher,
+    {
+      revalidateOnFocus: false,
+    },
+  );
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
@@ -25,10 +31,10 @@ export default function ReminderSettings() {
       const next = await apiFetcher<ReminderStatus>("/api/reminders", request);
       await mutate(next, false);
       setEmail("");
-      toast({ title: done });
+      toast({ title: done, variant: "success" });
     } catch {
       toast({
-        title: "That didn't work",
+        title: "Your reminder was not saved.",
         description: "Check the address and try again in a moment.",
         variant: "destructive",
       });
@@ -45,57 +51,58 @@ export default function ReminderSettings() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       },
-      "Check your inbox to confirm",
+      "Check your inbox to confirm.",
     );
   };
 
-  return (
-    <div className="space-y-4 rounded-2xl border border-border bg-card p-5">
-      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-        <Mail size={14} className="text-primary" />
-        Weekly reminder
+  if (data?.email) {
+    return (
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="t-sm min-w-0 break-all">{data.email}</span>
+        {data.verified ? (
+          <Badge variant="solved">
+            <Check />
+            Active
+          </Badge>
+        ) : (
+          <Badge variant="pending">
+            <Clock />
+            Confirm in your inbox
+          </Badge>
+        )}
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={busy}
+          onClick={() => save({ method: "DELETE" }, "Reminders turned off.")}
+        >
+          Turn off reminders
+        </Button>
       </div>
-      <p className="text-sm leading-relaxed text-muted-foreground">
-        One email a week listing the problems still waiting in your upsolve
-        list. Nothing is sent when your list is clear.
-      </p>
-      {data?.email ? (
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="min-w-0 break-all text-sm text-foreground">
-            {data.email}
-            <span className="ml-2 text-xs text-muted-foreground">
-              {data.verified ? "Active" : "Waiting for you to confirm"}
-            </span>
-          </p>
-          <Button
-            variant="outline"
-            disabled={busy}
-            onClick={() => save({ method: "DELETE" }, "Reminders turned off")}
-            className="h-10 rounded-lg text-xs"
-          >
-            Turn off
-          </Button>
-        </div>
-      ) : (
-        <form onSubmit={subscribe} className="flex flex-wrap gap-3">
-          <label htmlFor="reminder-email" className="sr-only">
-            Email address
-          </label>
-          <Input
-            id="reminder-email"
-            type="email"
-            required
-            autoComplete="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="h-10 min-w-0 flex-1 rounded-lg text-sm"
-          />
-          <Button type="submit" disabled={busy} className="h-10 rounded-lg text-xs">
-            Send me reminders
-          </Button>
-        </form>
-      )}
-    </div>
+    );
+  }
+
+  return (
+    <form
+      onSubmit={subscribe}
+      className="flex w-full flex-wrap gap-2 sm:w-auto"
+    >
+      <label htmlFor="reminder-email" className="sr-only">
+        Email address
+      </label>
+      <Input
+        id="reminder-email"
+        type="email"
+        required
+        autoComplete="email"
+        placeholder="you@example.com"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="h-10 min-w-0 flex-1 sm:w-64"
+      />
+      <Button type="submit" variant="secondary" disabled={busy}>
+        Send me reminders
+      </Button>
+    </form>
   );
 }

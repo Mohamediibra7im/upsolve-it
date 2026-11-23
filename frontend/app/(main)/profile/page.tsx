@@ -5,10 +5,10 @@ import { NO_INDEX_ROBOTS } from "@/lib/seo";
 export const metadata: Metadata = {
   title: "Your profile",
   description:
-    "Manage your Codeforces profile, account details, and practice preferences.",
+    "Your Codeforces rating, your next rank and your practice numbers.",
   robots: NO_INDEX_ROBOTS,
 };
 
-export default function Page(props: any) {
-  return <ClientPage {...props} />;
+export default function Page() {
+  return <ClientPage />;
 }

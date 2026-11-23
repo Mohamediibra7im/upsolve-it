@@ -13,6 +13,7 @@ export interface AuditLog {
     _id: string;
     codeforcesHandle: string;
     avatar?: string;
+    glyphAvatar?: string;
   };
   performedByHandle: string;
   details?: Record<string, any>;

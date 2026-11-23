@@ -1,29 +1,43 @@
 "use client";
 
-import { useTraining, useTags } from "@/hooks/training";
+import { useState, useEffect, useCallback } from "react";
+import useSWR from "swr";
+import { X } from "lucide-react";
+import { useTraining, useTags, type Level } from "@/hooks/training";
+import { useUser } from "@/hooks/auth";
 import {
   Trainer,
   TagSelector,
   LevelSelector,
   ModeSelector,
+  ProblemsCard,
 } from "@/components/features/training";
-import { useState, useEffect, useCallback } from "react";
-import { useUser } from "@/hooks/auth";
 import Loader from "@/components/shared/Loader";
-import { ArrowUpRight, CircleDot } from "lucide-react";
 import UpsolveReminder from "@/components/shared/UpsolveReminder";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { PageHead } from "@/components/ui/kit";
+import { useToast } from "@/components/providers/Toast";
+import { swrFetcher } from "@/lib/apiClient";
 import type { TrainingMode } from "@/types/TrainingMode";
 import {
   buildRatingsForMode,
   customRatingsFromProblems,
 } from "@/services/training/modeRatings";
-import useSWR from "swr";
-import { swrFetcher } from "@/lib/apiClient";
-import { useToast } from "@/components/providers/Toast";
 
 type WeaknessApi = {
   hasEnoughData: boolean;
   weakTags: { tag: string; score: number }[];
+};
+
+/** These modes take their ratings from your Codeforces rating, not the level. */
+const LEVEL_NOTE: Partial<Record<TrainingMode, string>> = {
+  speed:
+    "Speed round picks ratings just below your Codeforces rating, so the level does not change this set.",
+  contest:
+    "Contest picks ratings around your Codeforces rating and keeps them hidden, so the level does not change this set.",
+  endurance:
+    "Endurance picks ratings around your Codeforces rating, so the level does not change this set.",
 };
 
 export default function TrainingPage() {
@@ -74,6 +88,7 @@ export default function TrainingPage() {
   }, [customRatings]);
 
   const [showRatings, setShowRatings] = useState(false);
+  const [level, setLevel] = useState<Level>();
 
   const { data: weakness } = useSWR<WeaknessApi>(
     user ? "/api/users/me/weaknesses" : null,
@@ -81,12 +96,15 @@ export default function TrainingPage() {
     { revalidateOnFocus: false },
   );
 
-  const handleLevelChange = useCallback(
-    (ratings: { P1: number; P2: number; P3: number; P4: number }) => {
-      setCustomRatings(ratings);
-    },
-    [],
-  );
+  const handleLevelChange = useCallback((next: Level) => {
+    setLevel(next);
+    setCustomRatings({
+      P1: Number.parseInt(next.P1, 10),
+      P2: Number.parseInt(next.P2, 10),
+      P3: Number.parseInt(next.P3, 10),
+      P4: Number.parseInt(next.P4, 10),
+    });
+  }, []);
 
   const handleGenerateProblems = useCallback(() => {
     if (!user) return;
@@ -100,14 +118,16 @@ export default function TrainingPage() {
       if (result.reason === "pool-not-ready") {
         toast({
           title: "Still loading problem data",
+          variant: "warning",
           description:
-            "Codeforces lists are loading in the background. Wait a few seconds and tap Generate again.",
+            "The problem library is loading in the background. Wait a few seconds, then generate again.",
         });
       } else {
         toast({
           title: "No problems matched",
+          variant: "warning",
           description:
-            "Try different tags, adjust level, or pick another mode. Some filters leave no problems at those ratings.",
+            "Try other topics, another level or another mode. Some combinations leave no problems at those ratings.",
         });
       }
     };
@@ -115,9 +135,10 @@ export default function TrainingPage() {
     if (selectedMode === "weakness") {
       if (!weakness?.hasEnoughData || !weakness.weakTags?.length) {
         toast({
-          title: "Weakness mode",
+          title: "Not enough history for Weakness yet",
+          variant: "warning",
           description:
-            "Not enough data yet. Complete more sessions first. Using ladder pools.",
+            "Finish a few more sessions first. This set uses ladder problems.",
         });
         const r = generateProblems(selectedTags, null, null, customRatings);
         setWeaknessFallback(true);
@@ -184,211 +205,106 @@ export default function TrainingPage() {
     startTraining,
   ]);
 
-  const effectiveShowRatings = selectedMode === "contest" ? false : showRatings;
-
-  const hideContestDetails = training?.trainingMode === "contest";
-
   if (isInitializing || !user) return <Loader />;
 
-  if (isTraining) {
-    const modeLabel =
-      training?.trainingMode === "contest"
-        ? "Contest Simulation"
-        : training?.trainingMode === "speed"
-          ? "Speed Round"
-          : training?.trainingMode === "endurance"
-            ? "Endurance Mode"
-            : training?.trainingMode === "weakness"
-              ? "Weakness Training"
-              : "Ladder Training";
-
-    return (
-      <section className="min-h-screen pb-20 font-sans text-[#f1f3ee]">
-        <div className="container mx-auto max-w-[1400px] space-y-7 px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="mb-3 text-sm text-[#929b98]">Your training space</p>
-              <h1 className="font-heading text-3xl font-medium tracking-tight sm:text-4xl">
-                {modeLabel}
-              </h1>
-            </div>
-            <div className="flex items-center gap-2 rounded-full border border-[#b5e3c4]/20 bg-[#b5e3c4]/5 px-4 py-2 text-xs text-[#b5e3c4]">
-              <span className="size-1.5 rounded-full bg-[#b5e3c4]" />
-              Session in progress
-            </div>
-          </div>
-          <div className="overflow-hidden rounded-[1.5rem] border border-[#2b3031] bg-[#191c1e] p-4 sm:p-6">
-            <Trainer
-              status={
-                isRefreshing ? "refreshing" : isTraining ? "training" : "idle"
-              }
-              training={training}
-              problems={problems}
-              onGenerateProblems={handleGenerateProblems}
-              onStartSession={handleStartSession}
-              stopTraining={stopTraining}
-              refreshProblemStatus={refreshProblemStatus}
-              finishTraining={finishTraining}
-              finishError={finishError}
-              isFinishing={isFinishing}
-              submissionStatuses={submissionStatuses}
-              display={{
-                showRatings: effectiveShowRatings,
-                hideContestDetails: hideContestDetails,
-              }}
-              onProblemOpen={notifyProblemOpened}
-              isPoolLoading={isLoading}
-              onExtendEndTime={extendEndTime}
-            />
-          </div>
-        </div>
-      </section>
-    );
-  }
-
   return (
-    <section className="min-h-screen pb-20 font-sans text-[#f1f3ee]">
-      <div className="container mx-auto max-w-[1400px] space-y-6 px-4 sm:px-6 lg:px-8">
-        <UpsolveReminder />
+    <>
+      <PageHead eyebrow="The training room" title="Make room for progress.">
+        <span className="t-muted">
+          Training as <b className="text-ink">{user.codeforcesHandle}</b>
+        </span>
+      </PageHead>
 
-        <header className="flex flex-wrap items-end justify-between gap-6 pb-4 pt-2 sm:pb-6">
-          <div>
-            <div className="mb-4 flex items-center gap-2 text-sm text-[#929b98]">
-              <CircleDot className="size-4 text-[#b5e3c4]" aria-hidden="true" />
-              The training room
-            </div>
-            <h1 className="max-w-3xl font-heading text-4xl font-medium leading-[1.1] tracking-[-0.04em] sm:text-5xl">
-              Make room for progress.
-            </h1>
-            <p className="mt-4 max-w-xl text-sm leading-relaxed text-[#929b98] sm:text-base">
-              Choose your focus. Find your challenge. Turn a little practice
-              into lasting progress.
+      <div className="grid gap-6">
+        {finishError && (
+          <div
+            role="alert"
+            className="u-panel flex flex-wrap items-center justify-between gap-4 px-5 py-4"
+          >
+            <p className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <Badge variant="failed">
+                <X aria-hidden="true" />
+                Not saved
+              </Badge>
+              {finishError} Your session is still saved on this device.
             </p>
-          </div>
-          <div className="flex items-center gap-3 rounded-2xl border border-[#2b3031] bg-[#191c1e] px-4 py-3">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-[#b5e3c4]/10 text-[#b5e3c4]">
-              <ArrowUpRight className="size-4" aria-hidden="true" />
-            </div>
-            <div>
-              <p className="text-xs text-[#929b98]">Training as</p>
-              <p className="mt-0.5 text-sm font-medium">
-                {user.codeforcesHandle}
-              </p>
-            </div>
-          </div>
-        </header>
-
-        <section
-          aria-labelledby="training-mode-heading"
-          className="rounded-[1.5rem] border border-[#2b3031] bg-[#191c1e] p-5 sm:p-7"
-        >
-          <div className="mb-6 flex items-center gap-3">
-            <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#39403c] text-xs text-[#929b98]">
-              1
-            </span>
-            <h2
-              id="training-mode-heading"
-              className="font-heading text-xl font-medium tracking-tight"
+            <Button
+              variant="outline"
+              onClick={() => void finishTraining()}
+              disabled={isFinishing}
             >
-              Choose your session
-            </h2>
+              {isFinishing ? "Saving…" : "Save session again"}
+            </Button>
           </div>
-          <ModeSelector value={selectedMode} onChange={setSelectedMode} />
-        </section>
+        )}
 
-        <div className="grid gap-6 xl:grid-cols-2">
-          <section
-            aria-labelledby="training-level-heading"
-            className="min-w-0 rounded-[1.5rem] border border-[#2b3031] bg-[#191c1e] p-5 sm:p-7"
-          >
-            <div className="mb-5 flex items-center gap-3">
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#39403c] text-xs text-[#929b98]">
-                2
-              </span>
-              <h2
-                id="training-level-heading"
-                className="font-heading text-xl font-medium tracking-tight"
-              >
-                Find your challenge
-              </h2>
-            </div>
-            <LevelSelector
-              onLevelChange={handleLevelChange}
-              currentRatings={customRatings}
-              showRatings={showRatings}
-              setShowRatings={setShowRatings}
-            />
-          </section>
-
-          <section
-            aria-labelledby="training-topics-heading"
-            className="min-w-0 rounded-[1.5rem] border border-[#2b3031] bg-[#191c1e] p-5 sm:p-7"
-          >
-            <div className="mb-5 flex flex-wrap items-center gap-3">
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#39403c] text-xs text-[#929b98]">
-                3
-              </span>
-              <h2
-                id="training-topics-heading"
-                className="font-heading text-xl font-medium tracking-tight"
-              >
-                Set your focus
-              </h2>
-              <span className="ml-auto text-xs text-[#929b98]">Optional</span>
-            </div>
-            <TagSelector
-              allTags={allTags}
-              selectedTags={selectedTags}
-              onTagClick={onTagClick}
-              onClearTags={onClearTags}
-            />
-          </section>
-        </div>
-
-        <section
-          aria-labelledby="training-preview-heading"
-          className="overflow-hidden rounded-[1.5rem] border border-[#2b3031] bg-[#191c1e] p-5 sm:p-7"
-        >
-          <div className="mb-6 flex items-center gap-3">
-            <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[#39403c] text-xs text-[#929b98]">
-              4
-            </span>
-            <div>
-              <h2
-                id="training-preview-heading"
-                className="font-heading text-xl font-medium tracking-tight"
-              >
-                Your next session
-              </h2>
-              <p className="mt-1 text-sm text-[#929b98]">
-                Generate your problem set, then start when you’re ready.
-              </p>
-            </div>
-          </div>
+        {isTraining && training ? (
           <Trainer
-            status={
-              isRefreshing ? "refreshing" : isTraining ? "training" : "idle"
-            }
             training={training}
-            problems={problems}
-            onGenerateProblems={handleGenerateProblems}
-            onStartSession={handleStartSession}
-            stopTraining={stopTraining}
+            isRefreshing={isRefreshing}
+            submissionStatuses={submissionStatuses}
             refreshProblemStatus={refreshProblemStatus}
             finishTraining={finishTraining}
-            finishError={finishError}
-            isFinishing={isFinishing}
-            submissionStatuses={submissionStatuses}
-            display={{
-              showRatings: effectiveShowRatings,
-              hideContestDetails: hideContestDetails,
-            }}
+            stopTraining={stopTraining}
             onProblemOpen={notifyProblemOpened}
-            isPoolLoading={isLoading}
             onExtendEndTime={extendEndTime}
           />
-        </section>
+        ) : (
+          <>
+            <UpsolveReminder />
+            <ModeSelector
+              value={selectedMode}
+              onChange={setSelectedMode}
+              ready={problems.length > 0}
+            >
+              <div className="grid gap-3.5 px-4 pb-5 sm:px-6">
+                <LevelSelector
+                  onLevelChange={handleLevelChange}
+                  currentRatings={customRatings}
+                  note={LEVEL_NOTE[selectedMode]}
+                />
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div
+                    className="u-seg"
+                    role="group"
+                    aria-label="Problem ratings"
+                  >
+                    <button
+                      type="button"
+                      aria-pressed={showRatings}
+                      onClick={() => setShowRatings(true)}
+                    >
+                      Show ratings
+                    </button>
+                    <button
+                      type="button"
+                      aria-pressed={!showRatings}
+                      onClick={() => setShowRatings(false)}
+                    >
+                      Hide ratings
+                    </button>
+                  </div>
+                  <TagSelector
+                    allTags={allTags}
+                    selectedTags={selectedTags}
+                    onTagClick={onTagClick}
+                    onClearTags={onClearTags}
+                  />
+                </div>
+              </div>
+              <ProblemsCard
+                problems={problems}
+                showRatings={selectedMode !== "contest" && showRatings}
+                isPoolLoading={isLoading}
+                slots={selectedMode === "endurance" ? 6 : 4}
+                level={LEVEL_NOTE[selectedMode] ? undefined : level}
+                onGenerateProblems={handleGenerateProblems}
+                onStartSession={handleStartSession}
+              />
+            </ModeSelector>
+          </>
+        )}
       </div>
-    </section>
+    </>
   );
 }

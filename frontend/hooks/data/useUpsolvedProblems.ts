@@ -40,29 +40,39 @@ const useUpsolvedProblems = () => {
   }, [data?.dismissed]);
 
   // ── Add problems to upsolve queue ──────────────────────────────────
+  // The list only changes once the server has stored them: showing rows the
+  // server may refuse made the queue flash problems that then vanished.
   const addUpsolvedProblems = useCallback(
     async (problems: TrainingProblem[]) => {
-      if (problems.length === 0) return;
-
-      mutate(
-        (currentData) => ({
-          items: [...(currentData?.items ?? []), ...problems],
-          dismissed: currentData?.dismissed ?? [],
-        }),
-        false
-      );
+      // One entry per problem, and only the fields the API accepts.
+      const body = [
+        ...new Map(
+          problems.map((p) => [
+            `${p.contestId}_${p.index}`,
+            {
+              contestId: p.contestId,
+              index: p.index,
+              name: p.name,
+              rating: p.rating ?? 0,
+              tags: p.tags ?? [],
+              url: p.url,
+              solvedTime: null,
+            },
+          ]),
+        ).values(),
+      ];
+      if (body.length === 0) return;
 
       try {
         await apiFetcher("/api/upsolve", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(problems),
+          body: JSON.stringify(body),
         });
-        mutate();
       } catch (error) {
-        console.error("Failed to fetch upsolved problems:", error);
-        mutate();
+        console.error("Failed to add problems to the upsolve queue:", error);
       }
+      await mutate();
     },
     [mutate]
   );
@@ -104,7 +114,8 @@ const useUpsolvedProblems = () => {
   // ── Sync unsolved problems from training history ───────────────────
   const syncWithHistory = useCallback(
     async (history: Training[]) => {
-      if (!history || history.length === 0) return;
+      // Until the queue has loaded, every problem would look missing from it.
+      if (!data || !history || history.length === 0) return;
 
       const allUnsolved = history.reduce((acc: TrainingProblem[], session) => {
         const unsolvedInSession = session.problems.filter((p) => !p.solvedTime);
@@ -126,7 +137,7 @@ const useUpsolvedProblems = () => {
         await addUpsolvedProblems(missingProblems);
       }
     },
-    [upsolvedProblems, dismissedIds, addUpsolvedProblems]
+    [data, upsolvedProblems, dismissedIds, addUpsolvedProblems]
   );
 
   // ── Import failed contest problems + refresh solved status from Codeforces ──

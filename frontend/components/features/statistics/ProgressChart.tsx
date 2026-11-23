@@ -1,12 +1,12 @@
 import { Training } from "@/types/Training";
 import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Area,
-  AreaChart,
 } from "recharts";
 
 function formatCalendarDay(ts: number): string {
@@ -39,6 +39,12 @@ function formatAxisLabel(
   return dateStr;
 }
 
+const tick = {
+  fill: "var(--ink-muted)",
+  fontSize: 11,
+  fontFamily: "var(--font-mono)",
+};
+
 const ProgressChart = ({ history }: { history: Training[] }) => {
   const sorted = [...history].sort((a, b) => a.startTime - b.startTime);
 
@@ -64,102 +70,65 @@ const ProgressChart = ({ history }: { history: Training[] }) => {
   ];
 
   return (
-    <div className="w-full font-sans text-primary">
-      <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-4">
-
-        <ResponsiveContainer
-          width="100%"
-          height={260}
-          className="sm:h-[300px]"
-        >
-          <AreaChart
-            data={chartData}
-            margin={{
-              top: 10,
-              right: 10,
-              left: 0,
-              bottom: 5,
-            }}
-          >
-            <defs>
-              <linearGradient id="performanceGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#b5e3c4" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#b5e3c4" stopOpacity={0.0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="#2b3031"
-              vertical={false}
-            />
-            <XAxis
-              dataKey="formattedDate"
-              tick={{ fill: "#929b98", fontSize: 11, fontFamily: "inherit" }}
-              tickLine={false}
-              axisLine={false}
-              interval={chartData.length <= 16 ? 0 : "preserveStartEnd"}
-              angle={chartData.length > 6 ? -32 : 0}
-              textAnchor={chartData.length > 6 ? "end" : "middle"}
-              height={chartData.length > 6 ? 48 : 24}
-            />
-            <YAxis
-              domain={yDomain}
-              tickFormatter={(value) => `${value}`}
-              tick={{ fill: "#929b98", fontSize: 11, fontFamily: "inherit" }}
-              tickLine={false}
-              axisLine={false}
-              width={50}
-            />
-            <Tooltip
-              labelFormatter={(_, payload) => {
-                const row = payload?.[0]?.payload as
-                  | (Training & {
-                      sessionNumber: number;
-                      formattedDate: string;
-                    })
-                  | undefined;
-                if (!row) return "";
-                return `Session #${String(row.sessionNumber).padStart(2, "0")} (${formatCalendarDay(row.startTime)})`;
-              }}
-              formatter={(value: any) => [`${value} pts`, "Performance"]}
-              contentStyle={{
-                backgroundColor: "#191c1e",
-                borderColor: "#2b3031",
-                borderRadius: "12px",
-                fontSize: "12px",
-                fontFamily: "inherit",
-                color: "#f1f3ee",
-                boxShadow: "none",
-              }}
-              labelStyle={{
-                color: "#f1f3ee",
-                fontWeight: "bold",
-                marginBottom: "4px",
-              }}
-            />
-            <Area
-              type="monotone"
-              dataKey="performance"
-              stroke="#b5e3c4"
-              strokeWidth={2}
-              fill="url(#performanceGradient)"
-              dot={{
-                fill: "#b5e3c4",
-                strokeWidth: 1.5,
-                r: 3,
-                stroke: "#191c1e",
-              }}
-              activeDot={{
-                r: 5,
-                strokeWidth: 2,
-                stroke: "#b5e3c4",
-                fill: "#191c1e",
-              }}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
+    <ResponsiveContainer width="100%" height={300}>
+      <LineChart
+        data={chartData}
+        margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
+      >
+        <CartesianGrid stroke="var(--line)" vertical={false} />
+        <XAxis
+          dataKey="formattedDate"
+          tick={tick}
+          tickLine={false}
+          axisLine={false}
+          interval={chartData.length <= 16 ? 0 : "preserveStartEnd"}
+          angle={chartData.length > 6 ? -32 : 0}
+          textAnchor={chartData.length > 6 ? "end" : "middle"}
+          height={chartData.length > 6 ? 48 : 24}
+        />
+        <YAxis
+          domain={yDomain}
+          tick={tick}
+          tickLine={false}
+          axisLine={false}
+          width={50}
+        />
+        <Tooltip
+          cursor={{ stroke: "var(--line-strong)" }}
+          labelFormatter={(_, payload) => {
+            const row = payload?.[0]?.payload as
+              (typeof chartData)[number] | undefined;
+            if (!row) return "";
+            return `Session ${row.sessionNumber} · ${formatCalendarDay(row.startTime)}`;
+          }}
+          formatter={(value) => [value, "Performance"]}
+          contentStyle={{
+            background: "var(--surface)",
+            border: "1px solid var(--line-strong)",
+            borderRadius: "var(--radius-md)",
+            boxShadow: "var(--shadow-pop)",
+            fontSize: 13,
+            color: "var(--ink)",
+          }}
+          labelStyle={{ fontWeight: 600, marginBottom: 4 }}
+          itemStyle={{ color: "var(--ink)", fontFamily: "var(--font-mono)" }}
+        />
+        <Line
+          type="linear"
+          dataKey="performance"
+          stroke="var(--accent-ink)"
+          strokeWidth={2}
+          dot={{ r: 3, fill: "var(--accent-ink)", strokeWidth: 0 }}
+          activeDot={{
+            r: 5,
+            fill: "var(--surface)",
+            stroke: "var(--accent-ink)",
+            strokeWidth: 2,
+          }}
+          isAnimationActive={false}
+        />
+      </LineChart>
+    </ResponsiveContainer>
   );
 };
 

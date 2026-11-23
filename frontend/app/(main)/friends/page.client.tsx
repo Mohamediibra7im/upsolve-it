@@ -1,71 +1,48 @@
 "use client";
 
-import MemberPageState from "@/components/features/profile/MemberPageState";
-
 import { useEffect, useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
-import { m } from "framer-motion";
-import {
-  Users,
-  UserPlus,
-  BarChart2,
-  Trash2,
-  Loader2,
-  Check,
-  X,
-  Ban,
-} from "lucide-react";
+import { Loader2, Trash2, UserPlus } from "lucide-react";
+import UserAvatar from "@/components/shared/UserAvatar";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useUser } from "@/hooks/auth";
-import { useFriends } from "@/hooks/social";
-import { useFriendRequests } from "@/hooks/social";
-import { apiClient } from "@/lib/apiClient";
-import type { FriendSummary } from "@/types/Friend";
+import { EmptyState, PageHead, Rank } from "@/components/ui/kit";
 import Loader from "@/components/shared/Loader";
 import { UserProfileDialog } from "@/components/features/profile";
+import MemberPageState from "@/components/features/profile/MemberPageState";
 import { useToast } from "@/components/providers/Toast";
-import { cn } from "@/lib/utils";
+import { useUser } from "@/hooks/auth";
+import { useFriendRequests, useFriends } from "@/hooks/social";
+import { apiClient } from "@/lib/apiClient";
 import {
   isValidCodeforcesHandleFormat,
   normalizeCodeforcesHandleInput,
 } from "@/services/codeforces/handle";
+import type { FriendSummary } from "@/types/Friend";
 
-function friendRequestErrorMessage(raw: string): { title: string; description?: string } {
-  const m = raw.toLowerCase();
-  if (
-    m.includes("nobody with that handle") ||
-    m.includes("registered on this app") ||
-    m.includes("no registered user")
-  ) {
-    return {
-      title: "No account on this site",
-      description:
-        "Nobody with that handle has signed up here yet. They need to register before you can add them.",
-    };
-  }
-  return {
-    title: "Could not send request",
-    description: raw,
-  };
-}
-
-function formatRequestTime(createdAt?: string) {
-  if (!createdAt) return "";
-  const d = new Date(createdAt);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleString();
+function Person({ who }: { who: FriendSummary }) {
+  return <UserAvatar {...who} size={32} />;
 }
 
 export default function FriendsPage() {
   const { user, isLoading: isUserLoading } = useUser();
   const router = useRouter();
-  const { friends, isLoading, isError: friendsError, mutate: mutateFriends } = useFriends(!!user);
+  const {
+    friends,
+    isLoading,
+    isError: friendsError,
+    mutate: mutateFriends,
+  } = useFriends(!!user);
   const {
     incoming,
     outgoing,
-    isLoading: requestsLoading,
     isError: requestsError,
     mutate: mutateRequests,
   } = useFriendRequests(!!user);
@@ -73,35 +50,28 @@ export default function FriendsPage() {
 
   const [handle, setHandle] = useState("");
   const [adding, setAdding] = useState(false);
-  const [removingId, setRemovingId] = useState<string | null>(null);
-  const [requestBusyId, setRequestBusyId] = useState<string | null>(null);
-  const [statsDialog, setStatsDialog] = useState<{
-    open: boolean;
-    userId: string | null;
-  }>({ open: false, userId: null });
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [profileId, setProfileId] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<FriendSummary | null>(null);
 
-  const refreshAll = async () => {
-    await Promise.all([mutateFriends(), mutateRequests()]);
-  };
+  const refreshAll = () => Promise.all([mutateFriends(), mutateRequests()]);
 
   useEffect(() => {
-    if (!isUserLoading && !user) {
-      router.push("/login");
-    }
+    if (!isUserLoading && !user) router.push("/login");
   }, [user, isUserLoading, router]);
 
   const sortedFriends = [...friends].sort((a, b) =>
     a.codeforcesHandle.localeCompare(b.codeforcesHandle),
   );
 
-  const handleSendRequest = async (e: React.FormEvent) => {
+  const sendRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     const normalized = normalizeCodeforcesHandleInput(handle);
     if (!normalized) return;
     if (!isValidCodeforcesHandleFormat(normalized)) {
       toast({
-        title: "Invalid handle",
-        description: "Use a normal Codeforces username (letters, digits, . or _).",
+        title: "That is not a Codeforces handle.",
+        description: "Handles use letters, digits, . and _ only.",
         variant: "destructive",
         durationMs: 5000,
       });
@@ -118,37 +88,38 @@ export default function FriendsPage() {
       }>("/api/friends/requests", { codeforcesHandle: normalized });
       setHandle("");
       await refreshAll();
-
-      if (res.matchedIncomingRequest && res.friend) {
-        toast({
-          title: "You’re friends now",
-          description: `${res.friend.codeforcesHandle} accepted your request (matched).`,
-          durationMs: 3500,
-        });
-      } else if (res.pending && res.to) {
-        toast({
-          title: "Request sent",
-          description: `Waiting for ${res.to.codeforcesHandle} to respond.`,
-          durationMs: 3500,
-        });
-      } else if (res.friend) {
-        toast({
-          title: res.message || "Done",
-          description: `${res.friend.codeforcesHandle}`,
-          durationMs: 3000,
-        });
-      } else {
-        toast({
-          title: res.message || "Done",
-          durationMs: 3000,
-        });
-      }
+      toast(
+        res.matchedIncomingRequest && res.friend
+          ? {
+              title: "You’re friends now.",
+              description: `${res.friend.codeforcesHandle} had already sent you a request.`,
+              durationMs: 3500,
+            }
+          : res.pending && res.to
+            ? {
+                title: "Request sent.",
+                description: `Waiting for ${res.to.codeforcesHandle} to answer.`,
+                durationMs: 3500,
+              }
+            : {
+                title: res.message || "Done.",
+                description: res.friend?.codeforcesHandle,
+                durationMs: 3000,
+              },
+      );
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Please try again.";
-      const mapped = friendRequestErrorMessage(msg);
+      const msg = err instanceof Error ? err.message : "";
+      const unknown =
+        /nobody with that handle|registered on this app|no registered user/i.test(
+          msg,
+        );
       toast({
-        title: mapped.title,
-        description: mapped.description ?? msg,
+        title: unknown
+          ? "No account with that handle."
+          : "Your request was not sent.",
+        description: unknown
+          ? "They need to sign up on Upsolve It before you can add them."
+          : msg || "Try again in a moment.",
         variant: "destructive",
         durationMs: 6000,
       });
@@ -157,360 +128,319 @@ export default function FriendsPage() {
     }
   };
 
-  const acceptRequest = async (requestId: string) => {
-    setRequestBusyId(requestId);
+  /** Runs one request or friend action, then refreshes both lists. */
+  const act = async (
+    id: string,
+    call: () => Promise<unknown>,
+    done: string,
+    failed: string,
+  ) => {
+    setBusyId(id);
     try {
-      await apiClient.post(`/api/friends/requests/${requestId}/accept`);
+      await call();
       await refreshAll();
-      toast({ title: "Request accepted", durationMs: 3000 });
+      toast({ title: done, variant: "success", durationMs: 3000 });
     } catch (err) {
       toast({
-        title: "Could not accept",
-        description: err instanceof Error ? err.message : "Please try again.",
+        title: failed,
+        description:
+          err instanceof Error ? err.message : "Try again in a moment.",
         variant: "destructive",
         durationMs: 5000,
       });
     } finally {
-      setRequestBusyId(null);
+      setBusyId(null);
     }
   };
 
-  const declineRequest = async (requestId: string) => {
-    setRequestBusyId(requestId);
-    try {
-      await apiClient.post(`/api/friends/requests/${requestId}/decline`);
-      await refreshAll();
-      toast({ title: "Request declined", durationMs: 3000 });
-    } catch (err) {
-      toast({
-        title: "Could not decline",
-        description: err instanceof Error ? err.message : "Please try again.",
-        variant: "destructive",
-        durationMs: 5000,
-      });
-    } finally {
-      setRequestBusyId(null);
-    }
+  const confirmRemove = async () => {
+    if (!removing) return;
+    await act(
+      removing._id,
+      () => apiClient.delete(`/api/friends/${removing._id}`),
+      `${removing.codeforcesHandle} was removed from your friends.`,
+      "Your friend was not removed.",
+    );
+    setRemoving(null);
   };
 
-  const cancelRequest = async (requestId: string) => {
-    setRequestBusyId(requestId);
-    try {
-      await apiClient.delete(`/api/friends/requests/${requestId}`);
-      await refreshAll();
-      toast({ title: "Request cancelled", durationMs: 3000 });
-    } catch (err) {
-      toast({
-        title: "Could not cancel",
-        description: err instanceof Error ? err.message : "Please try again.",
-        variant: "destructive",
-        durationMs: 5000,
-      });
-    } finally {
-      setRequestBusyId(null);
-    }
-  };
-
-  const handleRemove = async (f: FriendSummary) => {
-    setRemovingId(f._id);
-    try {
-      await apiClient.delete(`/api/friends/${f._id}`);
-      await refreshAll();
-      if (statsDialog.userId === f._id) {
-        setStatsDialog({ open: false, userId: null });
-      }
-      toast({
-        title: "Removed",
-        description: `${f.codeforcesHandle} was removed from your friends.`,
-        durationMs: 3000,
-      });
-    } catch (err) {
-      toast({
-        title: "Could not remove friend",
-        description: err instanceof Error ? err.message : "Please try again.",
-        variant: "destructive",
-        durationMs: 5000,
-      });
-    } finally {
-      setRemovingId(null);
-    }
-  };
-
-  const openFriendStats = (friendUserId: string) => {
-    setStatsDialog({ open: true, userId: friendUserId });
-  };
-
-  if (isUserLoading || !user) {
-    return <Loader message="Loading..." />;
-  }
+  if (isUserLoading || !user) return <Loader fullScreen={false} />;
 
   return (
-    <div className="min-h-screen relative pb-20 font-sans text-foreground">
+    <>
+      <PageHead eyebrow="Friends" title="Practice is better with company.">
+        <form onSubmit={sendRequest} className="flex w-full gap-3 sm:w-auto">
+          <label htmlFor="friend-handle" className="sr-only">
+            Codeforces handle of the friend to add
+          </label>
+          <Input
+            id="friend-handle"
+            value={handle}
+            onChange={(e) => setHandle(e.target.value)}
+            placeholder="Codeforces handle, e.g. tourist"
+            className="h-10 min-w-0 flex-1 sm:w-64"
+            autoComplete="off"
+            spellCheck={false}
+          />
+          <Button
+            type="submit"
+            disabled={adding || !normalizeCodeforcesHandleInput(handle)}
+          >
+            {adding ? <Loader2 className="animate-spin" /> : <UserPlus />}
+            Send request
+          </Button>
+        </form>
+      </PageHead>
 
-      <div className="mx-auto w-full py-8 sm:py-12 space-y-8 max-w-7xl">
-
-        <m.div
-          initial={false}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-4"
+      {requestsError && (
+        <div
+          role="alert"
+          className="u-panel mb-6 flex flex-wrap items-center justify-between gap-3 px-5 py-4"
         >
-          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-            <Users size={12} className="text-primary" />
-            <span>Your community</span>
-            <span className="flex-1 border-b border-border" />
-            <span>Community</span>
-          </div>
-
-          <div className="space-y-1">
-            <h1 className="text-foreground font-heading text-3xl sm:text-4xl font-medium tracking-tight leading-tight">
-              Better, together.
-            </h1>
-            <p className="text-sm text-muted-foreground max-w-lg">
-              Connect with fellow learners, compare your progress, and keep each other going.
-            </p>
-          </div>
-        </m.div>
-
-        <div className="grid items-start gap-8 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="lg:sticky lg:top-24">
-        {/* Add a connection */}
-        <div className="p-5 border border-border bg-card relative overflow-hidden rounded-2xl">
-          <h2 className="mb-2 font-heading text-xl font-medium tracking-tight text-foreground">Grow your circle</h2>
-          <p className="mb-6 text-sm leading-relaxed text-muted-foreground">Add a friend with their Codeforces handle to follow their practice.</p>
-          <form onSubmit={handleSendRequest} className="flex flex-col gap-4">
-            <div className="flex-1 space-y-2">
-              <label
-                htmlFor="friend-handle"
-                className="text-xs font-medium text-muted-foreground"
-              >
-                Codeforces handle
-              </label>
-              <Input
-                id="friend-handle"
-                value={handle}
-                onChange={(e) => setHandle(e.target.value)}
-                placeholder="Enter a Codeforces handle"
-                className="h-10 rounded-lg border border-border bg-card text-xs text-primary placeholder:text-muted-foreground focus:border-border focus-visible:ring-2 focus-visible:ring-ring font-sans"
-                autoComplete="off"
-                spellCheck={false}
-              />
-            </div>
-            <Button
-              type="submit"
-              disabled={adding || !normalizeCodeforcesHandleInput(handle)}
-              className="h-10 rounded-lg bg-primary text-primary-foreground font-medium text-xs hover:bg-primary transition-all font-sans sm:px-6 shrink-0"
-            >
-              {adding ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <UserPlus size={12} />
-              )}
-              Send request
-            </Button>
-          </form>
+          <p>Friend requests did not load. Try again in a moment.</p>
+          <Button variant="outline" size="sm" onClick={() => mutateRequests()}>
+            Try again
+          </Button>
         </div>
+      )}
 
-        <p className="mt-4 px-2 text-sm leading-relaxed text-muted-foreground">Once you’re connected, open a friend’s profile to see their sessions, solved problems, and progress.</p>
-        </aside>
-        <div className="min-w-0 space-y-8">
-        {requestsError && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4"><p className="text-sm text-muted-foreground">Friend requests are unavailable right now.</p><Button variant="outline" onClick={() => mutateRequests()}>Try again</Button></div>}
-        {/* Incoming requests */}
-        {!requestsLoading && incoming.length > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-foreground pb-1">
-              <span>Friend requests</span>
-              <span className="tabular-nums">({incoming.length})</span>
-            </div>
-            <div className="divide-y divide-border rounded-2xl border border-border bg-card">
+      {(incoming.length > 0 || outgoing.length > 0) && (
+        <div className="mb-6 grid items-start gap-6 lg:grid-flow-col lg:auto-cols-fr">
+          {incoming.length > 0 && (
+            <section className="u-panel">
+              <div className="u-panel__head">
+                <h2 className="t-h2">Requests for you</h2>
+                <span className="u-count">{incoming.length}</span>
+              </div>
               {incoming.map((row) => (
-                <div
-                  key={row._id}
-                  className="flex flex-col sm:flex-row sm:items-center gap-4 py-5 justify-between transition-colors px-4"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="relative size-10 shrink-0 rounded-lg border border-border overflow-hidden bg-card">
-                      <Avatar className="size-full rounded-lg"><AvatarImage src={row.from.avatar || undefined} alt="" /><AvatarFallback className="bg-primary/10 text-primary">{row.from.codeforcesHandle.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
+                <div key={row._id} className="u-prow">
+                  <Person who={row.from} />
+                  <div className="min-w-0">
+                    <div className="u-prow__name">
+                      {row.from.codeforcesHandle}
                     </div>
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm text-foreground truncate">
-                        {row.from.codeforcesHandle}
-                      </p>
-                      <p className="text-xs text-muted-foreground tabular-nums">
-                        {formatRequestTime(
-                          row.createdAt != null ? String(row.createdAt) : undefined,
-                        )}
-                      </p>
+                    <div className="u-prow__meta flex flex-wrap gap-x-3">
+                      <Rank rating={row.from.rating} showRating />
+                      {row.createdAt && (
+                        <span>
+                          Sent{" "}
+                          {new Date(row.createdAt).toLocaleDateString(
+                            undefined,
+                            {
+                              month: "short",
+                              day: "numeric",
+                            },
+                          )}
+                        </span>
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex gap-2 max-sm:col-start-2 max-sm:col-end-[-1]">
                     <Button
-                      type="button"
+                      variant="outline"
                       size="sm"
-                      className="h-9 rounded-lg bg-primary text-primary-foreground font-medium text-xs hover:bg-primary transition-all font-sans"
-                      onClick={() => acceptRequest(row._id)}
-                      disabled={requestBusyId === row._id}
+                      disabled={busyId === row._id}
+                      onClick={() =>
+                        act(
+                          row._id,
+                          () =>
+                            apiClient.post(
+                              `/api/friends/requests/${row._id}/accept`,
+                            ),
+                          `You and ${row.from.codeforcesHandle} are friends now.`,
+                          "The request was not accepted.",
+                        )
+                      }
                     >
-                      {requestBusyId === row._id ? (
-                        <Loader2 className="size-3 animate-spin mr-1" />
-                      ) : (
-                        <Check size={10} className="mr-1" />
-                      )}
                       Accept
                     </Button>
                     <Button
-                      type="button"
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
-                      className="h-9 rounded-lg border border-border bg-transparent text-muted-foreground font-medium text-xs hover:bg-primary/10 hover:text-primary font-sans"
-                      onClick={() => declineRequest(row._id)}
-                      disabled={requestBusyId === row._id}
+                      disabled={busyId === row._id}
+                      onClick={() =>
+                        act(
+                          row._id,
+                          () =>
+                            apiClient.post(
+                              `/api/friends/requests/${row._id}/decline`,
+                            ),
+                          "Request declined.",
+                          "The request was not declined.",
+                        )
+                      }
                     >
-                      <X size={10} className="mr-1" />
                       Decline
                     </Button>
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-        )}
+            </section>
+          )}
 
-        {/* Outgoing requests */}
-        {!requestsLoading && outgoing.length > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-foreground pb-1">
-              <span>Sent requests</span>
-              <span className="tabular-nums">({outgoing.length})</span>
-            </div>
-            <div className="divide-y divide-border rounded-2xl border border-border bg-card">
+          {outgoing.length > 0 && (
+            <section className="u-panel">
+              <div className="u-panel__head">
+                <h2 className="t-h3">Sent, waiting for an answer</h2>
+                <span className="t-num t-muted">{outgoing.length}</span>
+              </div>
               {outgoing.map((row) => (
-                <div
-                  key={row._id}
-                  className="flex flex-col sm:flex-row sm:items-center gap-4 py-5 justify-between transition-colors px-4"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="relative size-10 shrink-0 rounded-lg border border-border overflow-hidden bg-card">
-                      <Avatar className="size-full rounded-lg"><AvatarImage src={row.to.avatar || undefined} alt="" /><AvatarFallback className="bg-primary/10 text-primary">{row.to.codeforcesHandle.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm text-foreground truncate">
-                        {row.to.codeforcesHandle}
-                      </p>
-                      <p className="text-xs text-amber-300">Pending</p>
-                    </div>
-                  </div>
+                <div key={row._id} className="u-prow">
+                  <Person who={row.to} />
+                  <div className="u-prow__name">{row.to.codeforcesHandle}</div>
                   <Button
-                    type="button"
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    className="h-9 rounded-lg border border-red-500/20 bg-transparent text-red-300 font-medium text-xs hover:bg-red-500/10 hover:text-red-400 font-sans"
-                    onClick={() => cancelRequest(row._id)}
-                    disabled={requestBusyId === row._id}
+                    disabled={busyId === row._id}
+                    onClick={() =>
+                      act(
+                        row._id,
+                        () =>
+                          apiClient.delete(`/api/friends/requests/${row._id}`),
+                        "Request cancelled.",
+                        "The request was not cancelled.",
+                      )
+                    }
                   >
-                    {requestBusyId === row._id ? (
-                      <Loader2 className="size-3 animate-spin mr-1" />
-                    ) : (
-                      <Ban size={10} className="mr-1" />
-                    )}
                     Cancel request
                   </Button>
                 </div>
               ))}
-            </div>
-          </div>
-        )}
-
-        {/* Friends list */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-foreground pb-1">
-            <span>Your friends</span>
-            <span className="tabular-nums">({sortedFriends.length})</span>
-          </div>
-
-          {isLoading ? (
-            <MemberPageState kind="loading" title="Gathering your circle" description="Loading your friends’ profiles." />
-          ) : friendsError && sortedFriends.length === 0 ? (
-            <MemberPageState kind="error" title="We couldn’t load your friends" description="Your connections will appear here when the data is available."><Button variant="outline" onClick={() => mutateFriends()}>Try again</Button></MemberPageState>
-          ) : sortedFriends.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border px-6 py-16 text-center text-muted-foreground text-sm">
-              Your circle starts here. Send a friend request to connect.
-            </div>
-          ) : (
-            <div className="divide-y divide-border rounded-2xl border border-border bg-card">
-              {sortedFriends.map((f) => (
-                <m.div
-                  key={f._id}
-                  initial={false}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex flex-col sm:flex-row sm:items-center gap-4 py-5 justify-between transition-colors px-4"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      onClick={() => openFriendStats(f._id)}
-                      className="relative size-10 shrink-0 rounded-lg border border-border overflow-hidden bg-card cursor-pointer hover:opacity-85 transition-opacity"
-                    >
-                      <Avatar className="size-full rounded-lg"><AvatarImage src={f.avatar || undefined} alt="" /><AvatarFallback className="bg-primary/10 text-primary">{f.codeforcesHandle.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
-                    </div>
-                    <div
-                      onClick={() => openFriendStats(f._id)}
-                      className="min-w-0 cursor-pointer group/friend"
-                    >
-                      <p className="font-medium text-sm text-foreground truncate group-hover/friend:text-foreground transition-colors">
-                        {f.codeforcesHandle}
-                      </p>
-                      <p className="text-xs font-medium text-muted-foreground">
-                        {f.rank} · rating {f.rating}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-9 rounded-lg border border-border bg-transparent text-primary font-medium text-xs hover:bg-primary/10 hover:text-foreground font-sans inline-flex items-center gap-1"
-                      onClick={() => openFriendStats(f._id)}
-                    >
-                      <BarChart2 size={10} />
-                      View progress
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className={cn(
-                        "size-8 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-all",
-                        removingId === f._id && "opacity-70",
-                      )}
-                      onClick={() => handleRemove(f)}
-                      disabled={removingId === f._id}
-                      aria-label={`Remove ${f.codeforcesHandle}`}
-                    >
-                      {removingId === f._id ? (
-                        <Loader2 className="size-3.5 animate-spin" />
-                      ) : (
-                        <Trash2 size={12} />
-                      )}
-                    </Button>
-                  </div>
-                </m.div>
-              ))}
-            </div>
+            </section>
           )}
         </div>
-        </div>
-        </div>
-      </div>
+      )}
+
+      {isLoading ? (
+        <Loader fullScreen={false} message="Loading your friends…" />
+      ) : friendsError && sortedFriends.length === 0 ? (
+        <MemberPageState
+          kind="error"
+          title="Your friends did not load."
+          description="The server did not answer. Try again in a moment."
+        >
+          <Button variant="outline" onClick={() => mutateFriends()}>
+            Try again
+          </Button>
+        </MemberPageState>
+      ) : sortedFriends.length === 0 ? (
+        <EmptyState
+          title="No friends yet."
+          action={
+            <Button
+              variant="outline"
+              onClick={() => document.getElementById("friend-handle")?.focus()}
+            >
+              Add a friend
+            </Button>
+          }
+        >
+          Send a request with a Codeforces handle. Once they accept, you can
+          open their profile to see their sessions, solved problems and
+          progress.
+        </EmptyState>
+      ) : (
+        <section className="u-panel">
+          <div className="u-panel__head">
+            <h2 className="t-h2">Your friends</h2>
+            <span className="t-num t-muted">{sortedFriends.length}</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="u-table">
+              <thead>
+                <tr>
+                  <th>Handle</th>
+                  <th>Rank</th>
+                  <th className="num">Rating</th>
+                  <th>
+                    <span className="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedFriends.map((f) => (
+                  <tr key={f._id}>
+                    <td>
+                      <span className="flex items-center gap-3">
+                        <Person who={f} />
+                        <b>{f.codeforcesHandle}</b>
+                      </span>
+                    </td>
+                    <td>
+                      <Rank rating={f.rating} />
+                    </td>
+                    <td className="num">{f.rating || "—"}</td>
+                    <td>
+                      <span className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setProfileId(f._id)}
+                        >
+                          View progress
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="u-btn--sm"
+                          aria-label={`Remove ${f.codeforcesHandle}`}
+                          onClick={() => setRemoving(f)}
+                        >
+                          <Trash2 />
+                        </Button>
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="u-panel__foot">
+            Open a friend’s progress to see their sessions, solved problems and
+            achievements.
+          </div>
+        </section>
+      )}
 
       <UserProfileDialog
-        userId={statsDialog.userId}
-        open={statsDialog.open}
-        onOpenChange={(open) => {
-          if (!open) {
-            setStatsDialog({ open: false, userId: null });
-          }
-        }}
+        userId={profileId}
+        open={!!profileId}
+        onOpenChange={(open) => !open && setProfileId(null)}
       />
-    </div>
+
+      <Dialog
+        open={!!removing}
+        onOpenChange={(open) => !open && setRemoving(null)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="t-h2">
+              Remove {removing?.codeforcesHandle} from your friends?
+            </DialogTitle>
+            <DialogDescription className="t-muted">
+              You will stop seeing each other’s progress. You can send a new
+              request later.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button
+              variant="outline"
+              disabled={!!busyId}
+              onClick={() => setRemoving(null)}
+            >
+              Keep friend
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={!!busyId}
+              onClick={confirmRemove}
+            >
+              <Trash2 />
+              {busyId ? "Removing…" : "Remove friend"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

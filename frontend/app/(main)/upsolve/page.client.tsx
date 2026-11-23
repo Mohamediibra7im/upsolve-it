@@ -1,31 +1,60 @@
 "use client";
 
-import MemberPageState from "@/components/features/profile/MemberPageState";
-
-import StudioMascot from "@/components/shared/StudioMascot";
-import StudioProgress from "@/components/features/profile/StudioProgress";
-
-import { TrainingProblem } from "@/types/TrainingProblem";
-import { useUpsolvedProblems, useHistory } from "@/hooks/data";
-import { useUser } from "@/hooks/auth";
-import { UpsolvedProblemsList } from "@/components/features/upsolve";
-import ConfirmDialog from "@/components/shared/ConfirmDialog";
-import { useToast } from "@/components/providers/Toast";
-import { Button } from "@/components/ui/button";
-import {
-  RefreshCw,
-  Target,
-  CheckCircle2,
-  Clock,
-  Trophy,
-  ArrowRight,
-} from "lucide-react";
-import { useMemo, useState, useEffect, useRef } from "react";
-import { m } from "framer-motion";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import useSWR from "swr";
+import * as Popover from "@radix-ui/react-popover";
+import { Bell, ChevronDown, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { EmptyState, PageHead } from "@/components/ui/kit";
+import { useToast } from "@/components/providers/Toast";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
+import ReminderSettings from "@/components/features/profile/ReminderSettings";
+import { UpsolveRounds, buildRounds } from "@/components/features/upsolve";
+import { useUser } from "@/hooks/auth";
+import { useHistory, useUpsolvedProblems } from "@/hooks/data";
+import { swrFetcher } from "@/lib/apiClient";
+import type { TrainingProblem } from "@/types/TrainingProblem";
+
+/** The weekly email, behind one button that says whether it is on. */
+function ReminderButton() {
+  // The same key ReminderSettings reads, so the label follows what it saves.
+  const { data } = useSWR<{ email: string | null; verified: boolean }>(
+    "/api/reminders",
+    swrFetcher,
+    { revalidateOnFocus: false },
+  );
+  const state = !data?.email ? "off" : data.verified ? "weekly" : "confirm it";
+  return (
+    <Popover.Root>
+      <Popover.Trigger asChild>
+        <Button variant="outline">
+          <Bell aria-hidden="true" />
+          Reminder: {state}
+          <ChevronDown aria-hidden="true" />
+        </Button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          align="end"
+          sideOffset={8}
+          collisionPadding={12}
+          className="u-panel u-panel--pop z-[60] grid w-[26rem] max-w-[calc(100vw-1.5rem)] gap-3 p-5"
+        >
+          <h2 className="t-h3 text-ink">Weekly reminder</h2>
+          <p className="t-sm t-muted">
+            One email a week listing the problems still waiting in your upsolve
+            queue. Nothing is sent when the queue is clear.
+          </p>
+          <ReminderSettings />
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+}
 
 export default function UpsolvePage() {
-  const { user, isLoading: isUserLoading } = useUser();
+  const { user } = useUser();
   const { history, isLoading: isHistoryLoading } = useHistory();
   const {
     upsolvedProblems,
@@ -36,10 +65,14 @@ export default function UpsolvePage() {
     syncWithCodeforces,
     syncWithHistory,
   } = useUpsolvedProblems();
-
   const { toast } = useToast();
-  const [hasAutoSynced, setHasAutoSynced] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [hasAutoSynced, setHasAutoSynced] = useState(false);
+  // Kept apart from the open flag so the problem stays visible while the dialog closes.
+  const [problemToDelete, setProblemToDelete] =
+    useState<TrainingProblem | null>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Pull failed contest problems and solved status from Codeforces once per visit.
   const userId = user?._id;
@@ -50,18 +83,33 @@ export default function UpsolvePage() {
     syncWithCodeforces().catch(() => {});
   }, [userId, syncWithCodeforces]);
 
-  const handleRefresh = async () => {
+  useEffect(() => {
+    // Wait for the queue itself: compared with an empty list, every unsolved
+    // problem in the history would look missing and be added again.
+    if (!hasAutoSynced && !isLoading && !error && history.length > 0) {
+      syncWithHistory(history);
+      setHasAutoSynced(true);
+    }
+  }, [history, isLoading, error, syncWithHistory, hasAutoSynced]);
+
+  const rounds = useMemo(
+    () => buildRounds(upsolvedProblems, history),
+    [upsolvedProblems, history],
+  );
+
+  const handleSync = async () => {
     setIsSyncing(true);
     try {
       const { added, solved } = await syncWithCodeforces();
       toast({
         title: "Synced with Codeforces",
         description: `${added} added from recent contests, ${solved} marked solved.`,
+        variant: "success",
       });
     } catch {
       toast({
         title: "Sync failed",
-        description: "Codeforces didn't respond. Try again in a moment.",
+        description: "Codeforces did not answer. Try again in a minute.",
         variant: "destructive",
       });
     } finally {
@@ -69,167 +117,79 @@ export default function UpsolvePage() {
     }
   };
 
-  useEffect(() => {
-    if (!hasAutoSynced && history && history.length > 0 && upsolvedProblems) {
-      syncWithHistory(history);
-      setHasAutoSynced(true);
-    }
-  }, [history, upsolvedProblems, syncWithHistory, hasAutoSynced]);
+  if (!user) return null;
 
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [problemToDelete, setProblemToDelete] = useState<TrainingProblem | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const stats = useMemo(() => {
-    if (!upsolvedProblems || upsolvedProblems.length === 0) {
-      return { total: 0, solved: 0, pending: 0, solvingRate: 0 };
-    }
-    const total = upsolvedProblems.length;
-    const solved = upsolvedProblems.filter(p => p.solvedTime).length;
-    return {
-      total,
-      solved,
-      pending: total - solved,
-      solvingRate: total > 0 ? Math.round((solved / total) * 100) : 0,
-    };
-  }, [upsolvedProblems]);
-
-  if (isLoading || isUserLoading || isHistoryLoading) return <MemberPageState kind="loading" title="Gathering your next opportunities" description="Loading the problems you’re ready to revisit." />;
-  if (!user) return <MemberPageState title="Your progress belongs here" description="Log in to revisit your unsolved problems and keep making progress."><Button asChild><Link href="/login">Log in</Link></Button></MemberPageState>;
-  if (error && upsolvedProblems.length === 0) return <MemberPageState kind="error" title="Your upsolve list is unavailable" description="We couldn’t load your saved problems. Try again in a moment."><Button variant="outline" onClick={() => refreshUpsolvedProblems()}>Try again</Button></MemberPageState>;
+  const total = upsolvedProblems.length;
 
   return (
-    <div className="min-h-screen relative overflow-hidden pb-20 font-sans text-foreground">
+    <>
+      <PageHead
+        eyebrow="The upsolve queue"
+        title="Finish what each round started."
+      >
+        <ReminderButton />
+        <Button onClick={handleSync} disabled={isSyncing}>
+          <RefreshCw
+            aria-hidden="true"
+            className={
+              isSyncing ? "animate-spin motion-reduce:animate-none" : undefined
+            }
+          />
+          {isSyncing ? "Syncing…" : "Sync with Codeforces"}
+        </Button>
+      </PageHead>
 
-      <section className="mx-auto w-full py-8 lg:py-12 space-y-8 max-w-7xl">
-
-        <m.div
-          initial={false}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-6"
+      {isLoading || isHistoryLoading ? (
+        <div
+          role="status"
+          aria-label="Loading your upsolve queue"
+          className="grid animate-pulse gap-6 motion-reduce:animate-none lg:grid-cols-12"
         >
-          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-            <Target size={12} className="text-primary" />
-            <span>Your upsolve list</span>
-            <span className="flex-1 border-b border-border" />
-            <span>Active</span>
-          </div>
-
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-            <div className="space-y-2">
-              <h1 className="text-foreground font-heading text-3xl sm:text-4xl font-medium tracking-tight leading-tight">
-                Come back stronger.
-              </h1>
-              <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
-                Problems you couldn’t solve in contests and training sessions land here automatically. Take your time, try a new approach, and turn each attempt into progress.
-              </p>
-            </div>
-
-            <Button
-              onClick={handleRefresh}
-              disabled={isSyncing}
-              className="h-10 px-6 rounded-lg border border-border bg-transparent text-primary font-medium text-xs hover:bg-primary/10 hover:text-foreground hover:border-border active:scale-[0.98] transition-all font-sans shrink-0"
-              variant="outline"
-            >
-              <RefreshCw size={12} className={isSyncing ? "mr-2 animate-spin motion-reduce:animate-none" : "mr-2"} />
-              {isSyncing ? "Syncing…" : "Sync with Codeforces"}
-            </Button>
-          </div>
-        </m.div>
-
-        {upsolvedProblems && upsolvedProblems.length > 0 ? (
-          <div className="space-y-8">
-
-            <m.div
-              initial={false}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.1 }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-            >
-              <div className="rounded-2xl border border-border bg-card p-5">
-                <span className="text-xs font-medium text-muted-foreground">Total problems</span>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-2xl font-medium text-foreground tabular-nums">{stats.total}</span>
-                  <span className="text-xs text-muted-foreground">problems</span>
-                </div>
-              </div>
-              <div className="rounded-2xl border border-border bg-card p-5">
-                <span className="text-xs font-medium text-muted-foreground">Solved</span>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-2xl font-medium text-foreground tabular-nums">{stats.solved}</span>
-                  <CheckCircle2 size={12} className="text-primary" />
-                </div>
-              </div>
-              <div className="rounded-2xl border border-border bg-card p-5">
-                <span className="text-xs font-medium text-amber-300">Pending</span>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-2xl font-medium text-amber-400 tabular-nums">{stats.pending}</span>
-                  <Clock size={12} className="text-amber-300" />
-                </div>
-              </div>
-              <div className="rounded-2xl border border-border bg-card p-5">
-                <span className="text-xs font-medium text-muted-foreground">Solve rate</span>
-                <div className="flex items-center gap-3 mt-1">
-                  <span className="text-lg font-medium text-foreground tabular-nums">{stats.solvingRate}%</span>
-                  <StudioProgress value={stats.solvingRate} label="Upsolve completion" className="max-w-20" />
-                </div>
-              </div>
-            </m.div>
-
-            {/* Target List Section Header */}
-            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground pt-4">
-              <Trophy size={12} className="text-primary" />
-              <span>Practice problems</span>
-              <span className="flex-1 border-b border-border" />
-            </div>
-
-            {/* Problems List */}
-            <m.div
-              initial={false}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              <UpsolvedProblemsList
-                upsolvedProblems={upsolvedProblems}
-                onDelete={(problem: TrainingProblem) => {
-                  setProblemToDelete(problem);
-                  setShowConfirmDialog(true);
-                }}
-              />
-            </m.div>
-          </div>
-        ) : (
-          <m.div
-            initial={false}
-            animate={{ opacity: 1 }}
-            className="py-16 text-center space-y-6"
-          >
-            <StudioMascot pose="rest" className="mx-auto w-36" />
-            <div className="space-y-2">
-              <h3 className="font-medium text-foreground font-heading text-lg tracking-tight">You’re all caught up.</h3>
-              <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                You’re all caught up. Start a fresh session and find your next challenge.
-              </p>
-            </div>
-            <Button asChild className="h-10 rounded-lg bg-primary text-primary-foreground font-medium text-xs hover:bg-primary transition-all font-sans">
-              <Link href="/training">
-                Start a session
-                <ArrowRight size={12} className="ml-2" />
-              </Link>
-            </Button>
-          </m.div>
-        )}
-      </section>
+          <div className="u-panel h-16 lg:col-span-12" />
+          <div className="u-panel h-72 lg:col-span-6" />
+          <div className="u-panel h-72 lg:col-span-6" />
+        </div>
+      ) : error && total === 0 ? (
+        <div role="alert" className="grid justify-items-start gap-3">
+          <p>
+            Your upsolve queue did not load. Check your connection and try
+            again.
+          </p>
+          <Button variant="outline" onClick={() => refreshUpsolvedProblems()}>
+            Try again
+          </Button>
+        </div>
+      ) : total > 0 ? (
+        <UpsolveRounds
+          rounds={rounds}
+          onDelete={(problem) => {
+            setProblemToDelete(problem);
+            setIsConfirmOpen(true);
+          }}
+        />
+      ) : (
+        <EmptyState
+          title="You’re all caught up."
+          action={
+            <Link href="/training" className="u-btn">
+              Start a training session
+            </Link>
+          }
+        >
+          Problems you miss in sessions and contests land here on their own.
+          Nothing is waiting right now.
+        </EmptyState>
+      )}
 
       <ConfirmDialog
-        isOpen={showConfirmDialog}
-        onClose={() => !isDeleting && setShowConfirmDialog(false)}
+        isOpen={isConfirmOpen}
+        onClose={() => !isDeleting && setIsConfirmOpen(false)}
         onConfirm={async () => {
           if (!problemToDelete) return;
           setIsDeleting(true);
           try {
             await deleteUpsolvedProblem(problemToDelete);
-            setShowConfirmDialog(false);
+            setIsConfirmOpen(false);
           } finally {
             setIsDeleting(false);
           }
@@ -237,6 +197,6 @@ export default function UpsolvePage() {
         problem={problemToDelete}
         isLoading={isDeleting}
       />
-    </div>
+    </>
   );
 }
