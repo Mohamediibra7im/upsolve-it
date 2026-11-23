@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes } from 'mongoose';
 import { JUDGES, type ContestId, type Judge } from '../upsolve/schemas/judge';
+import type { StatementSection } from './statement-parser';
 
 export type ProblemStatementDocument = HydratedDocument<ProblemStatement>;
 
@@ -28,17 +29,18 @@ export class ProblemStatement {
   @Prop({ default: '' })
   memoryLimit!: string;
 
-  @Prop({ required: true })
-  html!: string;
-
+  /** The statement in parts: story, input, output, note… as cleaned HTML. */
   @Prop({
-    type: [{ input: String, output: String, _id: false }],
+    type: [{ kind: String, title: String, html: String, _id: false }],
     default: [],
   })
-  samples!: { input: string; output: string }[];
+  sections!: StatementSection[];
 
-  @Prop({ default: false })
-  samplesInBody!: boolean;
+  @Prop({
+    type: [{ input: String, output: String, note: String, _id: false }],
+    default: [],
+  })
+  samples!: { input: string; output: string; note?: string }[];
 
   /** The page it was read from, shown next to it as its source. */
   @Prop({ required: true })

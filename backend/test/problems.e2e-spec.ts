@@ -68,7 +68,7 @@ describe('problem statements', () => {
       judge: 'codeforces',
       contestId: 1986,
       index: 'a',
-      title: 'A. Sum',
+      title: 'Sum',
       timeLimit: '1 second',
       samples: [{ input: '1 2\n', output: '3\n' }],
       sourceUrl: 'https://codeforces.com/problemset/problem/1986/A',
@@ -82,7 +82,7 @@ describe('problem statements', () => {
 
     answer = () => Promise.reject(new Error('must not be asked again'));
     expect((await problems.statement('codeforces', 1986, 'a')).title).toBe(
-      'A. Sum',
+      'Sum',
     );
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
@@ -93,7 +93,7 @@ describe('problem statements', () => {
       problems.statement('codeforces', 1986, 'B'),
       problems.statement('codeforces', 1986, 'B'),
     ]);
-    expect([a.title, b.title]).toEqual(['B. Together', 'B. Together']);
+    expect([a.title, b.title]).toEqual(['Together', 'Together']);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -105,7 +105,7 @@ describe('problem statements', () => {
       .updateOne({ index: 'C' }, { $set: { fetchedAt: new Date(0) } });
     answer = () => Promise.resolve({ ok: false, status: 403 } as Response);
     expect((await problems.statement('codeforces', 1986, 'C')).title).toBe(
-      'C. Old',
+      'Old',
     );
 
     await expect(problems.statement('codeforces', 1986, 'D')).rejects.toThrow(

@@ -25,9 +25,8 @@ export class ProblemsController {
       title: s.title,
       timeLimit: s.timeLimit,
       memoryLimit: s.memoryLimit,
-      html: s.html,
+      sections: s.sections,
       samples: s.samples,
-      samplesInBody: s.samplesInBody,
       sourceUrl: s.sourceUrl,
     };
   }

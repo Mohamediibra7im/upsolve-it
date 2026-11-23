@@ -39,7 +39,9 @@ export class ProblemsService {
    */
   async statement(judge: Judge, contestId: number | string, index: string) {
     const key = problemKey({ judge, contestId, index });
-    const kept = await this.statements.findOne(key).lean();
+    const found = await this.statements.findOne(key).lean();
+    // a copy from before statements were kept in parts is as good as none
+    const kept = found?.sections?.length ? found : null;
     if (kept && Date.now() - kept.fetchedAt.getTime() < FRESH_FOR_MS)
       return kept;
 
@@ -96,7 +98,7 @@ export class ProblemsService {
       key.judge === 'codeforces'
         ? parseCodeforcesStatement(page)
         : parseAtcoderStatement(page);
-    if (!parsed?.html)
+    if (!parsed)
       throw new ServiceUnavailableException(
         'The problem could not be read from its judge. Open it there instead.',
       );

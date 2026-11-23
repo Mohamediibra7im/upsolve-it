@@ -43,15 +43,19 @@ const atcoderPage = `<html><body><div class="col-sm-12">
 </pre></section></div>
 </span></span></div></div></body></html>`;
 
+const htmlOf = (
+  parsed: { sections: { kind: string; html: string }[] },
+  kind: string,
+) => parsed.sections.find((s) => s.kind === kind)?.html ?? '';
+
 describe('parseCodeforcesStatement', () => {
   const parsed = parseCodeforcesStatement(codeforcesPage)!;
 
-  it('reads the title, the limits and every sample', () => {
+  it('reads the name, the limits and every sample', () => {
     expect(parsed).toMatchObject({
-      title: 'D. Sum It',
+      title: 'Sum It',
       timeLimit: '2 seconds',
       memoryLimit: '256 megabytes',
-      samplesInBody: false,
     });
     expect(parsed.samples).toEqual([
       { input: '2\n1 2\n', output: '3\n' },
@@ -59,16 +63,35 @@ describe('parseCodeforcesStatement', () => {
     ]);
   });
 
-  it('keeps the statement and its formulas, without the header and the samples', () => {
-    expect(parsed.html).toContain('Given $$$n \\le 10^5$$$ numbers');
-    expect(parsed.html).toContain('<b>sum</b>');
-    expect(parsed.html).toContain('<h3>Input</h3>');
-    expect(parsed.html).toContain('<h3>Note</h3>');
-    expect(parsed.html).not.toContain('time limit per test');
-    expect(parsed.html).not.toContain('Examples');
+  it('splits the statement into its parts and keeps the formulas', () => {
+    expect(parsed.sections.map((s) => s.kind)).toEqual([
+      'story',
+      'input',
+      'output',
+      'note',
+    ]);
+    expect(htmlOf(parsed, 'story')).toContain(
+      'Given $$$n \\le 10^5$$$ numbers',
+    );
+    expect(htmlOf(parsed, 'story')).toContain('<b>sum</b>');
+    expect(htmlOf(parsed, 'input')).toBe('<p>One line.</p>');
+    expect(htmlOf(parsed, 'note')).toBe('<p>Easy.</p>');
+  });
+
+  it('gives a part it has no name for its own title', () => {
+    const interactive = codeforcesPage.replace(
+      '<div class="note">',
+      '<div><div class="section-title">Interaction</div><p>Ask.</p></div><div class="note">',
+    );
+    expect(parseCodeforcesStatement(interactive)!.sections).toContainEqual({
+      kind: 'other',
+      title: 'Interaction',
+      html: '<p>Ask.</p>',
+    });
   });
 
   it('lets nothing through that could run or frame something', () => {
+    const story = htmlOf(parsed, 'story');
     for (const bad of [
       '<script',
       'alert',
@@ -78,11 +101,11 @@ describe('parseCodeforcesStatement', () => {
       '<iframe',
       'style=',
     ])
-      expect(parsed.html).not.toContain(bad);
-    expect(parsed.html).toContain(
+      expect(story).not.toContain(bad);
+    expect(story).toContain(
       '<a href="https://codeforces.com/blog/entry/1" target="_blank" rel="noreferrer noopener">the blog</a>',
     );
-    expect(parsed.html).toContain(
+    expect(story).toContain(
       '<img src="https://espresso.codeforces.com/a.png" />',
     );
   });
@@ -97,20 +120,26 @@ describe('parseCodeforcesStatement', () => {
 describe('parseAtcoderStatement', () => {
   const parsed = parseAtcoderStatement(atcoderPage)!;
 
-  it('reads the English statement, the limits and the samples', () => {
+  it('reads the English statement, the limits and the samples with their explanations', () => {
     expect(parsed).toMatchObject({
-      title: 'E - Dice Product 3',
+      title: 'Dice Product 3',
       timeLimit: '2 sec',
       memoryLimit: '1024 MiB',
-      samplesInBody: true,
     });
     expect(parsed.samples).toEqual([
-      { input: '6\n', output: '239578645\n' },
+      {
+        input: '6\n',
+        output: '239578645\n',
+        note: '<p>One of the possible procedures.</p>',
+      },
       { input: '7\n', output: '0\n' },
     ]);
-    expect(parsed.html).toContain('modulo <var>998244353</var>');
-    expect(parsed.html).toContain('One of the possible procedures.');
-    expect(parsed.html).not.toContain('日本語');
+    expect(parsed.sections).toEqual([
+      {
+        kind: 'story',
+        html: '<p>Find the probability modulo <var>998244353</var>.</p>',
+      },
+    ]);
   });
 
   it('falls back to the only language a page has', () => {
@@ -118,6 +147,8 @@ describe('parseAtcoderStatement', () => {
       /<span class="lang-en">[\s\S]*<\/span><\/span><\/div>/,
       '</span></div>',
     );
-    expect(parseAtcoderStatement(japaneseOnly)!.html).toContain('日本語');
+    expect(parseAtcoderStatement(japaneseOnly)!.sections[0].html).toContain(
+      '日本語',
+    );
   });
 });
