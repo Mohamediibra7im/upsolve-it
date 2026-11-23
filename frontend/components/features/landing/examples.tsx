@@ -149,8 +149,7 @@ export function QueueExample() {
       ))}
       <div className="u-panel__foot">
         <span>
-          Synced with Codeforces · 2 added from recent contests, 1 marked
-          solved.
+          Queue synced · 2 added from recent contests, 1 marked solved.
         </span>
       </div>
     </div>

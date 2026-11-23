@@ -78,7 +78,7 @@ export default function UpsolvePage() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Pull failed contest problems and solved status from Codeforces once per visit.
+  // Pull failed contest problems and solved status from the judges once per visit.
   const userId = user?._id;
   const syncedFor = useRef<string | null>(null);
   useEffect(() => {
@@ -103,8 +103,8 @@ export default function UpsolvePage() {
         await syncWithCodeforces();
       toast({
         title: atcoderSkipped
-          ? "Synced with Codeforces only"
-          : "Synced with Codeforces",
+          ? "Queue synced, without AtCoder"
+          : "Queue synced",
         description: [
           `${added} added from recent contests, ${solved} marked solved`,
           resolved > 0 &&
@@ -145,7 +145,7 @@ export default function UpsolvePage() {
               isSyncing ? "animate-spin motion-reduce:animate-none" : undefined
             }
           />
-          {isSyncing ? "Syncing…" : "Sync with Codeforces"}
+          {isSyncing ? "Syncing…" : "Sync queue"}
         </Button>
       </PageHead>
 
