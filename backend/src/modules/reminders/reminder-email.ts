@@ -109,25 +109,39 @@ const paragraph = (html: string) =>
 const footLink = (label: string, href: string) =>
   `<a href="${escapeHtml(href)}" style="color:${C.ink};text-decoration:underline">${label}</a>`;
 
-/** Weekly "you still owe these" email. `pending` must be oldest first. */
+/**
+ * Weekly "you still owe these" email. `pending` must be oldest first, and
+ * either it or `resolveDue` (re-solves that have come due) is not empty.
+ */
 export function renderReminderEmail(
   handle: string,
   pending: ReminderProblem[],
   links: { upsolve: string; unsubscribe: string },
   nowMs: number = Date.now(),
+  resolveDue = 0,
 ) {
-  const oldest = daysSince(pending[0].createdAt, nowMs);
-  const subject = `You owe ${plural(pending.length, 'problem')}, the oldest is ${plural(oldest, 'day')} old`;
+  const waiting = plural(pending.length, 'problem');
+  const resolves = plural(resolveDue, 're-solve');
+  const oldest = pending.length ? daysSince(pending[0].createdAt, nowMs) : 0;
+  const subject = pending.length
+    ? `You owe ${waiting}, the oldest is ${plural(oldest, 'day')} old`
+    : `${resolves} due in your upsolve queue`;
+  const resolveText = `${resolves} due: problems you solved, back to check that the idea stuck.`;
   const top = pending.slice(0, 5);
   const text = [
     `Hi ${handle},`,
     '',
-    `${plural(pending.length, 'problem')} still waiting in your upsolve list:`,
-    ...top.map(
-      (p) =>
-        `- ${p.contestId}${p.index} ${p.name} (${plural(daysSince(p.createdAt, nowMs), 'day')}) ${p.url}`,
-    ),
-    '',
+    ...(pending.length
+      ? [
+          `${waiting} still waiting in your upsolve list:`,
+          ...top.map(
+            (p) =>
+              `- ${p.contestId}${p.index} ${p.name} (${plural(daysSince(p.createdAt, nowMs), 'day')}) ${p.url}`,
+          ),
+          '',
+        ]
+      : []),
+    ...(resolveDue ? [resolveText, ''] : []),
     `Open your list: ${links.upsolve}`,
     `Stop these emails: ${links.unsubscribe}`,
   ].join('\n');
@@ -145,15 +159,25 @@ export function renderReminderEmail(
     pending.length > top.length
       ? `<tr><td colspan="2" style="padding:12px 0;border-top:1px solid ${C.line};font:500 12px/16px ${FONT.mono};color:${C.muted}">+ ${pending.length - top.length} more in your queue</td></tr>`
       : '';
+  const queue = pending.length
+    ? `${paragraph(`Hi ${escapeHtml(handle)}, the oldest one has been in your upsolve queue for <span style="color:${C.ink};font-weight:600">${plural(oldest, 'day')}</span>. One today is enough.`)}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;border-bottom:1px solid ${C.line}">${rows}${more}</table>`
+    : paragraph(`Hi ${escapeHtml(handle)}, nothing new is waiting.`);
+  const resolveHtml = resolveDue
+    ? paragraph(
+        `<span style="color:${C.ink};font-weight:600">${resolves} due.</span> Problems you solved, back to check that the idea stuck.`,
+      )
+    : '';
 
   const html = layout({
     origin: originOf(links.upsolve),
-    preview: `The oldest has been waiting ${plural(oldest, 'day')}. One today is enough.`,
+    preview: pending.length
+      ? `The oldest has been waiting ${plural(oldest, 'day')}. One today is enough.`
+      : resolveText,
     eyebrow: 'Weekly reminder',
-    title: `${plural(pending.length, 'problem')} still waiting.`,
-    body: `${paragraph(`Hi ${escapeHtml(handle)}, the oldest one has been in your upsolve queue for <span style="color:${C.ink};font-weight:600">${plural(oldest, 'day')}</span>. One today is enough.`)}
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;border-bottom:1px solid ${C.line}">${rows}${more}</table>
-${button('Open your upsolve queue', links.upsolve)}`,
+    title: pending.length ? `${waiting} still waiting.` : `${resolves} due.`,
+    body: `${queue}
+${resolveHtml}${button('Open your upsolve queue', links.upsolve)}`,
     footer: `You asked for this weekly reminder on Upsolve It. ${footLink('Stop these emails', links.unsubscribe)}.`,
   });
   return { subject, text, html };

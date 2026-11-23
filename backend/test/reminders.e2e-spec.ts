@@ -46,7 +46,7 @@ describe('weekly upsolve reminders', () => {
     reminders = module.get(RemindersService);
     jest
       .spyOn(module.get(UpsolveService), 'syncFromCodeforces')
-      .mockResolvedValue({ added: 0, solved: 0 });
+      .mockResolvedValue({ added: 0, solved: 0, resolved: 0 });
     jest
       .spyOn(nodemailer, 'createTransport')
       .mockReturnValue({ sendMail } as any);
@@ -90,8 +90,21 @@ describe('weekly upsolve reminders', () => {
     const nextWeek = Date.now() + 8 * 86_400_000;
     expect(await reminders.sendDueReminders(nextWeek)).toBe(1);
 
-    await reminders.redeem(tokenFrom(1)); // unsubscribe link from the reminder
-    expect(await reminders.sendDueReminders(nextWeek + 8 * 86_400_000)).toBe(0);
+    // Nothing waiting, but a re-solve has come due: the email still goes out.
+    await db
+      .model('UpsolvedProblem')
+      .updateMany(
+        { user: user._id },
+        { $set: { solvedTime: 1, resolveStage: 1, resolveDueAt: new Date(0) } },
+      );
+    const later = nextWeek + 8 * 86_400_000;
+    expect(await reminders.sendDueReminders(later)).toBe(1);
+    expect(sendMail.mock.calls[3][0].subject).toBe(
+      '1 re-solve due in your upsolve queue',
+    );
+
+    await reminders.redeem(tokenFrom(3)); // unsubscribe link from the reminder
+    expect(await reminders.sendDueReminders(later + 8 * 86_400_000)).toBe(0);
     expect((await reminders.status(String(user._id))).email).toBeNull();
   });
 });

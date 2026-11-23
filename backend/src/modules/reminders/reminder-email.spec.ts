@@ -23,6 +23,32 @@ describe('renderReminderEmail', () => {
     expect(mail.html).toContain('Stop these emails');
   });
 
+  it('counts re-solves due next to the waiting problems', () => {
+    const mail = renderReminderEmail(
+      'tourist',
+      [problem('Old', 23)],
+      { upsolve: 'https://app/upsolve', unsubscribe: 'https://app/email?t=x' },
+      now,
+      2,
+    );
+    expect(mail.subject).toBe('You owe 1 problem, the oldest is 23 days old');
+    expect(mail.text).toContain('2 re-solves due');
+    expect(mail.html).toContain('2 re-solves due.');
+  });
+
+  it('is still worth sending with only re-solves due', () => {
+    const mail = renderReminderEmail(
+      'tourist',
+      [],
+      { upsolve: 'https://app/upsolve', unsubscribe: 'https://app/email?t=x' },
+      now,
+      1,
+    );
+    expect(mail.subject).toBe('1 re-solve due in your upsolve queue');
+    expect(mail.text).not.toContain('still waiting');
+    expect(mail.html).toContain('1 re-solve due.');
+  });
+
   it('escapes names and handles in the HTML body', () => {
     const mail = renderReminderEmail(
       '<b>h</b>',

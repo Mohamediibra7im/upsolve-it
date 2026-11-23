@@ -163,7 +163,7 @@ export class RemindersService implements OnModuleInit, OnModuleDestroy {
 
   /**
    * Mails every confirmed user whose last reminder is a week old and who still
-   * has unsolved problems. Each user is claimed atomically first, so two
+   * has unsolved problems or re-solves due. Each user is claimed atomically first, so two
    * machines running this at once cannot send the same reminder twice.
    */
   async sendDueReminders(nowMs: number = Date.now()) {
@@ -193,7 +193,11 @@ export class RemindersService implements OnModuleInit, OnModuleDestroy {
             .sort({ createdAt: 1 })
             .limit(500)
             .lean();
-          if (pending.length) {
+          const resolveDue = await this.upsolve.countResolvesDue(
+            String(user._id),
+            nowMs,
+          );
+          if (pending.length || resolveDue) {
             const token = await this.jwt.signAsync(
               {
                 userId: String(user._id),
@@ -211,6 +215,7 @@ export class RemindersService implements OnModuleInit, OnModuleDestroy {
                   unsubscribe: this.emailLink('unsubscribe', token),
                 },
                 nowMs,
+                resolveDue,
               ),
             );
             sent++;
