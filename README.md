@@ -1,99 +1,40 @@
-# [ UPSOLVE.it ] | Interface Cockpit
+# Upsolve.it
 
-> **Frontend Protocol: COMMAND-CONSOLE-V3**
-> A high-fidelity, monospaced dark terminal dashboard for elite competitive programmers.
->
-> 📡 **Backend Core Service**: [upsolve-it--backend](https://github.com/Mohamediibra7im/upsolve-it--backend)
+Upsolve.it helps competitive programmers finish what contests leave behind:
+it collects the problems you could not solve, reminds you about them, and
+tracks your progress as you clear them.
 
----
+| Folder | What it is | Stack |
+|---|---|---|
+| [`frontend/`](frontend) | Web app | Next.js, React, Tailwind |
+| [`backend/`](backend) | REST API | NestJS, MongoDB |
 
-## ⚡ Design Philosophy: "The Technical Cockpit"
+## Run it locally
 
-The Upsolve.it frontend interface is engineered to feel like a high-end command line workstation. It prioritizes information density, retro-futuristic styling, and precise responsive execution.
-
-- **Locked Dark Mode Theme**: Strict dark-mode visual palette to prevent screen glare and minimize visual load during long coding sessions.
-- **Unified sliding FAB System**: Consolidates auxiliary actions (`[ HELP ]`, `[ NEWS ]`, `[ SUGG ]`) into a single sliding menu triggered via a pulsing CPU icon.
-- **Flat Monospace Components**: High-fidelity terminal aesthetics with square corners, solid borders (`border-emerald-500/15`), typewriter labels, and **ASCII-progress charts** (`[██████░░░░]`).
-- **Telemetry Charts**: Flattened and customized log-style overlays for Area and Bar charts.
-- **Telemetry OG Generation**: Refactored Open Graph metadata images displaying tactical system overlays and rating parameters.
-
----
-
-## 🛠️ Technical Stack
-
-- **Framework**: Next.js 16+ (App Router)
-- **Engine**: Turbopack compiler
-- **Styling**: Vanilla Tailwind CSS + Custom theme variables
-- **Components**: Radix UI + Custom shadcn primitives
-- **Data Hydration**: SWR (Stale-While-Revalidate)
-- **Transitions**: Framer Motion configured with strict type variants
-- **Icons**: Lucide React
-- **Testing**: Jest + React Testing Library
-
----
-
-## 📡 Launch Protocols
-
-### 1. Configure Environment variables
-Create `.env.local` inside `frontend--upsolve-it`:
-```env
-NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api
-```
-
-### 2. Install & Start Server
 ```bash
-npm install --legacy-peer-deps
-npm run dev
+cd backend && npm ci && npm run dev
 ```
 
----
+```bash
+cd frontend && npm ci && npm run dev
+```
 
-## 📋 Available Operations Scripts
+Each folder has its own `.env.example`, README and tests. Locally the web app
+calls the API directly, using `NEXT_PUBLIC_API_BASE_URL` from `frontend/.env`.
 
-| Command | Action |
-|---------|--------|
-| `npm run dev` | Launch the development server |
-| `npm run build` | Compile static production optimized files |
-| `npm run lint` | Run ESLint check for JSX validations |
-| `npm test` | Run frontend test suites |
+## Deployment
 
-### Profile photos
+Both folders ship as one Docker image to one Fly.io app, defined by the root
+`Dockerfile` and `fly.toml`. Fly runs the image as two process groups:
 
-Codeforces avatars use `/api/profile-image`, which accepts only public image paths on `userpic.codeforces.org`, validates image bytes, and caches successful photos for 24 hours with stale delivery during revalidation. Failed downloads are not cached. Avatars show initials during failures and retry twice; unavailable upstream photos cannot be recreated.
+| Process | What runs | Reachable from |
+|---|---|---|
+| `app` | Next.js web app | The internet |
+| `api` | NestJS API | Only `app`, over Fly's private network |
 
-### Local dependency security backport
+The browser talks to a single origin. `app` forwards `/api/*` to `api`, so
+there is no cross-origin setup in production.
 
-`vendor/braces` is an MIT-licensed local backport of braces 3.0.3 with bounded nesting and AST cycle checks. It is installed as an explicit local dependency and override; `.npmrc` packs local dependencies so CI installs their dependencies correctly. `npm run test:dependencies` checks the actual chokidar and micromatch consumers. Replace this backport only after verifying an upstream fix against those tests. CI and deployment audit development dependencies as well as production dependencies.
-
-### Test dependency compatibility
-
-Tests use the SWC transformer supplied by `next/jest`. The test dependency overrides use jsdom 27.4 and test-exclude 8 to replace deprecated encoding and glob packages. Use Node 22.12 or newer; CI runs Node 22.
-
-The coverage configuration loader uses the compatible `js-yaml` 4 `load()` API, and brace-expansion 1 is pinned to its patched release. Native install-script approvals are limited to the reviewed versions in `allowScripts`; review a new version before approving its installer with npm 12's `npm install-scripts approve <package>`.
-
----
-
-## 📂 Project Architecture
-
-### 1. App Routes (`app/`)
-- **`app/(auth)/`** - Borderless, centered auth layouts (login, register, reset-password).
-- **`app/(main)/`** - Core dashboard, roadmap logs, user statistics.
-- **`app/(marketing)/`** - Landing showcase page and documentation guides.
-- **`app/admin/`** - Admin panel sidebar control cockpit.
-
-### 2. Feature Components (`components/features/`)
-Colocated page components grouped by logical module domain:
-- `components/features/landing/` - Hero console animations.
-- `components/features/dashboard/` - Telemetry widgets and heatmaps.
-- `components/features/admin/` - Monospace matrix sheets, ACL tables, audit log lists.
-
-### 3. Shared Primitives (`components/shared/` & `components/ui/`)
-- `components/shared/` - Reusable UI logic (ErrorBoundary, Dialog controllers).
-- `components/ui/` - Flat primitive buttons, input fields, and select menus.
-- `components/layout/` - Shell structures (NavBar, Footer, SystemConsoleFab).
-
----
-
-<div align="center">
-  <p>Optimized for Performance & Tactical Dominance</p>
-</div>
+`.github/workflows/ci.yml` runs the frontend and backend checks on every pull
+request and push to `main`. A push to `main` deploys once both pass, using the
+`FLY_API_TOKEN` repository secret.

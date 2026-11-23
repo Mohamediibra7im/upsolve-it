@@ -1,10 +1,32 @@
+# One Fly app for the whole product.
+#   app: the Next.js web app. The only process reachable from the internet.
+#        It keeps Fly's default group name so the machines that already
+#        serve the site are updated in place instead of being replaced.
+#   api: the NestJS API. Private; `app` forwards /api/* to it over Fly's
+#        internal network, so the browser only ever talks to one origin.
+#
+# This reuses the existing "upsolve-it-frontend" app because it already holds
+# the upsolve-it.hnuicpc.tech certificate. Fly apps cannot be renamed.
 app = "upsolve-it-frontend"
 primary_region = "cdg"
 
+[build]
+  dockerfile = "Dockerfile"
+
 [build.args]
-  NEXT_PUBLIC_API_BASE_URL = "https://upsolve-it-backend.fly.dev"
+  NEXT_PUBLIC_API_BASE_URL = ""
+  API_INTERNAL_URL = "http://api.process.upsolve-it-frontend.internal:3000"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "3000"
+
+[processes]
+  app = "node frontend/server.js"
+  api = "node backend/dist/main"
 
 [http_service]
+  processes = ["app"]
   internal_port = 3000
   force_https = true
   auto_stop_machines = "off"
@@ -18,6 +40,19 @@ primary_region = "cdg"
     timeout = "5s"
     grace_period = "20s"
 
+# The API has no public service, so Fly never stops it. It must stay up:
+# the weekly reminder timer runs inside this process.
+[checks.api_health]
+  processes = ["api"]
+  type = "http"
+  port = 3000
+  method = "GET"
+  path = "/api/health/live"
+  interval = "15s"
+  timeout = "5s"
+  grace_period = "10s"
+
 [[vm]]
+  processes = ["app", "api"]
   size = "shared-cpu-1x"
   memory = "512mb"
