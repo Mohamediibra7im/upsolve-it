@@ -9,6 +9,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { TrainingsModule } from './modules/trainings/trainings.module';
 import { UpsolveModule } from './modules/upsolve/upsolve.module';
 import { AtcoderModule } from './modules/atcoder/atcoder.module';
+import { ProblemsModule } from './modules/problems/problems.module';
+import { RunnerModule } from './modules/runner/runner.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { TrainingLevelsModule } from './modules/training-levels/training-levels.module';
@@ -88,6 +90,8 @@ import { RateLimiterGuard } from './common/guards/rate-limiter.guard';
     TrainingsModule,
     UpsolveModule,
     AtcoderModule,
+    ProblemsModule,
+    RunnerModule,
     AdminModule,
     AuditLogsModule,
     TrainingLevelsModule,

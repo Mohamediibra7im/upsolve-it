@@ -117,6 +117,18 @@ export class RateLimiterGuard implements CanActivate {
         duration: 60 * 15,
         keyPrefix: 'auth:reset-password',
       },
+      // Each of these spends something that is not ours: a run at the code
+      // runner, a page read from a judge.
+      'RunnerController.run': {
+        points: 30,
+        duration: 60 * 10,
+        keyPrefix: 'runner:run',
+      },
+      'ProblemsController.statement': {
+        points: 60,
+        duration: 60 * 10,
+        keyPrefix: 'problems:statement',
+      },
       'UpsolveController.addByUrl': {
         points: 30,
         duration: 60 * 60,
