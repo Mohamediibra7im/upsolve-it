@@ -1,4 +1,5 @@
 import {
+  afterResolve,
   planUnattempted,
   planUpsolveSync,
   type CfSubmission,
@@ -80,6 +81,64 @@ describe('planUpsolveSync', () => {
     expect(solved).toEqual([
       { contestId: 1900, index: 'C', solvedTime: daysAgo(2) * 1000 },
     ]);
+  });
+});
+
+describe('re-solves', () => {
+  const due = (days: number, resolveStage = 1) => [
+    {
+      contestId: 2000,
+      index: 'C',
+      solvedTime: 1,
+      resolveStage,
+      resolveDueAt: new Date(NOW - days * 86_400_000),
+    },
+  ];
+  const resolved = (
+    submissions: CfSubmission[],
+    tracked: ReturnType<typeof due>,
+  ) => planUpsolveSync(submissions, tracked, [], NOW).resolved;
+
+  it('passes a due re-solve only on an accepted submission made after it came due', () => {
+    const old = sub(2000, 'C', 'OK', 'PRACTICE', daysAgo(20));
+    expect(resolved([old], due(2))).toEqual([]);
+    expect(
+      resolved(
+        [old, sub(2000, 'C', 'WRONG_ANSWER', 'PRACTICE', daysAgo(1))],
+        due(2),
+      ),
+    ).toEqual([]);
+    expect(
+      resolved([old, sub(2000, 'C', 'OK', 'PRACTICE', daysAgo(1))], due(2)),
+    ).toEqual([
+      {
+        contestId: 2000,
+        index: 'C',
+        resolveStage: 1,
+        passedAt: daysAgo(1) * 1000,
+      },
+    ]);
+  });
+
+  it('leaves a re-solve alone until it is due', () => {
+    expect(
+      resolved([sub(2000, 'C', 'OK', 'PRACTICE', daysAgo(0))], due(-3)),
+    ).toEqual([]);
+  });
+
+  it('schedules 7 days, then 30, then nothing', () => {
+    expect(afterResolve(0, NOW)).toEqual({
+      resolveStage: 1,
+      resolveDueAt: new Date(NOW + 7 * 86_400_000),
+    });
+    expect(afterResolve(1, NOW)).toEqual({
+      resolveStage: 2,
+      resolveDueAt: new Date(NOW + 30 * 86_400_000),
+    });
+    expect(afterResolve(2, NOW)).toEqual({
+      resolveStage: 0,
+      resolveDueAt: null,
+    });
   });
 });
 

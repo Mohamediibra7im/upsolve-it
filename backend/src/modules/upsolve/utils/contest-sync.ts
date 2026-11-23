@@ -37,29 +37,53 @@ const GYM_CONTEST_ID_START = 100000;
 
 export const CONTEST_IMPORT_WINDOW_DAYS = 90;
 
+/** A solved problem comes back after 7 days, and once more 30 days after that. */
+export const RESOLVE_AFTER_DAYS = [7, 30];
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** What a re-solve of the given stage leaves behind when passed at `passedAt`. */
+export function afterResolve(stage: number, passedAt: number) {
+  const days = RESOLVE_AFTER_DAYS[stage];
+  return days === undefined
+    ? { resolveStage: 0, resolveDueAt: null }
+    : {
+        resolveStage: stage + 1,
+        resolveDueAt: new Date(passedAt + days * DAY_MS),
+      };
+}
+
 const keyOf = (p: ProblemKey) => `${p.contestId}_${p.index}`;
 
 /**
  * Decides what a sync should change, from the user's Codeforces submissions:
  * - `toAdd`: problems attempted during a recent contest and never solved since.
  * - `solved`: tracked problems that now have an accepted submission.
+ * - `resolved`: due re-solves with an accepted submission made after they
+ *   came due. One made before the due date does not count.
  */
 export function planUpsolveSync(
   submissions: CfSubmission[],
-  tracked: (ProblemKey & { solvedTime?: number | null })[],
+  tracked: (ProblemKey & {
+    solvedTime?: number | null;
+    resolveDueAt?: Date | null;
+    resolveStage?: number;
+  })[],
   dismissed: ProblemKey[],
   nowMs: number = Date.now(),
 ): {
   toAdd: UpsolveCandidate[];
   solved: (ProblemKey & { solvedTime: number })[];
+  resolved: (ProblemKey & { resolveStage: number; passedAt: number })[];
 } {
   const firstAccepted = new Map<string, number>();
+  const accepted = new Map<string, number[]>();
   for (const s of submissions) {
     if (s.verdict !== 'OK' || s.problem.contestId == null) continue;
     const key = keyOf(s.problem as ProblemKey);
     const prev = firstAccepted.get(key);
     if (prev === undefined || s.creationTimeSeconds < prev)
       firstAccepted.set(key, s.creationTimeSeconds);
+    accepted.set(key, [...(accepted.get(key) ?? []), s.creationTimeSeconds]);
   }
 
   const skip = new Set([...tracked, ...dismissed].map(keyOf));
@@ -92,7 +116,25 @@ export function planUpsolveSync(
       solvedTime: firstAccepted.get(keyOf(p))! * 1000,
     }));
 
-  return { toAdd: [...toAdd.values()], solved };
+  const resolved = tracked.flatMap((p) => {
+    const due = p.resolveDueAt ? new Date(p.resolveDueAt).getTime() : null;
+    if (due === null || due > nowMs) return [];
+    const passes = (accepted.get(keyOf(p)) ?? [])
+      .map((seconds) => seconds * 1000)
+      .filter((at) => at >= due);
+    return passes.length
+      ? [
+          {
+            contestId: p.contestId,
+            index: p.index,
+            resolveStage: p.resolveStage ?? 1,
+            passedAt: Math.min(...passes),
+          },
+        ]
+      : [];
+  });
+
+  return { toAdd: [...toAdd.values()], solved, resolved };
 }
 
 /**

@@ -24,6 +24,7 @@ import {
 } from '../../common/utils/codeforces-api';
 import { parseProblemUrl } from './utils/problem-url';
 import {
+  afterResolve,
   planUnattempted,
   planUpsolveSync,
   type CfSubmission,
@@ -35,6 +36,8 @@ type CfTracked = {
   contestId: number;
   index: string;
   solvedTime?: number | null;
+  resolveDueAt?: Date | null;
+  resolveStage?: number;
 };
 
 /** The unique index from before problems carried a judge. */
@@ -105,14 +108,14 @@ export class UpsolveService implements OnModuleInit {
       fetchCodeforcesSubmissions(handle),
       this.upsolveModel
         .find({ user: userId, judge: 'codeforces' })
-        .select('contestId index solvedTime -_id')
+        .select('contestId index solvedTime resolveDueAt resolveStage -_id')
         .lean<CfTracked[]>(),
       this.dismissedModel
         .find({ user: userId, judge: 'codeforces' })
         .select('contestId index -_id')
         .lean<CfTracked[]>(),
     ]);
-    const { toAdd, solved } = planUpsolveSync(
+    const { toAdd, solved, resolved } = planUpsolveSync(
       submissions as CfSubmission[],
       tracked,
       dismissed,
@@ -129,7 +132,20 @@ export class UpsolveService implements OnModuleInit {
       : [];
     await this.insertMany(userId, [...toAdd, ...next]);
     if (solved.length) await this.bulkUpdateSolvedTime(userId, solved);
-    return { added: toAdd.length + next.length, solved: solved.length };
+    if (resolved.length)
+      await this.upsolveModel.bulkWrite(
+        resolved.map((p) => ({
+          updateOne: {
+            filter: { user: userId, ...problemKey(p) },
+            update: { $set: afterResolve(p.resolveStage, p.passedAt) },
+          },
+        })),
+      );
+    return {
+      added: toAdd.length + next.length,
+      solved: solved.length,
+      resolved: resolved.length,
+    };
   }
 
   async insertMany(userId: string, problems: (ProblemRef & object)[]) {
@@ -145,17 +161,58 @@ export class UpsolveService implements OnModuleInit {
     );
   }
 
+  /**
+   * Marks problems solved, or unsolved with a null time. Solving schedules the
+   * first re-solve, counted from now; only the first solve does, so marking a
+   * solved problem again cannot restart its schedule.
+   */
   async bulkUpdateSolvedTime(
     userId: string,
     problems: (ProblemRef & { solvedTime?: number | null })[],
+    nowMs: number = Date.now(),
   ) {
-    const bulkOps = problems.map((problem) => ({
-      updateOne: {
-        filter: { user: userId, ...problemKey(problem) },
-        update: { $set: { solvedTime: problem.solvedTime } },
-      },
-    }));
+    const bulkOps = problems.map((problem) => {
+      const key = { user: userId, ...problemKey(problem) };
+      return problem.solvedTime
+        ? {
+            updateOne: {
+              filter: { ...key, solvedTime: null },
+              update: {
+                $set: {
+                  solvedTime: problem.solvedTime,
+                  ...afterResolve(0, nowMs),
+                },
+              },
+            },
+          }
+        : {
+            updateOne: {
+              filter: key,
+              update: {
+                $set: { solvedTime: null, resolveStage: 0, resolveDueAt: null },
+              },
+            },
+          };
+    });
     await this.upsolveModel.bulkWrite(bulkOps);
+  }
+
+  /** Ends the re-solve schedule of a problem without solving it again. */
+  async skipResolve(userId: string, problem: ProblemRef) {
+    const { matchedCount } = await this.upsolveModel.updateOne(
+      { user: userId, ...problemKey(problem), resolveDueAt: { $ne: null } },
+      { $set: { resolveStage: 0, resolveDueAt: null } },
+    );
+    if (!matchedCount)
+      throw new NotFoundException('That problem has no re-solve waiting.');
+  }
+
+  /** How many of the user's re-solves have come due. */
+  async countResolvesDue(userId: string, nowMs: number = Date.now()) {
+    return await this.upsolveModel.countDocuments({
+      user: userId,
+      resolveDueAt: { $ne: null, $lte: new Date(nowMs) },
+    });
   }
 
   /**

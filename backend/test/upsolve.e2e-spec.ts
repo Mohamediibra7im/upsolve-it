@@ -193,6 +193,84 @@ describe('upsolve queue against a real database', () => {
     fetchMock.mockRestore();
   });
 
+  it('brings a solved problem back after 7 days and again after 30', async () => {
+    const user = newUser();
+    const ref = { contestId: 1991, index: 'C' };
+    const DAY = 86_400_000;
+    const t0 = Date.UTC(2026, 0, 1);
+    const state = async () => {
+      const [p] = await upsolve.list(user);
+      return [p.resolveStage, p.resolveDueAt?.getTime() ?? null];
+    };
+    const syncWith = async (acceptedAt: number[], now: number) => {
+      const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue({
+        json: async () => ({
+          status: 'OK',
+          result: acceptedAt.map((at) => ({
+            creationTimeSeconds: at / 1000,
+            verdict: 'OK',
+            problem: { ...ref, name: 'Absolute Zero' },
+            author: { participantType: 'PRACTICE' },
+          })),
+        }),
+      } as Response);
+      const clock = jest.spyOn(Date, 'now').mockReturnValue(now);
+      try {
+        return await upsolve.syncFromCodeforces(user, 'someone');
+      } finally {
+        clock.mockRestore();
+        fetchMock.mockRestore();
+      }
+    };
+    await upsolve.insertMany(user, [problem(1991, 'C')]);
+    expect(await state()).toEqual([0, null]);
+
+    await upsolve.bulkUpdateSolvedTime(user, [{ ...ref, solvedTime: t0 }], t0);
+    expect(await state()).toEqual([1, t0 + 7 * DAY]);
+    expect(await upsolve.countResolvesDue(user, t0 + 6 * DAY)).toBe(0);
+    expect(await upsolve.countResolvesDue(user, t0 + 8 * DAY)).toBe(1);
+    // marking it solved again does not restart the schedule
+    await upsolve.bulkUpdateSolvedTime(
+      user,
+      [{ ...ref, solvedTime: t0 + DAY }],
+      t0 + DAY,
+    );
+    expect(await state()).toEqual([1, t0 + 7 * DAY]);
+
+    // the old accepted submission does not pass the re-solve; a new one does
+    expect((await syncWith([t0], t0 + 8 * DAY)).resolved).toBe(0);
+    expect((await syncWith([t0, t0 + 8 * DAY], t0 + 9 * DAY)).resolved).toBe(1);
+    expect(await state()).toEqual([2, t0 + 38 * DAY]);
+
+    // 30 days later: passing the last one ends the schedule
+    expect(
+      (await syncWith([t0, t0 + 8 * DAY, t0 + 40 * DAY], t0 + 41 * DAY))
+        .resolved,
+    ).toBe(1);
+    expect(await state()).toEqual([0, null]);
+    await expect(upsolve.skipResolve(user, ref)).rejects.toThrow(
+      'no re-solve waiting',
+    );
+  });
+
+  it('ends the schedule when a re-solve is skipped', async () => {
+    const user = newUser();
+    const ref = { contestId: 2000, index: 'E' };
+    await upsolve.insertMany(user, [problem(2000, 'E')]);
+    await upsolve.bulkUpdateSolvedTime(
+      user,
+      [{ ...ref, solvedTime: 1000 }],
+      1000,
+    );
+    await upsolve.skipResolve(user, ref);
+    const [p] = await upsolve.list(user);
+    expect([p.resolveStage, p.resolveDueAt, p.solvedTime]).toEqual([
+      0,
+      null,
+      1000,
+    ]);
+  });
+
   it('keeps two judges apart even when they share an identifier', async () => {
     const user = newUser();
     await upsolve.insertMany(user, [

@@ -18,6 +18,7 @@ import {
   UpdateUpsolveProblemDto,
   AddByUrlDto,
   DeleteUpsolveProblemDto,
+  ProblemRefDto,
   UpsolveNoteDto,
 } from './dto/upsolve-problem.dto';
 
@@ -98,6 +99,17 @@ export class UpsolveController {
       await this.userStats.recordUpsolveSolved(user._id.toString());
     }
     return { message: 'Upsolved problems updated' };
+  }
+
+  /** Give up on a re-solve: the problem stays solved and stops coming back. */
+  @UseGuards(AuthGuard)
+  @Post('resolve/skip')
+  async skipResolve(
+    @CurrentUser() user: UserDocument,
+    @Body() body: ProblemRefDto,
+  ) {
+    await this.upsolve.skipResolve(user._id.toString(), body);
+    return { message: 'Re-solve skipped' };
   }
 
   @UseGuards(AuthGuard)

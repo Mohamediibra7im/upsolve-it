@@ -47,6 +47,17 @@ export class UpsolvedProblem {
   @Prop({ type: String, default: '', maxlength: NOTE_MAX_LENGTH })
   note!: string;
 
+  /**
+   * When the solved problem comes back to be solved again; null when nothing
+   * is scheduled. Set on solving, moved on by a passed re-solve.
+   */
+  @Prop({ type: Date, default: null })
+  resolveDueAt!: Date | null;
+
+  /** 1 while the 7-day re-solve is ahead, 2 for the 30-day one, 0 for none. */
+  @Prop({ type: Number, default: 0 })
+  resolveStage!: number;
+
   @Prop({ default: Date.now })
   createdAt!: Date;
 }

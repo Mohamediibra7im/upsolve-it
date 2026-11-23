@@ -132,13 +132,19 @@ describe('UpsolveService', () => {
       const problems = [{ contestId: 1, index: 'A', solvedTime: 1000 }];
       upsolveModel.bulkWrite.mockResolvedValue(undefined);
 
-      await service.bulkUpdateSolvedTime('uid', problems);
+      await service.bulkUpdateSolvedTime('uid', problems, 5000);
 
       expect(upsolveModel.bulkWrite).toHaveBeenCalledWith([
         {
           updateOne: {
-            filter: { user: 'uid', ...cf },
-            update: { $set: { solvedTime: 1000 } },
+            filter: { user: 'uid', ...cf, solvedTime: null },
+            update: {
+              $set: {
+                solvedTime: 1000,
+                resolveStage: 1,
+                resolveDueAt: new Date(5000 + 7 * 86_400_000),
+              },
+            },
           },
         },
       ]);
