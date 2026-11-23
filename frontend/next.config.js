@@ -8,6 +8,16 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
   },
+  // In production the API is private: this server forwards /api/* to it, so
+  // the browser only talks to one origin. Unset locally, where the browser
+  // calls the API directly via NEXT_PUBLIC_API_BASE_URL. Routes defined in
+  // app/api take precedence over this rewrite.
+  async rewrites() {
+    const api = process.env.API_INTERNAL_URL;
+    return api
+      ? [{ source: '/api/:path*', destination: `${api}/api/:path*` }]
+      : [];
+  },
   async redirects() {
     return [
       {

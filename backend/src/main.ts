@@ -70,9 +70,10 @@ async function bootstrap() {
     swaggerOptions: { persistAuthorization: true },
   });
 
-  // Bind 0.0.0.0 so the reverse proxy (and Docker) can reach the app.
-  await app.listen(port, '0.0.0.0');
-  logger.log(`Application is running on: http://0.0.0.0:${port}`);
+  // Bind every interface, IPv6 included: Fly's private network, which the
+  // web process uses to reach this API, is IPv6-only.
+  await app.listen(port, '::');
+  logger.log(`Application is running on port ${port}`);
 }
 
 bootstrap().catch((err) => {
