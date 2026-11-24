@@ -4,8 +4,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types, type AnyBulkWriteOperation } from 'mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
+import {
+  Model,
+  Types,
+  type AnyBulkWriteOperation,
+  type Connection,
+} from 'mongoose';
 import { AuthService } from '../auth/auth.service';
 import { User, type UserDocument } from '../auth/schemas/user.schema';
 import {
@@ -21,9 +26,36 @@ import {
   AuditLogsService,
   type AuditLogFilters,
 } from '../audit-logs/audit-logs.service';
+import { TransactionsService } from '../../common/database/transactions.module';
+import { UserStats } from '../trainings/schemas/user-stats.schema';
+import { DismissedUpsolve } from '../upsolve/schemas/dismissed-upsolve.schema';
+import { Friendship } from '../friends/schemas/friendship.schema';
+import { FriendRequest } from '../friends/schemas/friend-request.schema';
+import { RefreshToken } from '../auth/schemas/refresh-token.schema';
+import { PasswordResetChallenge } from '../auth/schemas/password-reset-challenge.schema';
 import { averageEffectiveProblemRatingForSession } from '../trainings/utils/session-performance';
 import { getRankFromRating } from '../../common/utils/rating';
 import { fetchCodeforcesUserInfo } from '../../common/utils/codeforces-api';
+
+/**
+ * Everything that belongs to one account, by collection: what goes with it
+ * when it is deleted. A new collection that stores a user's own data belongs
+ * in this list. The audit trail is not here on purpose: it stays.
+ */
+const OWNED_BY_USER: [model: string, filter: (id: Types.ObjectId) => object][] =
+  [
+    [Training.name, (id) => ({ user: id })],
+    [UserStats.name, (id) => ({ user: id })],
+    [UpsolvedProblem.name, (id) => ({ user: id })],
+    [DismissedUpsolve.name, (id) => ({ user: id })],
+    [
+      Friendship.name,
+      (id) => ({ $or: [{ userLower: id }, { userHigher: id }] }),
+    ],
+    [FriendRequest.name, (id) => ({ $or: [{ fromUser: id }, { toUser: id }] })],
+    [RefreshToken.name, (id) => ({ userId: id })],
+    [PasswordResetChallenge.name, (id) => ({ userId: id })],
+  ];
 
 @Injectable()
 export class AdminService {
@@ -37,6 +69,8 @@ export class AdminService {
     @InjectModel(UpsolvedProblem.name)
     private readonly upsolveModel: Model<UpsolvedProblemDocument>,
     private readonly auditLogs: AuditLogsService,
+    private readonly transactions: TransactionsService,
+    @InjectConnection() private readonly connection: Connection,
   ) {}
 
   /** Public — returns only the total number of registered users. */
@@ -422,7 +456,9 @@ export class AdminService {
 
     const usersQuery = this.userModel
       .find({})
-      .select('codeforcesHandle role rating rank avatar glyphAvatar createdAt')
+      .select(
+        'username codeforcesHandle role rating rank avatar glyphAvatar createdAt',
+      )
       .sort({ createdAt: -1 })
       .lean();
 
@@ -611,6 +647,11 @@ export class AdminService {
     const user = await this.userModel.findById(uid);
     if (!user) throw new NotFoundException('User not found');
 
+    if (!user.codeforcesHandle) {
+      throw new BadRequestException(
+        'This account has no Codeforces handle to sync from.',
+      );
+    }
     const results = await fetchCodeforcesUserInfo(user.codeforcesHandle);
     if (!results || results.length === 0) {
       throw new BadRequestException('Invalid Codeforces handle');
@@ -668,7 +709,11 @@ export class AdminService {
 
     // Fetch all users from DB
     const validIds = userIds.filter((id) => Types.ObjectId.isValid(id));
-    const users = await this.userModel.find({ _id: { $in: validIds } });
+    // An account that trains with AtCoder alone has nothing to sync here.
+    const users = await this.userModel.find({
+      _id: { $in: validIds },
+      codeforcesHandle: { $type: 'string' },
+    });
     if (!users.length) throw new NotFoundException('No valid users found');
 
     // Build handles list and fetch from Codeforces in one call
@@ -783,5 +828,54 @@ export class AdminService {
       targetUserId,
     );
     return { message: 'User unlocked' };
+  }
+
+  /**
+   * Deletes an account and everything that belongs to it, in one
+   * transaction: all of it goes, or none of it. It cannot be undone.
+   * An admin is never deleted: the role has to be taken away first, which
+   * also means nobody can delete themselves.
+   */
+  async deleteUser(admin: UserDocument, targetUserId: string) {
+    if (!Types.ObjectId.isValid(targetUserId))
+      throw new NotFoundException('User not found');
+    const id = new Types.ObjectId(targetUserId);
+    if (admin._id.equals(id))
+      throw new ForbiddenException('You cannot delete your own account.');
+    const target = await this.userModel.findById(id);
+    if (!target) throw new NotFoundException('User not found');
+    if (target.role === 'admin') {
+      throw new ForbiddenException(
+        'Remove the admin role from this account before deleting it.',
+      );
+    }
+
+    await this.transactions.run(async () => {
+      for (const [model, owned] of OWNED_BY_USER)
+        await this.connection.model(model).deleteMany(owned(id));
+      // Checked again inside the transaction: made an admin a moment ago
+      // means not deleted.
+      const { deletedCount } = await this.userModel.deleteOne({
+        _id: id,
+        role: { $ne: 'admin' },
+      });
+      if (!deletedCount)
+        throw new ForbiddenException('That account can no longer be deleted.');
+    });
+    this.statsCache = null;
+
+    await this.auditLogs.logAction(
+      'DELETE_USER',
+      'User',
+      admin._id,
+      admin.username ?? admin.codeforcesHandle ?? 'admin',
+      {
+        targetUserId,
+        targetUsername: target.username,
+        targetHandle: target.codeforcesHandle,
+      },
+      targetUserId,
+    );
+    return { message: 'User deleted' };
   }
 }

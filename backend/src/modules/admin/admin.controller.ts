@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -81,6 +82,15 @@ export class AdminController {
       current._id.toString(),
       body.userIds,
     );
+  }
+
+  @UseGuards(AuthGuard, AdminGuard)
+  @Delete('users/:userId')
+  async deleteUser(
+    @Param('userId') userId: string,
+    @CurrentUser() current: UserDocument,
+  ) {
+    return await this.admin.deleteUser(current, userId);
   }
 
   @UseGuards(AuthGuard, AdminGuard)

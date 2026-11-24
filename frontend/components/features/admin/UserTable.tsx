@@ -1,22 +1,25 @@
 "use client";
 
-import { BadgeCheck, CircleDashed, ExternalLink } from "lucide-react";
+import { BadgeCheck, CircleDashed, ExternalLink, Trash2 } from "lucide-react";
 import UserAvatar from "@/components/shared/UserAvatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Rank } from "@/components/ui/kit";
 import type { User } from "@/types/User";
+import { nameOf } from "./DeleteUserDialog";
 
 export function UserTable({
   users,
   updatingId,
   onFetchStats,
   onRoleUpdate,
+  onDelete,
 }: Readonly<{
   users: User[];
   updatingId: string | null;
   onFetchStats: (id: string) => void;
   onRoleUpdate: (user: User, role: "admin" | "user") => void;
+  onDelete: (user: User) => void;
 }>) {
   // The users endpoint does not send isVerified yet; show the column once it does.
   const showVerified = users.some((user) => user.isVerified !== undefined);
@@ -45,19 +48,24 @@ export function UserTable({
                   <div className="flex items-center gap-3">
                     <UserAvatar {...user} size={32} />
                     <div className="min-w-0">
-                      <a
-                        href={`https://codeforces.com/profile/${user.codeforcesHandle}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 font-semibold hover:underline"
-                      >
-                        {user.codeforcesHandle || "Unknown user"}
-                        <ExternalLink
-                          className="size-3 text-ink-muted"
-                          aria-hidden="true"
-                        />
-                        <span className="sr-only">(Codeforces, new tab)</span>
-                      </a>
+                      {user.codeforcesHandle ? (
+                        <a
+                          href={`https://codeforces.com/profile/${user.codeforcesHandle}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 font-semibold hover:underline"
+                        >
+                          {user.codeforcesHandle}
+                          <ExternalLink
+                            className="size-3 text-ink-muted"
+                            aria-hidden="true"
+                          />
+                          <span className="sr-only">(Codeforces, new tab)</span>
+                        </a>
+                      ) : (
+                        // an account with AtCoder alone: no Codeforces page to open
+                        <b className="block truncate">{nameOf(user)}</b>
+                      )}
                       <Rank rating={user.rating} className="t-sm" />
                     </div>
                   </div>
@@ -117,6 +125,19 @@ export function UserTable({
                           ? "Remove admin"
                           : "Make admin"}
                     </Button>
+                    {/* An admin is never deleted: the role comes off first. */}
+                    {!isAdmin && (
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        disabled={!!updatingId}
+                        onClick={() => onDelete(user)}
+                      >
+                        <Trash2 />
+                        Delete
+                        <span className="sr-only"> {nameOf(user)}</span>
+                      </Button>
+                    )}
                   </div>
                 </td>
               </tr>

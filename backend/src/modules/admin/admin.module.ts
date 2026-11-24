@@ -10,11 +10,13 @@ import {
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module';
+import { TransactionsModule } from '../../common/database/transactions.module';
 
 @Module({
   imports: [
     AuthModule,
     AuditLogsModule,
+    TransactionsModule,
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Training.name, schema: TrainingSchema },

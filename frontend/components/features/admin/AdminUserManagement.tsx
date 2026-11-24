@@ -17,6 +17,7 @@ import { UserProfileDialog } from "@/components/features/profile";
 import {
   useAdminUsers,
   updateUserRole,
+  deleteUser,
   syncBatchUserRatings,
 } from "@/hooks/admin/useAdminUsers";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,8 @@ import {
   type RoleChange,
 } from "./RoleConfirmationDialog";
 import { UserTable } from "./UserTable";
+import { DeleteUserDialog, nameOf } from "./DeleteUserDialog";
+import type { User } from "@/types/User";
 
 const SORTS = {
   newest: "Newest first",
@@ -48,6 +51,8 @@ export default function AdminUserManagement() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [roleChange, setRoleChange] = useState<RoleChange | null>(null);
   const [statsUserId, setStatsUserId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<User | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const { toast } = useToast();
   const { users, isLoading, isError, mutate } = useAdminUsers();
@@ -58,7 +63,9 @@ export default function AdminUserManagement() {
     return users
       .filter(
         (user) =>
-          (user.codeforcesHandle || "").toLowerCase().includes(term) &&
+          `${user.codeforcesHandle ?? ""} ${user.username ?? ""}`
+            .toLowerCase()
+            .includes(term) &&
           (rankFilter === "all" || rankName(user.rating) === rankFilter),
       )
       .sort(
@@ -132,6 +139,33 @@ export default function AdminUserManagement() {
       });
     } finally {
       setUpdating(null);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleting) return;
+    const name = nameOf(deleting);
+    setIsDeleting(true);
+    try {
+      await deleteUser(deleting._id);
+      await mutate();
+      setDeleting(null);
+      toast({
+        title: `${name} was deleted.`,
+        description: "The account and everything in it are gone.",
+        variant: "success",
+        durationMs: 5000,
+      });
+    } catch (error) {
+      toast({
+        title: "The account was not deleted.",
+        description:
+          error instanceof Error ? error.message : "Try again in a minute.",
+        variant: "destructive",
+        durationMs: 5000,
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -229,6 +263,7 @@ export default function AdminUserManagement() {
                 onRoleUpdate={(user, newRole) =>
                   setRoleChange({ user, newRole })
                 }
+                onDelete={setDeleting}
               />
             ) : (
               <AdminState
@@ -253,6 +288,13 @@ export default function AdminUserManagement() {
         change={roleChange}
         onClose={() => setRoleChange(null)}
         onConfirm={confirmRoleChange}
+      />
+
+      <DeleteUserDialog
+        user={deleting}
+        isDeleting={isDeleting}
+        onClose={() => !isDeleting && setDeleting(null)}
+        onConfirm={confirmDelete}
       />
 
       <UserProfileDialog
