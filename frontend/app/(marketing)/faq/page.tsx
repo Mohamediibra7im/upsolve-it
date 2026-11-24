@@ -7,6 +7,7 @@ export const metadata = publicPageMetadata("/faq");
 export default function Page() {
   return (
     <DocPage
+      path="/faq"
       eyebrow="FAQ"
       title="Questions, answered."
       lead="Short answers about your account, training, the upsolve queue and email."

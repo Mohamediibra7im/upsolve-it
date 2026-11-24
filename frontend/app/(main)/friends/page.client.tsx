@@ -40,6 +40,21 @@ function Person({ who }: { who: FriendSummary }) {
   return <UserAvatar {...who} size={32} />;
 }
 
+const FRIEND_PERKS = [
+  [
+    "Upsolve standings",
+    "You and your friends ranked by upsolve streak, then by how little each of you has left waiting.",
+  ],
+  [
+    "Shared problems",
+    "Open a friend to see the problems you both still owe, and solve them together.",
+  ],
+  [
+    "Their progress",
+    "Sessions, solved problems and rating of each friend, on one profile.",
+  ],
+];
+
 export default function FriendsPage() {
   const { user, isLoading: isUserLoading } = useUser();
   const router = useRouter();
@@ -349,21 +364,39 @@ export default function FriendsPage() {
           </Button>
         </MemberPageState>
       ) : sortedFriends.length === 0 ? (
-        <EmptyState
-          title="No friends yet."
-          action={
-            <Button
-              variant="outline"
-              onClick={() => document.getElementById("friend-handle")?.focus()}
-            >
-              Add a friend
-            </Button>
-          }
-        >
-          Send a request with a Codeforces handle. Once they accept, you can
-          open their profile to see their sessions, solved problems and
-          progress.
-        </EmptyState>
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+          <EmptyState
+            title="No friends yet."
+            action={
+              <Button
+                variant="outline"
+                onClick={() =>
+                  document.getElementById("friend-handle")?.focus()
+                }
+              >
+                Add a friend
+              </Button>
+            }
+          >
+            Send a request with a Codeforces handle. Once they accept, you can
+            open their profile to see their sessions, solved problems and
+            progress.
+          </EmptyState>
+          <div className="grid gap-6 sm:grid-cols-3">
+            {FRIEND_PERKS.map(([title, text], i) => (
+              <section
+                key={title}
+                className="u-panel grid content-start gap-3 p-6"
+              >
+                <span className="u-step" aria-hidden="true">
+                  {i + 1}
+                </span>
+                <h2 className="t-h3">{title}</h2>
+                <p className="t-muted">{text}</p>
+              </section>
+            ))}
+          </div>
+        </div>
       ) : (
         <section className="u-panel" aria-labelledby="standings-title">
           <div className="u-panel__head">

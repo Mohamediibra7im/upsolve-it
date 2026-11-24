@@ -85,6 +85,7 @@ const SECTIONS = [
 export default function Page() {
   return (
     <DocPage
+      path="/about"
       eyebrow="About"
       title="Made by people who love a good problem."
       sections={SECTIONS}

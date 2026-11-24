@@ -1,13 +1,29 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
+
+const READING = [
+  ["/how-it-works", "How it works"],
+  ["/modes", "The five modes"],
+  ["/faq", "FAQ"],
+  ["/about", "About"],
+  ["/contact", "Contact"],
+  ["/privacy", "Privacy"],
+  ["/terms", "Terms"],
+];
 
 /** The reading template for privacy, terms, FAQ and about:
- *  a title, a numbered index on the left and a 720px text column. */
+ *  a title, a numbered index on the left, a 720px text column and,
+ *  on wide screens, a side column with the other pages and the sign-up action. */
 export default function DocPage({
+  path,
   eyebrow,
   title,
   lead,
   sections,
 }: {
+  /** This page's own path, left out of the reading list. */
+  path: string;
   eyebrow: string;
   title: string;
   lead?: string;
@@ -37,7 +53,7 @@ export default function DocPage({
             </a>
           ))}
         </nav>
-        <article className="grid max-w-[720px] gap-10 lg:col-span-9">
+        <article className="grid max-w-[720px] gap-10 lg:col-span-9 xl:col-span-6">
           {sections.map((section, i) => (
             <section key={section.id} id={section.id}>
               <h2 className="t-h1 mb-3">
@@ -49,6 +65,43 @@ export default function DocPage({
             </section>
           ))}
         </article>
+        <aside className="grid content-start gap-6 sm:grid-cols-2 lg:col-span-9 lg:col-start-4 xl:sticky xl:top-24 xl:col-span-3 xl:col-start-auto xl:grid-cols-1 xl:self-start">
+          <nav aria-label="More to read" className="u-panel">
+            <div className="u-panel__head">
+              <h2 className="t-h3">More to read</h2>
+            </div>
+            <div className="grid gap-0.5 p-2">
+              {READING.filter(([href]) => href !== path).map(
+                ([href, label]) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="flex items-center justify-between gap-3 rounded-md px-3 py-2.5 font-semibold text-ink-muted hover:bg-surface-sunk hover:text-ink"
+                  >
+                    {label}
+                    <ArrowUpRight aria-hidden="true" className="size-4" />
+                  </Link>
+                ),
+              )}
+            </div>
+          </nav>
+          <section className="u-inverse grid content-between gap-6 rounded-lg p-6">
+            <div className="grid gap-2">
+              <p className="t-eyebrow">Free to use</p>
+              <h2 className="t-h1">Your next solve is waiting.</h2>
+              <p className="text-ink-muted">
+                Timed sets built around your rating, and a queue that keeps what
+                you missed.
+              </p>
+            </div>
+            <Link
+              href="/signup"
+              className="u-btn u-btn--primary justify-self-start"
+            >
+              Start practicing <ArrowUpRight aria-hidden="true" />
+            </Link>
+          </section>
+        </aside>
       </div>
     </div>
   );

@@ -24,7 +24,11 @@ export default function ProfileActivityPage() {
 
   return (
     <>
-      <ActivityHeatmap history={history} upsolvedProblems={upsolvedProblems} />
+      <ActivityHeatmap
+        history={history}
+        upsolvedProblems={upsolvedProblems}
+        stats
+      />
       {recentSessions.length ? (
         <section className="u-panel">
           <div className="u-panel__head">

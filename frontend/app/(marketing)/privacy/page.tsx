@@ -271,6 +271,7 @@ const SECTIONS: { id: string; title: string; body: ReactNode }[] = [
 export default function Page() {
   return (
     <DocPage
+      path="/privacy"
       eyebrow="Privacy policy · Last updated November 2026"
       title="Your privacy matters."
       lead="What Upsolve It stores about you, where it comes from, who can see it, and what you can change or remove."

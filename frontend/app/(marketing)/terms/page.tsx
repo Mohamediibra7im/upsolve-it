@@ -29,6 +29,7 @@ const SECTIONS = [
 export default function Page() {
   return (
     <DocPage
+      path="/terms"
       eyebrow="Terms of service · Last updated June 2026"
       title="A few ground rules."
       lead="The terms that keep Upsolve It a useful, reliable place to practice."
