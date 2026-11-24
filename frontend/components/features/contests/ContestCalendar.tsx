@@ -145,28 +145,32 @@ function waitOf(ms: number) {
   return d ? `${d}d ${h}h` : h ? `${h}h ${pad(m)}m` : `${Math.max(1, m)}m`;
 }
 
+/** The wait as a scoreboard: one dark tile per unit, the unit named under it. */
 function Countdown({ ms }: { ms: number }) {
   const { d, h, m, s } = split(ms);
   return (
-    <span
+    <div
       role="timer"
       aria-live="off"
       aria-label={`${d} days, ${h} hours, ${m} minutes, ${s} seconds`}
-      className="u-timer max-[400px]:text-[32px]"
+      className="grid max-w-[420px] grid-cols-4 gap-2"
     >
-      {d > 0 && (
-        <>
-          {d}
-          <small>d</small>
-        </>
-      )}
-      {pad(h)}
-      <small>h</small>
-      {pad(m)}
-      <small>m</small>
-      {pad(s)}
-      <small>s</small>
-    </span>
+      {(
+        [
+          ["Days", d],
+          ["Hours", h],
+          ["Min", m],
+          ["Sec", s],
+        ] as const
+      ).map(([unit, value]) => (
+        <span key={unit} aria-hidden="true" className="grid gap-2">
+          <b className="t-num grid h-[76px] place-items-center rounded-sm bg-ink text-[clamp(30px,3vw,46px)] font-semibold leading-none tracking-tight text-ground sm:h-[92px]">
+            {pad(value)}
+          </b>
+          <span className="t-eyebrow text-center">{unit}</span>
+        </span>
+      ))}
+    </div>
   );
 }
 
