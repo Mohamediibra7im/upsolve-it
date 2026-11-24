@@ -46,6 +46,8 @@ describe('announcements', () => {
 
   // Answers the way Mongo would for the calls the service makes.
   const model = {
+    // start-up seeding looks for an admin and finds none
+    db: { collection: () => ({ findOne: () => Promise.resolve(null) }) },
     find: (filter: { published?: boolean } = {}) => {
       let found = rows.filter(
         (row) =>

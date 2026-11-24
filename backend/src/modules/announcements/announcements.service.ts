@@ -1,8 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  type OnModuleInit,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import type { UserDocument } from '../auth/schemas/user.schema';
+import { SEEDED_ANNOUNCEMENTS } from './announcements.seed';
 import type { AnnouncementDto } from './dto/announcement.dto';
 import {
   Announcement,
@@ -24,12 +29,43 @@ const fields = (dto: AnnouncementDto) => ({
 });
 
 @Injectable()
-export class AnnouncementsService {
+export class AnnouncementsService implements OnModuleInit {
   constructor(
     @InjectModel(Announcement.name)
     private readonly model: Model<AnnouncementDocument>,
     private readonly auditLogs: AuditLogsService,
   ) {}
+
+  /**
+   * Adds the announcements that ship with this release, once each, in the
+   * name of the first admin. Safe on every start: one that exists is left
+   * exactly as it is, so a visitor who closed it does not see it again.
+   */
+  async onModuleInit() {
+    const admin = await this.model.db
+      .collection('users')
+      .findOne({ role: 'admin' }, { projection: { _id: 1 } });
+    if (!admin) return;
+    for (const [i, { _id, ...rest }] of SEEDED_ANNOUNCEMENTS.entries()) {
+      const at = new Date(Date.now() + i);
+      await this.model
+        .updateOne(
+          { _id },
+          {
+            $setOnInsert: {
+              ...rest,
+              createdBy: admin._id,
+              createdAt: at,
+              updatedAt: at,
+            },
+          },
+          // Mongoose would otherwise move updatedAt on every start.
+          { upsert: true, timestamps: false },
+        )
+        // Two machines starting together: the other one added it.
+        .catch(() => undefined);
+    }
+  }
 
   /**
    * Every announcement a visitor should see now, newest first: published,
