@@ -38,21 +38,34 @@ export function validatePassword(password: string): PasswordValidationResult {
 
   // Check for common weak passwords
   const commonPasswords = [
-    "password", "123456789", "qwertyuiop", "asdfghjkl", "zxcvbnm",
-    "admin123", "welcome123", "password123", "qwerty123"
+    "password",
+    "123456789",
+    "qwertyuiop",
+    "asdfghjkl",
+    "zxcvbnm",
+    "admin123",
+    "welcome123",
+    "password123",
+    "qwerty123",
   ];
 
-  if (commonPasswords.some(common => password.toLowerCase().includes(common.toLowerCase()))) {
+  if (
+    commonPasswords.some((common) =>
+      password.toLowerCase().includes(common.toLowerCase()),
+    )
+  ) {
     errors.push("Password contains common patterns and is too weak");
   }
 
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
-export function getPasswordStrengthLevel(password: string): 'weak' | 'fair' | 'good' | 'strong' {
+export function getPasswordStrengthLevel(
+  password: string,
+): "weak" | "fair" | "good" | "strong" {
   let score = 0;
 
   // Length scoring
@@ -67,15 +80,15 @@ export function getPasswordStrengthLevel(password: string): 'weak' | 'fair' | 'g
   if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~`]/.test(password)) score += 1;
 
   // Complexity bonus
-  if (password.length >= 12 && /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])/.test(password)) {
+  if (
+    password.length >= 12 &&
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])/.test(password)
+  ) {
     score += 1;
   }
 
-  if (score <= 2) return 'weak';
-  if (score <= 4) return 'fair';
-  if (score <= 6) return 'good';
-  return 'strong';
+  if (score <= 2) return "weak";
+  if (score <= 4) return "fair";
+  if (score <= 6) return "good";
+  return "strong";
 }
-
-
-
