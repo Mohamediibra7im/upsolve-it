@@ -6,7 +6,6 @@ export type BrandName =
   | "x"
   | "atcoder"
   | "leetcode"
-  | "codechef"
   | "codeforces"
   | "facebook";
 

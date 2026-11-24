@@ -11,7 +11,6 @@ export const LINK_KEYS = [
   'website',
   'atcoder',
   'leetcode',
-  'codechef',
 ] as const;
 export type LinkKey = (typeof LINK_KEYS)[number];
 

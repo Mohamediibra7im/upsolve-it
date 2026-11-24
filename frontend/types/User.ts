@@ -6,7 +6,6 @@ export interface ProfileLinks {
   website: string;
   atcoder: string;
   leetcode: string;
-  codechef: string;
 }
 
 export interface User {

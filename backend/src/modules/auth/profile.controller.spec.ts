@@ -36,7 +36,6 @@ const noLinks = {
   website: '',
   atcoder: '',
   leetcode: '',
-  codechef: '',
 };
 
 describe('PATCH /users/me/profile', () => {

@@ -17,12 +17,6 @@ it("reduces a pasted profile URL to the username", () => {
     "tourist",
   );
   expect(normalizeLink("leetcode", "leetcode.com/u/lee215/")).toBe("lee215");
-  expect(
-    normalizeLink(
-      "codechef",
-      "https://www.codechef.com/users/gennady.korotkevich",
-    ),
-  ).toBe("gennady.korotkevich");
 });
 
 it("keeps plain usernames, without a leading @", () => {
@@ -42,7 +36,6 @@ it("leaves a URL of another platform alone and says what is expected", () => {
   );
   expect(linkError("github", "-octocat")).not.toBeNull();
   expect(linkError("x", "a".repeat(16))).not.toBeNull();
-  expect(linkError("codechef", "gennady.korotkevich")).not.toBeNull();
 });
 
 it("accepts only https addresses for the website", () => {

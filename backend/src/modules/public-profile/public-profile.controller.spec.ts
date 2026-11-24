@@ -139,7 +139,6 @@ describe('public profile endpoints', () => {
         website: 'https://your-site.com',
         atcoder: '',
         leetcode: '',
-        codechef: '',
       },
       glyphAvatar: 'v1:xzl4n0g:mlda8xw:horizon',
       rating: 1342,

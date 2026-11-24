@@ -34,7 +34,6 @@ const NO_LINKS: ProfileLinks = {
   website: "",
   atcoder: "",
   leetcode: "",
-  codechef: "",
 };
 
 const formOf = (user: User): Form => ({

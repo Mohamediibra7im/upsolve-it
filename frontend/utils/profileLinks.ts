@@ -70,15 +70,6 @@ export const PLATFORMS: ReadonlyArray<{
     username: /^[A-Za-z0-9_-]{1,40}$/,
     allowed: "letters, digits, hyphens and underscores",
   },
-  {
-    key: "codechef",
-    label: "CodeChef",
-    placeholder: "username",
-    base: "https://www.codechef.com/users/",
-    url: profileUrl("codechef\\.com", "users/"),
-    username: /^[A-Za-z0-9_]{3,20}$/,
-    allowed: "letters, digits and underscores, 3 to 20",
-  },
 ];
 
 const platform = (key: LinkKey) => PLATFORMS.find((p) => p.key === key)!;

@@ -122,15 +122,6 @@ export class ProfileLinksDto {
     ),
   )
   leetcode?: string;
-
-  @Optional()
-  @IsString()
-  @Transform(trim)
-  @Matches(
-    /^(?:[A-Za-z0-9_]{3,20})?$/,
-    usernameOnly('CodeChef', 'letters, digits and underscores, 3 to 20'),
-  )
-  codechef?: string;
 }
 
 export class UpdateProfileDto {
