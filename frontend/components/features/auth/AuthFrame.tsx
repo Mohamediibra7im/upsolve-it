@@ -124,6 +124,48 @@ export function AuthSplit({
   );
 }
 
+/** A labelled input with a leading icon. `hint` sits under it, `action` ends the label row. */
+export function TextField({
+  id,
+  label,
+  icon,
+  hint,
+  action,
+  className,
+  ...input
+}: ComponentProps<"input"> & {
+  id: string;
+  label: string;
+  icon: ReactNode;
+  hint?: ReactNode;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="u-field">
+      <span className="flex items-baseline justify-between gap-3">
+        <label htmlFor={id}>{label}</label>
+        {action}
+      </span>
+      <span className="u-field__box">
+        <span className="u-field__icon [&>svg]:size-4" aria-hidden="true">
+          {icon}
+        </span>
+        <input
+          id={id}
+          type="text"
+          required
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          className={cn("u-input", className)}
+          {...input}
+        />
+      </span>
+      {hint && <span className="u-hint">{hint}</span>}
+    </div>
+  );
+}
+
 export function HandleField(input: ComponentProps<"input">) {
   return (
     <div className="u-field">
@@ -149,12 +191,14 @@ export function HandleField(input: ComponentProps<"input">) {
 export function PasswordField({
   id,
   label,
+  icon,
   action,
   children,
   ...input
 }: ComponentProps<"input"> & {
   id: string;
   label: string;
+  icon?: ReactNode;
   action?: ReactNode;
 }) {
   const [shown, setShown] = useState(false);
@@ -164,7 +208,12 @@ export function PasswordField({
         <label htmlFor={id}>{label}</label>
         {action}
       </span>
-      <div className="relative">
+      <div className={cn("relative", icon && "u-field__box")}>
+        {icon && (
+          <span className="u-field__icon [&>svg]:size-4" aria-hidden="true">
+            {icon}
+          </span>
+        )}
         <input
           id={id}
           type={shown ? "text" : "password"}
@@ -178,7 +227,7 @@ export function PasswordField({
           size="icon"
           onClick={() => setShown(!shown)}
           aria-label={`${shown ? "Hide" : "Show"} ${label.toLowerCase()}`}
-          className="u-btn--sm absolute right-1.5 top-1.5"
+          className="u-btn--sm absolute right-1.5 top-1/2 -translate-y-1/2"
         >
           {shown ? <EyeOff /> : <Eye />}
         </Button>

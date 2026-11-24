@@ -3,8 +3,8 @@
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useUser } from "@/hooks/auth";
+import { signupStep } from "@/utils/signupStep";
 import Loader from "@/components/shared/Loader";
-import VerificationRequired from "@/components/shared/VerificationRequired";
 
 const protectedRoots = [
   "/dashboard",
@@ -61,13 +61,20 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
 
   const shouldRedirect = !isLoading && !user && isProtectedRoute;
 
+  // An account that stopped part-way through sign-up is sent back to the
+  // step it left, from the app and from the login page alike.
+  const midSignup = !isLoading && !!user && signupStep(user) > 0;
+  const shouldFinishSignup =
+    midSignup && (!isPublicRoute || pathname === "/login");
+
   const shouldEnterApp =
-    !isLoading && !!user && guestOnly.includes(pathname ?? "");
+    !isLoading && !!user && !midSignup && guestOnly.includes(pathname ?? "");
 
   useEffect(() => {
     if (shouldRedirect) router.push("/");
+    else if (shouldFinishSignup) router.replace("/signup");
     else if (shouldEnterApp) router.replace("/dashboard");
-  }, [shouldRedirect, shouldEnterApp, router]);
+  }, [shouldRedirect, shouldFinishSignup, shouldEnterApp, router]);
 
   // Handle loading state
   if (isLoading && isProtectedRoute) {
@@ -78,15 +85,11 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   if (shouldRedirect) {
     return null;
   }
+  if (shouldFinishSignup) {
+    return <Loader message="Back to your sign-up…" />;
+  }
   if (shouldEnterApp) {
     return <Loader message="Opening your dashboard…" />;
-  }
-
-  // Block unverified users from all pages (except public/login pages)
-  if (user && !user.isVerified && !isPublicRoute) {
-    return (
-      <VerificationRequired isVerified={false}>{children}</VerificationRequired>
-    );
   }
 
   return <>{children}</>;

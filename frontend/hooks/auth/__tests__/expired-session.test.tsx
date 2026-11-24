@@ -12,6 +12,10 @@ jest.mock("next/navigation", () => ({ useRouter: () => router }));
 
 const user: User = {
   _id: "test-user",
+  username: "test_handle",
+  email: null,
+  emailVerified: false,
+  atcoderVerified: false,
   codeforcesHandle: "test_handle",
   rating: 1500,
   avatar: "https://userpic.codeforces.org/no-avatar.jpg",

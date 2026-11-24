@@ -10,6 +10,12 @@ export interface ProfileLinks {
 
 export interface User {
   _id: string;
+  /** What the account logs in with. Older accounts: their Codeforces handle. */
+  username: string;
+  /** The account's own address; null on accounts made before sign-up asked for one. */
+  email: string | null;
+  emailVerified: boolean;
+  /** Missing on an account that proved itself with AtCoder alone. */
   codeforcesHandle: string;
   rating: number;
   avatar: string;
@@ -19,7 +25,10 @@ export interface User {
   organization?: string;
   lastSyncTime?: number;
   role: "user" | "admin";
+  /** The Codeforces handle was shown to be theirs. */
   isVerified: boolean;
+  /** The AtCoder handle in `links.atcoder` was shown to be theirs. */
+  atcoderVerified: boolean;
   /** Opt-in: true when /u/{codeforcesHandle} is visible to anyone. */
   publicProfile?: boolean;
   displayName?: string;

@@ -13,6 +13,7 @@ import VerifyCodeforcesDialog from "@/components/shared/VerifyCodeforcesDialog";
 import { ReminderSettings } from "@/components/features/profile";
 import ProfileSettings from "@/components/features/profile/ProfileSettings";
 import PublicProfileSetting from "@/components/features/profile/PublicProfileSetting";
+import { AccountEmail } from "@/components/features/auth";
 import { useUser } from "@/hooks/auth";
 
 const SECTIONS = ["Profile", "Account", "Email", "Privacy", "Session"];
@@ -86,11 +87,21 @@ export default function SettingsPage() {
                   <ShieldCheck />
                   Verified
                 </Badge>
-              ) : (
+              ) : user.codeforcesHandle ? (
                 <Button variant="outline" onClick={() => setVerifying(true)}>
                   Verify your handle
                 </Button>
+              ) : (
+                <span className="t-sm t-muted">
+                  No Codeforces handle on this account.
+                </span>
               )}
+            </Setting>
+            <Setting
+              title="Account email"
+              text="Lets you log in with your email and reset your password with a code. It is never shown to anyone."
+            >
+              <AccountEmail />
             </Setting>
             <Setting
               title="Password"

@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import { AuthForm } from "@/components/features/auth";
+import { LoginStage } from "@/components/features/auth";
 
 export const metadata: Metadata = {
   title: "Log in",
-  description:
-    "Log in to continue your practice and review your progress.",
+  description: "Log in to continue your practice and review your progress.",
 };
 
 export default function Page() {
-  return <AuthForm mode="login" />;
+  return <LoginStage />;
 }

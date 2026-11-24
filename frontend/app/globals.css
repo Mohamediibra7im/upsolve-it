@@ -527,6 +527,16 @@
     opacity: 0.6;
     cursor: not-allowed;
   }
+  /* A field the browser filled in keeps the theme: no yellow wash over it.
+     The inset shadow is the one way to cover the browser's own fill. */
+  .u-input:-webkit-autofill,
+  .u-input:-webkit-autofill:hover,
+  .u-input:-webkit-autofill:focus,
+  .u-input:autofill {
+    -webkit-text-fill-color: var(--ink);
+    caret-color: var(--ink);
+    box-shadow: 0 0 0 1000px var(--surface) inset;
+  }
   .u-hint {
     font-weight: 400;
     color: var(--ink-muted);
@@ -1179,6 +1189,88 @@
     background: var(--ink);
     color: var(--ground);
     font: 600 13px/1 var(--font-mono);
+  }
+
+  /* ---------- Sign-in pages ---------- */
+  /* A leading icon inside a field; it lights up with the field. */
+  .u-field__box {
+    position: relative;
+    display: block;
+  }
+  .u-field__icon {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    margin-top: -8px;
+    color: var(--ink-faint);
+    pointer-events: none;
+  }
+  .u-field__box:focus-within .u-field__icon {
+    color: var(--accent-ink);
+  }
+  .u-field__box > .u-input {
+    height: 48px;
+    padding-left: 40px;
+  }
+  /* The lit, lifted sheet the login form and the sign-up steps sit on. */
+  .u-panel--stage {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface) 94%, var(--ink)),
+      color-mix(in srgb, var(--surface) 86%, var(--ground))
+    );
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--ink) 6%, transparent),
+      0 28px 70px rgba(0, 0, 0, 0.6);
+  }
+  /* Login: a ground of practice-heatmap squares, cleared in the middle for
+     the form. Takes the cell colours from .u-heat. */
+  .u-heat-ground {
+    position: absolute;
+    inset: 0;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(36, minmax(0, 1fr));
+    grid-template-rows: repeat(20, minmax(0, 1fr));
+    grid-auto-columns: auto;
+    gap: 4px;
+    padding: 4px;
+    opacity: 0.8;
+    overflow: hidden;
+    -webkit-mask: radial-gradient(
+      ellipse 48% 62% at 50% 46%,
+      transparent 0 52%,
+      #000 100%
+    );
+    mask: radial-gradient(
+      ellipse 48% 62% at 50% 46%,
+      transparent 0 52%,
+      #000 100%
+    );
+  }
+  @media (max-width: 767px) {
+    .u-heat-ground {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      grid-template-rows: repeat(24, minmax(0, 1fr));
+    }
+  }
+  /* The emailed 6-digit code, typed large. */
+  .u-input--code {
+    height: 64px;
+    font: 600 30px/1 var(--font-mono);
+    letter-spacing: 0.5em;
+    text-align: center;
+  }
+  /* The brand on a volt block: the tile turns dark so the mark stays whole. */
+  .u-inverse .u-brand em {
+    color: inherit;
+  }
+  .u-inverse .u-mark rect {
+    fill: var(--on-inverse);
+  }
+  .u-inverse .u-mark path {
+    stroke: var(--inverse);
   }
 
   /* ---------- Footer: three open columns between hairlines, kept short ---------- */

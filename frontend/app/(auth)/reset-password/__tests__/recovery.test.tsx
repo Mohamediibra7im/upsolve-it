@@ -48,7 +48,7 @@ it("verifies the profile and resets the password using the strict API payloads",
     return reply(400, { message: "Unexpected endpoint or extra fields" });
   });
   render(<ResetPasswordPage />);
-  fireEvent.change(screen.getByLabelText("Codeforces handle"), {
+  fireEvent.change(screen.getByLabelText("Username or email"), {
     target: { value: "tourist" },
   });
   fireEvent.click(screen.getByRole("button", { name: "Continue" }));
@@ -82,7 +82,7 @@ it("expires according to the server deadline and allows a fresh challenge", asyn
     }),
   );
   render(<ResetPasswordPage />);
-  fireEvent.change(screen.getByLabelText("Codeforces handle"), {
+  fireEvent.change(screen.getByLabelText("Username or email"), {
     target: { value: "tourist" },
   });
   fireEvent.click(screen.getByRole("button", { name: "Continue" }));
@@ -91,6 +91,6 @@ it("expires according to the server deadline and allows a fresh challenge", asyn
   act(() => {
     jest.advanceTimersByTime(2500);
   });
-  expect(screen.getByLabelText("Codeforces handle")).toBeInTheDocument();
+  expect(screen.getByLabelText("Username or email")).toBeInTheDocument();
   expect(screen.getByRole("alert")).toHaveTextContent(/expired/i);
 });

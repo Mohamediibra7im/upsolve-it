@@ -3,7 +3,13 @@ import useSWR from "swr";
 import { useRouter } from "next/navigation";
 import { User } from "@/types/User";
 import { Response, SuccessResponse, ErrorResponse } from "@/types/Response";
-import { setRefreshCallback, clearRefreshCallback, setLogoutCallback, clearLogoutCallback, resolveApiUrl } from "@/lib/apiClient";
+import {
+  setRefreshCallback,
+  clearRefreshCallback,
+  setLogoutCallback,
+  clearLogoutCallback,
+  resolveApiUrl,
+} from "@/lib/apiClient";
 
 const USER_CACHE_KEY = "codeforces-user";
 
@@ -15,14 +21,10 @@ const useUser = () => {
     data: user,
     mutate,
     error,
-  } = useSWR<User | null>(
-    USER_CACHE_KEY,
-    null,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    },
-  );
+  } = useSWR<User | null>(USER_CACHE_KEY, null, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   // Single effect: read localStorage + register callbacks.
   // React 18 batches mutate() + setIsReady() into one re-render, so
@@ -64,12 +66,12 @@ const useUser = () => {
   );
 
   const login = useCallback(
-    async (codeforcesHandle: string, password: string): Promise<Response<User>> => {
+    async (name: string, password: string): Promise<Response<User>> => {
       try {
         const res = await fetch(resolveApiUrl("/api/auth/login"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ codeforcesHandle, password }),
+          body: JSON.stringify({ login: name, password }),
           credentials: "include",
         });
         const data = await res.json();
@@ -87,25 +89,33 @@ const useUser = () => {
     [mutate],
   );
 
+  /** Makes the account and signs it in. The email code is sent by the server. */
   const register = useCallback(
-    async (codeforcesHandle: string, password: string, confirmPassword: string): Promise<Response<User>> => {
+    async (
+      username: string,
+      email: string,
+      password: string,
+    ): Promise<Response<User>> => {
       try {
         const res = await fetch(resolveApiUrl("/api/auth/register"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ codeforcesHandle, password, confirmPassword }),
+          body: JSON.stringify({ username, email, password }),
+          credentials: "include",
         });
         const data = await res.json();
         if (!res.ok) {
-          return ErrorResponse(data.message);
+          return ErrorResponse([data.message].flat().join(". "));
         }
-        return await login(codeforcesHandle, password);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        await mutate(data.user, false);
+        return SuccessResponse(data.user);
       } catch (error) {
         console.error("Registration failed:", error);
         return ErrorResponse("Failed to connect to the server.");
       }
     },
-    [login],
+    [mutate],
   );
 
   const logout = useCallback(async () => {
@@ -121,27 +131,30 @@ const useUser = () => {
     mutate(null, false);
   }, [mutate]);
 
-  const resetPassword = useCallback(async (
-    oldPassword: string,
-    newPassword: string,
-  ): Promise<Response<null>> => {
-    try {
-      const res = await fetch(resolveApiUrl("/api/auth/reset-password"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ oldPassword, newPassword }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        return ErrorResponse(data.message);
+  const resetPassword = useCallback(
+    async (
+      oldPassword: string,
+      newPassword: string,
+    ): Promise<Response<null>> => {
+      try {
+        const res = await fetch(resolveApiUrl("/api/auth/reset-password"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ oldPassword, newPassword }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          return ErrorResponse(data.message);
+        }
+        return SuccessResponse(null);
+      } catch (error) {
+        console.error("Password reset failed:", error);
+        return ErrorResponse("Failed to connect to the server.");
       }
-      return SuccessResponse(null);
-    } catch (error) {
-      console.error("Password reset failed:", error);
-      return ErrorResponse("Failed to connect to the server.");
-    }
-  }, []);
+    },
+    [],
+  );
 
   const syncProfile = useCallback(async (): Promise<Response<User>> => {
     try {
@@ -164,12 +177,17 @@ const useUser = () => {
     }
   }, [mutate]);
 
-  const generateVerificationCode = useCallback(async (): Promise<Response<{ code: string; expiresAt: number }>> => {
+  const generateVerificationCode = useCallback(async (): Promise<
+    Response<{ code: string; expiresAt: number }>
+  > => {
     try {
-      const res = await fetch(resolveApiUrl("/api/auth/generate-verification-code"), {
-        method: "POST",
-        credentials: "include",
-      });
+      const res = await fetch(
+        resolveApiUrl("/api/auth/generate-verification-code"),
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      );
       const data = await res.json();
       if (!res.ok) {
         return ErrorResponse(data.message);
@@ -181,19 +199,27 @@ const useUser = () => {
     }
   }, []);
 
-  const verifyCodeforcesProfile = useCallback(async (): Promise<Response<null>> => {
+  const verifyCodeforcesProfile = useCallback(async (): Promise<
+    Response<null>
+  > => {
     try {
-      const res = await fetch(resolveApiUrl("/api/auth/verify-codeforces-profile"), {
-        method: "POST",
-        credentials: "include",
-      });
+      const res = await fetch(
+        resolveApiUrl("/api/auth/verify-codeforces-profile"),
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      );
       const data = await res.json();
       if (!res.ok) {
         return ErrorResponse(data.message);
       }
       const updatedUser = { ...user, isVerified: true };
       localStorage.setItem("user", JSON.stringify(updatedUser));
-      await mutate((current) => current ? { ...current, isVerified: true } : current, false);
+      await mutate(
+        (current) => (current ? { ...current, isVerified: true } : current),
+        false,
+      );
       return SuccessResponse(null);
     } catch (error) {
       console.error("Verify Codeforces profile failed:", error);
