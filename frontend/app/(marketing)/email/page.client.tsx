@@ -19,7 +19,8 @@ const copy = {
   },
   unsubscribe: {
     title: "Stop weekly reminders",
-    description: "We’ll remove your address and stop sending reminder emails.",
+    description:
+      "We’ll stop sending the weekly reminder. Your account and its email stay as they are.",
     button: "Stop emails",
     done: "Reminders are off.",
     doneDescription: "You won’t get any more reminder emails.",

@@ -7,17 +7,11 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { IsEmail, IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { UserDocument } from '../auth/schemas/user.schema';
 import { RemindersService } from './reminders.service';
-
-class SubscribeDto {
-  @IsEmail()
-  @MaxLength(254)
-  email!: string;
-}
 
 class RedeemDto {
   @IsString()
@@ -38,8 +32,8 @@ export class RemindersController {
 
   @UseGuards(AuthGuard)
   @Put()
-  subscribe(@CurrentUser() user: UserDocument, @Body() body: SubscribeDto) {
-    return this.reminders.subscribe(user, body.email);
+  subscribe(@CurrentUser() user: UserDocument) {
+    return this.reminders.subscribe(user);
   }
 
   @UseGuards(AuthGuard)

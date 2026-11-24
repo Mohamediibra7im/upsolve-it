@@ -9,7 +9,9 @@ import { Button } from "@/components/ui/button";
 import { EmptyState, PageHead } from "@/components/ui/kit";
 import { useToast } from "@/components/providers/Toast";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
-import ReminderSettings from "@/components/features/profile/ReminderSettings";
+import ReminderSettings, {
+  type ReminderStatus,
+} from "@/components/features/profile/ReminderSettings";
 import { AddByLink, UpsolveRounds } from "@/components/features/upsolve";
 import { useUser } from "@/hooks/auth";
 import { useHistory, useUpsolvedProblems } from "@/hooks/data";
@@ -19,12 +21,10 @@ import type { UpsolveProblem } from "@/types/UpsolveProblem";
 /** The weekly email, behind one button that says whether it is on. */
 function ReminderButton() {
   // The same key ReminderSettings reads, so the label follows what it saves.
-  const { data } = useSWR<{ email: string | null; verified: boolean }>(
-    "/api/reminders",
-    swrFetcher,
-    { revalidateOnFocus: false },
-  );
-  const state = !data?.email ? "off" : data.verified ? "weekly" : "confirm it";
+  const { data } = useSWR<ReminderStatus>("/api/reminders", swrFetcher, {
+    revalidateOnFocus: false,
+  });
+  const state = data?.on ? "weekly" : "off";
   return (
     <Popover.Root>
       <Popover.Trigger asChild>

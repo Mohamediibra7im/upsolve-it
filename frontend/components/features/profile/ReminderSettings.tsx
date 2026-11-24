@@ -1,41 +1,55 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import useSWR from "swr";
-import { Check, Clock } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { apiFetcher, swrFetcher } from "@/lib/apiClient";
 import { useToast } from "@/components/providers/Toast";
+import { useUser } from "@/hooks/auth";
 
-type ReminderStatus = { email: string | null; verified: boolean };
+export type ReminderStatus = {
+  on: boolean;
+  /** Where it is sent while it is on. */
+  email: string | null;
+  /** False until the account has a confirmed email to send to. */
+  canTurnOn: boolean;
+};
 
-/** The control that opts in to (or out of) the weekly "problems you still owe" email.
- *  It is the bare control: the page that mounts it supplies the title and the explanation. */
+/** The switch that opts in to (or out of) the weekly "problems you still owe" email.
+ *  It is the bare control: the page that mounts it supplies the title and the explanation.
+ *  The email goes to the account's own address, so there is nothing to type here. */
 export default function ReminderSettings() {
   const { data, mutate } = useSWR<ReminderStatus>(
     "/api/reminders",
     swrFetcher,
-    {
-      revalidateOnFocus: false,
-    },
+    { revalidateOnFocus: false },
   );
+  const { user } = useUser();
   const { toast } = useToast();
-  const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const save = async (request: RequestInit, done: string) => {
+  // The account email was just added or confirmed elsewhere on the page.
+  useEffect(() => {
+    void mutate();
+  }, [user?.email, user?.emailVerified, mutate]);
+
+  const on = data?.on ?? false;
+  const toggle = async () => {
     setBusy(true);
     try {
-      const next = await apiFetcher<ReminderStatus>("/api/reminders", request);
+      const next = await apiFetcher<ReminderStatus>("/api/reminders", {
+        method: on ? "DELETE" : "PUT",
+      });
       await mutate(next, false);
-      setEmail("");
-      toast({ title: done, variant: "success" });
-    } catch {
+      toast({
+        title: next.on ? "Weekly reminder is on." : "Weekly reminder is off.",
+        variant: "success",
+      });
+    } catch (error) {
       toast({
         title: "Your reminder was not saved.",
-        description: "Check the address and try again in a moment.",
+        description:
+          error instanceof Error ? error.message : "Try again in a moment.",
         variant: "destructive",
       });
     } finally {
@@ -43,66 +57,46 @@ export default function ReminderSettings() {
     }
   };
 
-  const subscribe = (event: FormEvent) => {
-    event.preventDefault();
-    void save(
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      },
-      "Check your inbox to confirm.",
-    );
-  };
-
-  if (data?.email) {
-    return (
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="t-sm min-w-0 break-all">{data.email}</span>
-        {data.verified ? (
-          <Badge variant="solved">
-            <Check />
-            Active
-          </Badge>
-        ) : (
-          <Badge variant="pending">
-            <Clock />
-            Confirm in your inbox
-          </Badge>
-        )}
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={busy}
-          onClick={() => save({ method: "DELETE" }, "Reminders turned off.")}
-        >
-          Turn off reminders
-        </Button>
-      </div>
-    );
-  }
+  // Off, and no confirmed account email to send to: that comes first.
+  const needsEmail = !!data && !on && !data.canTurnOn;
 
   return (
-    <form
-      onSubmit={subscribe}
-      className="flex w-full flex-wrap gap-2 sm:w-auto"
-    >
-      <label htmlFor="reminder-email" className="sr-only">
-        Email address
-      </label>
-      <Input
-        id="reminder-email"
-        type="email"
-        required
-        autoComplete="email"
-        placeholder="you@example.com"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="h-10 min-w-0 flex-1 sm:w-64"
-      />
-      <Button type="submit" variant="secondary" disabled={busy}>
-        Send me reminders
-      </Button>
-    </form>
+    <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
+      <p className="t-sm t-muted min-w-0">
+        {!data ? (
+          "Loading…"
+        ) : on ? (
+          <>
+            Sent to <b className="break-all text-ink">{data.email}</b>
+          </>
+        ) : needsEmail ? (
+          <>
+            Add your{" "}
+            <Link href="/settings#settings-account" className="t-link">
+              account email
+            </Link>{" "}
+            first: it is sent there.
+          </>
+        ) : (
+          <>
+            Will be sent to <b className="break-all text-ink">{user?.email}</b>
+          </>
+        )}
+      </p>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={on}
+        aria-label="Weekly reminder"
+        disabled={!data || busy || needsEmail}
+        onClick={toggle}
+        className="group flex shrink-0 items-center gap-3 rounded-sm disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <span className="t-sm t-num text-ink-muted">{on ? "On" : "Off"}</span>
+        <span className="flex h-6 w-11 items-center rounded-sm border border-line-strong bg-surface-sunk px-0.5 transition-colors group-aria-checked:border-accent-ink group-aria-checked:bg-accent-soft">
+          <span className="size-4 rounded-sm bg-ink-muted transition-transform group-aria-checked:translate-x-[22px] group-aria-checked:bg-accent-ink" />
+        </span>
+      </button>
+    </div>
   );
 }

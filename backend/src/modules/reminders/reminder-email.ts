@@ -318,20 +318,3 @@ ${page ? button(mail.open, page) : ''}`,
     }),
   };
 }
-
-export function renderConfirmEmail(handle: string, confirmUrl: string) {
-  return {
-    subject: 'Confirm your Upsolve It reminder email',
-    text: `Hi ${handle},\n\nConfirm this address to get a weekly upsolve reminder:\n${confirmUrl}\n\nThe link works for 24 hours. If you didn't ask for this, ignore this email.`,
-    html: layout({
-      site: confirmUrl,
-      preview: 'One click and your weekly upsolve reminder is on.',
-      eyebrow: 'Confirm your email',
-      title: 'One click to switch your reminder on.',
-      body: `${paragraph(`Hi ${escapeHtml(handle)}, confirm this address and once a week we will send you the problems still waiting in your upsolve queue. Nothing is sent when the queue is clear.`)}
-${button('Confirm this address', confirmUrl)}`,
-      about: `Confirming your weekly reminder email for ${strong(escapeHtml(handle))}.`,
-      footer: `The link works for 24 hours. If you didn't ask for this, ignore this email and nothing will be sent.`,
-    }),
-  };
-}
