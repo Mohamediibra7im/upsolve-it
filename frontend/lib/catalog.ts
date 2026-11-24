@@ -1,5 +1,5 @@
 import type { Judge } from "@/types/TrainingProblem";
-import { resolveApiUrl } from "./apiClient";
+import { serverApiFetch } from "./serverApi";
 
 /** The public problem catalogue: /problems and /topics read it on the server. */
 
@@ -104,12 +104,8 @@ export const catalogHref = (query: CatalogQuery) =>
 
 /** Null when the API cannot answer: the page shows that instead of failing. */
 async function read<T>(path: string, revalidate: number): Promise<T | null> {
-  const internal = process.env.API_INTERNAL_URL;
   try {
-    const res = await fetch(
-      internal ? `${internal}${path}` : resolveApiUrl(path),
-      { next: { revalidate } },
-    );
+    const res = await serverApiFetch(path, revalidate);
     return res.ok ? ((await res.json()) as T) : null;
   } catch {
     return null;

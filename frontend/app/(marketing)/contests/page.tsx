@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
 import ContestCalendar from "@/components/features/contests/ContestCalendar";
-import { resolveApiUrl } from "@/lib/apiClient";
+import { serverApiFetch } from "@/lib/serverApi";
 import { publicPageMetadata } from "@/lib/seo";
 import { JUDGES, type ContestSchedule } from "@/types/Contest";
 
@@ -13,13 +13,8 @@ export const metadata = publicPageMetadata("/contests");
  * reached the page still renders, and says that neither judge was read.
  */
 async function loadSchedule(): Promise<ContestSchedule & { readAt: number }> {
-  const path = "/api/contests/upcoming";
-  const internal = process.env.API_INTERNAL_URL;
   try {
-    const res = await fetch(
-      internal ? `${internal}${path}` : resolveApiUrl(path),
-      { next: { revalidate: 300 } },
-    );
+    const res = await serverApiFetch("/api/contests/upcoming", 300);
     if (!res.ok) throw new Error(`Contests request failed (${res.status})`);
     const schedule: ContestSchedule = await res.json();
     return { ...schedule, readAt: Date.now() };

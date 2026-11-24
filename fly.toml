@@ -18,6 +18,10 @@ primary_region = "cdg"
 [env]
   NODE_ENV = "production"
   PORT = "3000"
+  # Needed at run time too, not only as a build argument: pages the web
+  # process renders itself (problems, topics, contests, public profiles)
+  # read the API from this address.
+  API_INTERNAL_URL = "http://api.process.upsolve-it.internal:3000"
 
 [processes]
   app = "node frontend/server.js"
