@@ -26,15 +26,35 @@ export const PUBLIC_PAGES = {
     description:
       "110 ladder levels with target ratings from 900 to 4050, shown against the Codeforces ranks, and how a four-problem ladder set is built.",
   },
+  "/problems": {
+    title: "Problems",
+    description:
+      "Browse Codeforces and AtCoder problems in one list: filter by judge, rating range and topic, search by name or id, and open any problem on its own judge.",
+  },
+  "/topics": {
+    title: "Topics",
+    description:
+      "Every Codeforces topic tag with its problem count and how its problems spread across the rating bands, from 800 to 3500. Each topic links to its problems.",
+  },
   "/how-it-works": {
     title: "How It Works",
     description:
       "Train on a timed problem set, keep the problems you missed in one upsolve queue, solve them later, and review your streaks and sessions.",
   },
+  "/try": {
+    title: "Try a Problem",
+    description:
+      "Solve a real competitive programming problem in the Upsolve It workspace without an account: read the statement, write your code and run it on the samples.",
+  },
   "/faq": {
     title: "FAQ",
     description:
       "Short answers about Upsolve It: Codeforces handle verification, training sessions, where the upsolve queue comes from, and the weekly reminder email.",
+  },
+  "/contests": {
+    title: "Contest Calendar",
+    description:
+      "Upcoming Codeforces and AtCoder rounds in one list, with start times in your own time zone, a countdown to the next round, and each round's length.",
   },
   "/about": {
     title: "About",

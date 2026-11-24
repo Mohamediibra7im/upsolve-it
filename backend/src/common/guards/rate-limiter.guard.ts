@@ -13,6 +13,8 @@ interface RateLimitOptions {
   points: number;
   duration: number;
   keyPrefix?: string;
+  /** What the caller is told at the limit, where the page shows it as it is. */
+  message?: string;
 }
 
 @Injectable()
@@ -37,7 +39,7 @@ export class RateLimiterGuard implements CanActivate {
     const key = this.getKey(request, rateLimitOptions.keyPrefix);
     const limiter = this.getLimiter(rateLimitOptions);
 
-    return this.consume(limiter, key, response);
+    return this.consume(limiter, key, response, rateLimitOptions.message);
   }
 
   private getRateLimitOptions(
@@ -129,6 +131,20 @@ export class RateLimiterGuard implements CanActivate {
         duration: 60 * 10,
         keyPrefix: 'problems:statement',
       },
+      // The /try page, for visitors with no account: the caller is an address.
+      // TryController also holds one daily allowance for all of them.
+      'TryController.run': {
+        points: 10,
+        duration: 60 * 10,
+        keyPrefix: 'try:run',
+        message:
+          'You have used the free runs for now. Try again in a few minutes, or create an account to keep going.',
+      },
+      'TryController.statement': {
+        points: 60,
+        duration: 60 * 10,
+        keyPrefix: 'try:statement',
+      },
       'UpsolveController.addByUrl': {
         points: 30,
         duration: 60 * 60,
@@ -161,6 +177,26 @@ export class RateLimiterGuard implements CanActivate {
         points: 120,
         duration: 60,
         keyPrefix: 'announcements:current',
+      },
+      // Unauthenticated reads behind /problems and /topics. The web server
+      // renders both for every visitor from one address: their own buckets.
+      'ProblemsController.catalog': {
+        points: 300,
+        duration: 60,
+        keyPrefix: 'problems:catalog',
+      },
+      'ProblemsController.topics': {
+        points: 120,
+        duration: 60,
+        keyPrefix: 'problems:topics',
+      },
+      // Unauthenticated read, answered from memory. The web server asks for
+      // every visitor of /contests from one address, and every browser asks
+      // once in five minutes for the footer's "next contest".
+      'ContestsController.upcoming': {
+        points: 600,
+        duration: 60,
+        keyPrefix: 'contests:upcoming',
       },
     };
 
@@ -208,6 +244,7 @@ export class RateLimiterGuard implements CanActivate {
     limiter: RateLimiterMemory,
     key: string,
     response: Response,
+    message = 'Too Many Requests',
   ): Promise<boolean> {
     try {
       const rateLimiterRes: RateLimiterRes = await limiter.consume(key);
@@ -221,7 +258,7 @@ export class RateLimiterGuard implements CanActivate {
         const retryAfter = Math.ceil(rateLimiterRes.msBeforeNext / 1000);
         response.setHeader('Retry-After', retryAfter.toString());
 
-        throw new HttpException('Too Many Requests', 429);
+        throw new HttpException(message, 429);
       }
       throw rateLimiterRes;
     }

@@ -15,8 +15,10 @@ import {
   Plus,
   RotateCcw,
   SquareTerminal,
+  UserPlus,
   X,
 } from "lucide-react";
+import Link from "next/link";
 import "katex/dist/katex.min.css";
 import "./workspace.css";
 import { Badge } from "@/components/ui/badge";
@@ -98,6 +100,9 @@ export default function Workspace({
   session,
   notice,
   onProblemOpen,
+  tryKeys,
+  selected: chosen,
+  onSelect,
 }: {
   /** The session's name, shown beside the problem switcher. */
   title: string;
@@ -110,11 +115,24 @@ export default function Workspace({
   /** A line about this session, shown under the bar. */
   notice?: ReactNode;
   onProblemOpen: (problem: TrainingProblem) => void;
+  /**
+   * A visitor with no account, on the public /try page: each problem's key at
+   * /api/run/try, in the order of `problems`. Code then runs on the samples
+   * only, there are no cases of one's own, and an account takes Submit's place.
+   */
+  tryKeys?: string[];
+  /** The open problem, when the page around the workspace chooses it too. */
+  selected?: number;
+  onSelect?: (index: number) => void;
 }) {
-  const [selected, setSelected] = useState(0);
+  const [own, setOwn] = useState(0);
+  const selected = chosen ?? own;
+  const setSelected = onSelect ?? setOwn;
   const [showTags, setShowTags] = useState(false);
   const problem = problems[Math.min(selected, problems.length - 1)];
   const id = idOf(problem);
+  const tryKey = tryKeys?.[Math.min(selected, problems.length - 1)];
+  const guest = tryKeys !== undefined;
 
   // Showing a problem is opening it: the session times it from here.
   const opened = useRef(new Set<string>());
@@ -126,9 +144,9 @@ export default function Workspace({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, onProblemOpen]);
 
-  const { statement, error, isLoading, retry } = useStatement(problem);
+  const { statement, error, isLoading, retry } = useStatement(problem, tryKey);
   const { code, setCode, language, setLanguage, reset } = useDraft(problem);
-  const { run, running } = useRunner();
+  const { run, running } = useRunner(tryKey);
 
   // cases the user added, and the last run, are kept per problem
   const [added, setAdded] = useState<Record<string, string[]>>({});
@@ -160,6 +178,8 @@ export default function Workspace({
 
   const runCode = async () => {
     if (running || !code.trim()) return;
+    // a visitor's code runs on the samples the server holds, or not at all
+    if (guest && !samples.length) return;
     // with no case at all, the code still runs once, on empty input
     const toRun = cases.length ? cases : [{ input: "" }];
     setPane("result");
@@ -374,20 +394,27 @@ export default function Workspace({
             type="button"
             className="u-btn u-btn--primary u-btn--sm"
             onClick={runCode}
-            disabled={running}
+            disabled={running || (guest && !samples.length)}
           >
             <Play aria-hidden="true" fill="currentColor" />
             {running ? "Running…" : "Run"}
           </button>
-          <button
-            type="button"
-            className="u-btn u-btn--sm"
-            onClick={submit}
-            title={`Copies your code, then opens the submit page for this problem on ${judgeName(problem)}`}
-          >
-            <ArrowUp aria-hidden="true" />
-            Submit
-          </button>
+          {guest ? (
+            <Link href="/signup" className="u-btn u-btn--sm">
+              <UserPlus aria-hidden="true" />
+              Create an account
+            </Link>
+          ) : (
+            <button
+              type="button"
+              className="u-btn u-btn--sm"
+              onClick={submit}
+              title={`Copies your code, then opens the submit page for this problem on ${judgeName(problem)}`}
+            >
+              <ArrowUp aria-hidden="true" />
+              Submit
+            </button>
+          )}
         </div>
         <div className="sw-top__side sw-top__side--end">{session}</div>
       </div>
@@ -477,8 +504,9 @@ export default function Workspace({
             ) : error || !statement ? (
               <div className="sw-prose" role="alert">
                 <p>
-                  The problem could not be loaded here. You can still write your
-                  code and run it against input of your own.
+                  The problem could not be loaded here.
+                  {!guest &&
+                    " You can still write your code and run it against input of your own."}
                 </p>
                 <p>
                   <a href={problem.url} target="_blank" rel="noreferrer">
@@ -646,25 +674,28 @@ export default function Workspace({
                       <span className="sr-only">, case</span>
                     </button>
                   ))}
-                  <button
-                    type="button"
-                    className="sw-slot sw-slot--add"
-                    aria-label="Add a case of your own"
-                    title="Add a case of your own"
-                    onClick={() => {
-                      setAdded((all) => ({
-                        ...all,
-                        [id]: [...(all[id] ?? []), ""],
-                      }));
-                      setOpenCase(cases.length);
-                    }}
-                  >
-                    <Plus aria-hidden="true" />
-                  </button>
+                  {!guest && (
+                    <button
+                      type="button"
+                      className="sw-slot sw-slot--add"
+                      aria-label="Add a case of your own"
+                      title="Add a case of your own"
+                      onClick={() => {
+                        setAdded((all) => ({
+                          ...all,
+                          [id]: [...(all[id] ?? []), ""],
+                        }));
+                        setOpenCase(cases.length);
+                      }}
+                    >
+                      <Plus aria-hidden="true" />
+                    </button>
+                  )}
                 </div>
                 {cases.length === 0 ? (
                   <p className="sw-empty">
-                    No sample cases here. Add a case of your own with the plus.
+                    No sample cases here.
+                    {!guest && " Add a case of your own with the plus."}
                   </p>
                 ) : isAdded ? (
                   <div className="sw-case">

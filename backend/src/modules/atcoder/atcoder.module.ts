@@ -7,5 +7,6 @@ import { AtcoderService } from './atcoder.service';
   imports: [AuthModule],
   controllers: [AtcoderController],
   providers: [AtcoderService],
+  exports: [AtcoderService],
 })
 export class AtcoderModule {}

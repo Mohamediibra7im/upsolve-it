@@ -39,8 +39,11 @@ type ProblemRef = Pick<TrainingProblem, "judge" | "contestId" | "index">;
 const idOf = (p: ProblemRef) =>
   `${p.judge ?? "codeforces"}:${p.contestId}:${p.index}`;
 
-/** A problem's statement and samples. Read once per visit: it does not change. */
-export function useStatement(problem: ProblemRef | null) {
+/**
+ * A problem's statement and samples. Read once per visit: it does not change.
+ * With `tryKey`, a visitor's read of one of the fixed problems of /try.
+ */
+export function useStatement(problem: ProblemRef | null, tryKey?: string) {
   const query = problem
     ? new URLSearchParams({
         judge: problem.judge ?? "codeforces",
@@ -49,7 +52,11 @@ export function useStatement(problem: ProblemRef | null) {
       })
     : null;
   const { data, error, isLoading, mutate } = useSWR<Statement>(
-    query ? `/api/problems/statement?${query}` : null,
+    tryKey
+      ? `/api/run/try/statement?problem=${encodeURIComponent(tryKey)}`
+      : query
+        ? `/api/problems/statement?${query}`
+        : null,
     swrFetcher,
     {
       revalidateOnFocus: false,
@@ -134,19 +141,27 @@ export function useDraft(problem: ProblemRef) {
   return { code, setCode, language, setLanguage, reset };
 }
 
-/** Runs code on a list of inputs through the server. One run at a time. */
-export function useRunner() {
+/**
+ * Runs code on a list of inputs through the server. One run at a time.
+ * With `tryKey`, a visitor's run: the server takes that problem's samples
+ * from its own copy, so no inputs are sent.
+ */
+export function useRunner(tryKey?: string) {
   const [running, setRunning] = useState(false);
   const run = useCallback(
     async (language: LanguageId, code: string, inputs: string[]) => {
       setRunning(true);
       try {
         const { results } = await apiFetcher<{ results: RunResult[] }>(
-          "/api/run",
+          tryKey ? "/api/run/try" : "/api/run",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ language, code, inputs }),
+            body: JSON.stringify(
+              tryKey
+                ? { problem: tryKey, language, code }
+                : { language, code, inputs },
+            ),
           },
         );
         return results;
@@ -154,7 +169,7 @@ export function useRunner() {
         setRunning(false);
       }
     },
-    [],
+    [tryKey],
   );
   return { run, running };
 }

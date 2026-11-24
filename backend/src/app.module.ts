@@ -19,6 +19,7 @@ import { RemindersModule } from './modules/reminders/reminders.module';
 import { PublicProfileModule } from './modules/public-profile/public-profile.module';
 import { AnnouncementsModule } from './modules/announcements/announcements.module';
 import { HealthModule } from './modules/health/health.module';
+import { ContestsModule } from './modules/contests/contests.module';
 import { RateLimiterGuard } from './common/guards/rate-limiter.guard';
 
 @Module({
@@ -100,6 +101,7 @@ import { RateLimiterGuard } from './common/guards/rate-limiter.guard';
     PublicProfileModule,
     AnnouncementsModule,
     HealthModule,
+    ContestsModule,
   ],
   controllers: [AppController],
   providers: [

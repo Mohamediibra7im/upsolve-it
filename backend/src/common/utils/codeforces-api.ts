@@ -103,3 +103,38 @@ export async function fetchCodeforcesProblemset(
     );
   }
 }
+
+let contestStarts: { at: number; value: Map<number, number> } | null = null;
+
+/**
+ * When each Codeforces contest started (contest id → epoch seconds), to put
+ * problems of two judges in one newest-first order. Cached like the problem set.
+ */
+export async function fetchCodeforcesContestStarts(
+  nowMs: number = Date.now(),
+): Promise<Map<number, number>> {
+  if (contestStarts && nowMs - contestStarts.at < PROBLEMSET_TTL_MS)
+    return contestStarts.value;
+  try {
+    const res = await fetch('https://codeforces.com/api/contest.list', {
+      signal: AbortSignal.timeout(15000),
+    });
+    const data: any = await res.json();
+    if (data?.status !== 'OK' || !Array.isArray(data.result))
+      throw new Error('unexpected answer');
+    const value = new Map<number, number>();
+    for (const c of data.result as {
+      id?: unknown;
+      startTimeSeconds?: unknown;
+    }[])
+      if (typeof c.id === 'number' && typeof c.startTimeSeconds === 'number')
+        value.set(c.id, c.startTimeSeconds);
+    contestStarts = { at: nowMs, value };
+    return value;
+  } catch {
+    if (contestStarts) return contestStarts.value;
+    throw new BadRequestException(
+      'Unable to reach Codeforces API. Please try again later.',
+    );
+  }
+}

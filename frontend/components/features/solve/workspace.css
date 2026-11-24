@@ -135,7 +135,7 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
   gap: 12px;
   /* the window, less the site's bar, this bar and the gaps around them */
-  height: max(560px, calc(100dvh - 160px));
+  height: max(560px, calc(100dvh - 172px));
 }
 .sw-col {
   display: grid;
