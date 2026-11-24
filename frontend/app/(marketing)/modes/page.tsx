@@ -1,5 +1,4 @@
 import { ClipboardCheck, RefreshCw, Tags, Timer } from "lucide-react";
-import ClosingCall from "@/components/features/landing/ClosingCall";
 import { MODES } from "@/components/features/landing/modes";
 import { Stat } from "@/components/ui/kit";
 import { publicPageMetadata } from "@/lib/seo";
@@ -125,15 +124,6 @@ export default function Page() {
           </div>
         </section>
       </div>
-      <ClosingCall
-        title={
-          <>
-            Pick a mode.
-            <br />
-            Start the clock.
-          </>
-        }
-      />
     </>
   );
 }

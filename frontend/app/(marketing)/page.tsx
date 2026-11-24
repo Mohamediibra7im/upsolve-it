@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowDown, ArrowUpRight, Check } from "lucide-react";
 import JsonLd from "@/components/shared/JsonLd";
-import ClosingCall from "@/components/features/landing/ClosingCall";
+import { GuestCall } from "@/components/features/profile/PublicProfileViewer";
 import Faq, { LANDING_FAQ } from "@/components/features/landing/Faq";
 import LadderRuler from "@/components/features/landing/LadderRuler";
 import {
@@ -239,7 +239,7 @@ export default function Page() {
         </section>
       </div>
 
-      <ClosingCall
+      <GuestCall
         title={
           <>
             A little better.

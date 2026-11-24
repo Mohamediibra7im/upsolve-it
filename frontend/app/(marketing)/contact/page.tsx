@@ -10,7 +10,6 @@ import {
   MessagesSquare,
   UserRound,
 } from "lucide-react";
-import ClosingCall from "@/components/features/landing/ClosingCall";
 import { publicPageMetadata } from "@/lib/seo";
 
 export const metadata = publicPageMetadata("/contact");
@@ -124,7 +123,6 @@ export default function Page() {
           ))}
         </div>
       </div>
-      <ClosingCall title="A little better. Every session." />
     </>
   );
 }

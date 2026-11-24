@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Check, RotateCcw, X } from "lucide-react";
-import ClosingCall from "@/components/features/landing/ClosingCall";
 import {
   EXAMPLE_SET,
   QueueExample,
@@ -278,15 +277,6 @@ export default function Page() {
           </div>
         </section>
       </div>
-      <ClosingCall
-        title={
-          <>
-            Train. Miss. Upsolve.
-            <br />
-            Come back better.
-          </>
-        }
-      />
     </>
   );
 }

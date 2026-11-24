@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import ClosingCall from "@/components/features/landing/ClosingCall";
 import LadderRuler, {
   LADDER_BANDS,
   LADDER_MAX,
@@ -118,15 +117,6 @@ export default function Page() {
           </div>
         </section>
       </div>
-      <ClosingCall
-        title={
-          <>
-            Start where
-            <br />
-            your rating says.
-          </>
-        }
-      />
     </>
   );
 }

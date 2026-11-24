@@ -7,7 +7,8 @@ export type BrandName =
   | "atcoder"
   | "leetcode"
   | "codechef"
-  | "codeforces";
+  | "codeforces"
+  | "facebook";
 
 /**
  * A site's own mark, drawn in the colour of the text around it. The files in

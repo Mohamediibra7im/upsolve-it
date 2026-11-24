@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
 import ClosingCall from "@/components/features/landing/ClosingCall";
@@ -19,8 +20,12 @@ export function OwnerEditLink({ handle }: { handle: string }) {
 }
 
 /** The sign-up band, for visitors who are not signed in. */
-export function GuestCall() {
+export function GuestCall({
+  title = "Practice with a plan.",
+}: {
+  title?: ReactNode;
+}) {
   const { user, isLoading } = useUser();
   if (isLoading || user) return null;
-  return <ClosingCall title="Practice with a plan." />;
+  return <ClosingCall title={title} />;
 }

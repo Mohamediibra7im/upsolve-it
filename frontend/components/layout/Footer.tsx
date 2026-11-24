@@ -1,75 +1,132 @@
 import Link from "next/link";
+import { Globe } from "lucide-react";
+import BrandIcon from "@/components/shared/BrandIcon";
 import Brand from "./Brand";
+import FooterContest from "./FooterContest";
+import { guestLinks } from "./publicLinks";
 
 const REPO = "https://github.com/Mohamediibra7im/upsolve-it";
-const columns: Record<string, { label: string; href: string }[]> = {
-  Product: [
-    { label: "Training modes", href: "/modes" },
-    { label: "The ladder", href: "/ladder" },
-    { label: "How it works", href: "/how-it-works" },
-    { label: "FAQ", href: "/faq" },
-  ],
+const community = [
+  { label: "GitHub", href: REPO, icon: "github" },
+  { label: "hnuicpc.tech", href: "https://hnuicpc.tech", icon: null },
+  {
+    label: "Facebook",
+    href: "https://www.facebook.com/fcsit.hnu.icpc",
+    icon: "facebook",
+  },
+  {
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/company/hnu-fcsit-icpc-community",
+    icon: "linkedin",
+  },
+] as const;
+const columns = {
   Account: [
     { label: "Log in", href: "/login" },
     { label: "Create an account", href: "/signup" },
     { label: "Reset password", href: "/reset-password" },
   ],
-  Community: [
+  More: [
     { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },
-    { label: "GitHub", href: REPO },
-    { label: "HNU - FCSIT ICPC", href: "https://hnuicpc.tech" },
     { label: "Report a bug", href: `${REPO}/issues` },
-  ],
-  Legal: [
-    { label: "Privacy policy", href: "/privacy" },
-    { label: "Terms of service", href: "/terms" },
+    { label: "Privacy", href: "/privacy" },
+    { label: "Terms", href: "/terms" },
   ],
 };
 
+/** The closing of every page, in three columns: who this is and where the
+ *  community lives, every page, and what is on next. */
 export default function Footer() {
   return (
     <footer className="u-foot">
       <div className="wrap">
-        <div className="u-foot__cols">
-          <div className="grid content-start gap-4">
-            <Link
-              href="/"
-              aria-label="Upsolve It home"
-              className="justify-self-start"
-            >
-              <Brand />
-            </Link>
-            <p className="t-muted max-w-[280px]">
-              A little more practice.
-              <br />A better problem solver.
-            </p>
-          </div>
-          {Object.entries(columns).map(([title, links]) => (
-            <nav key={title} aria-label={title}>
-              <h2>{title}</h2>
-              <ul>
-                {links.map((link) => (
+        <div className="u-foot__grid">
+          <section className="u-foot__brand">
+            <div>
+              <Link href="/" aria-label="Upsolve It home">
+                <Brand />
+              </Link>
+              <p className="u-foot__line">
+                A little more practice.
+                <em>A better problem solver.</em>
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {community.map(({ label, href, icon }) => (
+                <a
+                  key={href}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="u-btn u-btn--sm"
+                >
+                  {icon ? (
+                    <BrandIcon name={icon} />
+                  ) : (
+                    <Globe aria-hidden="true" />
+                  )}
+                  {label}
+                </a>
+              ))}
+            </div>
+          </section>
+
+          <section className="u-foot__links">
+            <nav aria-label="Pages">
+              <h2>Pages</h2>
+              <ul className="u-foot__two">
+                {guestLinks.map((link) => (
                   <li key={link.href}>
-                    {link.href.startsWith("http") ? (
-                      <a
-                        href={link.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {link.label}
-                      </a>
-                    ) : (
-                      <Link href={link.href}>{link.label}</Link>
-                    )}
+                    <Link href={link.href}>{link.label}</Link>
                   </li>
                 ))}
               </ul>
             </nav>
-          ))}
+            {Object.entries(columns).map(([title, links]) => (
+              <nav key={title} aria-label={title}>
+                <h2>{title}</h2>
+                <ul>
+                  {links.map((link) => (
+                    <li key={link.href}>
+                      {link.href.startsWith("http") ? (
+                        <a
+                          href={link.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {link.label}
+                        </a>
+                      ) : (
+                        <Link href={link.href}>{link.label}</Link>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            ))}
+          </section>
+
+          <div className="u-foot__side">
+            <section>
+              <h2>Works with</h2>
+              <div className="u-foot__judges">
+                <span>
+                  <BrandIcon name="codeforces" />
+                  Codeforces
+                </span>
+                <span>
+                  <BrandIcon name="atcoder" />
+                  AtCoder
+                </span>
+              </div>
+            </section>
+            <FooterContest />
+          </div>
         </div>
+
         <div className="u-foot__base">
-          <span>© {new Date().getFullYear()} Upsolve It</span>
+          <span>© {new Date().getFullYear()} Upsolve It · Free to use</span>
           <p>
             Built under the{" "}
             <a
