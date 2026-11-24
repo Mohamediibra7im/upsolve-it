@@ -2,8 +2,10 @@ import {
   BadRequestException,
   HttpException,
   Injectable,
+  ServiceUnavailableException,
   UnauthorizedException,
   Logger,
+  type OnModuleInit,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
@@ -17,7 +19,9 @@ import {
   type RefreshTokenDocument,
 } from './schemas/refresh-token.schema';
 import {
+  CODEFORCES_INDEX,
   LINK_KEYS,
+  NAME_COLLATION,
   User,
   type LinkKey,
   type UserDocument,
@@ -30,6 +34,9 @@ import { shouldSyncProfile } from '../../common/utils/profile';
 import { validatePassword } from '../../common/utils/password';
 import { fetchCodeforcesUserInfo } from '../../common/utils/codeforces-api';
 import { TransactionsService } from '../../common/database/transactions.module';
+import { mailConfigured, sendMail } from '../../common/utils/mail';
+import { readAtcoderProfile } from '../../common/utils/atcoder-profile';
+import { renderCodeEmail, type CodePurpose } from '../reminders/reminder-email';
 import {
   PasswordResetChallenge,
   PasswordResetChallengeDocument,
@@ -56,6 +63,25 @@ const loginUserLimiter = new RateLimiterMemory({
 });
 
 const RESET_LIFETIME_MS = 10 * 60 * 1000;
+
+// Sign-ups from one address: each one sends an email to whoever was typed in.
+const registerLimiter = new RateLimiterMemory({ points: 5, duration: 3600 });
+
+// One confirmation email a minute per account.
+const emailCodeLimiter = new RateLimiterMemory({ points: 1, duration: 60 });
+
+const EMAIL_CODE_LIFETIME_MS = 10 * 60 * 1000;
+/** A 6-digit code has a million values; this many guesses, then a new code. */
+const EMAIL_CODE_TRIES = 5;
+
+/** New usernames. Older accounts keep the Codeforces handle they signed up with. */
+const USERNAME = /^[A-Za-z0-9_]{3,24}$/;
+
+const isDuplicateKey = (err: unknown) =>
+  typeof err === 'object' &&
+  err !== null &&
+  'code' in err &&
+  err.code === 11000;
 
 function generateRefreshToken(): string {
   return crypto.randomBytes(64).toString('hex');
@@ -85,6 +111,9 @@ export function profileFields(user: {
 function toPublicUser(user: any) {
   return {
     _id: user._id,
+    username: user.username ?? user.codeforcesHandle,
+    email: user.email ?? null,
+    emailVerified: user.emailVerified === true,
     codeforcesHandle: user.codeforcesHandle,
     rating: user.rating,
     avatar: user.avatar,
@@ -95,13 +124,14 @@ function toPublicUser(user: any) {
     lastSyncTime: user.lastSyncTime,
     role: user.role,
     isVerified: user.isVerified,
+    atcoderVerified: user.atcoderVerified === true,
     publicProfile: user.publicProfile === true,
     ...profileFields(user as User),
   };
 }
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit {
   private readonly logger = new Logger(AuthService.name);
   // Reset/verification tokens are signed with a DIFFERENT secret than access
   // tokens. This is what prevents a password-reset token from ever verifying
@@ -182,70 +212,333 @@ export class AuthService {
     }
   }
 
+  /**
+   * Gives every account made before usernames existed its Codeforces handle
+   * as its username. Safe to run on every start: it only touches accounts
+   * that have none. A failure is logged, not fatal: `findByLogin` still finds
+   * those accounts by their handle.
+   */
+  async onModuleInit() {
+    try {
+      const { modifiedCount } = await this.userModel.updateMany(
+        { username: { $exists: false } },
+        [{ $set: { username: '$codeforcesHandle' } }],
+        { updatePipeline: true, timestamps: false },
+      );
+      if (modifiedCount)
+        this.logger.log(`Gave ${modifiedCount} accounts their username`);
+    } catch (err) {
+      this.logger.error('Could not give older accounts a username', err);
+    }
+    try {
+      // The first index on codeforcesHandle covered every account: one
+      // without a handle counted as a duplicate of the next, and a handle
+      // somebody only typed blocked its real owner. Replace it with the one
+      // in the schema, which covers proven handles alone.
+      const indexes = await this.userModel.collection.indexes();
+      const old = indexes.find(
+        (index) =>
+          index.name === 'codeforcesHandle_1' &&
+          JSON.stringify(index.partialFilterExpression) !==
+            JSON.stringify(CODEFORCES_INDEX),
+      );
+      if (old) await this.userModel.collection.dropIndex('codeforcesHandle_1');
+      await this.userModel.createIndexes();
+    } catch (err) {
+      this.logger.error('Could not update the account indexes', err);
+    }
+  }
+
+  /** The account a typed login name belongs to, whatever its letter case. */
+  private findByLogin(name: string) {
+    return this.userModel
+      .findOne({
+        $or: [
+          { username: name },
+          { email: name.toLowerCase(), emailVerified: true },
+          // An account the start-up pass has not reached has only its handle.
+          { username: { $exists: false }, codeforcesHandle: name },
+        ],
+      })
+      .collation(NAME_COLLATION);
+  }
+
+  /**
+   * Makes the account and mails the code that confirms its address. A judge
+   * handle is connected afterwards, in the last sign-up step.
+   */
   async register(
-    codeforcesHandle: string,
+    username: string,
+    email: string,
     password: string,
-    confirmPassword: string,
+    ip: string,
   ) {
-    if (!codeforcesHandle || !password || !confirmPassword) {
-      throw new BadRequestException(
-        'Codeforces handle, password, and password confirmation are required',
+    const limit = await this.rateLimit(ip, registerLimiter);
+    if (!limit.success) {
+      throw new HttpException(
+        `Too many sign-ups from here. Try again in ${Math.ceil(limit.remainingSeconds / 60)} minutes.`,
+        429,
       );
     }
-
+    if (!USERNAME.test(username ?? '')) {
+      throw new BadRequestException(
+        'A username is 3 to 24 letters, digits or underscores.',
+      );
+    }
     const passwordValidation = validatePassword(password);
     if (!passwordValidation.isValid) {
       throw new BadRequestException(passwordValidation.errors.join('. '));
     }
-    if (password !== confirmPassword) {
-      throw new BadRequestException('Passwords do not match');
+    const address = email.trim().toLowerCase();
+
+    const sameName = await this.userModel
+      .findOne({ username })
+      .collation(NAME_COLLATION);
+    if (sameName) throw new BadRequestException('That username is taken.');
+    await this.assertEmailFree(address);
+
+    let user: UserDocument;
+    try {
+      user = await this.userModel.create({
+        username,
+        email: address,
+        password: await bcrypt.hash(password, 10),
+      });
+    } catch (err) {
+      if (isDuplicateKey(err))
+        throw new BadRequestException('That username is taken.');
+      throw err;
     }
 
-    const existing = await this.userModel.findOne({
-      codeforcesHandle: {
-        $regex: new RegExp(
-          `^${codeforcesHandle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
-          'i',
-        ),
-      },
-    });
-    if (existing) throw new BadRequestException('Handle already exists');
-
-    const results = await fetchCodeforcesUserInfo(codeforcesHandle);
-    if (!results || results.length === 0) {
-      throw new BadRequestException('Invalid Codeforces handle');
-    }
-    const cfUser = results[0];
-    const rating: number = Number(cfUser.rating) || 0;
-    const rank = cfUser.rank ?? getRankFromRating(rating);
-
-    const hashed = await bcrypt.hash(password, 10);
-
-    const maxRating: number = Number(cfUser.maxRating) || 0;
-    const user = await this.userModel.create({
-      codeforcesHandle,
-      password: hashed,
-      rating,
-      avatar: cfUser.avatar ?? 'https://userpic.codeforces.org/no-avatar.jpg',
-      rank,
-      maxRating,
-      maxRank:
-        cfUser.maxRank ??
-        (maxRating > 0 ? getRankFromRating(maxRating) : 'Unrated'),
-      organization: cfUser.organization,
-      lastSyncTime: Date.now(),
-    });
+    // The account exists either way: a code that did not go out can be
+    // asked for again from the next step.
+    await emailCodeLimiter.consume(String(user._id)).catch(() => undefined);
+    await this.sendEmailCode(user).catch((err) =>
+      this.logger.error(`No confirmation email for ${username}`, err),
+    );
 
     await this.auditLogs.logAction(
       'REGISTER',
       'User',
       user._id,
-      user.codeforcesHandle,
-      { organization: user.organization },
+      user.username,
+      {},
       user._id,
     );
 
     return this.issueTokens(user);
+  }
+
+  private async assertEmailFree(address: string, exceptUserId?: string) {
+    const owner = await this.userModel.findOne({
+      email: address,
+      emailVerified: true,
+    });
+    if (owner && String(owner._id) !== exceptUserId) {
+      throw new BadRequestException(
+        'That email already has an account. Log in instead.',
+      );
+    }
+  }
+
+  /** Stores a fresh 6-digit code for the account, hashed, and mails it. */
+  private async sendEmailCode(user: UserDocument) {
+    if (!user.email) throw new BadRequestException('Add an email first.');
+    const code = String(crypto.randomInt(1_000_000)).padStart(6, '0');
+    await this.userModel.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          emailCodeHash: hashRefreshToken(`${String(user._id)}:${code}`),
+          emailCodeExpiry: Date.now() + EMAIL_CODE_LIFETIME_MS,
+          emailCodeTries: 0,
+        },
+      },
+    );
+    // A member who has proven a judge is adding the address in Settings;
+    // anyone else is still signing up.
+    const member = user.isVerified || user.atcoderVerified;
+    await this.mailCode(user, user.email, code, member ? 'settings' : 'signup');
+  }
+
+  private async mailCode(
+    user: UserDocument,
+    to: string,
+    code: string,
+    purpose: CodePurpose,
+  ) {
+    if (
+      !mailConfigured(this.config) &&
+      this.config.get<string>('NODE_ENV') !== 'production'
+    ) {
+      // A developer without a mailbox reads the code from the server log.
+      this.logger.warn(`Email code for ${user.username}: ${code}`);
+      return;
+    }
+    await sendMail(
+      this.config,
+      to,
+      renderCodeEmail(
+        user.username,
+        code,
+        this.config.get<string>('APP_URL') ?? '',
+        purpose,
+      ),
+    );
+  }
+
+  /** `sendEmailCode` for a request: at most one a minute, and a readable failure. */
+  private async requestEmailCode(user: UserDocument) {
+    const limit = await this.rateLimit(String(user._id), emailCodeLimiter);
+    if (!limit.success) {
+      throw new HttpException(
+        `Wait ${limit.remainingSeconds} seconds before asking for another code.`,
+        429,
+      );
+    }
+    try {
+      await this.sendEmailCode(user);
+    } catch (err) {
+      if (err instanceof HttpException) throw err;
+      this.logger.error(`No confirmation email for ${user.username}`, err);
+      throw new ServiceUnavailableException(
+        'We could not send the email. Try again in a minute.',
+      );
+    }
+  }
+
+  async resendEmailCode(user: UserDocument) {
+    if (user.emailVerified)
+      throw new BadRequestException('Your email is already confirmed.');
+    await this.requestEmailCode(user);
+    return { user: toPublicUser(user) };
+  }
+
+  /**
+   * Sets the address to confirm and mails its code.
+   * ponytail: only while no address is confirmed. Changing a confirmed one
+   * needs the password again, which comes with reset-by-email.
+   */
+  async setEmail(user: UserDocument, email: string) {
+    if (user.emailVerified) {
+      throw new BadRequestException('Your email is already confirmed.');
+    }
+    const address = email.trim().toLowerCase();
+    await this.assertEmailFree(address, String(user._id));
+    const updated = await this.userModel.findByIdAndUpdate(
+      user._id,
+      { $set: { email: address, emailVerified: false } },
+      { returnDocument: 'after' },
+    );
+    if (!updated) throw new UnauthorizedException('Unauthorized');
+    await this.requestEmailCode(updated);
+    return { user: toPublicUser(updated) };
+  }
+
+  async confirmEmail(userId: string, code: string) {
+    // Every attempt uses one of the tries, right or wrong, in one step, so
+    // parallel guesses cannot get past the limit.
+    const user = await this.userModel
+      .findOneAndUpdate(
+        {
+          _id: userId,
+          emailVerified: { $ne: true },
+          emailCodeExpiry: { $gt: Date.now() },
+          emailCodeTries: { $lt: EMAIL_CODE_TRIES },
+        },
+        { $inc: { emailCodeTries: 1 } },
+      )
+      .select('+emailCodeHash');
+    if (!user?.emailCodeHash) {
+      throw new BadRequestException(
+        'That code has expired. Ask for a new one.',
+      );
+    }
+    const given = Buffer.from(hashRefreshToken(`${userId}:${code}`));
+    if (!crypto.timingSafeEqual(given, Buffer.from(user.emailCodeHash))) {
+      throw new BadRequestException(
+        'That code is not right. Check the email and try again.',
+      );
+    }
+    try {
+      const updated = await this.userModel.findByIdAndUpdate(
+        userId,
+        {
+          $set: {
+            emailVerified: true,
+            emailCodeHash: null,
+            emailCodeExpiry: null,
+            emailCodeTries: 0,
+          },
+        },
+        { returnDocument: 'after' },
+      );
+      return { user: toPublicUser(updated) };
+    } catch (err) {
+      if (isDuplicateKey(err)) {
+        throw new BadRequestException(
+          'That email already has an account. Log in instead.',
+        );
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Sets the account's Codeforces handle, with its rating and photo. It can
+   * be corrected until it is proven; after that it stays.
+   */
+  async connectCodeforces(user: UserDocument, handle: string) {
+    if (user.codeforcesHandle && user.isVerified) {
+      throw new BadRequestException(
+        'This account already has a verified Codeforces handle.',
+      );
+    }
+    const results = await fetchCodeforcesUserInfo(handle);
+    if (!results || results.length === 0) {
+      throw new BadRequestException('Invalid Codeforces handle');
+    }
+    const cfUser = results[0];
+    // Codeforces answers with the handle in its own letter case.
+    const codeforcesHandle: string = cfUser.handle ?? handle;
+    const taken = 'That Codeforces handle is verified on another account.';
+    const owner = await this.userModel
+      .findOne({
+        codeforcesHandle,
+        isVerified: true,
+        _id: { $ne: user._id },
+      })
+      .collation(NAME_COLLATION);
+    if (owner) throw new BadRequestException(taken);
+
+    const rating: number = Number(cfUser.rating) || 0;
+    const maxRating: number = Number(cfUser.maxRating) || 0;
+    try {
+      const updated = await this.userModel.findByIdAndUpdate(
+        user._id,
+        {
+          $set: {
+            codeforcesHandle,
+            rating,
+            rank: cfUser.rank ?? getRankFromRating(rating),
+            maxRating,
+            maxRank:
+              cfUser.maxRank ??
+              (maxRating > 0 ? getRankFromRating(maxRating) : 'Unrated'),
+            organization: cfUser.organization,
+            avatar:
+              cfUser.avatar ?? 'https://userpic.codeforces.org/no-avatar.jpg',
+            lastSyncTime: Date.now(),
+          },
+        },
+        { returnDocument: 'after' },
+      );
+      if (!updated) throw new UnauthorizedException('Unauthorized');
+      return { user: toPublicUser(updated) };
+    } catch (err) {
+      if (isDuplicateKey(err)) throw new BadRequestException(taken);
+      throw err;
+    }
   }
 
   async login(codeforcesHandle: string, password: string, ip: string) {
@@ -256,9 +549,7 @@ export class AuthService {
       );
     }
 
-    const user = await this.userModel
-      .findOne({ codeforcesHandle })
-      .collation({ locale: 'en', strength: 2 });
+    const user = await this.findByLogin(codeforcesHandle);
 
     // ponytail: check persistent DB lock before password check.
     if (user?.locked) {
@@ -300,14 +591,45 @@ export class AuthService {
     return this.issueTokens(user);
   }
 
-  async initiateReset(handle: string) {
-    if (!handle) throw new BadRequestException('Codeforces handle is required');
-    const user = await this.userModel
-      .findOne({ codeforcesHandle: handle })
-      .collation({ locale: 'en', strength: 2 });
+  /**
+   * Starts a password reset. An account with a confirmed email gets a 6-digit
+   * code by mail; one without proves itself on its Codeforces profile, as
+   * every account did before sign-up asked for an email.
+   */
+  async initiateReset(name: string, via?: 'codeforces') {
+    if (!name) throw new BadRequestException('Enter your username or email.');
+    const user = await this.findByLogin(name);
     if (!user || user.locked)
       throw new BadRequestException('Account unavailable');
-    const code = crypto.randomBytes(16).toString('hex');
+
+    const hasEmail = Boolean(user.email && user.emailVerified);
+    // A handle nobody has proven must not open an account that has an email:
+    // whoever really owns that handle could take the account over.
+    const canUseCodeforces = Boolean(
+      user.codeforcesHandle && (user.isVerified || !hasEmail),
+    );
+    const byEmail = hasEmail && !(via === 'codeforces' && canUseCodeforces);
+    if (!byEmail && !canUseCodeforces) {
+      throw new BadRequestException(
+        'This account has no confirmed email and no Codeforces handle to prove it with. Write to us and we will help.',
+      );
+    }
+    if (byEmail) {
+      const limit = await this.rateLimit(
+        `reset:${String(user._id)}`,
+        emailCodeLimiter,
+      );
+      if (!limit.success) {
+        throw new HttpException(
+          `Wait ${limit.remainingSeconds} seconds before asking for another code.`,
+          429,
+        );
+      }
+    }
+
+    const code = byEmail
+      ? String(crypto.randomInt(1_000_000)).padStart(6, '0')
+      : crypto.randomBytes(16).toString('hex');
     const expiresAt = new Date(Date.now() + RESET_LIFETIME_MS);
     const challenge = await this.resetChallengeModel.create({
       userId: user._id,
@@ -320,11 +642,35 @@ export class AuthService {
       {
         userId: String(user._id),
         challengeId: String(challenge._id),
-        type: 'profile-proof-v2',
+        type: byEmail ? 'email-proof-v1' : 'profile-proof-v2',
       },
       { expiresIn: '10m', secret: this.resetSecret },
     );
-    return { verificationToken, code, expiresAt };
+    if (!byEmail)
+      return {
+        method: 'codeforces' as const,
+        verificationToken,
+        code,
+        expiresAt,
+      };
+
+    try {
+      await this.mailCode(user, user.email!, code, 'reset');
+    } catch (err) {
+      this.logger.error(`No reset email for ${user.username}`, err);
+      throw new ServiceUnavailableException(
+        'We could not send the email. Try again in a minute.',
+      );
+    }
+    const [box, domain] = user.email!.split('@');
+    return {
+      method: 'email' as const,
+      verificationToken,
+      expiresAt,
+      // Enough to recognise the address, not enough to learn it.
+      sentTo: `${box[0]}•••@${domain}`,
+      canUseCodeforces,
+    };
   }
 
   private async decodeResetToken(token: string, purpose: string) {
@@ -391,9 +737,52 @@ export class AuthService {
       throw new BadRequestException(
         'Set your Codeforces first name to the recovery code, save your profile, then try again.',
       );
+    return this.grantReset(decoded);
+  }
+
+  /** The emailed 6-digit code, typed back. Five wrong guesses end the challenge. */
+  async verifyResetEmail(verificationToken: string, code: string) {
+    const decoded = await this.decodeResetToken(
+      verificationToken,
+      'email-proof-v1',
+    );
+    // Each attempt is counted before it is checked, in one step.
+    const challenge = await this.resetChallengeModel.findOneAndUpdate(
+      {
+        _id: decoded.challengeId,
+        userId: decoded.userId,
+        consumedAt: null,
+        resetExpiresAt: null,
+        expiresAt: { $gt: new Date() },
+        tries: { $lt: EMAIL_CODE_TRIES },
+      },
+      { $inc: { tries: 1 } },
+    );
+    const user = await this.userModel.findById(decoded.userId);
+    if (
+      !challenge ||
+      !user ||
+      user.locked ||
+      challenge.authVersion !== (user.authVersion ?? 0)
+    ) {
+      throw new BadRequestException(
+        'That code has expired. Restart password recovery.',
+      );
+    }
+    const given = Buffer.from(hashRefreshToken(code));
+    if (!crypto.timingSafeEqual(given, Buffer.from(challenge.codeHash))) {
+      throw new BadRequestException(
+        'That code is not right. Check the email and try again.',
+      );
+    }
+    return this.grantReset(decoded);
+  }
+
+  /** A proven challenge becomes a short-lived token that may set one new password. */
+  private async grantReset(decoded: { userId: string; challengeId: string }) {
     const verified = await this.resetChallengeModel.findOneAndUpdate(
       {
-        _id: challenge._id,
+        _id: decoded.challengeId,
         consumedAt: null,
         expiresAt: { $gt: new Date() },
         resetExpiresAt: null,
@@ -402,7 +791,8 @@ export class AuthService {
       { returnDocument: 'after' },
     );
     const current =
-      verified ?? (await this.resetChallengeModel.findById(challenge._id));
+      verified ??
+      (await this.resetChallengeModel.findById(decoded.challengeId));
     if (
       !current?.resetExpiresAt ||
       current.consumedAt ||
@@ -508,7 +898,7 @@ export class AuthService {
   }
 
   async syncProfile(user: UserDocument) {
-    if (!shouldSyncProfile(user.lastSyncTime)) {
+    if (!user.codeforcesHandle || !shouldSyncProfile(user.lastSyncTime)) {
       return {
         message: 'Profile is up to date',
         user: toPublicUser(user),
@@ -556,6 +946,14 @@ export class AuthService {
     for (const key of LINK_KEYS) {
       const value = dto.links?.[key];
       if (value !== undefined) set[`links.${key}`] = value;
+    }
+    // A different AtCoder handle is one nobody has proven yet.
+    const atcoder = dto.links?.atcoder;
+    if (atcoder !== undefined) {
+      const current = await this.userModel.findById(userId);
+      const stored = current?.links?.atcoder ?? '';
+      if (stored.toLowerCase() !== atcoder.toLowerCase())
+        (set as Record<string, unknown>).atcoderVerified = false;
     }
     const user = await this.userModel.findByIdAndUpdate(
       userId,
@@ -658,7 +1056,9 @@ export class AuthService {
 
   async generateVerificationCode(userId: string) {
     const code = crypto.randomBytes(4).toString('hex');
-    const expiresAt = Date.now() + 60 * 1000; // 1 minute
+    // Long enough to open Codeforces, log in there, paste the code and save.
+    // The sign-up step shows the code as soon as it opens.
+    const expiresAt = Date.now() + 10 * 60 * 1000;
 
     await this.userModel.findByIdAndUpdate(userId, {
       verificationCode: code,
@@ -673,7 +1073,13 @@ export class AuthService {
     if (!user) throw new BadRequestException('User not found');
 
     if (user.isVerified) {
-      return { message: 'Profile is already verified' };
+      return {
+        message: 'Profile is already verified',
+        user: toPublicUser(user),
+      };
+    }
+    if (!user.codeforcesHandle) {
+      throw new BadRequestException('Connect a Codeforces handle first.');
     }
 
     if (!user.verificationCode) {
@@ -716,21 +1122,94 @@ export class AuthService {
       );
     }
 
-    await this.userModel.updateOne(
-      {
-        _id: userId,
-        isVerified: false,
-        verificationCode: user.verificationCode,
-      },
-      {
-        $set: {
-          isVerified: true,
-          verificationCode: null,
-          verificationCodeExpiry: null,
+    await this.claimHandle('Codeforces', () =>
+      this.userModel.updateOne(
+        {
+          _id: userId,
+          isVerified: false,
+          verificationCode: user.verificationCode,
         },
-      },
+        // The code stays until it runs out: the same one proves AtCoder.
+        { $set: { isVerified: true } },
+      ),
     );
-    return { message: 'Profile verified successfully' };
+    return {
+      message: 'Profile verified successfully',
+      user: toPublicUser(await this.userModel.findById(userId)),
+    };
+  }
+
+  /** A proven handle belongs to one account: the second to prove it is told so. */
+  private async claimHandle(judge: string, write: () => Promise<unknown>) {
+    try {
+      await write();
+    } catch (err) {
+      if (isDuplicateKey(err)) {
+        throw new BadRequestException(
+          `That ${judge} handle is verified on another account.`,
+        );
+      }
+      throw err;
+    }
+  }
+
+  private atcoderClient() {
+    const site = this.config.get<string>('APP_URL');
+    return `UpsolveIt/1.0 (handle check${site ? `; +${site}` : ''})`;
+  }
+
+  /** Sets the account's AtCoder handle, once AtCoder confirms it exists. Unproven until verified. */
+  async connectAtcoder(user: UserDocument, handle: string) {
+    const profile = await readAtcoderProfile(handle, this.atcoderClient());
+    if (!profile) {
+      throw new BadRequestException('No AtCoder user has that handle.');
+    }
+    const updated = await this.userModel.findByIdAndUpdate(
+      user._id,
+      { $set: { 'links.atcoder': profile.handle, atcoderVerified: false } },
+      { returnDocument: 'after' },
+    );
+    if (!updated) throw new UnauthorizedException('Unauthorized');
+    return { user: toPublicUser(updated) };
+  }
+
+  /**
+   * AtCoder profiles have no first name to borrow, so the code goes into the
+   * Affiliation field, which the profile page shows to everyone.
+   */
+  async verifyAtcoderProfile(userId: string) {
+    const user = await this.userModel.findById(userId);
+    if (!user) throw new BadRequestException('User not found');
+    if (user.atcoderVerified) return { user: toPublicUser(user) };
+    const handle = user.links?.atcoder;
+    if (!handle)
+      throw new BadRequestException('Connect an AtCoder handle first.');
+    if (!user.verificationCode) {
+      throw new BadRequestException(
+        'No verification code found. Please generate one first.',
+      );
+    }
+    if (
+      user.verificationCodeExpiry &&
+      Date.now() > user.verificationCodeExpiry
+    ) {
+      throw new BadRequestException(
+        'Verification code has expired. Please generate a new one.',
+      );
+    }
+    const profile = await readAtcoderProfile(handle, this.atcoderClient());
+    if (profile?.affiliation !== user.verificationCode) {
+      throw new BadRequestException(
+        'Verification code not found in your AtCoder affiliation. Make sure you saved the changes on AtCoder, then try again.',
+      );
+    }
+    await this.claimHandle('AtCoder', () =>
+      this.userModel.updateOne(
+        { _id: userId, 'links.atcoder': handle },
+        { $set: { atcoderVerified: true } },
+      ),
+    );
+    return { user: toPublicUser(await this.userModel.findById(userId)) };
   }
 
   async logout(refreshTokenValue: string) {

@@ -114,63 +114,80 @@ describe('AuthService', () => {
     jest.restoreAllMocks();
   });
 
+  // The rest of sign-up runs against a real database in test/usernames.e2e-spec.ts.
   describe('register', () => {
-    it('creates user and returns tokens', async () => {
-      const mockUser = {
-        _id: 'newId',
-        codeforcesHandle: 'testuser',
-        password: 'hashed',
-        rating: 1500,
-        avatar: 'https://userpic.codeforces.org/avatar.jpg',
-        rank: 'specialist',
-        maxRating: 1600,
-        maxRank: 'specialist',
-        organization: 'Test Org',
-        lastSyncTime: 1234567890,
-        role: 'user',
-        isVerified: false,
-      };
+    it('rejects a weak password', async () => {
+      await expect(
+        service.register('testuser', 'me@example.com', 'weak', '10.1.0.1'),
+      ).rejects.toThrow(BadRequestException);
+    });
 
-      userModel.findOne.mockResolvedValue(null); // no existing user
-      userModel.create.mockResolvedValue(mockUser);
-      refreshTokenModel.create.mockResolvedValue({ _id: 'rtid' });
-
-      const result = await service.register(
-        'testuser',
-        'StrongP@ss1',
-        'StrongP@ss1',
+    it('rejects a username with other characters', async () => {
+      await expect(
+        service.register(
+          'no spaces',
+          'me@example.com',
+          'StrongP@ss1',
+          '10.1.0.2',
+        ),
+      ).rejects.toThrow(
+        'A username is 3 to 24 letters, digits or underscores.',
       );
-
-      expect(result.token).toBe('mock-token');
-      expect(result.refreshToken).toBeDefined();
-      expect(result.user.codeforcesHandle).toBe('testuser');
-      expect(userModel.create).toHaveBeenCalledTimes(1);
-      expect(refreshTokenModel.create).toHaveBeenCalledTimes(1);
-      expect(auditLogs.logAction).toHaveBeenCalled();
-    });
-
-    it('rejects weak password', async () => {
-      await expect(
-        service.register('testuser', 'weak', 'weak'),
-      ).rejects.toThrow(BadRequestException);
-    });
-
-    it('rejects duplicate handle', async () => {
-      userModel.findOne.mockResolvedValue({
-        _id: 'existing',
-        codeforcesHandle: 'testuser',
-      });
-
-      await expect(
-        service.register('testuser', 'StrongP@ss1', 'StrongP@ss1'),
-      ).rejects.toThrow(BadRequestException);
       expect(userModel.create).not.toHaveBeenCalled();
     });
 
-    it('rejects mismatched passwords', async () => {
+    it('rejects a taken username', async () => {
+      userModel.findOne.mockReturnValue({
+        collation: jest.fn().mockResolvedValue({ _id: 'existing' }),
+      });
+
       await expect(
-        service.register('testuser', 'StrongP@ss1', 'DifferentP@ss1'),
-      ).rejects.toThrow(BadRequestException);
+        service.register(
+          'testuser',
+          'me@example.com',
+          'StrongP@ss1',
+          '10.1.0.3',
+        ),
+      ).rejects.toThrow('That username is taken.');
+      expect(userModel.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('usernames', () => {
+    it('gives older accounts their Codeforces handle as username', async () => {
+      userModel.updateMany.mockResolvedValue({ modifiedCount: 2 });
+
+      await service.onModuleInit();
+
+      expect(userModel.updateMany).toHaveBeenCalledWith(
+        { username: { $exists: false } },
+        [{ $set: { username: '$codeforcesHandle' } }],
+        { updatePipeline: true, timestamps: false },
+      );
+    });
+
+    it('starts even when that pass fails', async () => {
+      userModel.updateMany.mockRejectedValue(new Error('db down'));
+
+      await expect(service.onModuleInit()).resolves.toBeUndefined();
+    });
+
+    it('logs in by username, or by handle for an account without one', async () => {
+      userModel.findOne.mockReturnValue({
+        collation: jest.fn().mockResolvedValue(null),
+      });
+
+      await expect(service.login('Tourist', 'pw', '127.0.0.9')).rejects.toThrow(
+        UnauthorizedException,
+      );
+
+      expect(userModel.findOne).toHaveBeenCalledWith({
+        $or: [
+          { username: 'Tourist' },
+          { email: 'tourist', emailVerified: true },
+          { username: { $exists: false }, codeforcesHandle: 'Tourist' },
+        ],
+      });
     });
   });
 

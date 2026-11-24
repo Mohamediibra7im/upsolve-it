@@ -136,6 +136,8 @@ export class FriendsService {
     return await this.userModel
       .findOne({
         codeforcesHandle: new RegExp(`^${escapeRegex(trimmed)}$`, 'i'),
+        // several accounts may have typed a handle; one has proven it
+        isVerified: true,
       })
       .exec();
   }

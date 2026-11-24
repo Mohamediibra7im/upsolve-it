@@ -15,6 +15,10 @@ export class PasswordResetChallenge {
   @Prop({ required: true })
   codeHash!: string;
 
+  /** Wrong guesses at an emailed code. A profile code is never typed, so it stays 0. */
+  @Prop({ default: 0 })
+  tries!: number;
+
   @Prop({ required: true })
   expiresAt!: Date;
 

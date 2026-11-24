@@ -1,8 +1,15 @@
-import { IsString, MinLength } from 'class-validator';
+import { IsOptional, IsString, MinLength } from 'class-validator';
 
 export class LoginDto {
+  /** A username or the account's confirmed email. */
+  @IsOptional()
   @IsString()
-  codeforcesHandle!: string;
+  login?: string;
+
+  /** What pages loaded before usernames existed still send. */
+  @IsOptional()
+  @IsString()
+  codeforcesHandle?: string;
 
   @IsString()
   @MinLength(1)

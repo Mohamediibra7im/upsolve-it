@@ -14,7 +14,16 @@ import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { InitiateResetDto } from './dto/initiate-reset.dto';
+import {
+  ConnectAtcoderDto,
+  ConnectCodeforcesDto,
+  EmailCodeDto,
+  EmailDto,
+} from './dto/email.dto';
+import {
+  InitiateResetDto,
+  VerifyResetEmailDto,
+} from './dto/initiate-reset.dto';
 import { VerifyResetProfileDto } from './dto/verify-reset-profile.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthGuard } from '../../common/guards/auth.guard';
@@ -32,12 +41,14 @@ export class AuthController {
   @Post('register')
   async register(
     @Body() dto: RegisterDto,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
     const result = await this.auth.register(
-      dto.codeforcesHandle,
+      dto.username,
+      dto.email,
       dto.password,
-      dto.confirmPassword,
+      req.ip ?? 'unknown',
     );
     this.setRefreshCookie(res, result.refreshToken);
     this.setAccessTokenCookie(res, result.token);
@@ -52,7 +63,7 @@ export class AuthController {
   ) {
     const ip = req.ip ?? 'unknown';
     const result = await this.auth.login(
-      dto.codeforcesHandle,
+      dto.login ?? dto.codeforcesHandle ?? '',
       dto.password,
       ip,
     );
@@ -105,7 +116,12 @@ export class AuthController {
 
   @Post('initiate-reset')
   async initiateReset(@Body() dto: InitiateResetDto) {
-    return await this.auth.initiateReset(dto.handle);
+    return await this.auth.initiateReset(dto.handle, dto.via);
+  }
+
+  @Post('verify-reset-email')
+  async verifyResetEmail(@Body() dto: VerifyResetEmailDto) {
+    return await this.auth.verifyResetEmail(dto.verificationToken, dto.code);
   }
 
   @Post('verify-submission')
@@ -131,6 +147,51 @@ export class AuthController {
       newPassword: dto.newPassword,
       oldPassword: dto.oldPassword,
     });
+  }
+
+  @Post('email')
+  @UseGuards(AuthGuard)
+  async setEmail(@CurrentUser() user: UserDocument, @Body() dto: EmailDto) {
+    return await this.auth.setEmail(user, dto.email);
+  }
+
+  @Post('email/resend')
+  @UseGuards(AuthGuard)
+  async resendEmailCode(@CurrentUser() user: UserDocument) {
+    return await this.auth.resendEmailCode(user);
+  }
+
+  @Post('email/confirm')
+  @UseGuards(AuthGuard)
+  async confirmEmail(
+    @CurrentUser() user: UserDocument,
+    @Body() dto: EmailCodeDto,
+  ) {
+    return await this.auth.confirmEmail(user._id.toString(), dto.code);
+  }
+
+  @Post('connect-codeforces')
+  @UseGuards(AuthGuard)
+  async connectCodeforces(
+    @CurrentUser() user: UserDocument,
+    @Body() dto: ConnectCodeforcesDto,
+  ) {
+    return await this.auth.connectCodeforces(user, dto.handle);
+  }
+
+  @Post('connect-atcoder')
+  @UseGuards(AuthGuard)
+  async connectAtcoder(
+    @CurrentUser() user: UserDocument,
+    @Body() dto: ConnectAtcoderDto,
+  ) {
+    return await this.auth.connectAtcoder(user, dto.handle);
+  }
+
+  @Post('verify-atcoder-profile')
+  @UseGuards(AuthGuard)
+  async verifyAtcoderProfile(@CurrentUser() user: UserDocument) {
+    return await this.auth.verifyAtcoderProfile(user._id.toString());
   }
 
   @Post('sync-profile')

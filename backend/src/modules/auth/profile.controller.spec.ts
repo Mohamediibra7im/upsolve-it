@@ -63,7 +63,13 @@ describe('PATCH /users/me/profile', () => {
       controllers: [ProfileController],
       providers: [
         AuthService,
-        { provide: getModelToken(User.name), useValue: { findByIdAndUpdate } },
+        {
+          provide: getModelToken(User.name),
+          useValue: {
+            findByIdAndUpdate,
+            findById: jest.fn().mockResolvedValue(caller),
+          },
+        },
         { provide: getModelToken(RefreshToken.name), useValue: {} },
         { provide: getModelToken(PasswordResetChallenge.name), useValue: {} },
         { provide: JwtService, useValue: {} },
@@ -175,6 +181,10 @@ describe('PATCH /users/me/profile', () => {
     expect(res.body).toEqual({
       user: {
         _id: caller._id,
+        username: 'Open_User',
+        email: null,
+        emailVerified: false,
+        atcoderVerified: false,
         codeforcesHandle: 'Open_User',
         rating: 1342,
         avatar: caller.avatar,

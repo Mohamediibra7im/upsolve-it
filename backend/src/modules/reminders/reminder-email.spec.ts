@@ -1,4 +1,4 @@
-import { renderConfirmEmail, renderReminderEmail } from './reminder-email';
+import { renderCodeEmail, renderReminderEmail } from './reminder-email';
 
 describe('renderReminderEmail', () => {
   const now = Date.UTC(2026, 10, 23);
@@ -62,16 +62,50 @@ describe('renderReminderEmail', () => {
   });
 });
 
-describe('renderConfirmEmail', () => {
-  it('carries the confirm link and escapes the handle', () => {
-    const url = 'https://app/email?action=confirm&token=a.b';
-    const mail = renderConfirmEmail('<i>h</i>', url);
-    expect(mail.text).toContain(url);
-    expect(mail.html).toContain(
-      'href="https://app/email?action=confirm&amp;token=a.b"',
+describe('renderCodeEmail', () => {
+  const site = 'https://app.example';
+
+  it('says what each code is for, where to type it, and carries the code', () => {
+    const signup = renderCodeEmail('mona', '482017', site, 'signup');
+    expect(signup.subject).toBe(
+      '482017 is your code to finish signing up for Upsolve It',
     );
+    expect(signup.text).toContain('Your code: 482017');
+    expect(signup.html).toContain('on the sign-up page');
+    expect(signup.html).toContain('href="https://app.example/signup"');
+
+    const settings = renderCodeEmail('mona', '111222', site, 'settings');
+    expect(settings.subject).toBe(
+      '111222 confirms the email you added to Upsolve It',
+    );
+    expect(settings.html).toContain('in Settings, under Account email');
+    expect(settings.html).not.toContain('sign-up page');
+    expect(settings.html).toContain(
+      'href="https://app.example/settings#settings-account"',
+    );
+
+    const reset = renderCodeEmail('mona', '333444', site, 'reset');
+    expect(reset.subject).toBe('333444 is your Upsolve It password reset code');
+    expect(reset.html).toContain('on the reset page');
+    expect(reset.html).toContain('your password stays as it is');
+    expect(reset.html).toContain('href="https://app.example/reset-password"');
+
+    for (const mail of [signup, settings, reset]) {
+      expect(mail.html).toContain('What this email is for');
+      expect(mail.text).toContain('What this email is for:');
+    }
+  });
+
+  it('shows the logo from inside the message, not from the site', () => {
+    const mail = renderCodeEmail('mona', '482017', site, 'signup');
+    expect(mail.html).toContain('src="cid:upsolve-it-logo"');
+    expect(mail.html).not.toContain('/brand/icon-192.png');
+  });
+
+  it('escapes the name, and leaves out links when the site has no address', () => {
+    const mail = renderCodeEmail('<i>h</i>', '482017', '', 'reset');
     expect(mail.html).toContain('&lt;i&gt;h&lt;/i&gt;');
-    // the logo comes from the same site as the link
-    expect(mail.html).toContain('src="https://app/brand/icon-192.png"');
+    expect(mail.html).not.toContain('<i>h</i>');
+    expect(mail.html).not.toContain('reset-password');
   });
 });

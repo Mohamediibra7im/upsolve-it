@@ -205,14 +205,17 @@ export class UpsolveService implements OnModuleInit {
   }
 
   /**
-   * Syncs every judge the user has a handle for. Codeforces must succeed;
-   * AtCoder failing only sets `atcoderSkipped`, and the rest still counts.
+   * Syncs every judge the user has a handle for. Codeforces must succeed
+   * where there is one; AtCoder failing only sets `atcoderSkipped`, and the
+   * rest still counts.
    */
   async syncAll(
     userId: string,
-    handles: { codeforces: string; atcoder?: string },
+    handles: { codeforces?: string; atcoder?: string },
   ) {
-    const total = await this.syncFromCodeforces(userId, handles.codeforces);
+    const total = handles.codeforces
+      ? await this.syncFromCodeforces(userId, handles.codeforces)
+      : { added: 0, solved: 0, resolved: 0 };
     const atcoder = handles.atcoder?.trim();
     if (!atcoder) return { ...total, atcoderSkipped: false };
     try {
