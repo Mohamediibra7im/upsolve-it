@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHead, Rank } from "@/components/ui/kit";
 import ChangePasswordDialog from "@/components/shared/ChangePasswordDialog";
+import BrandIcon from "@/components/shared/BrandIcon";
 import UserAvatar from "@/components/shared/UserAvatar";
 import VerifyCodeforcesDialog from "@/components/shared/VerifyCodeforcesDialog";
 import { ReminderSettings } from "@/components/features/profile";
@@ -155,13 +156,19 @@ export default function SettingsPage() {
           </div>
           <div className="border-t border-line">
             <div className="u-kv">
-              <span className="t-muted">Codeforces</span>
+              <span className="t-muted flex items-center gap-2">
+                <BrandIcon name="codeforces" />
+                Codeforces
+              </span>
               <span className="truncate font-semibold">
                 {user.codeforcesHandle}
               </span>
             </div>
             <div className="u-kv">
-              <span className="t-muted">AtCoder</span>
+              <span className="t-muted flex items-center gap-2">
+                <BrandIcon name="atcoder" />
+                AtCoder
+              </span>
               <span className="truncate font-semibold">
                 {user.links?.atcoder || "Not linked"}
               </span>

@@ -1,24 +1,11 @@
 import type { ReactNode } from "react";
-import {
-  ArrowUpRight,
-  Github,
-  Globe,
-  Link2,
-  Linkedin,
-  Twitter,
-} from "lucide-react";
+import { ArrowUpRight, Globe } from "lucide-react";
 import { Bar, Rank } from "@/components/ui/kit";
+import BrandIcon from "@/components/shared/BrandIcon";
 import UserAvatar from "@/components/shared/UserAvatar";
 import type { ProfileLinks } from "@/types/User";
 import { profileLinkList } from "@/utils/profileLinks";
 import { RANKS, nextRank, rankName } from "@/utils/rank";
-
-const LINK_ICONS: Partial<Record<keyof ProfileLinks, typeof Link2>> = {
-  github: Github,
-  linkedin: Linkedin,
-  x: Twitter,
-  website: Globe,
-};
 
 /** The top of a profile, private or public: who this is on the left, where
  *  their Codeforces rating stands on the volt block on the right. */
@@ -86,28 +73,28 @@ export default function ProfileHero({
               rel="noopener noreferrer"
               className="u-btn u-btn--sm"
             >
+              <BrandIcon name="codeforces" />
               Codeforces <ArrowUpRight aria-hidden="true" />
             </a>
             {profileLinkList(person.links).map(
-              ({ key, label, username, href }) => {
-                const Icon = LINK_ICONS[key] ?? Link2;
-                return (
-                  <a
-                    key={key}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer nofollow"
-                    className="u-btn u-btn--sm max-w-full"
-                    aria-label={`${label}: ${username}`}
-                    title={`${label}: ${username}`}
-                  >
-                    <Icon aria-hidden="true" />
-                    <span className="truncate">
-                      {LINK_ICONS[key] ? username : label}
-                    </span>
-                  </a>
-                );
-              },
+              ({ key, label, username, href }) => (
+                <a
+                  key={key}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="u-btn u-btn--sm max-w-full"
+                  aria-label={`${label}: ${username}`}
+                  title={`${label}: ${username}`}
+                >
+                  {key === "website" ? (
+                    <Globe aria-hidden="true" />
+                  ) : (
+                    <BrandIcon name={key} />
+                  )}
+                  <span className="truncate">{username}</span>
+                </a>
+              ),
             )}
             {actions}
           </div>

@@ -14,6 +14,7 @@ import { FormError } from "@/components/features/auth";
 import UserAvatar from "@/components/shared/UserAvatar";
 import { useToast } from "@/components/providers/Toast";
 import { apiClient } from "@/lib/apiClient";
+import BrandIcon from "@/components/shared/BrandIcon";
 import type { ProfileLinks, User } from "@/types/User";
 import {
   PLATFORMS,
@@ -207,7 +208,10 @@ export default function ProfileSettings({
                 const message = linkErrors[key];
                 return (
                   <div key={key} className="u-field">
-                    <label htmlFor={id}>{label}</label>
+                    <label htmlFor={id} className="flex items-center gap-2">
+                      {key !== "website" && <BrandIcon name={key} />}
+                      {label}
+                    </label>
                     <input
                       id={id}
                       className="u-input"
