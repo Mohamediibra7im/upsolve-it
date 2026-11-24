@@ -28,6 +28,22 @@ const DISMISSED_KEY = "upsolve-announcements-dismissed";
 // The server sends at most 50, so 50 markers remember them all.
 const DISMISSED_MAX = 50;
 
+/**
+ * Not from the server: the card a member sees while their account has no
+ * email, which is every account made before sign-up asked for one. It leads
+ * to the email setting, and is closed and remembered like any announcement.
+ * Change `updatedAt` to show it again to those who closed it.
+ */
+const ADD_EMAIL: CurrentAnnouncement = {
+  id: "add-your-email",
+  title: "Add your email",
+  message:
+    "Accounts can now have an email. With one you can log in by email, and reset a forgotten password with a code instead of editing your Codeforces profile.\nIt takes a minute, and it is never shown to anyone.",
+  actionLabel: "Add my email",
+  actionUrl: "/settings#settings-account",
+  updatedAt: "2026-11-24",
+};
+
 /** One announcement at one edit: an edited announcement is shown again. */
 const markerOf = (a: CurrentAnnouncement) => `${a.id}:${a.updatedAt}`;
 
@@ -64,12 +80,14 @@ export default function AnnouncementPopup() {
   // Closed once, it stays closed until the site is opened again.
   const [closed, setClosed] = useState(false);
 
-  const visible = (data?.announcements ?? []).filter(
-    (a) => !dismissed.includes(markerOf(a)),
-  );
+  const member = !!user && (user.isVerified || user.atcoderVerified);
+  const visible = [
+    ...(member && !user.email ? [ADD_EMAIL] : []),
+    ...(data?.announcements ?? []),
+  ].filter((a) => !dismissed.includes(markerOf(a)));
   const count = visible.length;
-  // An unverified member is held at the handle-verification gate.
-  const allowed = count > 0 && !isQuiet(pathname) && (!user || user.isVerified);
+  // A member with no proven judge yet is still in sign-up.
+  const allowed = count > 0 && !isQuiet(pathname) && (!user || member);
   if (!allowed || closed) return null;
 
   const at = Math.min(index, count - 1);

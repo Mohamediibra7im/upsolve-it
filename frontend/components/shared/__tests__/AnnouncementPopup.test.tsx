@@ -3,7 +3,7 @@ import AnnouncementPopup from "@/components/shared/AnnouncementPopup";
 import type { CurrentAnnouncement } from "@/types/Announcement";
 
 let pathname = "/";
-let user: { isVerified: boolean } | null = null;
+let user: { isVerified: boolean; email?: string | null } | null = null;
 let current: CurrentAnnouncement[] = [];
 let requested: string | null = null;
 
@@ -154,6 +154,36 @@ describe("AnnouncementPopup", () => {
     expect(popup()).not.toBeNull();
     click("Got it");
     expect(popup()).toBeNull();
+  });
+
+  it("asks a member with no email to add one, first, with a way there", () => {
+    user = { isVerified: true, email: null };
+    load("/dashboard");
+    expect(title()).toBe("Add your email");
+    expect(popup()?.textContent).toContain("1 of 4");
+    expect(
+      screen.getByRole("link", { name: "Add my email" }).getAttribute("href"),
+    ).toBe("/settings#settings-account");
+  });
+
+  it("asks it once: closed, it stays closed", () => {
+    user = { isVerified: true, email: null };
+    current = [];
+    const first = load("/dashboard");
+    expect(title()).toBe("Add your email");
+    // the dialog's own X and the Close button both close it
+    fireEvent.click(screen.getAllByRole("button", { name: "Close" })[0]);
+    first.unmount();
+    load("/dashboard");
+    expect(popup()).toBeNull();
+  });
+
+  it("does not ask a member who has an email", () => {
+    user = { isVerified: true, email: "mona@example.com" };
+    current = [ladder];
+    load("/dashboard");
+    expect(title()).toBe("Ladder mode is here");
+    expect(popup()?.textContent).not.toContain("of");
   });
 
   it("tells the server when the visitor is signed in", () => {
