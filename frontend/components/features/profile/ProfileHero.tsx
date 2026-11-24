@@ -19,6 +19,7 @@ export default function ProfileHero({
   eyebrow: ReactNode;
   person: {
     codeforcesHandle: string;
+    username?: string;
     displayName?: string;
     bio?: string;
     links?: Partial<ProfileLinks> | null;
@@ -35,7 +36,8 @@ export default function ProfileHero({
   /** One quiet line under the links. */
   note?: ReactNode;
 }) {
-  const handle = person.codeforcesHandle;
+  // An account with AtCoder alone is known by its own username.
+  const handle = person.codeforcesHandle ?? person.username;
   const name = person.displayName?.trim();
   const rating = person.rating && person.rating > 0 ? person.rating : 0;
   const best = person.maxRating && person.maxRating > 0 ? person.maxRating : 0;
@@ -67,15 +69,17 @@ export default function ProfileHero({
         )}
         <div className="grid gap-3">
           <div className="flex flex-wrap gap-3">
-            <a
-              href={`https://codeforces.com/profile/${handle}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="u-btn u-btn--sm"
-            >
-              <BrandIcon name="codeforces" />
-              Codeforces <ArrowUpRight aria-hidden="true" />
-            </a>
+            {person.codeforcesHandle && (
+              <a
+                href={`https://codeforces.com/profile/${person.codeforcesHandle}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="u-btn u-btn--sm"
+              >
+                <BrandIcon name="codeforces" />
+                Codeforces <ArrowUpRight aria-hidden="true" />
+              </a>
+            )}
             {profileLinkList(person.links).map(
               ({ key, label, username, href }) => (
                 <a

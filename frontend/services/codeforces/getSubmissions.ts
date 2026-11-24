@@ -7,6 +7,8 @@ const getSubmissions = async (
   from?: number,
   count?: number,
 ): Promise<Response<CodeforcesSubmission[]>> => {
+  // An account with AtCoder alone has no Codeforces submissions to read.
+  if (!user.codeforcesHandle) return SuccessResponse([]);
   try {
     let url = `https://codeforces.com/api/user.status?handle=${user.codeforcesHandle}`;
     if (from) {
@@ -29,7 +31,9 @@ const getSubmissions = async (
       if (comment.includes("not found") || comment.includes("handle")) {
         return ErrorResponse("User not found on Codeforces");
       }
-      return ErrorResponse("Codeforces API is currently unavailable. Please try again later.");
+      return ErrorResponse(
+        "Codeforces API is currently unavailable. Please try again later.",
+      );
     }
     return SuccessResponse(data.result);
   } catch (error) {
@@ -41,6 +45,3 @@ const getSubmissions = async (
 };
 
 export default getSubmissions;
-
-
-

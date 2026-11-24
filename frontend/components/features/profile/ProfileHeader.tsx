@@ -26,7 +26,7 @@ export default function ProfileHeader({
       person={user}
       badges={
         <>
-          {user.isVerified ? (
+          {user.isVerified || user.atcoderVerified ? (
             <Badge variant="solved">
               <ShieldCheck />
               Verified
@@ -51,7 +51,7 @@ export default function ProfileHeader({
             <Pencil aria-hidden="true" />
             Edit profile
           </Link>
-          {user.publicProfile && (
+          {user.publicProfile && user.codeforcesHandle && (
             <Link
               href={`/u/${user.codeforcesHandle}`}
               className="u-btn u-btn--sm u-btn--ghost"

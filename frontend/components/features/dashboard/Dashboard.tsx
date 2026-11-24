@@ -94,7 +94,10 @@ export default function Dashboard() {
         title={
           <>
             Welcome back,{" "}
-            <span className="break-words">{user.codeforcesHandle}</span>.
+            <span className="break-words">
+              {user.codeforcesHandle ?? user.username}
+            </span>
+            .
           </>
         }
       >

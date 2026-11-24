@@ -213,7 +213,7 @@ export default function NavBar({
                         <UserAvatar {...user} size={32} />
                         <span className="hidden text-[13px] leading-4 md:block">
                           <b className="block max-w-32 truncate">
-                            {user.codeforcesHandle}
+                            {user.username ?? user.codeforcesHandle}
                           </b>
                           <Rank rating={user.rating} showRating />
                         </span>
@@ -227,7 +227,7 @@ export default function NavBar({
                     >
                       <DropdownMenuLabel className="font-normal">
                         <b className="block truncate">
-                          {user.codeforcesHandle}
+                          {user.username ?? user.codeforcesHandle}
                         </b>
                         <Rank
                           rating={user.rating}
@@ -248,16 +248,18 @@ export default function NavBar({
                           Settings
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <a
-                          href={`https://codeforces.com/profile/${user.codeforcesHandle}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ExternalLink />
-                          Codeforces profile
-                        </a>
-                      </DropdownMenuItem>
+                      {user.codeforcesHandle && (
+                        <DropdownMenuItem asChild>
+                          <a
+                            href={`https://codeforces.com/profile/${user.codeforcesHandle}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <ExternalLink />
+                            Codeforces profile
+                          </a>
+                        </DropdownMenuItem>
+                      )}
                       {user.role === "admin" && (
                         <DropdownMenuItem asChild>
                           <Link
@@ -333,7 +335,7 @@ export default function NavBar({
                       <UserAvatar {...user} size={40} />
                       <span className="min-w-0 flex-1 leading-5">
                         <b className="block truncate">
-                          {user.codeforcesHandle}
+                          {user.username ?? user.codeforcesHandle}
                         </b>
                         <Rank
                           rating={user.rating}

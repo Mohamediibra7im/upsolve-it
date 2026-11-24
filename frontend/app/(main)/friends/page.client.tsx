@@ -86,7 +86,7 @@ export default function FriendsPage() {
   }, [user, isUserLoading, router]);
 
   const sortedFriends = [...friends].sort((a, b) =>
-    a.codeforcesHandle.localeCompare(b.codeforcesHandle),
+    (a.codeforcesHandle ?? "").localeCompare(b.codeforcesHandle ?? ""),
   );
   // The standings: you among your friends, longest live streak first, then
   // the shorter queue.
@@ -101,7 +101,9 @@ export default function FriendsPage() {
       (a, b) =>
         b.upsolve.streak - a.upsolve.streak ||
         a.upsolve.waiting - b.upsolve.waiting ||
-        a.who.codeforcesHandle.localeCompare(b.who.codeforcesHandle),
+        (a.who.codeforcesHandle ?? "").localeCompare(
+          b.who.codeforcesHandle ?? "",
+        ),
     );
 
   const sendRequest = async (e: React.FormEvent) => {

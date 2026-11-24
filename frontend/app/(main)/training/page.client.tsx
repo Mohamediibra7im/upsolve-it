@@ -224,7 +224,8 @@ export default function TrainingPage() {
       {!(isTraining && training) && (
         <PageHead eyebrow="The training room" title="Make room for progress.">
           <span className="t-muted">
-            Training as <b className="text-ink">{user.codeforcesHandle}</b>
+            Training as{" "}
+            <b className="text-ink">{user.codeforcesHandle ?? user.username}</b>
           </span>
         </PageHead>
       )}

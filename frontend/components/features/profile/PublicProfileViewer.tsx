@@ -9,7 +9,7 @@ import { useUser } from "@/hooks/auth";
 /** "Edit profile", shown only to the person whose public page this is. */
 export function OwnerEditLink({ handle }: { handle: string }) {
   const { user } = useUser();
-  if (user?.codeforcesHandle.toLowerCase() !== handle.toLowerCase())
+  if (user?.codeforcesHandle?.toLowerCase() !== handle.toLowerCase())
     return null;
   return (
     <Link href="/settings" className="u-btn u-btn--sm u-btn--ghost">
