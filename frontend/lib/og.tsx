@@ -27,38 +27,53 @@ type Font = {
 };
 
 /** The site's own faces, fetched from Google Fonts as TrueType (what the image
- *  renderer reads). If the fetch fails the image still renders, in a fallback face. */
+ *  renderer reads). A fetch that fails is tried three times: one dropped
+ *  request must not fail a build, which draws every share image at once. */
 async function googleFont(
   family: string,
   weight: Font["weight"],
 ): Promise<Font | null> {
-  try {
-    const css = await (
-      await fetch(
-        `https://fonts.googleapis.com/css2?family=${family.replace(/ /g, "+")}:wght@${weight}`,
-      )
-    ).text();
-    const url = css.match(
-      /src: url\((.+?)\) format\('(?:opentype|truetype)'\)/,
-    )?.[1];
-    if (!url) return null;
-    return {
-      name: family,
-      data: await (await fetch(url)).arrayBuffer(),
-      weight,
-      style: "normal",
-    };
-  } catch {
-    return null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const css = await (
+        await fetch(
+          `https://fonts.googleapis.com/css2?family=${family.replace(/ /g, "+")}:wght@${weight}`,
+        )
+      ).text();
+      const url = css.match(
+        /src: url\((.+?)\) format\('(?:opentype|truetype)'\)/,
+      )?.[1];
+      if (url) {
+        return {
+          name: family,
+          data: await (await fetch(url)).arrayBuffer(),
+          weight,
+          style: "normal",
+        };
+      }
+    } catch {
+      // tried again below
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
   }
+  return null;
 }
+const FACES = [
+  ["Barlow Condensed", 800],
+  ["Barlow", 500],
+  ["JetBrains Mono", 600],
+] as const;
 let fonts: Promise<Font[]> | undefined;
-const loadFonts = () =>
-  (fonts ??= Promise.all([
-    googleFont("Barlow Condensed", 800),
-    googleFont("Barlow", 500),
-    googleFont("JetBrains Mono", 600),
-  ]).then((loaded) => loaded.filter((f): f is Font => f !== null)));
+/** Loaded once per process. An incomplete set is not kept, so the next image
+ *  asks again instead of inheriting the failure. */
+async function loadFonts() {
+  fonts ??= Promise.all(
+    FACES.map(([family, weight]) => googleFont(family, weight)),
+  ).then((loaded) => loaded.filter((f): f is Font => f !== null));
+  const loaded = await fonts;
+  if (loaded.length < FACES.length) fonts = undefined;
+  return loaded;
+}
 
 const mono = { fontFamily: "JetBrains Mono", fontWeight: 600 } as const;
 const display = {
