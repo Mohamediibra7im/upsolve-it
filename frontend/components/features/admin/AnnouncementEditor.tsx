@@ -194,8 +194,8 @@ export function AnnouncementEditor({
             {announcement ? "Edit announcement" : "New announcement"}
           </DialogTitle>
           <DialogDescription className="t-muted">
-            It joins the bar under the menu, and its title opens the whole
-            message. A visitor who hides the bar sees it again after an edit.
+            It opens in a pop-up when someone visits the site. A visitor who
+            closed it sees it again after an edit.
           </DialogDescription>
         </DialogHeader>
 

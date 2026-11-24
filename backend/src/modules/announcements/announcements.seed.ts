@@ -31,6 +31,18 @@ export const SEEDED_ANNOUNCEMENTS = [
     actionUrl: '/settings',
   },
   {
+    _id: new Types.ObjectId('6743a1000000000000000004'),
+    title: 'Four new pages to explore',
+    message: [
+      'Problems: every Codeforces and AtCoder problem the site trains on, by rating, topic and judge.',
+      'Topics: how many problems each topic holds at every rating.',
+      'Contests: the upcoming rounds of both judges in one calendar, in your own time zone.',
+      'Try it: one real problem in the solve workspace, no account needed. Send it to a friend.',
+    ].join('\n'),
+    actionLabel: 'See the contests',
+    actionUrl: '/contests',
+  },
+  {
     _id: new Types.ObjectId('6743a1000000000000000001'),
     title: 'Solve without leaving the site',
     message: [

@@ -1,5 +1,5 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
-import AnnouncementBar from "@/components/shared/AnnouncementBar";
+import { fireEvent, render, screen } from "@testing-library/react";
+import AnnouncementPopup from "@/components/shared/AnnouncementPopup";
 import type { CurrentAnnouncement } from "@/types/Announcement";
 
 let pathname = "/";
@@ -42,28 +42,18 @@ const reminders: CurrentAnnouncement = {
 
 function load(path = "/") {
   pathname = path;
-  return render(<AnnouncementBar />);
+  return render(<AnnouncementPopup />);
 }
-const bar = () => screen.queryByRole("region", { name: "Announcements" });
-/** The title on show, without the "Announcement 1 of 3:" a screen reader
- *  hears. Read from the page, not by role: an open dialog hides the bar from
- *  assistive technology. */
-const title = () =>
-  document
-    .querySelector(".u-annbar__title")
-    ?.textContent?.replace(/^Announcement \d+ of \d+:\s*/, "");
-const click = (name: string) =>
-  fireEvent.click(screen.getByRole("button", { name }));
-const wait = (ms: number) =>
-  act(() => {
-    jest.advanceTimersByTime(ms);
-  });
+const popup = () => screen.queryByRole("dialog");
+const title = () => screen.queryByRole("heading")?.textContent;
+const button = (name: string) =>
+  screen.getByRole("button", { name }) as HTMLButtonElement;
+const click = (name: string) => fireEvent.click(button(name));
 
-describe("AnnouncementBar", () => {
+describe("AnnouncementPopup", () => {
   const stored = new Map<string, string>();
 
   beforeEach(() => {
-    jest.useFakeTimers();
     stored.clear();
     (localStorage.getItem as jest.Mock).mockImplementation(
       (key: string) => stored.get(key) ?? null,
@@ -75,48 +65,23 @@ describe("AnnouncementBar", () => {
     current = [ladder, friends, reminders];
   });
 
-  afterEach(() => jest.useRealTimers());
-
-  it("shows every announcement in turn, and starts again after the last", () => {
+  it("opens by itself with the newest announcement, whole", () => {
     load();
     expect(title()).toBe("Ladder mode is here");
-    expect(bar()?.textContent).toContain("1 / 3");
-
-    wait(6000);
-    expect(title()).toBe("Train alongside your friends");
-    wait(6000);
-    expect(title()).toBe("One email a week");
-    expect(bar()?.textContent).toContain("3 / 3");
-    wait(6000);
-    expect(title()).toBe("Ladder mode is here");
+    expect(popup()?.textContent).toContain("Try it today.");
+    expect(popup()?.textContent).toContain("1 of 3");
   });
 
-  it("steps by hand in both directions, wrapping at the ends", () => {
+  it("steps by hand and stops at both ends", () => {
     load();
+    expect(button("Previous announcement").disabled).toBe(true);
+    click("Next announcement");
+    expect(title()).toBe("Train alongside your friends");
+    click("Next announcement");
+    expect(title()).toBe("One email a week");
+    expect(popup()?.textContent).toContain("3 of 3");
+    expect(button("Next announcement").disabled).toBe(true);
     click("Previous announcement");
-    expect(title()).toBe("One email a week");
-    click("Next announcement");
-    expect(title()).toBe("Ladder mode is here");
-    click("Next announcement");
-    expect(title()).toBe("Train alongside your friends");
-    // a full turn from the click, not what was left of the last one
-    wait(5900);
-    expect(title()).toBe("Train alongside your friends");
-    wait(100);
-    expect(title()).toBe("One email a week");
-  });
-
-  it("waits while the pointer or the keyboard is on it", () => {
-    load();
-    fireEvent.mouseEnter(bar()!);
-    wait(20000);
-    expect(title()).toBe("Ladder mode is here");
-    fireEvent.mouseLeave(bar()!);
-    wait(6000);
-    expect(title()).toBe("Train alongside your friends");
-
-    fireEvent.focus(screen.getByRole("button", { name: "Next announcement" }));
-    wait(20000);
     expect(title()).toBe("Train alongside your friends");
   });
 
@@ -124,43 +89,25 @@ describe("AnnouncementBar", () => {
     current = [ladder];
     load();
     expect(title()).toBe("Ladder mode is here");
-    expect(bar()?.textContent).not.toContain("1 / 1");
+    expect(popup()?.textContent).not.toContain("1 of 1");
     expect(
       screen.queryByRole("button", { name: "Next announcement" }),
     ).toBeNull();
   });
 
-  it("opens the whole announcement from its title, and waits while it is open", () => {
-    load();
-    expect(screen.queryByRole("dialog")).toBeNull();
-    fireEvent.click(
-      screen.getByRole("button", { name: /Ladder mode is here/ }),
-    );
-
-    const dialog = screen.getByRole("dialog");
-    expect(dialog.textContent).toContain("Try it today.");
-    wait(20000);
-    expect(title()).toBe("Ladder mode is here");
-
-    fireEvent.click(screen.getByRole("button", { name: "Got it" }));
-    expect(screen.queryByRole("dialog")).toBeNull();
-    // reading one does not hide the bar
-    expect(bar()).not.toBeNull();
-  });
-
-  it("once hidden stays hidden on later loads", () => {
+  it("once closed stays closed on later loads, unread ones included", () => {
     const first = load();
-    click("Hide announcements");
-    expect(bar()).toBeNull();
+    click("Got it");
+    expect(popup()).toBeNull();
     first.unmount();
 
     load();
-    expect(bar()).toBeNull();
+    expect(popup()).toBeNull();
   });
 
   it("comes back with only what is new or edited", () => {
     const first = load();
-    click("Hide announcements");
+    click("Got it");
     first.unmount();
 
     const edited = { ...friends, updatedAt: "2026-11-24T08:00:00.000Z" };
@@ -168,7 +115,7 @@ describe("AnnouncementBar", () => {
     current = [added, ladder, edited, reminders];
     load();
     expect(title()).toBe("New");
-    expect(bar()?.textContent).toContain("1 / 2");
+    expect(popup()?.textContent).toContain("1 of 2");
     click("Next announcement");
     expect(title()).toBe("Train alongside your friends");
   });
@@ -176,7 +123,7 @@ describe("AnnouncementBar", () => {
   it("shows nothing when there is nothing to announce", () => {
     current = [];
     load();
-    expect(bar()).toBeNull();
+    expect(popup()).toBeNull();
   });
 
   it.each([
@@ -188,25 +135,25 @@ describe("AnnouncementBar", () => {
     "/training/reviews",
   ])("stays out of the way on %s", (path) => {
     load(path);
-    expect(bar()).toBeNull();
+    expect(popup()).toBeNull();
   });
 
   it("stays out of the way of the handle-verification gate", () => {
     user = { isVerified: false };
     load("/dashboard");
-    expect(bar()).toBeNull();
+    expect(popup()).toBeNull();
   });
 
-  it("still shows, and still hides, when storage is blocked", () => {
+  it("still opens, and still closes, when storage is blocked", () => {
     const blocked = () => {
       throw new Error("blocked");
     };
     (localStorage.getItem as jest.Mock).mockImplementation(blocked);
     (localStorage.setItem as jest.Mock).mockImplementation(blocked);
     load("/dashboard");
-    expect(bar()).not.toBeNull();
-    click("Hide announcements");
-    expect(bar()).toBeNull();
+    expect(popup()).not.toBeNull();
+    click("Got it");
+    expect(popup()).toBeNull();
   });
 
   it("tells the server when the visitor is signed in", () => {
@@ -241,10 +188,6 @@ describe("AnnouncementBar", () => {
 
     current = [{ ...current[0], actionUrl: "javascript:alert(1)" }];
     load();
-    expect(screen.queryByRole("link")).toBeNull();
-    fireEvent.click(
-      screen.getByRole("button", { name: /Ladder mode is here/ }),
-    );
     expect(screen.queryByRole("link")).toBeNull();
     expect(screen.getByRole("button", { name: "Got it" })).toBeTruthy();
   });

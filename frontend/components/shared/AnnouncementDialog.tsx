@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -44,16 +45,22 @@ export function AnnouncementAction({
 }
 
 /**
- * The whole announcement, as the pop-up shows it when a visitor opens one from
- * the bar. The admin editor draws the same thing as its preview.
+ * The whole announcement, as the pop-up shows it when the site opens. The
+ * admin editor draws the same thing as its preview.
  */
 export function AnnouncementBody({
   announcement,
   onClose,
   preview = false,
+  position,
+  stepper,
 }: {
   announcement: Shown;
   onClose?: () => void;
+  /** "2 of 3", when there is more than one to read. */
+  position?: string;
+  /** The previous and next buttons, placed at the start of the last row. */
+  stepper?: ReactNode;
   /** Outside a dialog: plain elements in place of the dialog's title and description. */
   preview?: boolean;
 }) {
@@ -65,13 +72,16 @@ export function AnnouncementBody({
   return (
     <div className="grid gap-4 text-left">
       <div className="grid gap-2 pr-8">
-        <p className="t-eyebrow">Announcement</p>
+        <p className="t-eyebrow">
+          Announcement{position ? ` · ${position}` : ""}
+        </p>
         <Title className="t-h2 break-words">{title}</Title>
       </div>
       <Message className="t-muted whitespace-pre-line break-words text-[15px] leading-6">
         {message}
       </Message>
-      <div className="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+      <div className="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
+        {stepper && <div className="flex gap-2 sm:mr-auto">{stepper}</div>}
         <Button variant="outline" onClick={onClose}>
           Close
         </Button>
