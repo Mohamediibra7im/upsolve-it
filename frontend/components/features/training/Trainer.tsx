@@ -91,10 +91,6 @@ const Trainer = ({
     const timer = setTimeout(() => setIsLeavingLobby(false), 950);
     return () => clearTimeout(timer);
   }, [isPreContestPeriod]);
-  const left = Math.max(0, training.endTime - currentTime);
-  const clock = [left / 3_600_000, (left / 60_000) % 60, (left / 1000) % 60]
-    .map((n) => Math.floor(n).toString().padStart(2, "0"))
-    .join(":");
 
   const solvedCount = useMemo(() => {
     const solvedByStatus = new Set(
@@ -206,9 +202,6 @@ const Trainer = ({
         <div className="room">
           {!isPreContestPeriod && (
             <div className="room__in" inert={onBreak}>
-              <div className="room__water" aria-hidden="true">
-                {clock}
-              </div>
               {others && (
                 <RoomStandings
                   row

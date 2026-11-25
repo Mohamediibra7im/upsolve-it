@@ -22,18 +22,6 @@
     transparent 70%
   );
 }
-/* the clock again, huge and faint, behind the work */
-.room__water {
-  position: absolute;
-  left: 20px;
-  bottom: 10px;
-  z-index: 0;
-  pointer-events: none;
-  color: var(--surface);
-  font: 800 clamp(72px, 11vw, 168px) / 0.8 var(--font-display);
-  font-variant-numeric: tabular-nums;
-}
-
 /* ---- inside: the workspace rearranged for the room ---- */
 .room .sw-page {
   position: relative;
@@ -367,14 +355,11 @@
     animation: none;
   }
 }
-/* phones and narrow tablets: one column, and no figure behind the text */
+/* phones and narrow tablets: one column */
 @media (max-width: 900px) {
   .room .sw-grid {
     grid-template-columns: 1fr;
     gap: 14px;
     height: auto;
-  }
-  .room__water {
-    display: none;
   }
 }
