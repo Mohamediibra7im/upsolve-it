@@ -460,15 +460,24 @@
     font-weight: 600;
     color: var(--rank, var(--ink));
   }
-  /* beside a rating that is an estimate (AtCoder, on the Codeforces scale) */
+  /* A rating that is an estimate (AtCoder, on the Codeforces scale) carries a
+     small raised mark, set like a footnote sign: it rides the top of the
+     number at any size and takes no room in the line below it. */
   .u-est {
-    padding: 3px 4px;
-    border-radius: 2px;
-    background: var(--surface-sunk);
+    position: relative;
+    top: -0.62em;
+    align-self: flex-start;
+    margin-left: 0.2em;
     color: var(--ink-muted);
-    font: 600 9px/1 var(--font-mono);
-    letter-spacing: 0.08em;
+    font: 700 0.46em/1 var(--font-mono);
+    letter-spacing: 0.1em;
     text-transform: uppercase;
+    white-space: nowrap;
+  }
+  /* in a row that centres its items, the mark hangs from the number's top */
+  .u-rank > .u-est {
+    top: 0;
+    margin-left: -3px;
   }
   .u-rank::before {
     content: "";

@@ -90,8 +90,10 @@ const ProblemsCard = ({
         )}
       </div>
       {(ready || level) && (
-        <div className="grid items-center gap-x-4 gap-y-3 border-t border-line px-4 py-4 sm:grid-cols-[1fr_auto] sm:px-6 lg:grid-cols-1 xl:grid-cols-[1fr_auto]">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        // Two rows whatever the lane's width: what the set is and the way to
+        // redraw it, then the two ways to start, side by side.
+        <div className="grid gap-4 border-t border-line px-4 py-4 sm:px-6">
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
             {level && (
               <span className="t-sm t-muted flex flex-wrap gap-x-4">
                 <span>
@@ -106,7 +108,7 @@ const ProblemsCard = ({
             {ready && generate}
           </div>
           {ready && (
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="grid gap-3 min-[440px]:grid-cols-2">
               <Button variant="outline" size="lg" onClick={onStartRoom}>
                 <Users aria-hidden="true" />
                 Start with friends
