@@ -7,15 +7,18 @@ import { ArrowUpRight, Check, Plus, RotateCw, X } from "lucide-react";
 import Loader from "@/components/shared/Loader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Bar, EmptyState, PageHead, Stat } from "@/components/ui/kit";
+import { EmptyState, PageHead } from "@/components/ui/kit";
+import { useUser } from "@/hooks/auth";
 import { useHistory, useUpsolvedProblems } from "@/hooks/data";
 import { apiClient } from "@/lib/apiClient";
+import { sessionLine } from "@/services/training/sessionLine";
 import type { SpeedStatus } from "@/services/training/speedStatus";
 import {
   formatTrainingModeLabel,
   normalizeTrainingMode,
 } from "@/services/training/trainingModeLabel";
 import type { Judge, TrainingProblem } from "@/types/TrainingProblem";
+import "./review.css";
 
 type ReviewProblem = {
   problemId: string;
@@ -68,6 +71,7 @@ export default function SessionReviewPage() {
   const id = typeof params.id === "string" ? params.id : "";
   const { addUpsolvedProblems, upsolvedProblems } = useUpsolvedProblems();
   const { history } = useHistory();
+  const { user } = useUser();
 
   const [data, setData] = useState<ReviewPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -114,25 +118,21 @@ export default function SessionReviewPage() {
     ]);
 
   const endTime = history.find((t) => t._id === id)?.endTime;
+  const eyebrow = [
+    "Session review",
+    data &&
+      formatTrainingModeLabel(normalizeTrainingMode(data.summary.trainingMode)),
+    endTime &&
+      new Date(endTime).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+  ]
+    .filter(Boolean)
+    .join(" · ");
   const head = (
-    <PageHead
-      eyebrow={[
-        "Session review",
-        data &&
-          formatTrainingModeLabel(
-            normalizeTrainingMode(data.summary.trainingMode),
-          ),
-        endTime &&
-          new Date(endTime).toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          }),
-      ]
-        .filter(Boolean)
-        .join(" · ")}
-      title="A closer look at your progress."
-    >
+    <PageHead eyebrow={eyebrow} title="A closer look at your progress.">
       <Link href="/training/reviews" className="u-btn u-btn--sm">
         Back to reviews
       </Link>
@@ -179,198 +179,190 @@ export default function SessionReviewPage() {
     );
 
   const { summary, problems } = data;
-  const solved = problems.filter((p) => p.solved).length;
+  const solved = problems.filter((p) => p.solved);
   const total = summary.totalProblems ?? problems.length;
-  const solveRate = total > 0 ? Math.round((solved / total) * 100) : 0;
+  const gap = user?.rating ? summary.performanceScore - user.rating : null;
+  const expected = solved.length
+    ? solved.reduce((sum, p) => sum + p.expectedTimeSeconds, 0) / solved.length
+    : 0;
+  const notes = problems.filter((p) => p.insightMessage || p.recommendation);
 
   return (
-    <>
-      {head}
+    <div className="grid gap-7">
+      <section className="rv" aria-labelledby="review-title">
+        <div className="rv__beam" aria-hidden="true" />
+        <div className="rv__top">
+          <h1 id="review-title" className="t-eyebrow">
+            {eyebrow}
+          </h1>
+          <Link href="/training/reviews" className="u-btn u-btn--sm">
+            All reviews
+          </Link>
+        </div>
 
-      <div className="grid gap-6">
-        <section className="u-panel u-strip" aria-label="Session in numbers">
-          <Stat
-            label="Problems solved"
-            value={`${solved}/${total}`}
-            sub={
-              solved < total
-                ? `${total - solved} left to upsolve`
-                : "Nothing left to upsolve"
-            }
-          />
-          <Stat label="Performance" value={summary.performanceScore} />
-          <Stat
-            label="Time spent"
-            value={minutes(summary.totalTimeSpent)}
-            unit="m"
-            sub={
-              summary.durationMinutes
-                ? `Of a ${summary.durationMinutes} minute session`
-                : undefined
-            }
-          />
-          <Stat
-            label="Average per solve"
-            value={solved > 0 ? minutes(summary.averageTimePerProblem) : "—"}
-            unit={solved > 0 ? "m" : undefined}
-          />
-          <Stat
-            label="Solve rate"
-            value={solveRate}
-            unit="%"
-            sub={
-              <Bar
-                value={solveRate}
-                label="Solve rate in this session"
-                className="mt-1"
-              />
-            }
-          />
-        </section>
+        <p
+          className="rv__score"
+          aria-label={`${solved.length} of ${total} solved`}
+        >
+          {solved.length}
+          <span aria-hidden="true">/{total}</span>
+        </p>
+        <p className="rv__say">{sessionLine(problems)}</p>
 
-        <div className="grid min-w-0 gap-6 lg:grid-cols-12">
-          <div className="grid min-w-0 content-start gap-6 lg:col-span-8">
-            {problems.length === 0 ? (
-              <EmptyState title="No problem details for this session.">
-                You can still open another session or start a new one.
-              </EmptyState>
-            ) : (
-              <>
-                <section className="u-panel">
-                  <div className="u-panel__head">
-                    <h2 className="t-h2">Problem breakdown</h2>
-                    <span className="t-sm t-muted">
-                      Each name opens the problem on its judge
-                    </span>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="u-table">
-                      <thead>
-                        <tr>
-                          <th>Problem</th>
-                          <th className="num">Rating</th>
-                          <th>Result</th>
-                          <th className="num">Attempts</th>
-                          <th className="num">Time / expected</th>
-                          <th>
-                            <span className="sr-only">Actions</span>
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {problems.map((p) => (
-                          <tr key={p.problemId}>
-                            <td className="min-w-56">
-                              <a
-                                href={problemUrl(p)}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="font-semibold underline-offset-4 hover:underline"
-                              >
-                                {p.index} · {p.name}
-                              </a>
-                              <br />
-                              <span className="t-sm t-muted">{reading(p)}</span>
-                            </td>
-                            <td className="num">{p.rating}</td>
-                            <td>
-                              {p.solved ? (
-                                <Badge variant="solved">
-                                  <Check />
-                                  Accepted
-                                </Badge>
-                              ) : (
-                                <Badge variant="failed">
-                                  <X />
-                                  Unsolved
-                                </Badge>
-                              )}
-                            </td>
-                            <td className="num">{p.attempts}</td>
-                            <td className="num whitespace-nowrap">
-                              {minutes(p.timeSpentSeconds)}m /{" "}
-                              {minutes(p.expectedTimeSeconds)}m
-                            </td>
-                            <td className="text-right">
-                              {!p.solved &&
-                                (isInUpsolveQueue(p) ? (
-                                  <Badge variant="line">
-                                    <Check />
-                                    In your queue
-                                  </Badge>
-                                ) : (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    aria-label={`Add to upsolve: ${p.index} · ${p.name}`}
-                                    onClick={() => void addOneUpsolve(p)}
-                                  >
-                                    <Plus />
-                                    Add to upsolve
-                                  </Button>
-                                ))}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </section>
-
-                <section className="u-panel">
-                  <div className="u-panel__head">
-                    <h2 className="t-h2">Notes on each problem</h2>
-                  </div>
-                  {problems.map((p) => (
-                    <div key={p.problemId} className="u-prow items-start">
-                      <span className="u-prow__slot">{p.index}</span>
-                      <div className="min-w-0">
-                        <h3 className="t-h3">{p.name}</h3>
-                        <p className="u-prow__meta">
-                          <span className="t-num">#{p.contestId}</span>
-                          {p.tags
-                            .slice(0, 4)
-                            .map((tag) => ` · ${tag}`)
-                            .join("")}
-                        </p>
-                        {p.insightMessage && (
-                          <p className="mt-2 max-w-prose">{p.insightMessage}</p>
-                        )}
-                        {p.recommendation && (
-                          <p className="t-muted max-w-prose">
-                            {p.recommendation}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </section>
-              </>
+        <div className="rv__nums">
+          <div>
+            <span className="t-eyebrow">Performance</span>
+            <b>{summary.performanceScore}</b>
+            {gap !== null && (
+              <small>
+                {gap === 0
+                  ? `Level with your rating of ${user!.rating}`
+                  : `${Math.abs(gap)} ${gap < 0 ? "under" : "over"} your rating of ${user!.rating}`}
+              </small>
             )}
           </div>
-
-          <aside className="u-panel self-start lg:col-span-4">
-            <div className="u-panel__head">
-              <h2 className="t-h2">Keep your momentum</h2>
-            </div>
-            <div className="u-panel__body grid gap-3">
-              <p className="t-muted">
-                Take another look at the problems you missed, or start a fresh
-                session while the ideas are still with you.
-              </p>
-              <Link href="/training" className="u-btn u-btn--primary">
-                Start a training session <ArrowUpRight />
-              </Link>
-              <Link href="/upsolve" className="u-btn">
-                Open your upsolve queue
-              </Link>
-              <Link href="/dashboard" className="u-btn u-btn--ghost">
-                Back to dashboard
-              </Link>
-            </div>
-          </aside>
+          <div>
+            <span className="t-eyebrow">Time used</span>
+            <b>{minutes(summary.totalTimeSpent)}m</b>
+            {Boolean(summary.durationMinutes) && (
+              <small>of a {summary.durationMinutes} minute session</small>
+            )}
+          </div>
+          <div>
+            <span className="t-eyebrow">Average per solve</span>
+            <b>
+              {solved.length > 0
+                ? `${minutes(summary.averageTimePerProblem)}m`
+                : "—"}
+            </b>
+            {solved.length > 0 && (
+              <small>expected about {minutes(expected)}m</small>
+            )}
+          </div>
         </div>
+
+        {problems.length === 0 ? (
+          <div className="mt-7 w-full text-left">
+            <EmptyState title="No problem details for this session.">
+              You can still open another session or start a new one.
+            </EmptyState>
+          </div>
+        ) : (
+          <ul className="rv__set" aria-label="The problems in this session">
+            {problems.map((p) => (
+              <li
+                key={p.problemId}
+                className="rv__tile"
+                data-unsolved={!p.solved || undefined}
+              >
+                <header>
+                  <span className="u-prow__slot">{p.index}</span>
+                  <span className="t-num">
+                    {p.judge === "atcoder" ? (
+                      <span
+                        className="u-est"
+                        title="Estimated from its AtCoder difficulty, on the Codeforces scale"
+                      >
+                        {p.rating}
+                        <span className="sr-only">, estimated</span>
+                      </span>
+                    ) : (
+                      p.rating
+                    )}
+                  </span>
+                </header>
+                <h3>
+                  <a href={problemUrl(p)} target="_blank" rel="noreferrer">
+                    {p.name}
+                  </a>
+                </h3>
+                <p>{reading(p)}</p>
+                <footer>
+                  <span
+                    className="rv__verdict"
+                    data-unsolved={!p.solved || undefined}
+                  >
+                    {p.solved ? (
+                      <Check aria-hidden="true" />
+                    ) : (
+                      <X aria-hidden="true" />
+                    )}
+                    {p.solved ? "Accepted" : "Unsolved"}
+                  </span>
+                  {p.solved ? (
+                    <span className="t-num t-sm t-muted">
+                      {minutes(p.timeSpentSeconds)}m of{" "}
+                      {minutes(p.expectedTimeSeconds)}m
+                    </span>
+                  ) : isInUpsolveQueue(p) ? (
+                    <Badge variant="line">
+                      <Check />
+                      In your queue
+                    </Badge>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      aria-label={`Add to upsolve: ${p.index} · ${p.name}`}
+                      onClick={() => void addOneUpsolve(p)}
+                    >
+                      <Plus />
+                      Add to upsolve
+                    </Button>
+                  )}
+                </footer>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <div className="rv__low">
+        {notes.length > 0 && (
+          <section aria-labelledby="review-notes">
+            <h2 id="review-notes">What to take from it</h2>
+            <div className="mt-2">
+              {notes.map((p) => (
+                <div key={p.problemId} className="rv__note">
+                  <span className="u-prow__slot">{p.index}</span>
+                  <div className="min-w-0">
+                    <h3>{p.name}</h3>
+                    <p className="u-prow__meta">
+                      <span className="t-num">#{p.contestId}</span>
+                      {p.tags
+                        .slice(0, 4)
+                        .map((tag) => ` · ${tag}`)
+                        .join("")}
+                    </p>
+                    {p.insightMessage && <p>{p.insightMessage}</p>}
+                    {p.recommendation && (
+                      <p className="t-muted">{p.recommendation}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <aside className="rv__next" aria-labelledby="review-next">
+          <h2 id="review-next">Next</h2>
+          <p className="t-muted">
+            {solved.length < total
+              ? "Look again at the ones you missed, or start a fresh session while the ideas are still with you."
+              : "A clean sheet. Start a fresh session while the ideas are still with you."}
+          </p>
+          <Link href="/training" className="u-btn u-btn--primary">
+            Start another session <ArrowUpRight />
+          </Link>
+          <Link href="/upsolve" className="u-btn">
+            Open your upsolve queue
+          </Link>
+          <Link href="/dashboard" className="u-btn u-btn--ghost">
+            Back to dashboard
+          </Link>
+        </aside>
       </div>
-    </>
+    </div>
   );
 }
