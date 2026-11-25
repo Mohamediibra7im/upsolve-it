@@ -10,7 +10,7 @@ import {
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { UserDocument } from '../auth/schemas/user.schema';
-import { CreateRoomDto, RoomProgressDto } from './dto/room.dto';
+import { CreateRoomDto, EndVoteDto, RoomProgressDto } from './dto/room.dto';
 import { RoomsService } from './rooms.service';
 
 /** Every route is rate limited by RateLimiterGuard, keyed `RoomsController.<method>`. */
@@ -49,6 +49,16 @@ export class RoomsController {
     @CurrentUser() user: UserDocument,
   ) {
     return this.rooms.progress(code, body, user);
+  }
+
+  @Post(':code/end-vote')
+  @HttpCode(200)
+  endVote(
+    @Param('code') code: string,
+    @Body() body: EndVoteDto,
+    @CurrentUser() user: UserDocument,
+  ) {
+    return this.rooms.endVote(code, body.agree, user);
   }
 
   @Post(':code/leave')

@@ -6,8 +6,9 @@ import type { RoomMember } from "@/types/Room";
 const slot = (i: number) => (i < 26 ? String.fromCharCode(65 + i) : `${i + 1}`);
 
 /**
- * Everyone in the room and what each has solved, best first. `row` is the
- * strip across the top of the room; without it, the list on the closing screen.
+ * Everyone in the room and what each has solved, best first. Whoever left
+ * stays, dimmed, with the line they left with. `row` is the strip across the
+ * top of the room; without it, the list on the closing screen.
  */
 export default function RoomStandings({
   members,
@@ -28,7 +29,11 @@ export default function RoomStandings({
       aria-label="Standings in the room"
     >
       {members.map((m, i) => (
-        <li key={m.id} data-me={m.id === meId || undefined}>
+        <li
+          key={m.id}
+          data-me={m.id === meId || undefined}
+          data-left={m.leftAt ? "" : undefined}
+        >
           <span className="t-num" aria-hidden="true">
             {i + 1}
           </span>
@@ -38,7 +43,10 @@ export default function RoomStandings({
             codeforcesHandle={m.codeforcesHandle ?? m.name}
             size={26}
           />
-          <b className="truncate">{m.id === meId ? "You" : m.name}</b>
+          <b className="truncate">
+            {m.id === meId ? "You" : m.name}
+            {m.leftAt && <small>left</small>}
+          </b>
           <span className="room-sb__marks">
             {problemIds.map((id, k) => {
               const state = m.solved.includes(id)

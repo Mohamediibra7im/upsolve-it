@@ -263,6 +263,43 @@
 .room-sb[data-row] li b {
   max-width: 120px;
 }
+/* someone who left: still in the standings, no longer in the race */
+.room-sb li[data-left] {
+  opacity: 0.5;
+}
+.room-sb li b small {
+  margin-left: 6px;
+  color: var(--ink-muted);
+  font: 600 10px/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+/* A vote to end the room: one line between two hairlines, the upper one volt,
+   with the seconds left counting down at its start. */
+.room-vote {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-bottom: 10px;
+  padding: 10px 2px;
+  border-top: 1px solid var(--accent);
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 20px;
+}
+.room-vote > span:first-child {
+  min-width: 3ch;
+  color: var(--accent);
+  font: 600 22px/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.room-vote p {
+  flex: 1 1 260px;
+  min-width: 0;
+}
 .lobby__foot {
   position: relative;
   display: flex;

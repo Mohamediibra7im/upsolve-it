@@ -5,6 +5,7 @@ import {
   Activity,
   Clock,
   Coffee,
+  LogOut,
   Play,
   RefreshCw,
   Trash2,
@@ -54,6 +55,12 @@ interface TrainingControlsProps {
   onEndBreak: () => void;
   /** The clock and the actions alone, small, to sit in the workspace's bar. */
   compact?: boolean;
+  /**
+   * The session is a room with other people still in it: nobody ends it
+   * alone, so Finish asks for a vote and Discard becomes leaving.
+   * `voteBlocked` says why a vote cannot be called right now.
+   */
+  shared?: { voteBlocked?: string | null };
 }
 
 /** The band across a live session: where you are, the clock, what you can do. */
@@ -70,6 +77,7 @@ const TrainingControls = ({
   onEndBreak,
   lastCheckedAt,
   compact,
+  shared,
 }: TrainingControlsProps) => {
   const [, setTick] = useState(0);
   const now = Date.now();
@@ -193,21 +201,44 @@ const TrainingControls = ({
             {breakMenu}
           </DropdownMenu>
         )}
-        <Button size="sm" onClick={onFinishTraining}>
-          Finish
+        <Button
+          size="sm"
+          onClick={onFinishTraining}
+          disabled={Boolean(shared?.voteBlocked)}
+          title={
+            shared
+              ? (shared.voteBlocked ??
+                "Ask everyone in the room to end it. All have to agree.")
+              : undefined
+          }
+        >
+          {shared ? "Vote to end" : "Finish"}
         </Button>
         {/* set apart from Finish, so the two are never confused */}
         <span className="mx-1 h-5 w-px bg-line-strong" aria-hidden="true" />
-        <Button
-          variant="destructive"
-          size="sm"
-          aria-label="Discard this session"
-          title="Discard this session. Nothing from it is saved."
-          onClick={onStopTraining}
-        >
-          <Trash2 aria-hidden="true" />
-          <span className="max-2xl:hidden">Discard</span>
-        </Button>
+        {shared ? (
+          <Button
+            variant="outline"
+            size="sm"
+            aria-label="Leave the room"
+            title="Leave the room. Your session is saved as it stands, and the room goes on for the others."
+            onClick={onStopTraining}
+          >
+            <LogOut aria-hidden="true" />
+            <span className="max-2xl:hidden">Leave</span>
+          </Button>
+        ) : (
+          <Button
+            variant="destructive"
+            size="sm"
+            aria-label="Discard this session"
+            title="Discard this session. Nothing from it is saved."
+            onClick={onStopTraining}
+          >
+            <Trash2 aria-hidden="true" />
+            <span className="max-2xl:hidden">Discard</span>
+          </Button>
+        )}
       </>
     );
 

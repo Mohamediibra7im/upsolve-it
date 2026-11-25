@@ -19,7 +19,16 @@ export type RoomMember = {
   tried: string[];
   /** Problem id to the moment the server first saw it solved, in ms. */
   solvedAt?: Record<string, number>;
+  /** When this person left a running room: their line in the standings stops there. */
+  leftAt?: number;
+  /** When this person last called a vote to end, for the wait before the next. */
+  calledVoteAt?: number;
 };
+
+/** A vote to end a running room early. User ids as strings. */
+export type EndVote = { by: string; at: number; yes: string[] };
+/** Why a room ended before its time: a vote passed, everyone solved it all, or everyone left. */
+export type EndedBy = 'vote' | 'solved' | 'left';
 
 const MemberSchema = new MongooseSchema(
   {
@@ -28,6 +37,8 @@ const MemberSchema = new MongooseSchema(
     solved: { type: [String], default: [] },
     tried: { type: [String], default: [] },
     solvedAt: { type: SchemaTypes.Mixed, default: {} },
+    leftAt: { type: Number },
+    calledVoteAt: { type: Number },
   },
   { _id: false },
 );
@@ -74,6 +85,12 @@ export class Room {
 
   @Prop({ type: [MemberSchema], default: [] })
   members!: RoomMember[];
+
+  @Prop({ type: SchemaTypes.Mixed, default: null })
+  endVote!: EndVote | null;
+
+  @Prop({ type: String, enum: ['vote', 'solved', 'left'] })
+  endedBy?: EndedBy;
 
   createdAt!: Date;
 }

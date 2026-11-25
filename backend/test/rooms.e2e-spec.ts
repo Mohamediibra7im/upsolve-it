@@ -172,6 +172,7 @@ describe('rooms: a timed set done together', () => {
       solved: [],
       tried: [],
       solvedAt: {},
+      leftAt: null,
     });
 
     for (const who of [0, 1, 9]) {
@@ -337,6 +338,118 @@ describe('rooms: a timed set done together', () => {
     const refused = await as(3).post(`/${full}/join`).expect(409);
     expect(refused.body.message).toBe('This room is closed.');
     await as(0).post(`/${full}/start`).expect(409);
+  });
+
+  it('ends early only by a vote that everyone still in the room agrees to', async () => {
+    const room = (await as(0).post('', SET).expect(201)).body.code;
+    await as(1).post(`/${room}/join`).expect(200);
+    await as(2).post(`/${room}/join`).expect(200);
+    const vote = (who: number, agree: unknown = true) =>
+      as(who).post(`/${room}/end-vote`, { agree });
+    const read = async (who: number) => (await as(who).get(`/${room}`)).body;
+
+    // not in the lobby, and not in the ten seconds before the clock runs
+    await vote(0).expect(409);
+    await as(0).post(`/${room}/start`).expect(200);
+    expect((await vote(0).expect(409)).body.message).toBe(
+      'This room is not running.',
+    );
+    ahead += 11_000;
+    await vote(9).expect(403);
+    await vote(0, 'yes').expect(400);
+
+    // one voice is not enough
+    const called = (await vote(0).expect(200)).body;
+    const hostId = called.members.find((m: any) => m.isHost).id;
+    expect(called.status).toBe('running');
+    expect(called.endVote).toMatchObject({
+      by: hostId,
+      byName: 'Host Hana',
+      yes: [hostId],
+      needed: 3,
+    });
+    expect(called.endVote.endsAt - called.serverNow).toBeGreaterThan(55_000);
+    expect(called.endVote.endsAt - called.serverNow).toBeLessThanOrEqual(
+      60_000,
+    );
+    // the others see it and have no wait of their own; an outsider sees none
+    const seen = await read(1);
+    expect(seen.endVote.byName).toBe('Host Hana');
+    expect(seen.voteAgainAt).toBeNull();
+    expect((await read(9)).endVote).toBeNull();
+
+    // one "keep going" stops it, and the caller then waits five minutes
+    const kept = (await vote(2, false).expect(200)).body;
+    expect(kept).toMatchObject({ status: 'running', endVote: null });
+    expect((await vote(0).expect(409)).body.message).toBe(
+      'You can call another vote in 5 min.',
+    );
+    expect((await read(0)).voteAgainAt).toBeGreaterThan(Date.now());
+
+    // a vote nobody answers runs out
+    expect((await vote(1).expect(200)).body.endVote.byName).toBe('omar');
+    ahead += 61_000;
+    expect(await read(1)).toMatchObject({ status: 'running', endVote: null });
+
+    // whoever leaves stays in the standings with the line they had, and
+    // counts in no vote
+    const report = (who: number, solved: string[]) =>
+      as(who).post(`/${room}/progress`, { solved, tried: [] }).expect(200);
+    await report(2, ['1986_A']);
+    await as(2).post(`/${room}/leave`).expect(200);
+    await report(2, ['1986_A', '1986_B']);
+    const gone = (await read(0)).members.find((m: any) => m.name === 'cf2');
+    expect(gone.leftAt).toEqual(expect.any(Number));
+    expect(gone.solved).toEqual(['1986_A']);
+    await vote(2).expect(409);
+
+    // the two still there agree: it ends for everyone, at once
+    ahead += 5 * 60_000;
+    await signIn();
+    const first = (await vote(0).expect(200)).body;
+    expect(first.status).toBe('running');
+    expect(first.endVote.needed).toBe(2);
+    const passed = (await vote(1).expect(200)).body;
+    expect(passed).toMatchObject({
+      status: 'ended',
+      endedBy: 'vote',
+      endVote: null,
+    });
+    expect(passed.endTime).toBeLessThan(passed.serverNow);
+    expect(await read(2)).toMatchObject({ status: 'ended', endedBy: 'vote' });
+    await vote(0).expect(409);
+  });
+
+  it('ends by itself when everyone still in it has solved everything, or left', async () => {
+    const all = ['1986_A', '1986_B', 'own-id'];
+    const room = (await as(3).post('', SET).expect(201)).body.code;
+    await as(4).post(`/${room}/join`).expect(200);
+    await as(3).post(`/${room}/start`).expect(200);
+    ahead += 11_000;
+    const report = (who: number, solved: string[]) =>
+      as(who).post(`/${room}/progress`, { solved, tried: [] }).expect(200);
+
+    await report(3, all);
+    await report(4, all.slice(0, 2));
+    expect((await as(4).get(`/${room}`)).body).toMatchObject({
+      status: 'running',
+      endedBy: null,
+    });
+    await report(4, all);
+    expect((await as(3).get(`/${room}`)).body).toMatchObject({
+      status: 'ended',
+      endedBy: 'solved',
+    });
+
+    // a room its last person walks out of has nobody to wait for
+    const alone = (await as(5).post('', SET).expect(201)).body.code;
+    await as(5).post(`/${alone}/start`).expect(200);
+    ahead += 11_000;
+    await as(5).post(`/${alone}/leave`).expect(200);
+    expect((await as(5).get(`/${alone}`)).body).toMatchObject({
+      status: 'ended',
+      endedBy: 'left',
+    });
   });
 
   it('stores a unique code and lets Mongo remove a room after 48 hours', async () => {

@@ -84,3 +84,37 @@ it("lets the refresh button rest after a press", () => {
   expect(refresh).toHaveBeenCalledTimes(1);
   expect((button as HTMLButtonElement).disabled).toBe(true);
 });
+
+it("in a shared room asks for a vote and offers leaving, not discarding", () => {
+  const onFinish = jest.fn();
+  const onStop = jest.fn();
+  const controls = (voteBlocked: string | null) => (
+    <TrainingControls
+      compact
+      training={{ ...base(), roomCode: "abcd1234" }}
+      isPreContestPeriod={false}
+      solvedCount={1}
+      totalCount={4}
+      isRefreshing={false}
+      refreshProblemStatus={jest.fn()}
+      onFinishTraining={onFinish}
+      onStopTraining={onStop}
+      onStartBreak={jest.fn()}
+      onEndBreak={jest.fn()}
+      shared={{ voteBlocked }}
+    />
+  );
+  const { rerender } = render(controls(null));
+  expect(screen.queryByRole("button", { name: "Finish" })).toBeNull();
+  expect(screen.queryByRole("button", { name: /Discard/ })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Vote to end" }));
+  fireEvent.click(screen.getByRole("button", { name: "Leave the room" }));
+  expect(onFinish).toHaveBeenCalledTimes(1);
+  expect(onStop).toHaveBeenCalledTimes(1);
+
+  // while a vote runs, or the caller still waits, no second vote
+  rerender(controls("A vote is already running."));
+  const blocked = screen.getByRole("button", { name: "Vote to end" });
+  expect(blocked).toHaveProperty("disabled", true);
+  expect(blocked.getAttribute("title")).toBe("A vote is already running.");
+});

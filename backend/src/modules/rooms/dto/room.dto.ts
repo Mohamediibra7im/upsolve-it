@@ -71,3 +71,9 @@ export class RoomProgressDto {
   @MaxLength(64, { each: true })
   tried!: string[];
 }
+
+export class EndVoteDto {
+  /** true agrees to end (and calls the vote when none is running); false keeps going. */
+  @IsBoolean()
+  agree!: boolean;
+}

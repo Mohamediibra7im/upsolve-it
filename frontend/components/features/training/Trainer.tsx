@@ -15,6 +15,11 @@ import { reportRoomProgress, useRoom } from "@/hooks/room/useRoom";
 import { useUser } from "@/hooks/auth";
 import { useToast } from "@/components/providers/Toast";
 import { breakLeftMs } from "@/services/training/breaks";
+import {
+  isSharedRoom,
+  voteBlocked,
+  voteState,
+} from "@/services/training/roomVote";
 import "./trainer/room.css";
 import Workspace from "@/components/features/solve/Workspace";
 import {
@@ -121,7 +126,7 @@ const Trainer = ({
   // A shared room: everyone in it, re-read every few seconds, and this
   // person's own progress sent to it whenever it changes.
   const { user } = useUser();
-  const { room } = useRoom(training.roomCode, 5000);
+  const { room, vote, leave, refresh } = useRoom(training.roomCode, 5000);
   const problemIds = useMemo(
     () => problems.map((p) => p.problemId ?? `${p.contestId}_${p.index}`),
     [problems],
@@ -147,35 +152,130 @@ const Trainer = ({
   }, [roomCode, isPreContestPeriod, progress.key]);
   const others = room && room.members.length > 1 ? room.members : null;
 
+  // With other people still in the room nobody ends it alone: finishing is
+  // a vote everyone has to agree to, and the way out for one person is to
+  // leave, which saves their session and lets the room go on.
+  const shared = isSharedRoom(roomCode, room, user?._id);
+  const ballot = voteState(room, user?._id, currentTime);
+  const tellRoomILeft = () => {
+    if (roomCode && room?.status === "running")
+      void leave().catch(() => undefined);
+  };
+  // one answer at a time: a second click must not send a second vote
+  const [isVoting, setIsVoting] = useState(false);
+  const castVote = async (agree: boolean) => {
+    if (isVoting) return;
+    setIsVoting(true);
+    try {
+      await vote(agree);
+    } catch (e) {
+      // A vote that reaches the server after the room has ended is refused,
+      // and nothing is wrong: the room is read again and closes by itself.
+      // Only a refusal in a room that still runs is worth telling.
+      const latest = await refresh().catch(() => undefined);
+      if (latest?.status === "running")
+        toast({
+          title: "Your vote did not go through",
+          description:
+            e instanceof Error ? e.message : "Try again in a moment.",
+          variant: "warning",
+        });
+    } finally {
+      setIsVoting(false);
+    }
+  };
+  const leaveRoom = async () => {
+    await leave().catch(() => undefined);
+    finishTraining();
+  };
+
+  // a vote that goes away while the room still runs did not pass
+  const hasVote = Boolean(room?.endVote);
+  const roomStatus = room?.status;
+  const hadVote = useRef(false);
+  useEffect(() => {
+    if (hadVote.current && !hasVote && roomStatus === "running")
+      toast({
+        title: "The vote to end did not pass",
+        description: "The room goes on.",
+      });
+    hadVote.current = hasVote;
+  }, [hasVote, roomStatus, toast]);
+
+  // The room ended for everyone (a vote passed, all is solved, or its time is
+  // up): this person's session is saved with it.
+  const finish = useRef(finishTraining);
+  useEffect(() => {
+    finish.current = finishTraining;
+  });
+  useEffect(() => {
+    if (roomStatus === "ended") finish.current();
+  }, [roomStatus]);
+
   return (
     <>
-      <SessionDialog
-        isOpen={isFinishDialogOpen}
-        title="Ready to wrap up?"
-        confirmLabel="Finish session"
-        onCancel={() => setIsFinishDialogOpen(false)}
-        onConfirm={() => {
-          setIsFinishDialogOpen(false);
-          finishTraining();
-        }}
-      >
-        We’ll save your session and take you to your results. Unsolved problems
-        go to your upsolve queue, so you can return to them later.
-      </SessionDialog>
-      <SessionDialog
-        isOpen={isStopDialogOpen}
-        title="Discard this session?"
-        confirmLabel="Discard session"
-        destructive
-        onCancel={() => setIsStopDialogOpen(false)}
-        onConfirm={() => {
-          setIsStopDialogOpen(false);
-          stopTraining();
-        }}
-      >
-        This session and its progress will be discarded. This can’t be undone.
-        To save your results, choose Finish session instead.
-      </SessionDialog>
+      {shared ? (
+        <SessionDialog
+          isOpen={isFinishDialogOpen}
+          title="End the room for everyone?"
+          confirmLabel="Call the vote"
+          onCancel={() => setIsFinishDialogOpen(false)}
+          onConfirm={() => {
+            setIsFinishDialogOpen(false);
+            void castVote(true);
+          }}
+        >
+          Everyone in the room gets 60 seconds to agree. If all agree, the room
+          ends and every session is saved. If not, it goes on, and you can ask
+          again in 5 minutes.
+        </SessionDialog>
+      ) : (
+        <SessionDialog
+          isOpen={isFinishDialogOpen}
+          title="Ready to wrap up?"
+          confirmLabel="Finish session"
+          onCancel={() => setIsFinishDialogOpen(false)}
+          onConfirm={() => {
+            setIsFinishDialogOpen(false);
+            tellRoomILeft();
+            finishTraining();
+          }}
+        >
+          We’ll save your session and take you to your results. Unsolved
+          problems go to your upsolve queue, so you can return to them later.
+        </SessionDialog>
+      )}
+      {shared && !isPreContestPeriod ? (
+        <SessionDialog
+          isOpen={isStopDialogOpen}
+          title="Leave the room?"
+          confirmLabel="Leave room"
+          onCancel={() => setIsStopDialogOpen(false)}
+          onConfirm={() => {
+            setIsStopDialogOpen(false);
+            void leaveRoom();
+          }}
+        >
+          Your session is saved as it stands and you go to your results. The
+          room goes on for the others, and you can’t come back to it.
+        </SessionDialog>
+      ) : (
+        <SessionDialog
+          isOpen={isStopDialogOpen}
+          title="Discard this session?"
+          confirmLabel="Discard session"
+          destructive
+          onCancel={() => setIsStopDialogOpen(false)}
+          onConfirm={() => {
+            setIsStopDialogOpen(false);
+            tellRoomILeft();
+            stopTraining();
+          }}
+        >
+          This session and its progress will be discarded. This can’t be undone.
+          To save your results, choose Finish session instead.
+        </SessionDialog>
+      )}
 
       {problems.length === 0 ? (
         <section aria-label="Your session" className="u-panel">
@@ -202,6 +302,46 @@ const Trainer = ({
         <div className="room">
           {!isPreContestPeriod && (
             <div className="room__in" inert={onBreak}>
+              {ballot && (
+                <div className="room-vote">
+                  <span aria-hidden="true">{ballot.secondsLeft}s</span>
+                  <p role="status">
+                    <b>
+                      {ballot.calledByMe
+                        ? "You asked to end the room."
+                        : `${ballot.byName} wants to end the room.`}
+                    </b>{" "}
+                    <span className="t-muted">
+                      <span className="t-num">{ballot.agreed}</span> of{" "}
+                      <span className="t-num">{ballot.needed}</span> agreed.
+                      Everyone has to agree.
+                    </span>
+                  </p>
+                  {ballot.iAgreed ? (
+                    <span className="t-sm t-muted">
+                      Waiting for the others…
+                    </span>
+                  ) : (
+                    <>
+                      <Button
+                        size="sm"
+                        disabled={isVoting}
+                        onClick={() => void castVote(true)}
+                      >
+                        Agree
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={isVoting}
+                        onClick={() => void castVote(false)}
+                      >
+                        Keep going
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
               {others && (
                 <RoomStandings
                   row
@@ -232,6 +372,17 @@ const Trainer = ({
                       onStartBreak={onStartBreak}
                       onEndBreak={onEndBreak}
                       lastCheckedAt={lastCheckedAt}
+                      shared={
+                        shared
+                          ? {
+                              voteBlocked: ballot
+                                ? "A vote is already running."
+                                : isVoting
+                                  ? "Calling the vote…"
+                                  : voteBlocked(room, currentTime),
+                            }
+                          : undefined
+                      }
                     />
                   }
                   notice={
@@ -320,6 +471,11 @@ const Trainer = ({
               )}
               {isFinishing ? (
                 <p className="t-muted">
+                  {room?.endedBy === "vote"
+                    ? "The room voted to end. "
+                    : room?.endedBy === "solved"
+                      ? "Everyone solved everything. "
+                      : ""}
                   Saving your session and opening the review…
                 </p>
               ) : (

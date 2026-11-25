@@ -228,6 +228,11 @@ export class RateLimiterGuard implements CanActivate {
         duration: 60 * 10,
         keyPrefix: 'rooms:progress',
       },
+      'RoomsController.endVote': {
+        points: 300,
+        duration: 60 * 10,
+        keyPrefix: 'rooms:end-vote',
+      },
       'RoomsController.leave': {
         points: 200,
         duration: 60 * 10,
