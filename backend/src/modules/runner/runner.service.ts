@@ -16,6 +16,8 @@ export const LANGUAGES = {
   cpp20: 'g++-15-cpp20',
   python: 'python-3.14',
   java: 'openjdk-25',
+  go: 'go-1.26',
+  typescript: 'typescript-deno',
 } as const;
 export type Language = keyof typeof LANGUAGES;
 

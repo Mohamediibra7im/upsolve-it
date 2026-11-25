@@ -12,12 +12,26 @@ import {
 } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
 import { cpp } from "@codemirror/lang-cpp";
+import { go } from "@codemirror/lang-go";
+import { javascript } from "@codemirror/lang-javascript";
 import { java } from "@codemirror/lang-java";
 import { python } from "@codemirror/lang-python";
 import type { LanguageId } from "@/services/solve/languages";
 
-const grammar = (language: LanguageId) =>
-  language === "python" ? python() : language === "java" ? java() : cpp();
+// A language's grammar, and what one step of indentation is in it: Go is
+// written with tabs, everything else here with four spaces.
+const grammar = (language: LanguageId) => [
+  language === "python"
+    ? python()
+    : language === "java"
+      ? java()
+      : language === "go"
+        ? go()
+        : language === "typescript"
+          ? javascript({ typescript: true })
+          : cpp(),
+  indentUnit.of(language === "go" ? "\t" : "    "),
+];
 
 // The editor wears the site's colours: the tokens, not a borrowed theme.
 const theme = EditorView.theme(
@@ -49,6 +63,9 @@ const theme = EditorView.theme(
     ".cm-cursor": { borderLeftColor: "var(--accent)", borderLeftWidth: "2px" },
     "&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground":
       { backgroundColor: "var(--accent-soft)" },
+    // The site paints selected text dark for its volt highlight. The editor
+    // draws its own, soft highlight, so here selected code keeps its colours.
+    ".cm-line::selection, .cm-line ::selection": { color: "currentColor" },
     ".cm-matchingBracket": {
       backgroundColor: "transparent",
       outline: "1px solid var(--line-strong)",
@@ -89,7 +106,8 @@ const colours = HighlightStyle.define([
 /**
  * The code editor. `value` is the draft; the editor reports every change and
  * takes a new value only when it differs from what it shows (another problem,
- * another language). Ctrl or Cmd with Enter runs. Tab indents, so Escape and
+ * another language). Ctrl or Cmd with Enter runs, Shift, Alt and F formats.
+ * Tab indents, so Escape and
  * then Tab is how the keyboard leaves the editor.
  */
 export default function CodeEditor({
@@ -97,6 +115,7 @@ export default function CodeEditor({
   onChange,
   language,
   onRun,
+  onFormat,
   label,
   className,
 }: {
@@ -104,6 +123,7 @@ export default function CodeEditor({
   onChange: (value: string) => void;
   language: LanguageId;
   onRun?: () => void;
+  onFormat?: () => void;
   label: string;
   className?: string;
 }) {
@@ -111,9 +131,9 @@ export default function CodeEditor({
   const view = useRef<EditorView | null>(null);
   const grammarSlot = useRef(new Compartment());
   // the listeners below are made once; these keep them pointed at the latest props
-  const latest = useRef({ onChange, onRun });
+  const latest = useRef({ onChange, onRun, onFormat });
   useEffect(() => {
-    latest.current = { onChange, onRun };
+    latest.current = { onChange, onRun, onFormat };
   });
 
   useEffect(() => {
@@ -133,10 +153,16 @@ export default function CodeEditor({
                   return true;
                 },
               },
+              {
+                key: "Shift-Alt-f",
+                run: () => {
+                  latest.current.onFormat?.();
+                  return true;
+                },
+              },
             ]),
           ),
           keymap.of([indentWithTab]),
-          indentUnit.of("    "),
           grammarSlot.current.of(grammar(language)),
           theme,
           syntaxHighlighting(colours),

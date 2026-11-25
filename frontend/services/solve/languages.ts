@@ -1,9 +1,16 @@
-/** The languages the workspace can run. The ids are the ones POST /api/run takes. */
+/**
+ * The languages the workspace can run, newest first; the first is what a new
+ * visitor starts with. The ids are the ones POST /api/run takes. The names
+ * say what the runner really has (the backend's LANGUAGES maps each id to a
+ * compiler there), so they change together with it.
+ */
 export const LANGUAGES = [
-  { id: "cpp17", name: "C++ 17", file: "solution.cpp" },
-  { id: "cpp20", name: "C++ 20", file: "solution.cpp" },
-  { id: "python", name: "Python 3", file: "solution.py" },
-  { id: "java", name: "Java", file: "Main.java" },
+  { id: "cpp20", name: "C++ 20 (GCC 15)", file: "solution.cpp" },
+  { id: "cpp17", name: "C++ 17 (GCC 15)", file: "solution.cpp" },
+  { id: "python", name: "Python 3.14", file: "solution.py" },
+  { id: "java", name: "Java 25", file: "Main.java" },
+  { id: "go", name: "Go 1.26", file: "main.go" },
+  { id: "typescript", name: "TypeScript (Deno)", file: "solution.ts" },
 ] as const;
 export type LanguageId = (typeof LANGUAGES)[number]["id"];
 
@@ -45,5 +52,33 @@ public class Main {
 
     }
 }
+`,
+  // Go refuses an unused import or variable, so its start already reads a number.
+  go: `package main
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+)
+
+var in = bufio.NewReader(os.Stdin)
+var out = bufio.NewWriter(os.Stdout)
+
+func main() {
+	defer out.Flush()
+
+	var n int
+	fmt.Fscan(in, &n)
+
+}
+`,
+  typescript: `const input = await new Response(Deno.stdin.readable).text();
+const tokens = input.split(/\\s+/).filter(Boolean);
+let at = 0;
+const next = (): string => tokens[at++];
+
+const n = Number(next());
+
 `,
 };

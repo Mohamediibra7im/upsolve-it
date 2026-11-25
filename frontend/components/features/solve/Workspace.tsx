@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
+  AlignLeft,
   ArrowUp,
   Check,
   Clock,
@@ -25,6 +26,7 @@ import "./workspace.css";
 import BrandIcon from "@/components/shared/BrandIcon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Picker } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -41,7 +43,8 @@ import {
 } from "@/hooks/solve/useWorkspace";
 import type { SubmissionStatus } from "@/services/codeforces/getTrainingSubmissionStatus";
 import { sameOutput } from "@/services/solve/compareOutput";
-import { LANGUAGES, type LanguageId } from "@/services/solve/languages";
+import { formatCode } from "@/services/solve/formatCode";
+import { LANGUAGES } from "@/services/solve/languages";
 import { renderStatementMath } from "@/services/solve/statementMath";
 import { submitUrl } from "@/services/solve/submitUrl";
 import type { TrainingProblem } from "@/types/TrainingProblem";
@@ -151,6 +154,23 @@ export default function Workspace({
 
   const { statement, error, isLoading, retry } = useStatement(problem, tryKey);
   const { code, setCode, language, setLanguage, reset } = useDraft(problem);
+  const [isFormatting, setIsFormatting] = useState(false);
+  const [formatError, setFormatError] = useState("");
+  const format = async () => {
+    setIsFormatting(true);
+    setFormatError("");
+    try {
+      setCode(await formatCode(code, language));
+    } catch {
+      setFormatError(
+        language === "python" || language === "go"
+          ? "Could not format: the code has a syntax error."
+          : "Could not load the formatter. Check your connection and try again.",
+      );
+    } finally {
+      setIsFormatting(false);
+    }
+  };
   const { run, running } = useRunner(tryKey);
 
   // cases the user added, and the last run, are kept per problem
@@ -475,12 +495,16 @@ export default function Workspace({
             <div className="sw-meta">
               {rank && (
                 <span className="u-rank t-num" data-rank={rank}>
-                  {problem.rating}
-                  {problem.judge === "atcoder" && (
-                    <small className="u-est">
-                      <span className="sr-only">, </span>est
-                      <span className="sr-only">imated</span>
-                    </small>
+                  {problem.judge === "atcoder" ? (
+                    <span
+                      className="u-est"
+                      title="Estimated from its AtCoder difficulty, on the Codeforces scale"
+                    >
+                      {problem.rating}
+                      <span className="sr-only">, estimated</span>
+                    </span>
+                  ) : (
+                    problem.rating
                   )}
                 </span>
               )}
@@ -580,21 +604,26 @@ export default function Workspace({
                 Code
               </span>
               <span className="sw-head__end">
-                <label className="sr-only" htmlFor="sw-language">
-                  Language
-                </label>
-                <select
-                  id="sw-language"
+                <button
+                  type="button"
+                  className="u-btn u-btn--ghost u-btn--sm"
+                  title="Tidy the layout of your code (Shift + Alt + F)"
+                  disabled={isFormatting}
+                  onClick={format}
+                >
+                  <AlignLeft aria-hidden="true" />
+                  {isFormatting ? "Formatting" : "Format"}
+                </button>
+                <Picker
+                  aria-label="Language"
                   className="sw-select"
                   value={language}
-                  onChange={(e) => setLanguage(e.target.value as LanguageId)}
-                >
-                  {LANGUAGES.map((l) => (
-                    <option key={l.id} value={l.id}>
-                      {l.name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setLanguage}
+                  options={LANGUAGES.map((l) => ({
+                    value: l.id,
+                    label: l.name,
+                  }))}
+                />
                 <button
                   type="button"
                   className="u-btn u-btn--ghost u-btn--icon u-btn--sm"
@@ -619,10 +648,13 @@ export default function Workspace({
               onChange={setCode}
               language={language}
               onRun={runCode}
+              onFormat={format}
               label={`Your code for problem ${letter(selected)}`}
             />
             <div className="sw-foot">
-              <span>Saved on this device</span>
+              <span role="status" className={formatError && "text-failed"}>
+                {formatError || "Saved on this device"}
+              </span>
               <span>
                 Ctrl + Enter runs. Escape, then Tab, leaves the editor.
               </span>

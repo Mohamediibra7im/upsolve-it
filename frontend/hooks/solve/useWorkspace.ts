@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import { apiFetcher, swrFetcher } from "@/lib/apiClient";
 import {
+  LANGUAGES,
   STARTER,
   isLanguage,
   type LanguageId,
@@ -94,7 +95,7 @@ const write = (key: string, value: string) => {
 export function useDraft(problem: ProblemRef) {
   const [language, setLanguageState] = useState<LanguageId>(() => {
     const stored = typeof window === "undefined" ? null : read(LANGUAGE_KEY);
-    return isLanguage(stored) ? stored : "cpp17";
+    return isLanguage(stored) ? stored : LANGUAGES[0].id;
   });
   const key = draftKey(problem, language);
   const [code, setCodeState] = useState(

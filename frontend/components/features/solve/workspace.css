@@ -387,22 +387,15 @@ span.sw-tab {
 }
 
 /* ---- the code ---- */
+/* the language dropdown, sized and lettered like the buttons beside it */
 .sw-select {
+  width: auto;
   height: 30px;
-  padding: 0 8px;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  color: var(--ink);
+  gap: 6px;
+  padding: 0 6px 0 10px;
   font: 600 15px/1 var(--font-display);
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  cursor: pointer;
-}
-.sw-select option {
-  background: var(--surface);
-  color: var(--ink);
-  text-transform: none;
 }
 .sw-editor {
   flex: 1;
