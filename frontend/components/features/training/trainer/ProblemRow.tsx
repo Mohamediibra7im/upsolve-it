@@ -128,12 +128,13 @@ const ProblemRow = ({
               : undefined
           }
         >
-          {problem.rating}
-          {atcoder && (
-            <small className="u-est">
-              <span className="sr-only">, </span>est
-              <span className="sr-only">imated</span>
-            </small>
+          {atcoder ? (
+            <span className="u-est">
+              {problem.rating}
+              <span className="sr-only">, estimated</span>
+            </span>
+          ) : (
+            problem.rating
           )}
         </span>
       )}

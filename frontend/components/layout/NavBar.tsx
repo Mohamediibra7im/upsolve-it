@@ -225,7 +225,7 @@ export default function NavBar({
                       sideOffset={12}
                       className="w-60"
                     >
-                      <DropdownMenuLabel className="font-normal">
+                      <DropdownMenuLabel className="pb-2 font-sans text-sm font-normal normal-case tracking-normal text-ink">
                         <b className="block truncate">
                           {user.username ?? user.codeforcesHandle}
                         </b>

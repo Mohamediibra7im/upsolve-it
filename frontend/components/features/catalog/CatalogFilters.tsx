@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import BrandIcon from "@/components/shared/BrandIcon";
+import { Picker } from "@/components/ui/select";
 import {
   JUDGE_NAME,
   catalogHref,
@@ -163,24 +164,35 @@ export default function CatalogFilters({
         </div>
       </fieldset>
 
-      <label className="u-field">
-        <span className="u-stat__label">Topic</span>
-        <select
-          name="tag"
-          className="u-input h-10"
+      <div className="u-field">
+        <label className="u-stat__label" htmlFor="catalog-tag">
+          Topic
+        </label>
+        {/* the form still carries the topic when it is submitted as a form */}
+        <input type="hidden" name="tag" value={draft.tag} />
+        <Picker
+          id="catalog-tag"
+          className="h-10"
           value={draft.tag}
-          onChange={(e) => apply({ tag: e.target.value })}
-        >
-          <option value="">Any topic</option>
-          {tags.map((tag) => (
-            <option key={tag} value={tag}>
-              {tag}
-              {totals.has(tag) &&
-                ` (${totals.get(tag)!.toLocaleString("en-US")})`}
-            </option>
-          ))}
-        </select>
-      </label>
+          onChange={(tag) => apply({ tag })}
+          options={[
+            { value: "", label: "Any topic" },
+            ...tags.map((tag) => ({
+              value: tag,
+              label: (
+                <>
+                  {tag}
+                  {totals.has(tag) && (
+                    <span className="t-num t-muted ml-2">
+                      {totals.get(tag)!.toLocaleString("en-US")}
+                    </span>
+                  )}
+                </>
+              ),
+            })),
+          ]}
+        />
+      </div>
 
       <button
         type="submit"

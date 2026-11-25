@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Picker } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -249,23 +250,22 @@ export default function History({
 
       {history.length > PAGE_SIZES[0] && (
         <div className="u-panel__foot">
-          <label className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
             Rows per page
-            <select
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
+            <Picker
+              aria-label="Rows per page"
+              className="t-num h-8 w-20 text-ink"
+              value={String(pageSize)}
+              onChange={(size) => {
+                setPageSize(Number(size));
                 setCurrentPage(1);
               }}
-              className="u-input t-num t-sm h-8 w-auto px-2"
-            >
-              {PAGE_SIZES.map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-          </label>
+              options={PAGE_SIZES.map((size) => ({
+                value: String(size),
+                label: size,
+              }))}
+            />
+          </div>
           <div className="flex items-center gap-2">
             <span className="t-num mr-2">
               Page {page} of {totalPages}

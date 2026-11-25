@@ -3,6 +3,7 @@
 import * as Popover from "@radix-ui/react-popover";
 import { SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Picker } from "@/components/ui/select";
 import {
   NO_FILTERS,
   SORTS,
@@ -155,21 +156,19 @@ export function QueueFilterButton({
             <label className="u-stat__label" htmlFor="queue-contest">
               Contest
             </label>
-            <select
+            <Picker
               id="queue-contest"
-              className="u-input h-10"
+              className="h-10"
               value={filters.contest}
-              onChange={(e) =>
-                onChange({ ...filters, contest: e.target.value })
-              }
-            >
-              <option value="">Any contest</option>
-              {contests.map(({ key, title }) => (
-                <option key={key} value={key}>
-                  {title}
-                </option>
-              ))}
-            </select>
+              onChange={(contest) => onChange({ ...filters, contest })}
+              options={[
+                { value: "", label: "Any contest" },
+                ...contests.map(({ key, title }) => ({
+                  value: key,
+                  label: title,
+                })),
+              ]}
+            />
           </div>
 
           {(active > 0 || filters.sort !== NO_FILTERS.sort) && (

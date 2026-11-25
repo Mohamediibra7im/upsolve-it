@@ -317,7 +317,7 @@ export default function TrainingPage() {
                 />
                 <p className="t-sm t-muted">
                   {mixesAtcoder ? (
-                    "Sets mix in AtCoder problems at random. Their ratings are estimates, marked EST."
+                    "Sets mix in AtCoder problems at random. Their ratings are estimates, shown with a dotted underline."
                   ) : hasAtcoder ? (
                     "Sets drawn by tag come from Codeforces only: AtCoder problems have no tags."
                   ) : (

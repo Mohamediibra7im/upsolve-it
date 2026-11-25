@@ -460,24 +460,13 @@
     font-weight: 600;
     color: var(--rank, var(--ink));
   }
-  /* A rating that is an estimate (AtCoder, on the Codeforces scale) carries a
-     small raised mark, set like a footnote sign: it rides the top of the
-     number at any size and takes no room in the line below it. */
+  /* A rating that is an estimate (AtCoder, on the Codeforces scale) is the
+     same number with a dotted line under it: no extra letters, so estimated
+     and real ratings keep the same width and line up in a column. */
   .u-est {
-    position: relative;
-    top: -0.62em;
-    align-self: flex-start;
-    margin-left: 0.2em;
-    color: var(--ink-muted);
-    font: 700 0.46em/1 var(--font-mono);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-  /* in a row that centres its items, the mark hangs from the number's top */
-  .u-rank > .u-est {
-    top: 0;
-    margin-left: -3px;
+    text-decoration: underline dotted currentColor 0.09em;
+    text-underline-offset: 0.24em;
+    cursor: help;
   }
   .u-rank::before {
     content: "";
@@ -506,6 +495,135 @@
   }
   [data-rank="gm"] {
     --rank: var(--rank-gm);
+  }
+
+  /* ---------- Dropdowns ---------- */
+  /* The closed box of a select: a field with a chevron that turns when it opens. */
+  .u-select {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+    height: 44px;
+    padding: 0 10px 0 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    color: var(--ink);
+    font: 400 15px var(--font-sans);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.12s;
+  }
+  .u-select > span:first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .u-select:hover {
+    border-color: var(--ink-muted);
+  }
+  .u-select[data-state="open"] {
+    border-color: var(--accent);
+  }
+  .u-select[data-placeholder] {
+    color: var(--ink-faint);
+  }
+  .u-select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .u-select__chev {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    color: var(--ink-muted);
+    transition: transform 0.15s;
+  }
+  .u-select[data-state="open"] .u-select__chev {
+    transform: rotate(180deg);
+    color: var(--accent);
+  }
+  /* The open list, the same for a select and for a menu. The row under the
+     pointer or the keyboard takes a volt edge; the chosen one a volt tick. */
+  .u-menu {
+    z-index: 50;
+    min-width: 9rem;
+    overflow: hidden;
+    padding: 4px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow-pop);
+  }
+  .u-menu__item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 36px;
+    padding: 7px 12px;
+    border-radius: var(--radius-sm);
+    color: var(--ink-muted);
+    font: 500 14px/20px var(--font-sans);
+    cursor: pointer;
+    user-select: none;
+    outline: none;
+  }
+  .u-menu__item svg {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    pointer-events: none;
+  }
+  .u-menu__item[data-highlighted],
+  .u-menu__item[data-state="open"] {
+    background: var(--surface-sunk);
+    color: var(--ink);
+    box-shadow: inset 2px 0 0 var(--accent);
+  }
+  .u-menu__item[data-state="checked"] {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .u-menu__item[data-disabled] {
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  .u-menu__check {
+    display: flex;
+    margin-left: auto;
+    padding-left: 12px;
+    color: var(--accent);
+  }
+  .u-menu__label {
+    padding: 8px 12px 6px;
+    color: var(--ink-faint);
+    font: 600 11px/14px var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .u-menu__sep {
+    height: 1px;
+    margin: 4px -4px;
+    background: var(--line);
+  }
+  .u-menu__scroll {
+    display: flex;
+    justify-content: center;
+    padding: 2px 0;
+    color: var(--ink-muted);
+    cursor: default;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .u-select,
+    .u-select__chev {
+      transition: none;
+    }
   }
 
   /* ---------- Field ---------- */
