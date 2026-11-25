@@ -7,6 +7,7 @@ import {
   Coffee,
   Play,
   RefreshCw,
+  Trash2,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -195,15 +196,17 @@ const TrainingControls = ({
         <Button size="sm" onClick={onFinishTraining}>
           Finish
         </Button>
+        {/* set apart from Finish, so the two are never confused */}
+        <span className="mx-1 h-5 w-px bg-line-strong" aria-hidden="true" />
         <Button
-          variant="ghost"
-          size="icon"
-          className="u-btn--sm text-failed"
+          variant="destructive"
+          size="sm"
           aria-label="Discard this session"
-          title="Discard this session"
+          title="Discard this session. Nothing from it is saved."
           onClick={onStopTraining}
         >
-          <X aria-hidden="true" />
+          <Trash2 aria-hidden="true" />
+          <span className="max-2xl:hidden">Discard</span>
         </Button>
       </>
     );
@@ -298,11 +301,8 @@ const TrainingControls = ({
               </DropdownMenu>
             )}
             <Button onClick={onFinishTraining}>Finish session</Button>
-            <Button
-              variant="ghost"
-              className="text-failed"
-              onClick={onStopTraining}
-            >
+            <Button variant="destructive" onClick={onStopTraining}>
+              <Trash2 aria-hidden="true" />
               Discard
             </Button>
           </>
