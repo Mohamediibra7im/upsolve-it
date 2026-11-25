@@ -25,4 +25,10 @@ export interface Training {
   showRatings?: boolean;
   durationMinutes?: number;
   level?: string;
+  /** Set when this session is one person's part of a shared room. */
+  roomCode?: string;
+  /** The running break ends at this time; the session's end already includes it. */
+  breakUntil?: number;
+  /** Break time taken so far, against the session's break budget. */
+  breakUsedMs?: number;
 }

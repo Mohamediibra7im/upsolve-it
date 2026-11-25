@@ -1,0 +1,380 @@
+/*
+ * The session as a room ("Spotlight"): it covers the site's bar and footer, so
+ * a session is the only thing on screen. Before the start it is a dark stage
+ * with one beam of light; inside, the editor is the lit object and the problem
+ * a plain sheet beside it. Colours come from the site's tokens.
+ */
+.room {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--ground);
+}
+.room__in {
+  position: relative;
+  min-height: 100%;
+  padding: 12px clamp(12px, 2.2vw, 28px) 18px;
+  background: radial-gradient(
+    ellipse 60% 55% at 68% 0%,
+    color-mix(in srgb, var(--accent) 10%, transparent),
+    transparent 70%
+  );
+}
+/* the clock again, huge and faint, behind the work */
+.room__water {
+  position: absolute;
+  left: 20px;
+  bottom: 10px;
+  z-index: 0;
+  pointer-events: none;
+  color: var(--surface);
+  font: 800 clamp(72px, 11vw, 168px) / 0.8 var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- inside: the workspace rearranged for the room ---- */
+.room .sw-page {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+}
+.room .sw-top {
+  padding-inline: 4px;
+  border: 0;
+  background: transparent;
+}
+.room .sw-grid {
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 26px;
+  /* the window, less the room's bar and its padding */
+  height: max(540px, calc(100dvh - 104px));
+}
+/* the problem: a plain sheet, no box */
+.room .sw-grid > .sw-panel {
+  border: 0;
+  background: transparent;
+}
+/* the editor and its cases: one lit object */
+.room .sw-col {
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent),
+    0 34px 80px rgba(0, 0, 0, 0.65),
+    0 0 110px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.room .sw-col > .sw-panel {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.room .sw-col > .sw-panel + .sw-panel {
+  border-top: 1px solid var(--line);
+}
+
+/* ---- the lobby ---- */
+.lobby {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  overflow: hidden;
+  background: var(--ground);
+}
+.lobby__beam {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transform-origin: 50% -12%;
+  background: conic-gradient(
+    from 0deg at 50% -12%,
+    transparent 0 158deg,
+    color-mix(in srgb, var(--accent) 6%, transparent) 166deg,
+    color-mix(in srgb, var(--accent) 24%, transparent) 180deg,
+    color-mix(in srgb, var(--accent) 6%, transparent) 194deg,
+    transparent 202deg 360deg
+  );
+  animation: lobby-sway 6s ease-in-out infinite alternate;
+}
+.lobby__pool {
+  position: absolute;
+  left: 50%;
+  bottom: 14vh;
+  width: min(860px, 92vw);
+  height: 22vh;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--accent) 30%, transparent),
+    transparent 68%
+  );
+}
+.lobby__top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px clamp(16px, 3vw, 28px);
+}
+.lobby__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  font: 600 11px/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.lobby__tag i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--solved);
+}
+.lobby__mid {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 4px;
+  min-height: 0;
+}
+.lobby__num {
+  font: 800 clamp(170px, 46vh, 440px) / 0.78 var(--font-display);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 70px color-mix(in srgb, var(--accent) 40%, transparent);
+  animation: lobby-hit 0.55s cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+.lobby__num[data-clock] {
+  font-size: clamp(96px, 24vw, 300px);
+}
+.lobby[data-hot] .lobby__num {
+  color: var(--accent-ink);
+}
+.lobby[data-hot] .lobby__beam {
+  animation-duration: 0.9s;
+}
+/* what a shared room says while it waits for its host */
+.lobby__wait {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  margin-top: 6px;
+  color: var(--ink-muted);
+}
+/* everyone on the stage, standing along its front */
+.lobby__cast {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px clamp(20px, 5vw, 64px);
+  padding: 0 16px 12px;
+}
+.lobby__cast li {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+}
+.lobby__cast li > i {
+  width: 110px;
+  height: 8px;
+  margin-top: 2px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    var(--accent),
+    transparent 70%
+  );
+}
+
+/* ---- standings: the strip across the room, and the list at the close ---- */
+.room-sb {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(100%, 560px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  text-align: left;
+}
+.room-sb li {
+  display: grid;
+  grid-template-columns: 18px 26px minmax(0, 1fr) auto 34px;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+.room-sb li:last-child {
+  border-bottom: 0;
+}
+.room-sb li[data-me] {
+  background: var(--accent-soft);
+}
+.room-sb li > .t-num:first-child {
+  color: var(--ink-muted);
+}
+.room-sb li > .t-num:last-child {
+  text-align: right;
+}
+.room-sb__marks {
+  display: flex;
+  gap: 3px;
+}
+.room-sb__marks i {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 2px;
+  background: var(--surface-sunk);
+  color: var(--ink-muted);
+  font: 600 10px/1 var(--font-mono);
+  font-style: normal;
+}
+.room-sb__marks i[data-s="ok"] {
+  background: var(--solved);
+  color: var(--ground);
+}
+.room-sb__marks i[data-s="try"] {
+  color: var(--ink);
+  box-shadow: inset 0 0 0 2px var(--failed);
+}
+/* the strip: everyone on one line, no frame */
+.room-sb[data-row] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  width: auto;
+  margin-bottom: 8px;
+  border: 0;
+}
+.room-sb[data-row] li {
+  grid-template-columns: 14px 26px auto auto auto;
+  gap: 8px;
+  padding: 5px 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+.room-sb[data-row] li b {
+  max-width: 120px;
+}
+.lobby__foot {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 26px;
+  padding: 8px 20px 20px;
+  color: var(--ink-muted);
+  font: 600 12px/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.lobby__locks {
+  display: inline-flex;
+  gap: 4px;
+}
+.lobby__locks i {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 2px;
+  background: var(--surface-sunk);
+  font-style: normal;
+  font-size: 10px;
+}
+/* the curtain: the whole stage rises off the room behind it */
+.lobby[data-out] {
+  animation: lobby-rise 0.95s cubic-bezier(0.7, 0, 0.2, 1) both;
+}
+
+/* ---- the room closing ---- */
+.room__closed {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+  background: var(--ground);
+  animation: room-fade 0.4s ease-out both;
+}
+.room__closed h2 {
+  position: relative;
+  font: 800 clamp(56px, 11vw, 150px) / 0.86 var(--font-display);
+  text-transform: uppercase;
+}
+.room__closed h2 em {
+  font-style: normal;
+  color: var(--accent-ink);
+}
+.room__closed p {
+  position: relative;
+}
+
+@keyframes lobby-sway {
+  from {
+    transform: rotate(-2.2deg);
+  }
+  to {
+    transform: rotate(2.2deg);
+  }
+}
+@keyframes lobby-hit {
+  from {
+    transform: scale(1.3);
+    filter: blur(8px);
+    opacity: 0.2;
+  }
+}
+@keyframes lobby-rise {
+  to {
+    transform: translateY(-102%);
+  }
+}
+@keyframes room-fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lobby__beam,
+  .lobby__num,
+  .lobby[data-out],
+  .room__closed {
+    animation: none;
+  }
+}
+/* phones and narrow tablets: one column, and no figure behind the text */
+@media (max-width: 900px) {
+  .room .sw-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    height: auto;
+  }
+  .room__water {
+    display: none;
+  }
+}

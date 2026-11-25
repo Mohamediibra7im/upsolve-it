@@ -18,6 +18,7 @@ const QUIET_ROOTS = [
   "/reset-password",
   "/admin",
   "/training",
+  "/room",
 ];
 const isQuiet = (pathname: string) =>
   QUIET_ROOTS.some(

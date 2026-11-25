@@ -6,6 +6,7 @@ import {
   Check,
   Clock,
   Code2,
+  ArrowUpRight,
   ExternalLink,
   Eye,
   EyeOff,
@@ -21,6 +22,7 @@ import {
 import Link from "next/link";
 import "katex/dist/katex.min.css";
 import "./workspace.css";
+import BrandIcon from "@/components/shared/BrandIcon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -103,6 +105,7 @@ export default function Workspace({
   tryKeys,
   selected: chosen,
   onSelect,
+  room,
 }: {
   /** The session's name, shown beside the problem switcher. */
   title: string;
@@ -124,6 +127,8 @@ export default function Workspace({
   /** The open problem, when the page around the workspace chooses it too. */
   selected?: number;
   onSelect?: (index: number) => void;
+  /** Inside a session's room: marks the workspace so the room can rearrange it. */
+  room?: boolean;
 }) {
   const [own, setOwn] = useState(0);
   const selected = chosen ?? own;
@@ -347,7 +352,7 @@ export default function Workspace({
   const rank = !hideDetails && problem.rating ? rankKey(problem.rating) : null;
 
   return (
-    <div className="sw">
+    <div className="sw" data-room={room || undefined}>
       <div className="u-panel sw-top">
         <div className="sw-top__side">
           <span className="t-eyebrow">{title}</span>
@@ -415,6 +420,18 @@ export default function Workspace({
               Submit
             </button>
           )}
+          {/* the way out to the judge's own page, with the judge's mark */}
+          <a
+            className="u-btn u-btn--sm"
+            href={problem.url}
+            target="_blank"
+            rel="noreferrer"
+            title={`Open this problem on ${judgeName(problem)}`}
+          >
+            <BrandIcon name={problem.judge ?? "codeforces"} />
+            {judgeName(problem)}
+            <ArrowUpRight aria-hidden="true" />
+          </a>
         </div>
         <div className="sw-top__side sw-top__side--end">{session}</div>
       </div>
@@ -443,15 +460,6 @@ export default function Workspace({
                   Topics
                 </button>
               )}
-              <a
-                className="u-btn u-btn--ghost u-btn--sm"
-                href={problem.url}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <ExternalLink aria-hidden="true" />
-                {judgeName(problem)}
-              </a>
             </span>
           </div>
           <div className="sw-body">
@@ -467,13 +475,13 @@ export default function Workspace({
             <div className="sw-meta">
               {rank && (
                 <span className="u-rank t-num" data-rank={rank}>
-                  {problem.judge === "atcoder" && (
-                    <>
-                      <span aria-hidden="true">≈</span>
-                      <span className="sr-only">about</span>
-                    </>
-                  )}
                   {problem.rating}
+                  {problem.judge === "atcoder" && (
+                    <small className="u-est">
+                      <span className="sr-only">, </span>est
+                      <span className="sr-only">imated</span>
+                    </small>
+                  )}
                 </span>
               )}
               <Badge variant="line">
@@ -556,17 +564,6 @@ export default function Workspace({
                     </div>
                   )),
                 )}
-                <p className="sw-src">
-                  From {judgeName(problem)}.{" "}
-                  <a
-                    className="sw-link"
-                    href={statement.sourceUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Open the original
-                  </a>
-                </p>
               </>
             )}
           </div>

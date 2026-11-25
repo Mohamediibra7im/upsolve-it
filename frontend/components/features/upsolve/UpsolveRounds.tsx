@@ -140,13 +140,13 @@ function ProblemRow({
                 : undefined
             }
           >
-            {judgeOf(problem) === "atcoder" && (
-              <>
-                <span aria-hidden="true">≈</span>
-                <span className="sr-only">about</span>
-              </>
-            )}
             {problem.rating}
+            {judgeOf(problem) === "atcoder" && (
+              <small className="u-est">
+                <span className="sr-only">, </span>est
+                <span className="sr-only">imated</span>
+              </small>
+            )}
           </span>
         ) : (
           <span className="u-prow__rating">—</span>

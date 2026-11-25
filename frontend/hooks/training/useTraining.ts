@@ -14,9 +14,12 @@ import { mutate as mutateSwr } from "swr";
 import type { TrainingMode } from "@/types/TrainingMode";
 import { expectedTimeSecondsFromRating } from "@/services/training/expectedTime";
 import { computeSpeedStatus } from "@/services/training/speedStatus";
-
-const TRAINING_STORAGE_KEY = "training-tracker-training";
-const SUBMISSION_STATUS_STORAGE_KEY = "training-tracker-submission-status";
+import {
+  SUBMISSION_STATUS_STORAGE_KEY,
+  TRAINING_STORAGE_KEY,
+} from "@/services/training/roomTraining";
+import { sessionPayload } from "@/services/training/sessionPayload";
+import { endBreak, startBreak } from "@/services/training/breaks";
 
 function buildProblemUpdates(
   training: Training,
@@ -78,6 +81,8 @@ const useTraining = () => {
   const [finishError, setFinishError] = useState<string | null>(null);
   const [isFinishing, setIsFinishing] = useState(false);
   const finishing = useRef(false);
+  const refreshing = useRef(false);
+  const [lastCheckedAt, setLastCheckedAt] = useState<number | null>(null);
 
   const pushSessionSync = useCallback(
     async (
@@ -99,19 +104,33 @@ const useTraining = () => {
     [],
   );
 
-  const refreshProblemStatus = useCallback(async () => {
-    if (!user || !training || !isTraining || isRefreshing) return;
+  /**
+   * Reads this person's verdicts from the judges and updates the session.
+   * One read at a time; a judge that does not answer in fifteen seconds
+   * counts as a failed read. Resolves to whether the verdicts were read.
+   */
+  const refreshProblemStatus = useCallback(async (): Promise<boolean> => {
+    if (!user || !training || !isTraining || refreshing.current) return false;
+    refreshing.current = true;
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const timedOut = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(
+        () => reject(new Error("The judge took too long to answer.")),
+        15000,
+      );
+    });
 
     setIsRefreshing(true);
     try {
-      const statusResponse = await getTrainingSubmissionStatus(
-        user,
-        training.problems,
-        training.startTime,
-      );
+      const statusResponse = await Promise.race([
+        getTrainingSubmissionStatus(
+          user,
+          training.problems,
+          training.startTime,
+        ),
+        timedOut,
+      ]);
 
       if (statusResponse.success) {
         const newStatuses = statusResponse.data;
@@ -172,24 +191,54 @@ const useTraining = () => {
           );
         }
 
+        setLastCheckedAt(Date.now());
         await pushSessionSync(training, updatedProblems, newStatuses);
-      } else {
-        console.error(
-          "Failed to fetch submission status:",
-          statusResponse.error,
-        );
+        return true;
       }
+      console.error("Failed to fetch submission status:", statusResponse.error);
+      return false;
     } catch (error: unknown) {
-      if (error instanceof Error && error.name === "AbortError") {
-        console.error("Refresh timed out");
-      } else {
-        console.error("Failed to refresh problem status:", error);
-      }
+      console.error("Failed to refresh problem status:", error);
+      return false;
     } finally {
       clearTimeout(timeoutId);
+      refreshing.current = false;
       setIsRefreshing(false);
     }
-  }, [user, training, isTraining, isClient, isRefreshing, pushSessionSync]);
+  }, [user, training, isTraining, isClient, pushSessionSync]);
+
+  // Verdicts are read without being asked: when the person comes back to this
+  // tab (usually from the judge, having just submitted) and every ninety
+  // seconds while it is in view. Never during a break or before the start,
+  // and never twice within fifteen seconds.
+  const latestRefresh = useRef(refreshProblemStatus);
+  useEffect(() => {
+    latestRefresh.current = refreshProblemStatus;
+  }, [refreshProblemStatus]);
+  const lastAuto = useRef(0);
+  const sessionStart = training?.startTime;
+  const breakUntil = training?.breakUntil;
+  useEffect(() => {
+    if (!isTraining || sessionStart === undefined) return;
+    const read = () => {
+      const now = Date.now();
+      if (
+        document.visibilityState !== "visible" ||
+        now < sessionStart ||
+        now < (breakUntil ?? 0) ||
+        now - lastAuto.current < 15_000
+      )
+        return;
+      lastAuto.current = now;
+      void latestRefresh.current();
+    };
+    document.addEventListener("visibilitychange", read);
+    const timer = setInterval(read, 90_000);
+    return () => {
+      document.removeEventListener("visibilitychange", read);
+      clearInterval(timer);
+    };
+  }, [isTraining, sessionStart, breakUntil]);
 
   const finishTraining = useCallback(async () => {
     if (!training || finishing.current) return;
@@ -394,37 +443,7 @@ const useTraining = () => {
 
       let serverSessionId: string | undefined;
       try {
-        const payload = {
-          trainingMode: opts.trainingMode,
-          level: opts.level ?? "",
-          tags: opts.tags ?? [],
-          showRatings: opts.showRatings,
-          weaknessFallback: opts.weaknessFallback ?? false,
-          startTime,
-          endTime,
-          durationMinutes: opts.durationMinutes,
-          customRatings: opts.customRatings,
-          problems: problems.map((p) => ({
-            problemId: p.problemId ?? `${p.contestId}_${p.index}`,
-            judge: p.judge,
-            contestId: p.contestId,
-            index: p.index,
-            name: p.name,
-            rating: p.rating ?? 0,
-            tags: p.tags,
-            url: p.url,
-            startedAt: p.startedAt,
-            solvedAt: p.solvedAt,
-            timeSpentSeconds: p.timeSpentSeconds,
-            expectedTimeSeconds:
-              p.expectedTimeSeconds ??
-              expectedTimeSecondsFromRating(p.rating ?? 0),
-            speedStatus: p.speedStatus,
-            attempts: p.attempts,
-            isSolved: p.isSolved,
-            solvedTime: p.solvedTime,
-          })),
-        };
+        const payload = sessionPayload(baseTraining, opts.tags ?? []);
         const res = await apiClient.post<{ sessionId: string }>(
           "/api/training-sessions",
           payload,
@@ -535,18 +554,16 @@ const useTraining = () => {
   );
 
   // ponytail: break = extend endTime, no separate state needed
-  const extendEndTime = useCallback(
-    (minutes: number) => {
-      setTraining((prev) => {
-        if (!prev) return null;
-        const next = { ...prev, endTime: prev.endTime + minutes * 60000 };
-        if (isClient)
-          localStorage.setItem(TRAINING_STORAGE_KEY, JSON.stringify(next));
-        return next;
-      });
-    },
-    [isClient],
-  );
+  // A break lives in the session, which is saved on this device whenever it
+  // changes: it survives a reload and cannot be taken twice.
+  const takeBreak = useCallback((minutes: number) => {
+    setTraining((prev) =>
+      prev ? startBreak(prev, minutes, Date.now()) : null,
+    );
+  }, []);
+  const resumeFromBreak = useCallback(() => {
+    setTraining((prev) => (prev ? endBreak(prev, Date.now()) : null));
+  }, []);
 
   return {
     problems,
@@ -566,7 +583,9 @@ const useTraining = () => {
     refreshProblemStatus,
     finishTraining,
     notifyProblemOpened,
-    extendEndTime,
+    takeBreak,
+    resumeFromBreak,
+    lastCheckedAt,
   };
 };
 

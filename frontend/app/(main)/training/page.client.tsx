@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { X } from "lucide-react";
 import { useTraining, useTags, type Level } from "@/hooks/training";
@@ -19,7 +20,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHead } from "@/components/ui/kit";
 import { useToast } from "@/components/providers/Toast";
-import { swrFetcher } from "@/lib/apiClient";
+import { apiClient, swrFetcher } from "@/lib/apiClient";
+import { problemPayload } from "@/services/training/sessionPayload";
 import type { TrainingMode } from "@/types/TrainingMode";
 import {
   buildRatingsForMode,
@@ -45,6 +47,7 @@ export default function TrainingPage() {
   const { user } = useUser();
   const { allTags, selectedTags, onTagClick, onClearTags } = useTags();
   const { toast } = useToast();
+  const router = useRouter();
   const [selectedMode, setSelectedMode] = useState<TrainingMode>("ladder");
   const [weaknessFallback, setWeaknessFallback] = useState(false);
 
@@ -65,7 +68,9 @@ export default function TrainingPage() {
     generateProblemsFromRatings,
     submissionStatuses,
     notifyProblemOpened,
-    extendEndTime,
+    takeBreak,
+    resumeFromBreak,
+    lastCheckedAt,
   } = useTraining();
 
   const [customRatings, setCustomRatings] = useState<{
@@ -216,6 +221,34 @@ export default function TrainingPage() {
     startTraining,
   ]);
 
+  // The same set, started together: a room is made for it and its lobby
+  // opens, where friends join by a link and the host gives the start.
+  const handleStartRoom = useCallback(async () => {
+    if (!user || !problems?.length) return;
+    const base = buildRatingsForMode(
+      selectedMode,
+      user.rating || 1500,
+      customRatings,
+    );
+    try {
+      const { code } = await apiClient.post<{ code: string }>("/api/rooms", {
+        trainingMode: selectedMode,
+        durationMinutes: base.durationMinutes,
+        showRatings: base.showRatings && showRatings,
+        customRatings: customRatingsFromProblems(problems),
+        problems: problems.map(problemPayload),
+      });
+      router.push(`/room/${code}`);
+    } catch (error) {
+      toast({
+        title: "The room could not be opened",
+        variant: "destructive",
+        description:
+          error instanceof Error ? error.message : "Try again in a moment.",
+      });
+    }
+  }, [user, problems, selectedMode, customRatings, showRatings, router, toast]);
+
   if (isInitializing || !user) return <Loader />;
 
   return (
@@ -262,7 +295,11 @@ export default function TrainingPage() {
             finishTraining={finishTraining}
             stopTraining={stopTraining}
             onProblemOpen={notifyProblemOpened}
-            onExtendEndTime={extendEndTime}
+            onStartBreak={takeBreak}
+            onEndBreak={resumeFromBreak}
+            lastCheckedAt={lastCheckedAt}
+            isFinishing={isFinishing}
+            finishError={finishError}
           />
         ) : (
           <>
@@ -280,7 +317,7 @@ export default function TrainingPage() {
                 />
                 <p className="t-sm t-muted">
                   {mixesAtcoder ? (
-                    "Sets mix in AtCoder problems at random. A rating marked ≈ is an estimate."
+                    "Sets mix in AtCoder problems at random. Their ratings are estimates, marked EST."
                   ) : hasAtcoder ? (
                     "Sets drawn by tag come from Codeforces only: AtCoder problems have no tags."
                   ) : (
@@ -330,6 +367,7 @@ export default function TrainingPage() {
                 level={LEVEL_NOTE[selectedMode] ? undefined : level}
                 onGenerateProblems={handleGenerateProblems}
                 onStartSession={handleStartSession}
+                onStartRoom={handleStartRoom}
               />
             </ModeSelector>
           </>

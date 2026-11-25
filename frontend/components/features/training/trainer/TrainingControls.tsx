@@ -23,8 +23,10 @@ import CountDown from "../CountDown";
 import { Training } from "@/types/Training";
 import type { TrainingMode } from "@/types/TrainingMode";
 import { cn } from "@/lib/utils";
+import { breakBudgetLeftMs, breakLeftMs } from "@/services/training/breaks";
 
 const BREAK_OPTIONS = [5, 10, 15] as const;
+const REFRESH_REST_MS = 10_000;
 
 const MODE_NAMES: Record<TrainingMode, string> = {
   ladder: "Ladder training",
@@ -43,9 +45,12 @@ interface TrainingControlsProps {
   totalCount: number;
   isRefreshing: boolean;
   refreshProblemStatus: () => void;
+  /** When the verdicts were last read from the judges. */
+  lastCheckedAt?: number | null;
   onFinishTraining: () => void;
   onStopTraining: () => void;
-  onExtendEndTime: (minutes: number) => void;
+  onStartBreak: (minutes: number) => void;
+  onEndBreak: () => void;
   /** The clock and the actions alone, small, to sit in the workspace's bar. */
   compact?: boolean;
 }
@@ -60,36 +65,61 @@ const TrainingControls = ({
   refreshProblemStatus,
   onFinishTraining,
   onStopTraining,
-  onExtendEndTime,
+  onStartBreak,
+  onEndBreak,
+  lastCheckedAt,
   compact,
 }: TrainingControlsProps) => {
-  const [breakEndTime, setBreakEndTime] = useState<number | null>(null);
   const [, setTick] = useState(0);
+  const now = Date.now();
+  const breakRemaining = breakLeftMs(training, now);
+  const isOnBreak = breakRemaining > 0;
+  const budgetLeft = breakBudgetLeftMs(training);
 
-  const isOnBreak = breakEndTime !== null && Date.now() < breakEndTime;
-
+  // the break clock, and the moment the break runs out
   useEffect(() => {
     if (!isOnBreak) return;
-    const timer = setInterval(() => {
-      setTick((t) => t + 1);
-      if (Date.now() >= breakEndTime!) {
-        clearInterval(timer);
-        setBreakEndTime(null);
-      }
-    }, 1000);
+    const timer = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(timer);
-  }, [isOnBreak, breakEndTime]);
+  }, [isOnBreak]);
 
-  const startBreak = (minutes: number) => {
-    setBreakEndTime(Date.now() + minutes * 60000);
-    onExtendEndTime(minutes);
+  // A judge allows only so many reads: after one by hand, the button rests.
+  const [restUntil, setRestUntil] = useState(0);
+  const resting = now < restUntil;
+  useEffect(() => {
+    if (!resting) return;
+    const timer = setTimeout(() => setTick((t) => t + 1), restUntil - now + 50);
+    return () => clearTimeout(timer);
+  }, [resting, restUntil, now]);
+  const refresh = () => {
+    setRestUntil(Date.now() + REFRESH_REST_MS);
+    refreshProblemStatus();
   };
+  const checked = lastCheckedAt
+    ? `Last checked ${Math.max(1, Math.round((now - lastCheckedAt) / 60000))} min ago.`
+    : "Not checked yet.";
+  const refreshHint = `Reads your verdicts from the judge. It also happens by itself when you come back to this tab. ${checked}`;
 
-  const breakRemaining = isOnBreak
-    ? Math.max(0, breakEndTime! - Date.now())
-    : 0;
   const breakMinutes = Math.floor(breakRemaining / 60000);
   const breakSeconds = Math.floor((breakRemaining % 60000) / 1000);
+  const breakMenu = (
+    <DropdownMenuContent align="end">
+      <DropdownMenuLabel>
+        {budgetLeft > 0
+          ? `${Math.floor(budgetLeft / 60000)} min of break left`
+          : "No break time left"}
+      </DropdownMenuLabel>
+      {BREAK_OPTIONS.map((minutes) => (
+        <DropdownMenuItem
+          key={minutes}
+          disabled={minutes * 60000 > budgetLeft}
+          onSelect={() => onStartBreak(minutes)}
+        >
+          <span className="t-num">{minutes}</span> min
+        </DropdownMenuItem>
+      ))}
+    </DropdownMenuContent>
+  );
 
   const state: {
     badge: "solved" | "pending";
@@ -116,11 +146,7 @@ const TrainingControls = ({
           {pad(breakSeconds)}
           <small>s</small>
         </span>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setBreakEndTime(null)}
-        >
+        <Button variant="outline" size="sm" onClick={onEndBreak}>
           <Play aria-hidden="true" />
           Resume
         </Button>
@@ -133,13 +159,12 @@ const TrainingControls = ({
           endTime={training.endTime}
         />
         <Button
-          variant="ghost"
-          size="icon"
-          className="u-btn--sm"
+          variant="outline"
+          size="sm"
           aria-label={isRefreshing ? "Refreshing status" : "Refresh status"}
-          title="Submitted on the judge? Refresh to see your result."
-          onClick={refreshProblemStatus}
-          disabled={isRefreshing}
+          title={refreshHint}
+          onClick={refresh}
+          disabled={isRefreshing || resting}
         >
           <RefreshCw
             aria-hidden="true"
@@ -147,32 +172,27 @@ const TrainingControls = ({
               isRefreshing && "animate-spin motion-reduce:animate-none",
             )}
           />
+          <span className="max-2xl:hidden">
+            {isRefreshing ? "Checking…" : "Refresh"}
+          </span>
         </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="u-btn--sm"
-              aria-label="Take a break"
-              title="Take a break"
-            >
-              <Coffee aria-hidden="true" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>How long would you like?</DropdownMenuLabel>
-            {BREAK_OPTIONS.map((minutes) => (
-              <DropdownMenuItem
-                key={minutes}
-                onSelect={() => startBreak(minutes)}
+        {!training.roomCode && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                aria-label="Take a break"
+                title="Pause the clock for a few minutes. The problems are covered while you are away."
               >
-                <span className="t-num">{minutes}</span> min
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Button variant="outline" size="sm" onClick={onFinishTraining}>
+                <Coffee aria-hidden="true" />
+                <span className="max-2xl:hidden">Break</span>
+              </Button>
+            </DropdownMenuTrigger>
+            {breakMenu}
+          </DropdownMenu>
+        )}
+        <Button size="sm" onClick={onFinishTraining}>
           Finish
         </Button>
         <Button
@@ -246,7 +266,7 @@ const TrainingControls = ({
             Cancel session
           </Button>
         ) : isOnBreak ? (
-          <Button variant="outline" onClick={() => setBreakEndTime(null)}>
+          <Button variant="outline" onClick={onEndBreak}>
             <Play aria-hidden="true" />
             Resume session
           </Button>
@@ -254,8 +274,9 @@ const TrainingControls = ({
           <>
             <Button
               variant="outline"
-              onClick={refreshProblemStatus}
-              disabled={isRefreshing}
+              title={refreshHint}
+              onClick={refresh}
+              disabled={isRefreshing || resting}
             >
               <RefreshCw
                 aria-hidden="true"
@@ -265,25 +286,17 @@ const TrainingControls = ({
               />
               {isRefreshing ? "Refreshing…" : "Refresh status"}
             </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  <Coffee aria-hidden="true" />
-                  Take a break
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>How long would you like?</DropdownMenuLabel>
-                {BREAK_OPTIONS.map((minutes) => (
-                  <DropdownMenuItem
-                    key={minutes}
-                    onSelect={() => startBreak(minutes)}
-                  >
-                    <span className="t-num">{minutes}</span> min
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {!training.roomCode && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    <Coffee aria-hidden="true" />
+                    Take a break
+                  </Button>
+                </DropdownMenuTrigger>
+                {breakMenu}
+              </DropdownMenu>
+            )}
             <Button onClick={onFinishTraining}>Finish session</Button>
             <Button
               variant="ghost"

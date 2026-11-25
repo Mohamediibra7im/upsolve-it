@@ -1,4 +1,4 @@
-import { ArrowUpRight, Loader2, Shuffle } from "lucide-react";
+import { ArrowUpRight, Loader2, Shuffle, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Level } from "@/hooks/training";
 import { TrainingProblem } from "@/types/TrainingProblem";
@@ -14,6 +14,8 @@ interface ProblemsCardProps {
   level?: Level;
   onGenerateProblems: () => void;
   onStartSession: () => void;
+  /** Opens a room for this set, to start it with friends. */
+  onStartRoom: () => void;
 }
 
 /** The open lane's set and foot: the generated problems and the actions on them. */
@@ -25,6 +27,7 @@ const ProblemsCard = ({
   level,
   onGenerateProblems,
   onStartSession,
+  onStartRoom,
 }: ProblemsCardProps) => {
   const ready = problems.length > 0;
 
@@ -103,10 +106,16 @@ const ProblemsCard = ({
             {ready && generate}
           </div>
           {ready && (
-            <Button size="lg" onClick={onStartSession}>
-              Start session
-              <ArrowUpRight aria-hidden="true" />
-            </Button>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button variant="outline" size="lg" onClick={onStartRoom}>
+                <Users aria-hidden="true" />
+                Start with friends
+              </Button>
+              <Button size="lg" onClick={onStartSession}>
+                Start session
+                <ArrowUpRight aria-hidden="true" />
+              </Button>
+            </div>
           )}
         </div>
       )}

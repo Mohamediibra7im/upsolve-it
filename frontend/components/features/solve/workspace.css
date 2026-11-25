@@ -266,10 +266,6 @@ span.sw-tab {
   white-space: pre-wrap;
   word-break: break-word;
 }
-.sw-src {
-  font-size: 13px;
-  color: var(--ink-muted);
-}
 
 /* a judge's own HTML, cleaned by the server, set in the site's type */
 /* The problem is set the way LaTeX sets it: in Computer Modern, the face
