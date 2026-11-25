@@ -20,6 +20,7 @@ import { PublicProfileModule } from './modules/public-profile/public-profile.mod
 import { AnnouncementsModule } from './modules/announcements/announcements.module';
 import { HealthModule } from './modules/health/health.module';
 import { ContestsModule } from './modules/contests/contests.module';
+import { RoomsModule } from './modules/rooms/rooms.module';
 import { RateLimiterGuard } from './common/guards/rate-limiter.guard';
 
 @Module({
@@ -102,6 +103,7 @@ import { RateLimiterGuard } from './common/guards/rate-limiter.guard';
     AnnouncementsModule,
     HealthModule,
     ContestsModule,
+    RoomsModule,
   ],
   controllers: [AppController],
   providers: [

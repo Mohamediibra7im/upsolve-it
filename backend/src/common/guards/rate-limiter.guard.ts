@@ -198,6 +198,41 @@ export class RateLimiterGuard implements CanActivate {
         duration: 60,
         keyPrefix: 'contests:upcoming',
       },
+      // Rooms. Everyone in a room asks for it every 2 to 5 seconds, hence 900.
+      // This guard runs before AuthGuard, so the caller here is an address:
+      // people behind one address share these, and a room is often a whole
+      // team on one network. Each person reads the room every 2 to 5 seconds,
+      // so the read limit is sized for several full rooms behind one address.
+      'RoomsController.create': {
+        points: 60,
+        duration: 60 * 60,
+        keyPrefix: 'rooms:create',
+      },
+      'RoomsController.get': {
+        points: 6000,
+        duration: 60 * 10,
+        keyPrefix: 'rooms:get',
+      },
+      'RoomsController.join': {
+        points: 200,
+        duration: 60 * 10,
+        keyPrefix: 'rooms:join',
+      },
+      'RoomsController.start': {
+        points: 60,
+        duration: 60 * 10,
+        keyPrefix: 'rooms:start',
+      },
+      'RoomsController.progress': {
+        points: 2000,
+        duration: 60 * 10,
+        keyPrefix: 'rooms:progress',
+      },
+      'RoomsController.leave': {
+        points: 200,
+        duration: 60 * 10,
+        keyPrefix: 'rooms:leave',
+      },
     };
 
     // Health endpoints are hit frequently by Fly.io / Docker health checkers;
